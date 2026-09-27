@@ -1,0 +1,13 @@
+@model DeviceListModel
+
+<input type="hidden" asp-for="LicenseId" />
+<div class="form-group">
+    <smart-label asp-for="SearchTerm" />
+    <input asp-for="SearchTerm" />
+</div>
+<div class="form-group">
+    <div class="form-check">
+        <input asp-for="SearchActiveOnly" class="form-check-input" />
+        <label asp-for="SearchActiveOnly" class="form-check-label">@T("Plugins.Split3D.Device.SearchActiveOnly")</label>
+    </div>
+</div>

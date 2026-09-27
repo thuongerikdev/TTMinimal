@@ -1,0 +1,375 @@
+/// <reference path="references.scss" />
+
+
+// Font Sizes
+// ==============================================================
+
+@each $index, $size in $font-sizes {
+    .fs-h#{$index} {
+         @extend .fs-#{$index};
+    }
+}
+
+@each $index, $size in $display-font-sizes {
+    .fs-display-#{$index} {
+         @include font-size($size !important);
+    }
+}
+
+.fs-lead        { @include font-size($lead-font-size); }
+
+.fs-sm, 
+.fs-sm a        { font-size: $font-size-sm !important; }
+.fs-xs,
+.fs-xs a        { font-size: $font-size-xs !important; }
+
+@include media-breakpoint-only(xs) {
+    .rfs {
+        font-size: 14px;
+    } 
+}
+
+@include media-breakpoint-only(sm) {
+    .rfs {
+        font-size: 15px;
+    } 
+}
+
+@include media-breakpoint-down(md) {
+    .rfs {
+        word-break: break-word;
+    } 
+}
+
+
+// Font weight Helpers
+// ======================================
+
+h1, .h1, h2, .h2 {
+    font-weight: $headings-lg-font-weight;
+}
+
+h6, .h6 {
+	font-weight: $headings-sm-font-weight;
+}
+
+@each $weight, $var in (unset, 100, 200, 300, 400, 500, 600, 700, 800, 900) {
+    .font-weight-#{$weight},
+    .fw-#{$weight} {
+        font-weight: $weight !important;
+    }
+}
+
+.font-weight-medium, .fwm {
+    @extend .fw-medium;
+}
+
+.fwb { @extend .fw-bold; }
+.fwn { @extend .fw-normal; }
+.fwl { @extend .fw-light; }
+
+
+// Heading & Title
+// ======================================
+
+.heading {
+    position: relative;
+
+    &:before {
+        position: absolute;
+        display: block;
+        content: ' ';
+        width: 100%;
+        height: 1px;
+        top: 50%;
+        z-index: 0;
+        background: radial-gradient(ellipse at left, $body-bg 25%, rgba(#000, 0.25) 100%);
+    }
+
+    .heading-title {
+        position: relative;
+        display: inline-block;
+        background: var(--body-bg, #fff);
+        padding-inline-end: 1rem;
+    }
+}
+
+.heading-center {
+    text-align: center;
+
+    &:before {
+        background: radial-gradient(ellipse at center, $body-bg 25%, rgba($black, 0.25) 100%) !important;
+    }
+
+    .heading-title {
+        padding-inline-start: 1rem;
+    }
+}
+
+.page-title {
+    margin-bottom: 1.5rem;
+
+    > :where(h1, .h1) {
+        font-size: cssmin($h1-font-size, 46px);
+        line-height: 1.1;
+        letter-spacing: -.02em;
+    }
+}
+
+
+// Links
+// ======================================
+
+.link-dnn {
+    text-decoration: none !important;
+}
+
+.link-duu {
+    text-decoration: underline !important;
+}
+
+.link-dnu {
+    text-decoration: none;
+    &:hover {
+        text-decoration: underline;
+    }
+}
+
+.link-transition {
+    transition: $link-transition;
+}
+
+a.pretty-link {
+    @extend .link-body;
+    @extend .link-transition;
+    @extend .link-dnn;
+
+    font-weight: $font-weight-medium;
+
+    > i { padding-inline-end: 1.2rem; }
+    > span {
+        color: var(--gray-600);
+        &:hover, &:active { color: inherit; }
+    }
+}
+
+a.link-overlay {
+    display: block;
+    pointer-events: initial;
+    position: absolute;
+    inset: 0 0 0 0;
+}
+
+
+// Bidi
+// ======================================
+
+.rlm:after {
+	content: '\200F';
+}
+
+.ltr {
+	direction: ltr;
+	unicode-bidi: isolate;
+}
+
+.rtl {
+	direction: rtl;
+	unicode-bidi: isolate;
+}
+
+
+// Blockquote
+// ======================================
+
+.blockquote {
+    padding: 0.25rem 0 0.25rem 1rem;
+    border-inline-start: 0.25rem solid var(--gray-300);
+    color: var(--gray-700);
+}
+
+
+// Prose / long text
+// ======================================
+
+.prose-container {
+    max-width: cssmin(78ch, 640px);
+    margin-inline: auto;
+
+    .page-title {
+        margin-bottom: 3rem;
+    }
+
+    &.prose-sm {
+        max-width: cssmin(70ch, 540px);
+    }
+
+    &.prose-lg {
+        max-width: cssmin(88ch, 720px);
+    }
+
+    &.prose-xl {
+        max-width: cssmin(98ch, 820px);
+    }
+}
+
+.prose {
+    --prose-headings-lg-font-weight: #{$prose-headings-lg-font-weight};
+    --prose-headings-sm-font-weight: #{$prose-headings-sm-font-weight};
+    --prose-font-size: #{$prose-font-size};
+    --prose-line-height: #{$prose-line-height};
+    font-size: var(--prose-font-size);
+    line-height: var(--prose-line-height);
+    letter-spacing: normal;
+
+    // Longform polish (safe defaults)
+    hyphens: auto;
+    text-wrap: pretty;
+
+    // Vertical rhythm in em: scales with the prose font size
+    :where(p, ul, ol, blockquote, pre, table, figure) {
+        margin-block: 0 1em;
+    }
+
+    // Headings are sized in em so they scale directly with the prose font.
+    // Margins are also in em, but calculated relative to each heading's own
+    // font size so that the resulting prose-relative spacing matches the
+    // previous rem values at the default 1rem prose size.
+    :where(h1, h2, h3, h4, h5, h6) {
+        letter-spacing: -.02em;
+        scroll-margin-top: 3rem; // keep fixed, relates to sticky nav height
+        margin-top: 1.5em;
+        margin-bottom: calc(0.75rem * calc(var(--prose-font-size) / 1rem)); // = 12px when prose-font-size is 16px
+
+        > span[style="font-size: medium;"] {
+            // Fix a common htmledit quirk to maintain font-size proportions
+            font-size: inherit !important;
+        }
+    }
+
+    :where(h1, h2, h3) {
+        font-weight: var(--prose-headings-lg-font-weight);
+    }
+
+    :where(h4, h5, h6) {
+        font-weight: var(--prose-headings-sm-font-weight);
+    }
+
+    :where(h1) { font-size: divide($h1-font-size, 1rem) * 1em; }
+    :where(h2) { font-size: divide($h2-font-size, 1rem) * 1em; }
+    :where(h3) { font-size: divide($h3-font-size, 1rem) * 1em; }
+    :where(h4) { font-size: divide($h4-font-size, 1rem) * 1em }
+    :where(h5) { font-size: divide($h5-font-size, 1rem) * 1em; }
+    :where(h6) { font-size: 1em; text-transform: none; }
+
+    > :where(h2, h3, h4, h5, h6):first-child,
+    > div :where(h2, h3, h4, h5, h6):first-child {
+        margin-top: 0;
+    }
+
+    // Links
+    a {
+        text-decoration-thickness: from-font;
+        text-underline-offset: .18em;
+        text-decoration-skip-ink: auto;
+        overflow-wrap: anywhere;
+
+        &:hover {
+            text-decoration-thickness: cssmax(2px, .12em);
+        }
+    }
+
+    // Lists
+    :where(ul, ol) {
+        padding-inline-start: 1.25em; // bootstrap-like, but consistent
+    }
+
+    :where(ul, ol) > li {
+        margin-block: .35em;
+    }
+
+    // Nested lists: tighter so they don't balloon
+    :where(ul, ol) :where(ul, ol) {
+        margin-block: .35em .75em;
+    }
+
+    // Tables (light touch)
+    table {
+        width: 100%;
+    }
+
+    // Media
+    :where(img, video) {
+        max-width: 100%;
+        height: auto;
+    }
+}
+
+
+// Line clamp
+// ======================================
+
+.line-clamp, 
+.line-clamp-1, 
+.line-clamp-2, 
+.line-clamp-3, 
+.line-clamp-4, 
+.line-clamp-5 {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: var(--line-clamp, 3);
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.line-clamp-1 { --line-clamp: 1; }
+.line-clamp-2 { --line-clamp: 2; }
+.line-clamp-3 { --line-clamp: 3; }
+.line-clamp-4 { --line-clamp: 4; }
+.line-clamp-5 { --line-clamp: 5; }
+
+
+// Misc typo stuff
+// ======================================
+
+.text-wrap {
+    white-space: normal !important;
+}
+
+code {
+    white-space: break-spaces;
+    margin: 0;
+    padding: .2em .4em;
+    background-color: rgba($black, 0.055);
+    border-radius: var(--border-radius-md); 
+}
+
+pre {
+    padding: 1rem;
+    border-radius: var(--border-radius-md);
+    background: var(--gray-100);
+
+    code {
+        padding: 0;
+        background: transparent;
+    }
+}
+
+kbd {
+    border: 1px solid rgba($black, 0.12);
+    border-bottom-width: 2px;
+
+    kbd {
+        border: none;
+        background-color: transparent;
+    }
+
+    .btn & {
+        padding-block: 0;
+        border-bottom-width: 1px;
+    }
+}
+
+.html-editor-content {
+	margin-bottom: 1.5rem;
+}

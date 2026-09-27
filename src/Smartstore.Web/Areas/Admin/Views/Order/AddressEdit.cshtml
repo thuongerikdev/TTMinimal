@@ -1,0 +1,32 @@
+﻿@model OrderAddressModel
+
+@{
+    ViewBag.Title = T("Admin.Customers.Customers.Addresses.EditAddress").Value.Grow(Model.Username, " - ");
+}
+
+<div asp-validation-summary="All"></div>
+
+<form asp-action="AddressEdit" method="post" asp-route-addressId="@Model.Address.Id" asp-route-orderId="@Model.OrderId">
+    <div class="section-header">
+        <div class="title">
+            <a sm-backto asp-action="Edit" asp-controller="Order" asp-route-id="@Model.OrderId" title="@T("Admin.Orders.Address.BackToOrder")"></a>
+            <i class="far fa-chart-bar"></i>
+            <span>@ViewBag.Title</span>
+        </div>
+        <div class="options">
+            <zone name="admin_button_toolbar_before" />
+
+            <button type="submit" name="save" value="save" class="btn btn-warning">
+                <i class="fa fa-check"></i>
+                <span>@T("Admin.Common.Save")</span>
+            </button>
+            <button type="submit" name="save" value="save-continue" class="btn btn-secondary">
+                <span>@T("Admin.Common.SaveContinue")</span>
+            </button>
+
+            <zone name="admin_button_toolbar_after" />
+        </div>
+    </div>
+
+    <editor asp-for="Address" />
+</form>

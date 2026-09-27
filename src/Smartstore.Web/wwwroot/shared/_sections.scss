@@ -1,0 +1,70 @@
+﻿/// <reference path="references.scss" />
+
+//
+@use "sass:list";
+@use "sass:color";
+
+// Section colorization
+// --------------------------------------------------
+
+:root {
+    $refcolors: #111214, $body-color, color.mix($gray-600, $gray-700), color.mix($gray-500, $gray-600);
+    @for $i from 1 through list.length($refcolors) {
+        $c: list.nth($refcolors, $i);
+        --section-color-#{$i}: #{$c};
+        --section-color-#{$i}-rgb: #{color.red($c)}, #{color.green($c)}, #{color.blue($c)};
+    }
+
+    --section-bg: transparent;
+    --display-dark-logo: block;
+    --display-light-logo: none;
+}
+
+@each $color, $value in $theme-colors {
+    .section-#{$color} {
+        $c1: #fff;
+        $c2: saturate(color.mix(#fff, $value, 82%), 10%);
+        $c3: saturate(color.mix(#fff, $value, 70%), 10%);
+        $c4: saturate(color.mix(#fff, $value, 56%), 10%);
+
+        @if ($color == "secondary" or $color == "light") {
+            $c1: #111214; // TBD: not black?
+            $c2: color.mix($c1, $value, 82%);
+            $c3: color.mix($c1, $value, 82%);
+            $c4: color.mix($c1, $value, 40%);
+        }
+        @else {
+            --display-dark-logo: none;
+            --display-light-logo: block;
+        }
+
+        $refcolors: $c1, $c2, $c3, $c4;
+        @for $i from 1 through list.length($refcolors) {
+            $c: list.nth($refcolors, $i);
+            --section-color-#{$i}: #{$c};
+            --section-color-#{$i}-rgb: #{color.red($c)}, #{color.green($c)}, #{color.blue($c)};
+        }
+
+        --section-bg: #{$value};
+        --section-bg-rgb: #{color.red($value)}, #{color.green($value)}, #{color.blue($value)};
+        background-color: var(--section-bg);
+    }
+}
+
+.section-white {
+    @extend .section-light;
+    --section-bg: #fff;
+    --display-dark-logo: block;
+    --display-light-logo: none;
+    //background-color: #fff;
+}
+
+.section-color-1 { color: var(--section-color-1); }
+.section-color-2 { color: var(--section-color-2); }
+.section-color-3 { color: var(--section-color-3); }
+.section-color-4 { color: var(--section-color-4); }
+
+.section-link {
+    color: var(--section-color-1) !important;
+    &:hover { text-decoration: underline; }
+}

@@ -1,0 +1,128 @@
+﻿using System.Threading;
+using Microsoft.EntityFrameworkCore;
+using Smartstore.ComponentModel;
+using Smartstore.Core.Catalog.Products;
+using Smartstore.Core.Common;
+using Smartstore.Core.Data;
+using Smartstore.Core.Security;
+using Smartstore.Events;
+using Smartstore.Google.MerchantCenter.Domain;
+using Smartstore.Google.MerchantCenter.Models;
+using Smartstore.Web.Rendering.Events;
+
+namespace Smartstore.Google.MerchantCenter;
+
+internal class Events : IConsumer
+{
+    private readonly SmartDbContext _db;
+
+    public Events(SmartDbContext db)
+    {
+        _db = db;
+    }
+
+    public async Task HandleEventAsync(TabStripCreated message)
+    {
+        if (message.TabStripName == "product-edit")
+        {
+            var productId = ((TabbableModel)message.Model).Id;
+
+            await message.TabFactory.AppendAsync(builder => builder
+                .Text("GMC")
+                .Name("tab-gmc")
+                .Icon("google", "bi")
+                .LinkHtmlAttributes(new { data_tab_name = "GMC" })
+                .Action("ProductEditTab", "GoogleMerchantCenter", new { productId })
+                .Ajax());
+        }
+    }
+
+    public async Task HandleEventAsync(ModelBoundEvent message,
+        IPermissionService permissionService)
+    {
+        if (!message.BoundModel.CustomProperties.TryGetValue("GMC", out object value)
+            || value is not GoogleProductModel model
+            || !await permissionService.AuthorizeAsync(Permissions.Catalog.Product.Update))
+        {
+            return;
+        }
+
+        var utcNow = DateTime.UtcNow;
+        var googleProducts = _db.GoogleProducts();
+        var googleProduct = await googleProducts
+            .Where(x => x.ProductId == model.ProductId)
+            .FirstOrDefaultAsync();
+        var add = googleProduct == null;
+
+        googleProduct ??= new GoogleProduct
+        {
+            ProductId = model.ProductId,
+            CreatedOnUtc = utcNow
+        };
+
+        await MapperFactory.MapAsync(model, googleProduct);
+        googleProduct.UpdatedOnUtc = utcNow;
+        googleProduct.MediaFileIds = string.Join(',', model.AssignedFileIds ?? []).NullEmpty();
+
+        // INFO: Must be the last property set.
+        googleProduct.IsTouched = !googleProduct.IsDefaultState;
+
+        if (!add && !googleProduct.IsTouched)
+        {
+            googleProducts.Remove(googleProduct);
+            await _db.SaveChangesAsync();
+            return;
+        }
+
+        if (add)
+        {
+            googleProducts.Add(googleProduct);
+        }
+
+        await _db.SaveChangesAsync();
+    }
+
+    public async Task HandleEventAsync(ProductClonedEvent message)
+    {
+        var originalGoogleProduct = await _db.GoogleProducts()
+            .AsNoTracking()
+            .FirstOrDefaultAsync(x => x.ProductId == message.Source.Id);
+        if (originalGoogleProduct == null)
+        {
+            return;
+        }
+
+        var newGoogleProduct = new GoogleProduct
+        {
+            CreatedOnUtc = DateTime.UtcNow
+        };
+
+        await MapperFactory.MapAsync(originalGoogleProduct, newGoogleProduct);
+
+        // Restore entity ID after Minimapper mapped the original ID.
+        newGoogleProduct.Id = 0;
+
+        // Set new product ID.
+        newGoogleProduct.ProductId = message.Clone.Id;
+
+        _db.GoogleProducts().Add(newGoogleProduct);
+
+        await _db.SaveChangesAsync();
+    }
+
+    public Task HandleEventAsync(PermanentDeletionRequestedEvent<Product> message)
+    {
+        Guard.IsTrue(message.EntityType == typeof(Product));
+
+        async Task entitiesDeleted(CancellationToken cancelToken)
+        {
+            await _db.GoogleProducts()
+                .Where(x => message.EntityIds.Contains(x.ProductId))
+                .ExecuteDeleteAsync(cancelToken);
+        }
+
+        message.AddEntitiesDeletedCallback(entitiesDeleted);
+
+        return Task.CompletedTask;
+    }
+}

@@ -1,0 +1,65 @@
+﻿@using Smartstore.Core.Search.Facets
+
+@model FacetGroup
+
+@{
+    var facets = Model.HasChildren ? FlattenFacets(Model.Facets) : Model.Facets;
+}
+
+<div sm-if="facets.Count() > 7" class="facet-local-search has-icon has-icon-right input-group-sm mb-3">
+    <input type="text" class="form-control facet-local-search-input" placeholder="@T("Search.Facet.FindPlaceholder", Model.Label)" />
+    <span class="input-group-icon">
+        <i class="fa fa-search text-muted" aria-hidden="true"></i>
+    </span>
+</div>
+
+<div class="facet-body-inner" attr-class='(Model.IsScrollable, "scrollable custom-scrollbar")' 
+     role="listbox" 
+     aria-multiselectable="true" 
+     aria-orientation="vertical" 
+     aria-labelledby="facet-group-header-@Model.Key">
+    @foreach (var facet in facets)
+    {
+        <div class="facet-item facet-check">
+            <label class="facet-control-label">
+                <input class="facet-control-native"
+                       type="checkbox"
+                       id="optcheck-@(facet.Value.Key)"
+                       value="@facet.Value.ToString()"
+                       role="option"
+                       aria-selected="@facet.Value.IsSelected.ToString().ToLower()"
+                       attr-checked='(facet.Value.IsSelected, "checked")'
+                       data-href="@Url.FacetToggle(facet)" />
+                <span class="facet-control-ui" aria-hidden="true"></span>
+                <span class="facet-label has-count" attr-data-count='(facet.HitCount > 0, facet.HitCount.ToString("N0"))'>
+                    @(facet.Value.Label ?? facet.Value.ToString())
+                </span>
+            </label>
+        </div>
+    }
+</div>
+
+@functions
+{
+    private ICollection<Facet> FlattenFacets(IEnumerable<Facet> facets)
+    {
+        var flattened = new List<Facet>();
+
+        foreach (var facet in facets)
+        {
+            if (facet.IsChoice)
+            {
+                if (facet.Published)
+                {
+                    flattened.Add(facet);
+                }
+            }
+            else if (facet.Children.Count > 0)
+            {
+                flattened.AddRange(FlattenFacets(facet.Children));
+            }
+        }
+
+        return flattened.OrderByDescending(x => x.Value.IsSelected).ThenByDescending(x => x.HitCount).ToList();
+    }
+}

@@ -1,0 +1,90 @@
+﻿@using Smartstore.Web.Models.Catalog;
+
+@model ProductSummaryModel
+
+<div class="offcanvas-cart-body offcanvas-scrollable">
+    <div sm-if="Model.Items.Count == 0" class="no-items" role="status">
+        <h4 class="no-item-title">
+            @T("ShoppingCart.Mini.EmptyCompare.Title")
+        </h4>
+        <p class="no-item-icon">
+            <i class="fa fa-retweet fa-4x" aria-hidden="true"></i>
+        </p>
+        <p class="no-item-info text-muted">
+            @Html.Raw(T("ShoppingCart.Mini.EmptyCompare.Info", "fa fa-lg fa-retweet"))
+        </p>
+    </div>
+
+    <div sm-if="Model.Items.Count > 0" class="offcanvas-cart-items" role="list" aria-labelledby="compare-tab">
+        @foreach (var item in Model.Items)
+        {
+            <div class="offcanvas-cart-item" role="listitem" aria-labelledby="cart-item-link-@(item.Id)">
+                <div class="row sm-gutters">
+                    <div class="col col-alpha">
+                        @if (item.Image != null && item.Image.HasImage())
+                        {
+                            <a class="img-center-container" asp-route="Product" asp-route-SeName="@item.SeName" aria-hidden="true" tabindex="-1">
+                                <img sm-model="item.Image" attr-alt='(item.Image.Alt.IsEmpty(), item.Name)' />
+                            </a>
+                        }
+                    </div>
+
+                    <div class="col col-data">
+                        <a id="cart-item-link-@(item.Id)" class="name fwm link-body link-dnu" asp-route="Product" asp-route-SeName="@item.SeName" title="@item.Name">
+                            <span sm-language-attributes-for="item.Name">@item.Name</span>
+                        </a>
+                        @if (item.ShortDescription.HasValue() == true)
+                        {
+                            <div sm-language-attributes-for="item.ShortDescription" class="short-desc text-muted">
+                                @Html.Raw(item.ShortDescription.Value.Truncate(120, "…"))
+                            </div>
+                        }
+
+                        <div class="d-flex align-items-center sm-gutters mt-2">
+                            <div class="col">
+                                <span sm-if="item.Price.HasCalculation" class="price unit-price">
+                                    @item.Price.FinalPrice
+                                </span>
+                            </div>
+                            <div class="col-auto text-nowrap">
+                                <button data-href='@Url.Action("RemoveProductFromCompare", "Catalog", new { id = item.Id })'
+                                        type="button"
+                                        class="btn btn-secondary btn-to-danger btn-sm btn-icon remove ajax-cart-link"                                       
+                                        title="@T("Common.Remove")"
+                                        aria-label="@T("Common.Remove") @item.Name"
+                                        aria-describedby="sr-desc-empty"
+                                        data-type="compare"
+                                        data-action="remove">
+                                    <i class="far fa-trash-can" aria-hidden="true"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+
+        <zone name="offcanvas_compare_items_after" />
+    </div>
+</div>
+
+<div sm-if="Model.Items.Count > 0" class="offcanvas-cart-footer">
+    <div class="offcanvas-cart-footer-row no-gutters">
+        <div class="col pr-2">
+            <a class="btn btn-clear btn-block btn-action" asp-route="CompareProducts">
+                <i class="fa fa-check" aria-hidden="true"></i>
+                <span>@T("Products.Compare.CompareNow")</span>
+            </a>
+        </div>
+        <div class="col pl-2">
+            <button data-href="@Url.Action("ClearCompareList", "Catalog")"
+                    type="button"
+                    class="btn btn-clear btn-block btn-action ajax-cart-link"
+                    data-type="compare"
+                    data-action="remove">
+                <i class="fal fa-trash-can" aria-hidden="true"></i>
+                <span>@T("Products.Compare.Clear")</span>
+            </button>
+        </div>
+    </div>
+</div>

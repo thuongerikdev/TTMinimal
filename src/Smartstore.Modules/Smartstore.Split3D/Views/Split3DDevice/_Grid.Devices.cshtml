@@ -1,0 +1,67 @@
+@model DeviceModel
+
+<datagrid id="split3d-devices-grid"
+          class="h-100"
+          allow-resize="true"
+          allow-row-selection="true"
+          allow-column-reordering="true"
+          onrowclass="split3d_onDeviceRowClass">
+    <datasource read="@Url.Action("DeviceList")" delete="@Url.Action("DeviceDelete")" />
+    <paging position="Bottom" page-index="1" show-size-chooser="true" />
+    <toolbar>
+        <toolbar-group>
+            <button datagrid-action="DataGridToolAction.ToggleSearchPanel" type="button" class="btn btn-plain btn-icon">
+                <bootstrap-icon name="funnel" />
+            </button>
+        </toolbar-group>
+        <toolbar-group>
+            <button datagrid-action="DataGridToolAction.ReactToSelection" type="button" id="split3d-deactivate-selected" class="btn btn-warning btn-flat">
+                <bootstrap-icon name="box-arrow-right" />
+                <span>@T("Plugins.Split3D.Device.DeactivateSelected")</span>
+            </button>
+        </toolbar-group>
+        <zone name="datagrid_toolbar_alpha"></zone>
+        <toolbar-group class="omega"></toolbar-group>
+        <zone name="datagrid_toolbar_omega"></zone>
+        <toolbar-group>
+            <button datagrid-action="DataGridToolAction.DeleteSelectedRows" type="button" class="btn btn-danger no-anims btn-flat">
+                <bootstrap-icon name="trash" />
+                <span>@T("Admin.Common.Delete.Selected")</span>
+            </button>
+        </toolbar-group>
+    </toolbar>
+    <search-panel>
+        <partial name="_Grid.Devices.Search" model="(DeviceListModel)ViewBag.SearchModel" />
+    </search-panel>
+    <columns>
+        <column for="DeviceName" hideable="false" width="200px">
+            <display-template>
+                <div class="font-weight-medium">{{ item.value }}</div>
+                <div class="small text-muted">{{ item.row.Platform }}</div>
+            </display-template>
+        </column>
+        <column for="Email" width="220px">
+            <display-template>
+                <a :href="item.row.DevicesUrl">{{ item.value }}</a>
+            </display-template>
+        </column>
+        <column for="AddonName" sortable="false" width="150px" />
+        <column for="Status" sortable="false" width="200px">
+            <display-template>
+                <span class="badge" :class="item.row.IsActive ? 'badge-success' : 'badge-secondary'">{{ item.value }}</span>
+            </display-template>
+        </column>
+        <column for="ActivatedOn" sortable="false" width="150px" />
+        <column for="ActiveFor" sortable="false" width="110px" />
+        <column for="LastSeenOn" sortable="false" width="150px" />
+        <column for="BlenderVersion" sortable="false" width="90px" />
+        <column for="AddonVersion" sortable="false" width="90px" />
+        <column for="LastIpAddress" sortable="false" width="130px" />
+        <column for="FirstActivatedOn" sortable="false" visible="false" />
+        <column for="Platform" sortable="false" visible="false" />
+    </columns>
+    <row-commands>
+        <a datarow-action="DataRowAction.Custom" :href="item.row.DevicesUrl">@T("Plugins.Split3D.Devices.OfKey")</a>
+        <a datarow-action="DataRowAction.Delete">@T("Common.Delete")</a>
+    </row-commands>
+</datagrid>

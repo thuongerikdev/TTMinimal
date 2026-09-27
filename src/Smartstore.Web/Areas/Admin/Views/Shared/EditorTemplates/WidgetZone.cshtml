@@ -1,0 +1,89 @@
+﻿@model string[]
+
+@inject IWidgetProvider WidgetProvider
+
+@functions
+{
+    private string[] Value
+    {
+        get
+        {
+            string[] value = null;
+            if (ViewData.Model != null)
+            {
+                value = ViewData.Model;
+            }
+            return value;
+        }
+    }
+}
+
+@{
+    dynamic jsonZones = await WidgetProvider.GetAllKnownWidgetZonesAsync();
+    var areas = jsonZones.WidgetZonesAreas as IEnumerable<dynamic>;
+    var zones = new List<SelectListItem>();
+    var userDefinedZones = Value != null ? Value.ToList() : new List<string>();
+    var selectedZones = new HashSet<string>(userDefinedZones, StringComparer.OrdinalIgnoreCase);
+
+    // Add system zones
+    foreach (dynamic area in areas)
+    {
+        var zoneNames = area.zones as IEnumerable<dynamic>;
+        var groupName = T((string)area.name).Value.Pascalize();
+        var group = new SelectListGroup { Name = groupName };
+
+        foreach (string zone in zoneNames)
+        {
+            zones.Add(new()
+            {
+                Text = zone,
+                Value = zone,
+                Selected = selectedZones.Contains(zone),
+                Group = group
+            });
+
+            // Remove item from userdefined zones (it is a system zone).
+            userDefinedZones.Remove(zone);
+        }
+    }
+
+    // Add userdefined zones to available zones
+    var userDefinedGroup = new SelectListGroup { Name = T("Admin.WidgetZones.UserDefined").Value };
+    userDefinedZones.Reverse();
+
+    foreach (var zoneName in userDefinedZones)
+    {
+        zones.Insert(0, new SelectListItem
+        {
+            Text = zoneName,
+            Value = zoneName,
+            Selected = true,
+            Group = userDefinedGroup
+        });
+    }
+
+    // Get selected items
+    var selectedValues = zones
+        .Where(x => x.Selected == true)
+        .Select(x => x.Value.ToString())
+        .ToArray();
+
+    var cssClass = "form-control";
+    var size = GetMetadata<string>("size");
+    if (size.HasValue())
+    {
+        cssClass += " form-control-" + size;
+    }
+
+    var name = Html.NameForModel();
+    var id = Html.GenerateIdFromName(name);
+}
+
+<select asp-items="@(new MultiSelectList(zones, "Value", "Text", selectedValues, "Group.Name"))"
+        name="@name"
+        id="@id"
+        class="@cssClass"
+        size="5"
+        multiple
+        data-tags="true"
+        value="@Value"></select>

@@ -1,0 +1,58 @@
+﻿@using Smartstore.Admin.Models.Logging
+
+@model LogModel
+
+<datagrid id="log-grid" allow-resize="true" allow-row-selection="true" allow-column-reordering="true" version="2">
+    <datasource read="@Url.Action("LogList")" delete="@Url.Action("LogDelete")" />
+    <paging position="Bottom" show-size-chooser="true" />
+    <sorting enabled="true" allow-unsort="true" allow-multisort="false">
+        <sort by="CreatedOn" descending="true" />
+    </sorting>
+    <toolbar>
+        <toolbar-group>
+            <button datagrid-action="DataGridToolAction.ToggleSearchPanel" class="btn btn-plain btn-icon">
+                <bootstrap-icon name="funnel" />
+            </button>
+        </toolbar-group>
+        <zone name="datagrid_toolbar_alpha"></zone>
+        <toolbar-group class="omega"></toolbar-group>
+        <zone name="datagrid_toolbar_omega"></zone>
+        <toolbar-group>
+            <button datagrid-action="DataGridToolAction.DeleteSelectedRows" type="button" class="btn btn-danger btn-flat">
+                <bootstrap-icon name="trash" />
+                <span>@T("Admin.Common.Delete.Selected")</span>
+            </button>
+        </toolbar-group>
+    </toolbar>
+    <search-panel>
+        <partial name="_Grid.Logs.Search" model="new LogListModel()" />
+    </search-panel>
+    <columns>
+        <column for="Id" halign="center" visible="false" type="string" />
+        <column for="Logger" width="250px">
+            <display-template>
+                <span class="text-muted text-truncate" :title="item.value">{{ item.row.ShortLoggerName }}</span>
+            </display-template>
+        </column>
+        <column for="ShortMessage" hideable="false">
+            <display-template>
+                <div class="dg-cell-value d-flex align-items-center">
+                    <span :class="'mr-2 level-badge badge badge-subtle badge-ring badge-' + item.row.LogLevelHint">{{ item.row.LogLevel }}</span>
+
+                    <div class="flex-grow-1 overflow-hidden" style="min-width: 0;">
+                        <a :href="item.row.ViewUrl" class="d-block text-truncate">{{ item.value }}</a>
+                    </div>
+
+                    <span v-if="item.row.OccurrenceCount > 1" class="badge badge-ring badge-outline badge-success text-success rounded-pill fwb px-2 ml-1 flex-shrink-0">
+                        +{{ item.row.OccurrenceCount - 1 }}
+                    </span>
+                </div>
+            </display-template>
+        </column>
+        <column for="UserName" width="max-content" />
+        <column for="UserAgent" visible="false" />
+        <column for="HttpMethod" visible="false" halign="center" width="max-content" />
+        <column for="CustomerEmail" visible="false" entity-member="CustomerId" />
+        <column for="CreatedOn" entity-member="CreatedOnUtc" />
+    </columns>
+</datagrid>

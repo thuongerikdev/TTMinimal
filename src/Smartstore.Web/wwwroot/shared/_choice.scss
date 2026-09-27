@@ -1,0 +1,76 @@
+/// <reference path="references.scss" />
+
+//
+// Choice Styles (Variants etc.)
+// ------------------------------------------------------
+
+.choice {
+    margin-bottom: 1rem;
+}
+
+label.required,
+.col-form-label.required,
+.choice-label.required {
+	//color: inherit;
+	font-weight: $font-weight-medium;
+	&:after { content: ' *' }
+}
+
+.choice-label-swatch {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 0.25rem;
+    font-weight: $font-weight-normal;
+}
+
+.choice-label-name {
+    font-weight: $font-weight-normal;
+}
+
+.choice-label-value {
+    font-weight: $font-weight-semibold;
+}
+
+.choice-item {
+    --choice-item-line-height: #{$line-height-base};
+    --choice-item-size: max(1rem, 1em);
+
+    display: inline-flex !important;
+    align-items: center;
+}
+
+.choice-item-unavailable {
+    color: $text-muted;
+}
+
+.choice-item-color,
+.choice-item-img {
+    display: inline-block;
+    min-width: var(--choice-item-size);
+    height: var(--choice-item-size);
+    max-height: var(--choice-item-size);
+    padding: 0;
+    border-radius: 0.2em;
+    border: var(--choice-item-border-width, 1px) solid rgba($black, 0.125);
+    margin-inline-end: 0.5rem;
+    margin-top: calc((var(--choice-item-line-height) * 1em - var(--choice-item-size)) * 0.5);
+    align-self: flex-start;
+    text-decoration: none !important;
+    overflow: hidden;
+}
+
+.choice-item-img {
+    > img {
+        max-width: 100%;
+        height: auto;
+        display: inherit;
+    }
+}
+
+.choice-description {
+    color: $text-muted;
+    font-size: $font-size-sm;
+    margin-bottom: 0.5rem;
+    > *:first-child { margin-top: 0; }
+    > *:last-child { margin-bottom: 0; }
+}

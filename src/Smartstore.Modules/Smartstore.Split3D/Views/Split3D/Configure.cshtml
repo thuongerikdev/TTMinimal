@@ -1,0 +1,195 @@
+@model ConfigurationModel
+
+@{
+    Layout = "_ConfigureModule";
+}
+
+<widget target-zone="admin_button_toolbar_before">
+    <a href="@Url.Action("List")" class="btn btn-secondary">
+        <i class="bi bi-key"></i>
+        <span>@T("Plugins.Split3D.Licenses")</span>
+    </a>
+    <button id="SaveConfigButton" type="submit" name="save" class="btn btn-warning" value="save" form="split3d-config-form" data-target="#split3d-config-form">
+        <i class="fa fa-check"></i>
+        <span>@T("Admin.Common.Save")</span>
+    </button>
+</widget>
+
+<div class="alert @(Model.KeyValid ? "alert-success" : "alert-warning")">
+    <i class="bi @(Model.KeyValid ? "bi-shield-check" : "bi-exclamation-triangle") mr-1"></i>
+    @Model.KeyStatus
+</div>
+
+<form asp-action="Configure" method="post" id="split3d-config-form">
+    <div asp-validation-summary="All"></div>
+
+    <div class="adminContent">
+        <div class="adminRow">
+            <div class="admin-config-group">
+                <div class="title">@T("Plugins.Split3D.Group.Keys")</div>
+            </div>
+        </div>
+        <div class="adminRow">
+            <div class="adminTitle"><smart-label asp-for="PublicKeyJson" /></div>
+            <div class="adminData">
+                <textarea asp-for="PublicKeyJson" rows="4" class="form-control text-monospace" spellcheck="false"></textarea>
+                <span asp-validation-for="PublicKeyJson"></span>
+            </div>
+        </div>
+        <div class="adminRow">
+            <div class="adminTitle"><smart-label asp-for="PrivateKeyJson" /></div>
+            <div class="adminData">
+                <textarea asp-for="PrivateKeyJson" rows="4" class="form-control text-monospace" spellcheck="false" autocomplete="off"
+                          placeholder="@(Model.HasPrivateKey ? T("Plugins.Split3D.PrivateKeyStored") : T("Plugins.Split3D.PrivateKeyPaste"))"></textarea>
+                <span asp-validation-for="PrivateKeyJson"></span>
+            </div>
+        </div>
+
+        <div class="adminRow">
+            <div class="admin-config-group">
+                <div class="title">@T("Plugins.Split3D.Group.Products")</div>
+            </div>
+        </div>
+        <div class="adminRow">
+            <div class="adminTitle"><smart-label asp-for="AutoIssueEnabled" /></div>
+            <div class="adminData">
+                <input asp-for="AutoIssueEnabled" />
+                <span asp-validation-for="AutoIssueEnabled"></span>
+            </div>
+        </div>
+        <div class="adminRow">
+            <div class="adminTitle"></div>
+            <div class="adminData">
+                <a href="@Url.Action("List", "Split3DAddon")" class="btn btn-secondary btn-sm">
+                    <i class="bi bi-boxes"></i>
+                    <span>@T("Plugins.Split3D.Addons.Manage")</span>
+                </a>
+            </div>
+        </div>
+
+        <div class="adminRow">
+            <div class="admin-config-group">
+                <div class="title">@T("Plugins.Split3D.Group.Devices")</div>
+            </div>
+        </div>
+        <div class="adminRow">
+            <div class="adminTitle"><smart-label asp-for="DefaultMaxDevices" /></div>
+            <div class="adminData">
+                <editor asp-for="DefaultMaxDevices" />
+                <span asp-validation-for="DefaultMaxDevices"></span>
+            </div>
+        </div>
+        <div class="adminRow">
+            <div class="adminTitle"><smart-label asp-for="LeaseDays" /></div>
+            <div class="adminData">
+                <editor asp-for="LeaseDays" />
+                <span asp-validation-for="LeaseDays"></span>
+            </div>
+        </div>
+        <div class="adminRow">
+            <div class="adminTitle"><smart-label asp-for="CustomerDeactivationLimit" /></div>
+            <div class="adminData">
+                <editor asp-for="CustomerDeactivationLimit" />
+                <span asp-validation-for="CustomerDeactivationLimit"></span>
+            </div>
+        </div>
+        <div class="adminRow">
+            <div class="adminTitle"></div>
+            <div class="adminData">
+                <div class="form-text text-muted">
+                    @T("Plugins.Split3D.ActivationEndpoint"):
+                    <code>@Url.Action("Activate", "Split3DActivation", new { area = "" }, Context.Request.Scheme)</code>
+                </div>
+            </div>
+        </div>
+
+        <div class="adminRow">
+            <div class="admin-config-group">
+                <div class="title">@T("Plugins.Split3D.Group.Payment")</div>
+            </div>
+        </div>
+        <div class="adminRow">
+            <div class="adminTitle"><smart-label asp-for="BankName" /></div>
+            <div class="adminData"><input asp-for="BankName" placeholder="Vietcombank" /></div>
+        </div>
+        <div class="adminRow">
+            <div class="adminTitle"><smart-label asp-for="BankAccountNumber" /></div>
+            <div class="adminData"><input asp-for="BankAccountNumber" /></div>
+        </div>
+        <div class="adminRow">
+            <div class="adminTitle"><smart-label asp-for="BankAccountHolder" /></div>
+            <div class="adminData"><input asp-for="BankAccountHolder" placeholder="NGUYEN VAN A" /></div>
+        </div>
+
+        <div class="adminRow">
+            <div class="admin-config-group">
+                <div class="title">@T("Plugins.Split3D.Group.Email")</div>
+            </div>
+        </div>
+        <div class="adminRow">
+            <div class="adminTitle"><smart-label asp-for="SendEmail" /></div>
+            <div class="adminData">
+                <input asp-for="SendEmail" />
+            </div>
+        </div>
+        <div class="adminRow">
+            <div class="adminTitle"><smart-label asp-for="EmailSubject" /></div>
+            <div class="adminData">
+                <input asp-for="EmailSubject" />
+            </div>
+        </div>
+        <div class="adminRow">
+            <div class="adminTitle"><smart-label asp-for="EmailBody" /></div>
+            <div class="adminData">
+                <textarea asp-for="EmailBody" rows="12" class="form-control"></textarea>
+                <div class="form-text text-muted">{Addon} {CustomerName} {Email} {Plan} {ExpiresOn} {Price} {Key}</div>
+            </div>
+        </div>
+
+        <div class="adminRow">
+            <div class="admin-config-group">
+                <div class="title">@T("Plugins.Split3D.Group.AdminMenu")</div>
+            </div>
+        </div>
+        <div class="adminRow">
+            <div class="adminTitle"><smart-label asp-for="SimplifyAdminMenu" /></div>
+            <div class="adminData">
+                <input asp-for="SimplifyAdminMenu" />
+            </div>
+        </div>
+        <div class="adminRow">
+            <div class="adminTitle"><smart-label asp-for="HiddenAdminMenuItems" /></div>
+            <div class="adminData">
+                <textarea asp-for="HiddenAdminMenuItems" rows="8" class="form-control text-monospace small" spellcheck="false"></textarea>
+            </div>
+        </div>
+    </div>
+</form>
+
+<div class="card mt-4 mb-5">
+    <div class="card-body">
+        <h5 class="card-title">
+            <i class="bi bi-shop mr-1"></i>
+            @T("Plugins.Split3D.Setup.Title")
+        </h5>
+        <p class="text-muted">@Html.Raw(T("Plugins.Split3D.Setup.Hint"))</p>
+        <form asp-action="SetupStorefront" method="post" enctype="multipart/form-data" id="split3d-setup-form">
+            <div class="form-group">
+                <label for="addonfile" class="font-weight-medium">@T("Plugins.Split3D.Setup.AddonFile")</label>
+                <input type="file" name="addonfile" id="addonfile" accept=".zip" class="form-control" />
+            </div>
+            <button type="submit" class="btn btn-primary" id="split3d-setup-submit">
+                <i class="bi bi-magic"></i>
+                <span>@T("Plugins.Split3D.Setup.Run")</span>
+            </button>
+        </form>
+    </div>
+</div>
+
+<script sm-target-zone="scripts" data-origin="split3d-setup">
+    $(function () {
+        $('#split3d-setup-form').on('submit', function () {
+            $('#split3d-setup-submit').prop('disabled', true).find('span').text('@T("Plugins.Split3D.Setup.Running")');
+        });
+    });
+</script>

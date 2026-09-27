@@ -1,0 +1,162 @@
+﻿@using Smartstore.Web.Models.Catalog
+
+@model ProductDetailsModel
+
+@{
+    if (Model.Price.HidePrices && !Model.Price.ShowLoginNote)
+    {
+        return;
+    }
+
+    async Task RenderPromoPriceLine(ComparePriceModel priceModel)
+    {
+        if (priceModel != null)
+        {
+            var hasDesc = priceModel.Description.HasValue();
+            <div class="pd-promoprice-line" attr-aria-describedby='(hasDesc, "pd-promoprice-desc")'>
+                <span class="pd-promoprice-label">@(priceModel.Label):</span>
+                <data asp-for="@priceModel.Price" class="pd-promoprice pl-1">@Html.Raw(priceModel.Price)</data>
+                @if (hasDesc)
+                {
+                    <button type="button" 
+                            class="pd-promoprice-tip popover-trigger reset" 
+                            data-toggle="popover"
+                            data-container="body"
+                            data-placement="top"
+                            data-trigger="focus"
+                            data-content="@priceModel.Description"
+                            aria-hidden="true">
+                        <i class="fa fa-circle-info" aria-hidden="true"></i>
+                    </button>
+                    <div id="pd-promoprice-desc" class="sr-only">@priceModel.Description</div>
+                }
+            </div>
+        }
+    }
+
+    async Task RenderSurcharge(ProductDetailsPriceModel pm, bool blockStyle)
+    {
+        <div class='@(blockStyle ? "my-1" : "text-truncate")'>
+            @foreach (var rpPrice in pm.RequiredProductPrices)
+            {
+                <data asp-for="@rpPrice.Price" class="pd-required-product-price d-block text-muted fs-xs text-truncate">
+                    @Html.Raw(T("Products.RequiredProductPriceInfo", rpPrice.Price, rpPrice.ProductName, rpPrice.ProductName))
+                </data>
+            }
+        </div>
+    }
+}
+
+<div class="pd-offer-price" sm-suppress-if-empty="true">
+    @if (Model.Price.ShowLoginNote || Model.Price.CallForPrice)
+    {
+        <h4 class="pd-price @(Model.Price.ShowLoginNote ? "pd-loginforprice" : "pd-callforprice")">
+            @T("Products." + (Model.Price.ShowLoginNote ? "LoginForPrice" : "CallForPrice"))
+        </h4>
+
+        @* Avoid Google error: Either "price" or "priceSpecification" must be specified (in "offers") *@
+        Assets.JsonLd.Product.Obj("offers", JsonLdFragment.Create("Offer", new
+        {
+            priceSpecification = new { type = "PriceSpecification" }
+        })); 
+    } 
+    else
+    {
+        var pm = Model.Price;
+        var isBundlePart = Model.IsBundlePart;
+        var basePriceEnabled = isBundlePart ? pm.BundleItemShowBasePrice : pm.IsBasePriceEnabled;
+        var isBundleItemPricing = Model.BundlePerItemPricing;
+        var showPriceSaving = pm.Saving.SavingAmount.HasValue && (pm.ShowRetailPriceSaving || pm.RegularPrice != null);
+        var showPrice = !(isBundlePart && pm.FinalPrice == 0);
+        var roundedPrice = RoundingHelper.Round(pm.FinalPrice);
+        var showSurcharge = !pm.RequiredProductPrices.IsNullOrEmpty();
+        var blockStyleSurcharge = pm.CountdownText != null || pm.RequiredProductPrices?.Count > 1;
+
+        @* Price *@
+        <div class="pd-group" sm-suppress-if-empty="true">
+            <div class="pd-price-group mb-3" sm-suppress-if-empty="true">
+
+                @* Promo badges *@
+                <div sm-if="pm.Badges.Count > 0" class="pd-promobadges">
+                    @foreach (var badge in pm.Badges.OrderBy(x => x.DisplayOrder))
+                    {
+                        <span class="badge badge-@badge.Style">@Html.Raw(badge.Label)</span>
+                    }
+                </div>
+
+                @* Final price *@
+                <div sm-if="showPrice" class="pd-finalprice" attr-class='(pm.Saving.HasSaving, "pd-finalprice-offer")'>
+                    <data asp-for="@pm.FinalPrice" class="pd-finalprice-amount" attr-class='(isBundlePart, "pd-finalprice-sm")'>
+                        @Html.Raw(pm.FinalPrice)
+                    </data>
+                    <span sm-if="pm.CountdownText != null" id="pd-offer-countdown" class="pd-offer-countdown">
+                        @Html.Raw(pm.CountdownText)
+                    </span>
+                    @if (showSurcharge && !blockStyleSurcharge)
+                    {
+                        await RenderSurcharge(pm, false);
+                    }
+                </div>
+                @if (!isBundlePart)
+                {
+                    Assets.JsonLd.Product.Obj("offers", JsonLdFragment.Create("Offer", new
+                    {
+                        price = Model.Price.FinalPrice.Amount,
+                        priceCurrency = Model.Price.FinalPrice.Currency.CurrencyCode,
+                        availability = Model.IsAvailable ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
+                        priceValidUntil = pm.ValidUntilUtc
+                    }));
+                }
+                @if (showSurcharge && blockStyleSurcharge)
+                {
+                    await RenderSurcharge(pm, true);
+                }
+                @* Compare prices *@
+                <div sm-if="pm.RegularPrice != null || pm.RetailPrice != null" class="pd-promoprice-group">
+                    @{
+                        await RenderPromoPriceLine(pm.RegularPrice);
+                        await RenderPromoPriceLine(pm.RetailPrice);
+                    }
+
+                    @* You save *@
+                    <div sm-if="showPriceSaving" class="pd-promoprice-line" aria-describedby="pd-promosaving-label pd-promosaving-amount pd-promosaving-percent">
+                        <span id="pd-promosaving-label" class="pd-promoprice-label">@T("ShoppingCart.ItemYouSave"):</span>
+                        <span class="pd-promosaving pl-1 d-flex">
+                            <data id="pd-promosaving-amount" asp-for="@pm.Saving.SavingAmount">@pm.Saving.SavingAmount.Value</data>
+                            <span id="pd-promosaving-percent" class="badge badge-danger pd-saving-badge">
+                                @Html.Raw(T("Products.SavingBadgeLabel", pm.Saving.SavingPercent.ToString("N0")))
+                            </span>
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <zone name="@("productdetails_add_info{0}".FormatInvariant(isBundlePart ? "_bundle" : string.Empty))" />
+        </div>
+
+        <div sm-if="!isBundlePart" class="pd-tierprices">
+            <!-- Tier prices -->
+            <partial name="Product.TierPrices" model="Model.Price.TierPrices" />
+        </div>
+
+        <div class="pd-group" sm-if="(basePriceEnabled && pm.BasePriceInfo.HasValue()) || Model.ShowLegalInfo">
+            <!-- Pangv & legal info -->
+            <div class="pd-pangv" sm-if="basePriceEnabled && pm.BasePriceInfo.HasValue()">
+                @Html.Raw(LocalizedValue.FixBrackets(pm.BasePriceInfo, WorkContext.WorkingLanguage))
+            </div>
+            <div class="pd-legalinfo" sm-if="Model.ShowLegalInfo && pm.FinalPrice != 0">
+                @Html.Raw(Model.LegalInfo)
+            </div>
+        </div>
+        <div sm-if="pm.Reward != null" class="pd-group">
+            <div class="pd-review-amount text-success hstack gap-2">
+                <span class="badge bg-success rounded-circle p-0" style="width: 28px; min-width: 28px; height: 28px; --badge-font-size: 1em">
+                    <i class="fa fa-award text-white opacity-100"></i>
+                </span>
+                <span id="pd-points-for-purchase-info" class="fs-sm">
+                    @Html.Raw(T("RewardPoints.Message.RewardPointsForProductPurchase", pm.Reward.Points, pm.Reward.Amount.ToString()))
+                </span>
+            </div>
+        </div>
+    }
+</div>

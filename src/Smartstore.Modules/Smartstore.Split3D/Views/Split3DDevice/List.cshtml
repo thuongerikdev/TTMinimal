@@ -1,0 +1,123 @@
+@model DeviceListModel
+
+@{
+    ViewBag.Title = T("Plugins.Split3D.Devices").Value;
+    Assets.BodyAttributes.AppendCssClass("spa-layout");
+    var license = Model.License;
+}
+
+<div class="section-header">
+    <div class="title">
+        <i class="bi bi-pc-display"></i>
+        @T("Plugins.Split3D.Devices")
+        @if (license != null)
+        {
+            <span class="text-muted">· @license.Email</span>
+        }
+    </div>
+    <div class="options">
+        @if (license != null)
+        {
+            <a href="@Url.Action("List")" class="btn btn-secondary">
+                <i class="bi bi-list-ul"></i>
+                <span>@T("Plugins.Split3D.Devices.All")</span>
+            </a>
+        }
+        <a href="@Url.Action("List", "Split3D")" class="btn btn-secondary">
+            <i class="bi bi-key"></i>
+            <span>@T("Plugins.Split3D.Licenses")</span>
+        </a>
+    </div>
+</div>
+
+<div class="px-3 pt-3">
+    @if (license != null)
+    {
+        <div class="card mb-3 @(license.Blocked ? "border-danger" : "")">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-lg-6 mb-2">
+                        <div class="font-weight-bold">@license.AddonName · @license.KeyType</div>
+                        <div>@license.CustomerName &lt;@license.Email&gt;</div>
+                        <div class="small @(license.IsExpired ? "text-danger" : "text-muted")">
+                            @T("Plugins.Split3D.License.ExpiresOn"): @license.ExpiresOn
+                        </div>
+                        <div class="small text-muted">
+                            @T("Plugins.Split3D.Devices.ActiveOfMax", license.ActiveDevices, license.MaxDevices ?? license.DefaultMaxDevices)
+                        </div>
+                    </div>
+                    <div class="col-lg-6">
+                        <form asp-action="UpdateLicense" method="post" class="form-inline justify-content-lg-end">
+                            <input type="hidden" asp-for="License.Id" name="Id" />
+                            <label class="mr-2" for="MaxDevices"><smart-label asp-for="License.MaxDevices" /></label>
+                            <input type="number" min="1" max="100" name="MaxDevices" id="MaxDevices" value="@license.MaxDevices"
+                                   placeholder="@license.DefaultMaxDevices" class="form-control mr-3" style="width: 6rem" />
+                            <div class="form-check mr-3">
+                                <input type="checkbox" name="Blocked" id="Blocked" value="true" class="form-check-input" checked="@license.Blocked" />
+                                <input type="hidden" name="Blocked" value="false" />
+                                <label class="form-check-label" for="Blocked"><smart-label asp-for="License.Blocked" /></label>
+                            </div>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fa fa-check"></i>
+                                <span>@T("Admin.Common.Save")</span>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="row mb-3">
+            <div class="col-6 col-lg-3 mb-2">
+                <div class="card card-body py-2">
+                    <div class="text-muted small text-uppercase">@T("Plugins.Split3D.Devices.ActiveCount")</div>
+                    <div class="fs-h3 font-weight-bold text-primary">@Model.ActiveCount.ToString("N0")</div>
+                </div>
+            </div>
+            <div class="col-6 col-lg-3 mb-2">
+                <div class="card card-body py-2">
+                    <div class="text-muted small text-uppercase">@T("Plugins.Split3D.Devices.TodayCount")</div>
+                    <div class="fs-h3 font-weight-bold text-primary">@Model.TodayCount.ToString("N0")</div>
+                </div>
+            </div>
+        </div>
+    }
+    <div class="alert alert-info small">@T("Plugins.Split3D.Devices.Hint")</div>
+</div>
+
+@{ ViewBag.SearchModel = Model; }
+<partial name="_Grid.Devices" model="null" />
+
+<script sm-target-zone="scripts" data-origin="split3d-devices">
+    function split3d_onDeviceRowClass(row) {
+        return { 'text-muted': !row.IsActive };
+    }
+
+    $(function () {
+        $(document).on('click', '#split3d-deactivate-selected', function (e) {
+            e.preventDefault();
+
+            var grid = $('#split3d-devices-grid').parent().data('datagrid');
+            var ids = grid.selectedRowKeys;
+            if (!ids.length || !confirm(@T("Plugins.Split3D.Device.DeactivateSelectedConfirm").JsValue)) {
+                return false;
+            }
+
+            $.ajax({
+                cache: false,
+                type: 'POST',
+                url: '@Url.Action("DeactivateSelected")',
+                data: { selectedIds: ids.join(',') },
+                dataType: 'json',
+                success: function (data) {
+                    displayNotification(data.message, data.success ? 'success' : 'error');
+                    grid.read();
+                }
+            });
+
+            return false;
+        });
+    });
+</script>

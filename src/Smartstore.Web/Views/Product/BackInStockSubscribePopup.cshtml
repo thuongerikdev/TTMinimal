@@ -1,0 +1,67 @@
+﻿@using Smartstore.Web.Models.Catalog
+
+@model BackInStockSubscribeModel
+
+@{
+    Layout = "_Layout.Popup";
+
+    var isSubscribed = Model.AlreadySubscribed;
+    string warning = null;
+    if (!Model.SubscriptionAllowed)
+    {
+        warning = T("BackInStockSubscriptions.NotAllowed");
+    }
+    else if (!Model.IsCurrentCustomerRegistered)
+    {
+        warning = T("BackInStockSubscriptions.OnlyRegistered");
+    }
+    else if (!isSubscribed && Model.CurrentNumberOfBackInStockSubscriptions >= Model.MaximumBackInStockSubscriptions)
+    {
+        warning = T("BackInStockSubscriptions.MaxSubscriptions", Model.MaximumBackInStockSubscriptions.ToString("N0"));
+    }
+}
+
+<form asp-action="BackInStockSubscribePopup" asp-route-id="@Model.ProductId" id="back-in-stock-subscription-form" method="post">
+    <div class="page back-in-stock-subscription-page">
+        <div class="page-title">
+            <h1 class="h4">
+                @T(isSubscribed ? "BackInStockSubscriptions.Unsubscribe" : "BackInStockSubscriptions.PopupTitle")
+            </h1>
+        </div>
+        <div class="page-body">
+            <div sm-if="isSubscribed" class="alert alert-warning" role="alert">
+                @T("BackInStockSubscriptions.AlreadySubscribed")
+            </div>
+            @if (warning.HasValue())
+            {
+                <div class="alert alert-warning" role="alert">@warning</div>
+            }
+            else
+            {
+                if (isSubscribed)
+                {
+                    <button id="back-in-stock-notify-me" type="submit" class="mt-2 btn btn-lg btn-danger">
+                        @T("BackInStockSubscriptions.Unsubscribe")
+                    </button>
+                }
+                else
+                {
+                    <p id="back-in-stock-tooltip" class="x-tooltip fs-h5">@T("BackInStockSubscriptions.Tooltip")</p>
+                    <button id="back-in-stock-notify-me" type="submit" class="mt-2 btn btn-lg btn-success" aria-describedby="back-in-stock-tooltip">
+                        @T("BackInStockSubscriptions.NotifyMe")
+                    </button>
+                }
+
+                <script sm-target-zone="scripts" data-origin="stock-subscription">
+                    $(function () {
+                        $("#back-in-stock-notify-me").on('click', function () {
+                            parent.$(".modal").modal("hide");
+                        });
+                    });
+                </script>
+            }
+        </div>
+    </div>
+</form>
+
+<zone name="back_in_stock_subscription_after" />

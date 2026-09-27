@@ -1,0 +1,276 @@
+@model LicenseListModel
+
+@{
+    ViewBag.Title = T("Plugins.Split3D.Licenses").Value;
+    Assets.BodyAttributes.AppendCssClass("spa-layout");
+    var issueModel = new IssueLicenseModel { PurchaseDate = DateTime.Today };
+}
+
+<div class="section-header">
+    <div class="title">
+        <i class="bi bi-key"></i>
+        @T("Plugins.Split3D.Licenses")
+    </div>
+    <div class="options">
+        <a href="#issue-window" data-toggle="modal" class="btn btn-primary">
+            <i class="fa fa-plus"></i>
+            <span>@T("Plugins.Split3D.IssueKey")</span>
+        </a>
+        <a href="#" id="split3d-export" class="btn btn-secondary">
+            <i class="bi bi-file-earmark-excel"></i>
+            <span>@T("Plugins.Split3D.Export")</span>
+        </a>
+        <a href="#import-window" data-toggle="modal" class="btn btn-secondary">
+            <i class="bi bi-upload"></i>
+            <span>@T("Plugins.Split3D.Import")</span>
+        </a>
+        <a href="@Url.Action("Configure")" class="btn btn-secondary">
+            <i class="fa fa-cog"></i>
+            <span>@T("Admin.Common.Configure")</span>
+        </a>
+    </div>
+</div>
+
+<div class="px-3 pt-3">
+    <div sm-if="!Model.KeyValid" class="alert alert-warning">
+        <i class="bi bi-exclamation-triangle mr-1"></i>
+        @Model.KeyStatus
+        <a href="@Url.Action("Configure")" class="alert-link ml-2">@T("Admin.Common.Configure")</a>
+    </div>
+
+    <div class="card mb-3 @(Model.PendingOrders.Count > 0 ? "border-warning" : "")">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <span class="font-weight-bold">
+                <i class="bi bi-hourglass-split mr-1"></i>
+                @T("Plugins.Split3D.Pending.Title") (@Model.PendingOrders.Count)
+            </span>
+            <span class="small text-muted">@(Model.AutoIssueEnabled ? T("Plugins.Split3D.Pending.AutoOn") : T("Plugins.Split3D.Pending.AutoOff"))</span>
+        </div>
+        @if (Model.PendingOrders.Count == 0)
+        {
+            <div class="card-body text-muted">@T("Plugins.Split3D.Pending.None")</div>
+        }
+        else
+        {
+            <div class="table-responsive">
+                <table class="table table-sm table-hover mb-0">
+                    <thead>
+                        <tr>
+                            <th>@T("Plugins.Split3D.License.Order")</th>
+                            <th>@T("Plugins.Split3D.Pending.Customer")</th>
+                            <th>@T("Plugins.Split3D.Pending.Items")</th>
+                            <th class="text-right">@T("Plugins.Split3D.License.Price")</th>
+                            <th>@T("Plugins.Split3D.License.State")</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var o in Model.PendingOrders)
+                        {
+                            <tr>
+                                <td><a href="@o.EditUrl">#@o.OrderNumber</a><div class="small text-muted">@o.CreatedOn</div></td>
+                                <td>@o.Customer</td>
+                                <td>@o.Items</td>
+                                <td class="text-right font-weight-bold">@o.OrderTotal</td>
+                                <td>
+                                    <span class="badge @(o.State == Split3DOrderState.AwaitingPayment ? "badge-warning" : "badge-info")">@T("Plugins.Split3D.OrderState." + o.State)</span>
+                                    <div class="small text-muted">@o.IssuedKeys / @o.ExpectedKeys key</div>
+                                </td>
+                                <td class="text-right text-nowrap">
+                                    <button type="button" class="btn btn-sm btn-primary split3d-process" data-order-id="@o.OrderId"
+                                            data-confirm="@T("Plugins.Split3D.Pending.Confirm", o.OrderNumber, o.OrderTotal)">
+                                        <i class="bi bi-check2-circle"></i>
+                                        @(o.State == Split3DOrderState.AwaitingPayment ? T("Plugins.Split3D.Pending.ConfirmAndIssue") : T("Plugins.Split3D.Pending.Issue"))
+                                    </button>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </div>
+
+    <div class="row mb-3">
+        <div class="col-6 col-lg-3 mb-2">
+            <div class="card card-body py-2">
+                <div class="text-muted small text-uppercase">@T("Plugins.Split3D.Stats.Transactions")</div>
+                <div class="fs-h3 font-weight-bold text-primary">@Model.TotalCount.ToString("N0")</div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3 mb-2">
+            <div class="card card-body py-2">
+                <div class="text-muted small text-uppercase">@T("Plugins.Split3D.Stats.Customers")</div>
+                <div class="fs-h3 font-weight-bold text-primary">@Model.CustomerCount.ToString("N0")</div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3 mb-2">
+            <div class="card card-body py-2">
+                <div class="text-muted small text-uppercase">@T("Plugins.Split3D.Stats.Revenue")</div>
+                <div class="fs-h3 font-weight-bold text-primary">@Model.TotalRevenue</div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3 mb-2">
+            <div class="card card-body py-2">
+                <div class="text-muted small text-uppercase">@T("Plugins.Split3D.Stats.Active")</div>
+                <div class="fs-h3 font-weight-bold text-primary">@Model.ActiveCount.ToString("N0")</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<partial name="_Grid.Licenses" model="null" />
+
+<modal id="issue-window" sm-render-at-page-end="true" sm-size="Large">
+    <modal-header sm-title="@T("Plugins.Split3D.IssueKey")"></modal-header>
+    <modal-body>
+        <partial name="_IssueLicense" model="issueModel" />
+        <div id="issue-result" style="display: none">
+            <div class="alert alert-success" id="issue-result-message"></div>
+            <label class="font-weight-medium">@T("Plugins.Split3D.License.Token")</label>
+            <textarea id="issue-result-token" class="form-control text-monospace small" rows="5" readonly></textarea>
+            <button type="button" class="btn btn-secondary btn-sm mt-2 split3d-copy" id="issue-result-copy">
+                <i class="far fa-copy"></i>
+                <span>@T("Plugins.Split3D.CopyKey")</span>
+            </button>
+        </div>
+    </modal-body>
+    <modal-footer>
+        <button type="button" class="btn btn-secondary btn-flat" data-dismiss="modal">
+            <span>@T("Common.Close")</span>
+        </button>
+        <button id="issue-submit" type="button" class="btn btn-primary">
+            <i class="fa fa-check"></i>
+            <span>@T("Plugins.Split3D.IssueKey")</span>
+        </button>
+    </modal-footer>
+</modal>
+
+<modal id="import-window" sm-render-at-page-end="true">
+    <modal-header sm-title="@T("Plugins.Split3D.Import")"></modal-header>
+    <modal-body>
+        <form asp-action="Import" method="post" enctype="multipart/form-data" id="import-form">
+            <p class="text-muted">@T("Plugins.Split3D.Import.Hint")</p>
+            <input type="file" name="importfile" accept=".csv,.xlsx" class="form-control" required />
+        </form>
+    </modal-body>
+    <modal-footer>
+        <button type="button" class="btn btn-secondary btn-flat" data-dismiss="modal">
+            <span>@T("Admin.Common.Cancel")</span>
+        </button>
+        <button type="submit" form="import-form" class="btn btn-primary">
+            <i class="bi bi-upload"></i>
+            <span>@T("Plugins.Split3D.Import")</span>
+        </button>
+    </modal-footer>
+</modal>
+
+<script sm-target-zone="scripts" data-origin="split3d-licenses">
+    function split3d_onRowClass(row) {
+        return { 'text-danger': row.IsExpired };
+    }
+
+    $(function () {
+        var grid = function () { return window['split3d-licenses-grid'].$children[0]; };
+
+        function syncDays() {
+            $('#issue-days-row').toggle($('#KeyType').val() === '@Split3DPlans.Custom');
+        }
+        $('#KeyType').on('change', syncDays);
+        syncDays();
+
+        $('#issue-window').on('show.bs.modal', function () {
+            $('#issue-form').show();
+            $('#issue-result').hide();
+            $('#issue-submit').show();
+        });
+
+        $('#issue-submit').on('click', function (e) {
+            e.preventDefault();
+            var form = $('#issue-form');
+            if (!form[0].reportValidity()) {
+                return false;
+            }
+
+            $.ajax({
+                cache: false,
+                type: 'POST',
+                url: '@Url.Action("Issue")',
+                data: form.serialize(),
+                dataType: 'json',
+                success: function (data) {
+                    if (data.success) {
+                        form.hide();
+                        $('#issue-submit').hide();
+                        $('#issue-result-message').text(data.message);
+                        $('#issue-result-token').val(data.token);
+                        $('#issue-result-copy').attr('data-token', data.token);
+                        $('#issue-result').show();
+                        form[0].reset();
+                        syncDays();
+                        grid().read();
+                    }
+                    else {
+                        displayNotification(data.message, 'error');
+                    }
+                }
+            });
+            return false;
+        });
+
+        $(document).on('click', '.split3d-copy', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            var token = $(this).attr('data-token');
+            if (!token) return;
+            navigator.clipboard.writeText(token).then(function () {
+                displayNotification('@T("Plugins.Split3D.KeyCopied")', 'success');
+            });
+        });
+
+        $(document).on('click', '.split3d-resend', function (e) {
+            e.preventDefault();
+            var id = $(this).attr('data-id');
+            $.ajax({
+                cache: false,
+                type: 'POST',
+                url: '@Url.Action("ResendEmail")',
+                data: { id: id },
+                dataType: 'json',
+                success: function (data) {
+                    displayNotification(data.message, data.success ? 'success' : 'error');
+                    if (data.success) grid().read();
+                }
+            });
+        });
+
+        $(document).on('click', '.split3d-process', function (e) {
+            e.preventDefault();
+            var btn = $(this);
+            if (!confirm(btn.attr('data-confirm'))) return;
+            btn.prop('disabled', true);
+            $.ajax({
+                cache: false,
+                type: 'POST',
+                url: '@Url.Action("ProcessOrder")',
+                data: { orderId: btn.attr('data-order-id') },
+                dataType: 'json',
+                success: function (data) {
+                    displayNotification(data.message, data.success ? 'success' : 'error');
+                    if (data.success) setTimeout(function () { location.reload(); }, 800);
+                    else btn.prop('disabled', false);
+                },
+                error: function () { btn.prop('disabled', false); }
+            });
+        });
+
+        $('#split3d-export').on('click', function (e) {
+            e.preventDefault();
+            var params = $.param({
+                SearchTerm: $('#SearchTerm').val() || '',
+                SearchKeyType: $('#SearchKeyType').val() || ''
+            });
+            window.location.href = '@Url.Action("Export")?' + params;
+        });
+    });
+</script>

@@ -1,0 +1,35 @@
+﻿namespace Smartstore.Web.Rendering.Choices;
+
+public class GenericChoiceModel : ChoiceModel
+{
+    private readonly Func<ChoiceModel, string> _controlIdFn;
+
+    public GenericChoiceModel(Func<ChoiceModel, string> controlIdFn)
+    {
+        Guard.NotNull(controlIdFn);
+
+        _controlIdFn = controlIdFn;
+    }
+
+    public override string BuildControlId()
+    {
+        return _controlIdFn(this);
+    }
+}
+
+public class GenericChoiceItemModel : ChoiceItemModel
+{
+    private readonly Func<ChoiceItemModel, string> _itemLabelFn;
+
+    public GenericChoiceItemModel(Func<ChoiceItemModel, string> itemLabelFn)
+    {
+        Guard.NotNull(itemLabelFn);
+
+        _itemLabelFn = itemLabelFn;
+    }
+
+    public override string GetItemLabel()
+    {
+        return _itemLabelFn(this);
+    }
+}

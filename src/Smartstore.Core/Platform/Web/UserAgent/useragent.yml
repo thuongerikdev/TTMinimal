@@ -1,0 +1,543 @@
+# useragent.yml
+# -------------
+# This file is embedded in the Smartstore.Core assembly. 
+# To customize it, first copy it to the "App_Data" directory and then start customizing. 
+# Any changes made will take effect immediately (without restarting the app).
+#
+# The mappings "browsers", "platforms", "bots" and "devices" are mandatory.
+# Each mapping contains 0-n matcher objects with the following attributes:
+#
+#   match:
+#     Required. A regular expression to match or a substring to search for. A regex must be enclosed in slashes.
+#
+#   name:
+#     Required. Agent friendly name or $1 to set value of "match" attribute.
+#
+#   family:
+#     Required only in "platforms" segment. Valid values are (case sensitive):
+#     Generic, Windows, Linux, Unix, IOS, MacOS, BlackBerry, Android, Symbian.
+#
+# The attributes "name" and "family" can be omitted at item level, but they must be present 
+# in any item that follows. This allows you to group matcher items.
+
+
+
+# ===================================
+# Browsers
+# ===================================
+
+browsers:
+  # Common browsers
+  # ------------------------------------------
+  - match: /(OPIOS|OPR|OPT)/.*?(?<v>[0-9\.]+)/
+  - match: /Opera.*?Version.*?(?<v>[0-9\.]+)/ 
+  - match: /Opera.*?(?<v>[0-9\.]+)/
+    name: Opera
+
+  - match: /Edge.*?(?<v>[0-9\.]+)/
+  - match: /EdgA.*?(?<v>[0-9\.]+)/
+  - match: /Edg.*?(?<v>[0-9\.]+)/
+    name: Edge
+
+  - match: /Brave Chrome.*?(?<v>[0-9\.]+)/
+    name: Brave
+
+  - match: /Chrome.*?(?<v>[0-9\.]+)/
+  - match: /CriOS.*?(?<v>[0-9\.]+)/
+    name: Chrome
+
+  - match: /Firefox.*?(?<v>[0-9\.]+)/
+  - match: /FxiOS.*?(?<v>[0-9\.]+)/
+    name: Firefox
+
+  - match: /Version/(?<v>[0-9\.]+).*?Safari/
+  - match: /Safari.*?(?<v>[0-9\.]+)/
+    name: Safari
+
+    # Must come after Safari
+  - match: /OPR.*?(?<v>[0-9\.]+)/
+    name: Opera
+
+  # Other browsers
+  # ------------------------------------------
+
+  - match: /Mozilla.*?(?<v>[0-9\.]+)/
+    name: Mozilla
+
+  - match: /Smartstore.*?(?<v>[0-9\.]+)/
+    name: Smartstore
+
+      
+# ===================================
+# Platforms
+# ===================================
+
+platforms:
+  - match: windows nt 10.0
+    name: Windows 10
+    family: Windows
+
+  - match: android
+    name: Android
+    family: Android
+
+  - match: iphone
+  - match: ipad
+  - match: ipod
+    name: iOS
+    family: IOS
+
+  - match: os x
+    name: Mac OS X
+    family: MacOS
+
+  - match: CrOS
+    name: Chrome OS
+    family: Linux
+
+  - match: linux
+    name: Linux
+  - match: debian
+    name: Debian
+    family: Linux
+
+  - match: apachebench
+    name: ApacheBench
+    family: Generic
+
+  - match: hp-ux
+    name: HP-UX
+    family: Windows
+
+  - match: openbsd
+    name: OpenBSD
+    family: Unix
+
+  - match: gnu
+    name: GNU/Linux
+    family: Linux
+
+  - match: unix
+    name: Unknown Unix OS
+    family: Unix
+
+  - match: symbian
+    name: Symbian OS
+    family: Symbian
+
+  - match: windows nt 6.1
+    name: Windows 7
+
+  - match: windows
+    name: Unknown Windows OS
+    family: Windows
+
+
+# ===================================
+# Bots
+# ===================================
+
+bots:
+  # Common bots
+  - match: Googlebot
+  - match: Applebot
+  - match: DuckDuckBot
+  - match: YandexImages
+    name: $1
+
+  - match: googleweblight
+    name: Google Web Light
+
+  - match: YandexBot
+  - match: yandex-bot
+  - match: YaDirectFetcher
+    name: YandexBot
+
+  - match: /Sogou.*?Spider/
+    name: Sogou Spider
+
+  - match: mediapartners-google
+    name: Mediapartners Google
+
+  - match: apis-google
+    name: APIs Google
+
+  - match: Google Favicon
+  - match: Baiduspider
+  - match: Bytespider
+  - match: PetalBot
+  - match: BingBot
+  - match: Slurp
+  - match: Yahoo
+  - match: Ask Jeeves
+  - match: Exabot
+  - match: Swiftbot
+  - match: CCBot
+  - match: GoogleOther
+  - match: Google-Extended
+  - match: Google-InspectionTool
+  - match: Google-CloudVertexBot
+    name: $1
+
+  - match: AdsBot-Google
+    name: Google AdsBot
+
+  - match: FeedFetcher-Google
+    name: Google FeedFetcher
+
+  - match: AppEngine-Google
+    name: Google AppEngine
+
+  - match: GoogleProducer
+    name: Google Publisher Center
+
+  - match: facebookexternalhit
+  - match: FacebookBot
+    name: Facebook
+
+  - match: AdScanner
+  - match: AhrefsBot
+    name: $1
+
+  # AI Bots
+  - match: GPTBot
+  - match: ChatGPT
+    name: OpenAI ChatGPT
+  - match: OAI-SearchBot
+  - match: OAI-Bot
+    name: OpenAI GPT Bot
+
+  - match: OpenAI
+    name: OpenAI
+
+  - match: DeepSeek
+    name: DeepSeek Chat Bot
+
+  - match: Google-DeepAI
+    name: Google Gemini
+
+  - match: BingAI
+  - match: BingChat
+    name: Microsoft Bing Chat (Copilot)
+
+  - match: MetaAI
+    name: Meta AI
+
+  - match: PerplexityBot/
+    name: Perplexity Bot
+
+  - match: Perplexity
+    name: Perplexity
+
+  - match: anthropic-ai
+    name: Anthropic AI
+
+  - match: Anthropic
+    name: Anthropic
+
+  - match: /[cC]laude[bB]ot/
+    name: Claude Bot
+
+  - match: CohereBot
+    name: Cohere Bot
+
+  - match: HuggingFace-Bot
+    name: Hugging Face Transformers
+
+  - match: Diffbot/
+    name: $1
+
+  - match: Grok/
+    name: xAI Grok
+
+  - match: meta-
+    name: Meta
+
+  - match: MistralAI-crawler
+    name: Mistral AI Crawler
+
+  - match: Claude-Web
+    name: Claude Web
+
+  - match: Applebot-Extended
+    name: $1
+
+  # Automation frameworks / agentic browsing
+  - match: Playwright
+  - match: Puppeteer
+  - match: Selenium
+  - match: WebDriver
+  - match: Cypress
+  - match: k6/
+    name: $1
+
+  # Common tools, readers & apps
+  - match: PostmanRuntime
+    name: Postman
+
+  - match: Insomnia
+    name: Insomnia
+
+  - match: node-fetch
+  - match: undici
+  - match: libwww-perl
+    name: $1
+
+  - match: Go-http-client
+    name: Go http client
+
+  - match: Java/
+    name: Java
+
+  - match: Apache-HttpClient
+    name: Apache HttpClient
+
+  - match: Wget/
+    name: Wget
+
+  - match: python/
+    name: Python
+
+  - match: python-
+    name: Python Requests
+
+  - match: curl/
+    name: cURL
+
+  - match: okhttp/
+    name: OkHttp
+
+  - match: HeadlessChrome
+    name: Headless Chromium
+
+  - match: Chrome-Lighthouse
+    name: Chrome Lighthouse
+
+  - match: Scrapy/
+    name: Scrapy
+
+  - match: httpx/
+    name: httpx
+
+  - match: aiohttp/
+    name: aiohttp
+
+  - match: Got/
+    name: got
+
+  # Social media bots
+  - match: Discordbot
+  - match: Slackbot
+    name: $1
+
+  - match: TelegramBot
+    name: Telegram Bot
+
+  - match: SkypeUriPreview
+    name: Skype Link Preview
+
+  - match: Redditbot
+    name: Reddit Bot
+
+  - match: WhatsApp
+  - match: Twitterbot
+  - match: urlwatch
+  - match: uptime-kuma
+  - match: UptimeRobot
+  - match: DataForSeoBot
+  - match: MetaInspector
+  - match: Iframely
+
+  - match: lua-restly-http
+  - match: Nessus
+  - match: Pingdom
+  - match: SiteAuditBot
+  - match: AwarioBot
+  - match: PinterestBot
+  - match: Feedly
+    name: $1
+
+  - match: WordPress/
+    name: WordPress
+
+  - match: axios/
+    name: Axios
+
+  - match: kube-probe/
+    name: Kube Probe
+
+  - match: Prometheus/
+    name: Prometheus
+
+  - match: Datadog/
+    name: Datadog Agent
+
+  - match: NewRelicPinger/
+    name: New Relic
+
+  - match: StatusCake
+    name: $1
+
+  - match: GuzzleHttp/
+    name: Guzzle Http
+
+  - match: GTmetrix
+    name: GTmetrix Analyser
+
+  # Other bots
+  - match: DuplexWeb-Google
+    name: Google DuplexWeb
+
+  - match: Storebot-Google
+    name: Google Storebot
+
+  - match: Wappalyzer
+  - match: PayPal IPN
+  - match: Amazonbot
+  - match: ShopAlike
+  - match: Cloudflare
+  - match: BingPreview
+  - match: LinkedInBot
+    name: $1
+
+  - match: Google-Read-Aloud
+    name: Google ReadAloud
+
+  - match: Google-Site-Verification
+    name: Google Site Verifier
+
+  - match: google-Safety
+    name: Google Safety
+
+  - match: ia_archiver
+    name: Alexa Crawler
+
+  - match: DotBot
+    name: OpenSite
+
+  - match: Mail.RU_Bot
+    name: Mail.ru
+
+  - match: MegaIndex
+  - match: SemrushBot
+    name: $1
+
+  - match: ScreamingFrogSEOSpider
+    name: Screaming Frog SEO Spider
+
+  - match: check_http
+    name: Check HTTP
+
+  - match: iisbot
+    name: IIS Bot
+
+  - match: bitlybot
+    name: Bitly bot
+
+  - match: Yeti/
+    name: Yeti bot
+
+  - match: crawler
+  - match: spider
+  - match: indexer
+  - match: sniffer
+  - match: seeker
+    name: Generic crawler
+
+  - match: -bot/
+  - match: .org_bot
+    name: Generic bot
+
+
+# ===================================
+# Devices
+# ===================================
+
+devices:
+  # Phones and Manufacturers
+  - match: Motorola
+  - match: Nokia
+    name: $1
+
+  - match: ipad
+    name: Apple iPad
+
+  - match: iphone
+    name: Apple iPhone
+
+  - match: ipod
+    name: Apple iPod
+
+  - match: surface
+    name: Microsoft Surface
+
+  - match: Samsung
+  - match: Sharp
+    name: $1
+
+  - match: Xiaomi
+  - match: Redmi
+  - match: POCO
+    name: $1
+
+  - match: Huawei
+  - match: HONOR
+    name: $1
+
+  - match: OnePlus
+  - match: Realme
+  - match: OPPO
+  - match: vivo
+  - match: ZTE
+    name: $1
+
+  - match: PlayStation Portable
+  - match: PlayStation 3
+  - match: PlayStation 4
+  - match: PlayStation 5
+  - match: PlayStation Vita
+    name: $1
+
+  - match: Nintendo DSi
+  - match: Nintendo DS
+  - match: Nintendo 3DS
+    name: $1
+
+  - match: Pixel
+    name: Google Pixel
+
+  - match: Kindle
+    name: $1
+
+  - match: silk
+    name: Kindle Fire
+
+  - match: Puffin
+    name: $1
+
+  - match: Android
+    name: $1
+
+  - match: operamini
+  - match: opera mini
+    name: Opera Mini
+
+  # Fallback
+  - match: mobile
+  - match: wireless
+  - match: j2me
+  - match: midp
+  - match: cldc
+  - match: up.link
+  - match: up.browser
+  - match: smartphone
+  - match: cellphone
+    name: Generic Mobile
+
+
+# ===================================
+# Tablets
+# ===================================
+
+tablets:
+  - match: /(ipad|matepad|sm-t[0-9]|tablet|surface|(android(?!.*mobile))|(windows(?!.*phone)(.*touch))|kindle|playbook|silk|(puffin(?!.*(IP|AP|WP))))/ 

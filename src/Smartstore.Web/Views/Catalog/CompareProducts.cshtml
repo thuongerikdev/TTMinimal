@@ -1,0 +1,245 @@
+﻿@using Smartstore.Web.Models.Catalog
+@using Smartstore.Core.Checkout.Cart
+
+@model ProductSummaryModel
+
+@{
+    Assets.AppendTitleParts(T("PageTitle.CompareProducts"));
+    Assets.AppendMetaDescriptionParts(T("PageDescription.CompareProducts", CommonServices.StoreContext.CurrentStore.Name));
+
+    var specificationAttributes = new List<ProductSpecificationModel>();
+    foreach (var product in Model.Items)
+    {
+        foreach (var attribute in product.SpecificationAttributes)
+        {
+            if (specificationAttributes.Where(sa => sa.SpecificationAttributeId == attribute.SpecificationAttributeId).FirstOrDefault() == null)
+            {
+                specificationAttributes.Add(attribute);
+            }
+        }
+    }
+
+    var tableWidth = (Model.Items.Count + 1) * 20;
+    var hasRatings = Model.Items.Any(x => x.TotalReviews > 0);
+    var hasBrands = Model.ShowBrand && Model.Items.Any(x => x.Brand != null);
+    var hasSkus = Model.ShowSku && Model.Items.Any(x => x.Sku.HasValue());
+    var hasDescriptions = Model.ShowDescription && Model.Items.Any(x => x.ShortDescription.Value.HasValue());
+    var hasDimensions = Model.Items.Any(x => x.Dimensions.HasValue());
+    var hasWeight = Model.Items.Any(x => !x.Weight.IsEmpty);
+}
+
+<div class="page compare-products-page">
+    <div class="row mb-4 align-items-center">
+        <div class="col">
+            <div class="heading">
+                <h1 class="heading-title fs-h1">@T("Products.Compare.Title")</h1>
+            </div>
+        </div>
+        <div sm-if="Model.Items.Count > 0" class="col col-auto">
+            <button data-href="@Url.Action("ClearCompareList", "Catalog", new { redirect = true })"
+                    type="button"
+                    class="btn btn-danger mb-2 ajax-cart-link"
+                    aria-label="@T("Products.Compare.Clear")"
+                    data-type="compare"
+                    data-action="remove">
+                <i class="far fa-trash-can" aria-hidden="true"></i>
+                <span>@T("Products.Compare.Clear")</span>
+            </button>
+        </div>
+    </div>
+
+    <div class="page-body">
+        <div sm-if="Model.Items.Count == 0" class="alert alert-warning fade show" role="alert">
+            @T("Products.Compare.ListIsEmpty")
+        </div>
+        <div sm-if="Model.Items.Count > 0" class="table-responsive">
+            <table class="table table-bordered table-striped table-compare artlist" style="width: @(tableWidth)%">
+                <caption class="sr-only">@T("Products.Compare.Title"): @(string.Join(", ", Model.Items.Select(x => x.Name)))</caption>
+                <thead>
+                    <tr>
+                        <th class="border-bottom-0 p-0" scope="col">&nbsp;</th>
+                        @foreach (var product in Model.Items)
+                        {
+                            var showAddToCart = !product.Price.DisableBuyButton && !product.Price.CallForPrice && product.Parent.BuyEnabled;
+                            var showWishlist = !product.Price.DisableWishlistButton && product.Parent.WishlistEnabled;
+
+                            <th class="border-bottom-0 p-1" scope="col">
+                                <div class="row xs-gutters flex-nowrap">
+                                    <div sm-if="showAddToCart || showWishlist" class="col-auto">
+                                        @if (showAddToCart)
+                                        {
+                                            <button data-href='@Url.Action("AddProductSimple", "ShoppingCart", new { productId = product.Id, shoppingCartTypeId = (int)ShoppingCartType.ShoppingCart })'
+                                                    type="button"
+                                                    class="btn btn-primary btn-icon btn-flat btn-sm ajax-cart-link"
+                                                    title="@T("ShoppingCart.AddToCart")"
+                                                    aria-label="@T("ShoppingCart.AddToCart") @product.Name"
+                                                    aria-describedby="sr-desc-empty"
+                                                    data-type="cart"
+                                                    data-action="add">
+                                                <i class="fa fa-cart-arrow-down" aria-hidden="true"></i>
+                                            </button>
+                                        }
+                                        @if (showWishlist)
+                                        {
+                                            <button data-href='@Url.Action("AddProductSimple", "ShoppingCart", new { productId = product.Id, shoppingCartTypeId = (int)ShoppingCartType.Wishlist })'
+                                                    type="button"
+                                                    class="btn btn-secondary btn-icon btn-flat btn-sm ajax-cart-link"
+                                                    title="@T("ShoppingCart.AddToWishlist")"
+                                                    aria-label="@T("ShoppingCart.AddToWishlist") @product.Name"
+                                                    aria-describedby="sr-desc-empty"
+                                                    data-type="wishlist"
+                                                    data-action="add">
+                                                <i class="fal fa-heart" aria-hidden="true"></i>
+                                            </button>
+                                        }
+                                    </div>
+                                    <div class="col text-right">
+                                        <button data-href="@Url.Action("RemoveProductFromCompare", "Catalog", new { id = product.Id, redirect = true })"
+                                                type="button"
+                                                class="btn btn-secondary btn-to-danger btn-flat btn-sm btn-icon ajax-cart-link"
+                                                title="@T("Common.Remove")"
+                                                aria-label="@T("Common.Remove") @product.Name"
+                                                aria-describedby="sr-desc-empty"
+                                                data-type="compare"
+                                                data-action="remove">
+                                            <i class="far fa-trash-can" aria-hidden="true"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </th>
+                        }
+                    </tr>
+                    <tr>
+                        <th class="border-top-0 border-bottom-0 pb-1" scope="col">&nbsp;</th>
+                        @foreach (var product in Model.Items)
+                        {
+                            <th class="border-top-0 border-bottom-0 pb-1" scope="col">
+                                <div class="position-relative">
+                                    <div sm-if="product.Badges.Count > 0" class="art-badges">
+                                        @foreach (var badge in product.Badges.OrderBy(x => x.DisplayOrder))
+                                        {
+                                            <span class="art-badge badge badge-@badge.Style">@Html.Raw(badge.Label)</span>
+                                        }
+                                    </div>
+                                    <a sm-if="product.Image.HasImage()" class="art-picture img-center-container" href="@product.DetailUrl">
+                                        <img sm-model="product.Image" class="img-fluid" loading="lazy" attr-alt='(product.Image.Alt.IsEmpty(), product.Name)' />
+                                    </a>
+                                </div>
+                            </th>
+                        }
+                    </tr>
+                    <tr sm-if="hasRatings">
+                        <th class="border-top-0 border-bottom-0 py-1" scope="col">&nbsp;</th>
+                        @foreach (var product in Model.Items)
+                        {
+                            <th class="border-top-0 border-bottom-0 py-1" scope="col">
+                                <partial name="Product.List.Item.Rating" model="product" />
+                            </th>
+                        }
+                    </tr>
+                    <tr>
+                        <th class="border-top-0 pt-1" scope="col">&nbsp;</th>
+                        @foreach (var product in Model.Items)
+                        {
+                            <td class="border-top-0 pt-1">
+                                <a sm-language-attributes-for="product.Name" class="fwm" href="@product.DetailUrl">@product.Name</a>
+                            </td>
+                        }
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <th class="caption" scope="row">&nbsp;</th>
+                        @foreach (var product in Model.Items)
+                        {
+                            <td>
+                                <partial name="Product.List.Item.Delivery" model="product" />
+                                <partial name="Product.List.Item.Price" model="product" />
+                            </td>
+                        }
+                    </tr>
+                    <tr sm-if="hasBrands">
+                        <th class="caption" scope="row">@T("Products.Manufacturer")</th>
+                        @foreach (var product in Model.Items)
+                        {
+                            <td>
+                                @if (product.Brand != null)
+                                {
+                                    <span sm-language-attributes-for="product.Brand.Name">@product.Brand.Name</span>
+                                }
+                            </td>
+                        }
+                    </tr>
+                    <tr sm-if="hasSkus">
+                        <th class="caption" scope="row">@T("Products.Sku")</th>
+                        @foreach (var product in Model.Items)
+                        {
+                            <td>@product.Sku</td>
+                        }
+                    </tr>
+                    <tr sm-if="hasWeight">
+                        <th class="caption" scope="row">@T("Products.Weight")</th>
+                        @foreach (var product in Model.Items)
+                        {
+                            <td><span class="lrm">@product.Weight</span></td>
+                        }
+                    </tr>
+                    <tr sm-if="hasDimensions">
+                        <th class="caption" scope="row">@T("Products.Dimensions")</th>
+                        @foreach (var product in Model.Items)
+                        {
+                            <td><span class="lrm">@Html.Raw(product.Dimensions)</span></td>
+                        }
+                    </tr>
+                    <tr sm-if="hasDescriptions">
+                        <th class="caption" scope="row">@T("Products.Compare.ShortDescription")</th>
+                        @foreach (var product in Model.Items)
+                        {
+                            <td>@Html.Raw(product.ShortDescription)</td>
+                        }
+                    </tr>
+
+                    @foreach (var attribute in specificationAttributes)
+                    {
+                        <tr attr-class='(attribute.Essential, "pd-spec-essential")'>
+                            <th class="caption" scope="row">
+                                <span sm-language-attributes-for="attribute.SpecificationAttributeName">
+                                    @(attribute.SpecificationAttributeName)
+                                </span>
+                            </th>
+                            @foreach (var product in Model.Items)
+                            {
+                                <td>
+                                    @foreach (var spec in product.SpecificationAttributes.Where(x => x.SpecificationAttributeId == attribute.SpecificationAttributeId))
+                                    {
+                                        var option = spec?.SpecificationAttributeOption?.Value;
+                                        if (option.HasValue())
+                                        {
+                                            <div sm-language-attributes-for="option">@option</div>
+                                        }
+                                        else
+                                        {
+                                            <div>&nbsp;</div>
+                                        }
+                                    }
+                                </td>
+                            }
+                        </tr>
+                    }
+
+                    <tr sm-if="Model.ShowFullDescription">
+                        <th class="caption" scope="row">@T("Products.Compare.FullDescription")</th>
+                        @foreach (var product in Model.Items)
+                        {
+                            <td sm-language-attributes-for="product.FullDescription" class="html-editor-content">
+                                @Html.Raw(product.FullDescription)
+                            </td>
+                        }
+                    </tr>
+
+                    <zone name="compareproducts_row" />
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,25 @@
+﻿@using Smartstore.Web.Models.Catalog;
+
+@model ProductSummaryItemModel
+
+@{
+    var ratingPercent = 0;
+    LocalizedString label;
+
+    if (Model.TotalReviews != 0)
+    {
+        ratingPercent = ((Model.RatingSum * 100) / Model.TotalReviews) / 5;
+        label = T(Model.TotalReviews == 1 ? "Reviews.Overview.Review" : "Reviews.Overview.Reviews", Model.RatingSum / Model.TotalReviews, Model.TotalReviews);
+    }
+    else
+    {
+        label = T("Reviews.Overview.NoReviews");
+    }
+}
+
+<div class="art-rating" role="img" title="@label" aria-label="@label">
+    <div class="rating" aria-hidden="true">
+        <div style="width: @(ratingPercent)%"></div>
+    </div>
+    <span class="sr-only">@label</span>
+</div>

@@ -1,0 +1,31 @@
+﻿@using Smartstore.Core.Catalog
+@using Smartstore.Web.Models.Catalog
+
+@model GroupedProductModel
+
+@inject CatalogSettings CatalogSettings
+
+<div sm-if="Model.Products.TotalCount >= (Model.Configuration.SearchMinAssociatedCount ?? CatalogSettings.SearchMinAssociatedProductsCount)" 
+     class="instasearch-form has-icon"
+     role="search">
+    <input type="search"
+           class="instasearch-term form-control skip-pd-ajax-update"
+           name="associatedProductsSearchTerm"
+           placeholder="@T("Common.SearchProducts")"
+           aria-label="@T("Common.SearchProducts")"
+           aria-description="@T("Aria.Description.AutoSearchBox")"
+           data-url="@Url.Action("AssociatedProducts", "Product", new { id = Model.Id })"
+           data-target="#associated-products"
+           data-origin="Product/AssociatedProducts" />
+
+    <div class="instasearch-addon d-flex align-items-center justify-content-center">
+        <button type="button" class="instasearch-clear input-clear" aria-label="@T("Search.SearchBox.Clear")">
+            <i class="fa fa-xmark" aria-hidden="true"></i>
+        </button>
+    </div>
+    <span class="input-group-icon instasearch-icon">
+        <button id="pd-assoc-search-btn" type="submit" class="instasearch-submit input-clear bg-transparent" tabindex="-1" aria-hidden="true">
+            <i class="fa fa-magnifying-glass" aria-hidden="true"></i>
+        </button>
+    </span>
+</div>

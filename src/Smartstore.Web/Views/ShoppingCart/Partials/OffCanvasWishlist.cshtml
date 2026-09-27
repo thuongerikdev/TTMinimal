@@ -1,0 +1,46 @@
+﻿@using Smartstore.Web.Models.Cart
+@using Smartstore.Core.Checkout.Cart
+
+@model WishlistModel
+
+@{
+    var hasItems = !Model.Items.IsNullOrEmpty();
+    // Items added in the last 2 seconds are considered to be current
+    var currentItem = Model.Items?.FirstOrDefault(x => x.CreatedOnUtc >= DateTime.UtcNow.AddSeconds(-2));
+}
+
+<div class="offcanvas-cart-body offcanvas-scrollable">
+    <div sm-if="!hasItems" class="no-items" role="status">
+        <h4 class="no-item-title">
+            @T("ShoppingCart.Mini.EmptyWishlist.Title")
+        </h4>
+        <p class="no-item-icon">
+            <i class="fal fa-heart fa-4x" aria-hidden="true"></i>
+        </p>
+        <p class="no-item-info text-muted">
+            @Html.Raw(T("ShoppingCart.Mini.EmptyWishlist.Info", "fal fa-lg fa-heart"))
+        </p>
+    </div>
+    @if (hasItems)
+    {
+        <div sm-if="currentItem != null" class="alert alert-success alert-dismissible rounded-0 fade show" role="alert">
+            <button type="button" class="btn-close" data-dismiss="alert" aria-label="@T("Common.Close")"></button>
+            <span sm-language-attributes-for="currentItem.ProductName">
+                @Html.Raw(T("ShoppingCart.Mini.AddedItemToWishlist", $"<strong>{currentItem.ProductName.Value.Truncate(50, "…")}</strong>"))
+            </span>
+        </div>
+        <div class="offcanvas-items-container">
+            <partial name="OffCanvasWishlist.Items" model="Model" />
+        </div>
+    }
+    <zone name="offcanvas_wishlist_items_after" />
+</div>
+
+<div sm-if="hasItems" class="offcanvas-cart-footer">
+    <div class="offcanvas-cart-footer-row">
+        <a class="btn btn-clear btn-block btn-action" asp-route="Wishlist">
+            <i class="fa fa-check" aria-hidden="true"></i>
+            <span>@T("Wishlist.Mini.ViewWishlist")</span>
+        </a>
+    </div>
+</div>

@@ -1,0 +1,108 @@
+﻿@model PublicPaymentMethodModel
+
+@{
+    var initTransactionUrl = Url.Action("InitTransaction", "PayPal");
+    var createOrderUrl = Url.Action("CreateOrder", "PayPal");
+    var billingAddressUrl = Url.Action("BillingAddress", "Checkout");
+    var confirmUrl = Url.Action("Confirm", "Checkout");
+    var isSandbox = Model.IsSandbox ? "true" : "false";
+
+    var walletBaseAttributes = new AttributeDictionary()
+    {
+        new("data-init-transaction-url", initTransactionUrl),
+        new("data-create-order-url", createOrderUrl),
+        new("data-forward-url", billingAddressUrl),
+        new("data-is-sandbox", isSandbox),
+        new("data-route-ident", Model.RouteIdent)
+    };
+
+    var buttonBaseAttributes = new AttributeDictionary()
+    {
+        new("data-init-transaction-url", initTransactionUrl),
+        new("data-create-order-url", createOrderUrl),
+        new("data-forward-url", Model.IsPaymentSelection ? confirmUrl : billingAddressUrl),
+        new("data-shape", Model.ButtonShape),
+        new("data-color", Model.ButtonColor),
+    };
+
+    if (Model.IsPaymentSelection && !Model.IsSelectedMethod)
+    {
+        buttonBaseAttributes.Add(new KeyValuePair<string, string>("attr-style", "display:none"));
+    }
+}
+
+<!-- Set up a container element for the paypal button -->
+<div id="paypal-button-container" class="paypal-button-container" attrs="buttonBaseAttributes"></div>
+
+@if (Model.IsGooglePayActive)
+{
+    <div id="paypal-google-pay-container"
+         data-get-transaction-info-url="@Url.Action("GetGooglePayTransactionInfo", "PayPal")"
+         attrs="walletBaseAttributes">
+    </div>
+}
+
+@if (Model.IsApplePayActive)
+{
+    <div id="paypal-apple-pay-container"
+         data-get-payment-request-url="@Url.Action("GetApplePayPaymentRequest", "PayPal")"
+         data-log-client-message-url="@Url.Action("LogClientMessage", "PayPal")"
+         data-transaction-error="@T("Plugins.Smartstore.PayPal.Error.ApplePayTranactionError")"
+         attrs="walletBaseAttributes">
+    </div>
+}
+
+@*INFO: No target zone here as can also be rendered via AJAX*@
+<script data-origin="paypal-payment-selection">
+    window.Res.PayPal = {
+        "NoScriptsLoaded": "@T("Plugins.Smartstore.PayPal.NoScriptsLoaded")"
+    };
+
+    const paymentMap = {
+        "Payments.PayPalStandard": "paypal",
+        "Payments.PayPalSepa": "sepa",
+        "Payments.PayPalPayLater": "paylater",
+        "Payments.PayPalGooglePay": "googlepay"
+    };
+
+    $(function () {
+        const ppButton = new PayPalButton("#paypal-button-container", "@(Model.Funding == "googlepay" ? "paypal" : Model.Funding)");
+        const btnNext = $(".payment-method-next-step-button");
+        const btnContainer = $("#paypal-button-container");
+        const btnContainerGooglePay = $("#paypal-google-pay-container");
+
+        // Listen for changes to the radio inputs.
+        $(document).on("change", "input[name='paymentmethod']", (e) => {
+            const method = e.target.value;
+            const fundingSource = paymentMap[method] || null;
+
+            if (!fundingSource) {
+                btnNext.show();
+                btnContainer.hide();
+                btnContainerGooglePay.hide();
+                return;
+            }
+
+            if (fundingSource === "googlepay") {
+                new GooglePayPayPalButton();
+                btnContainer.hide();
+                btnContainerGooglePay.show();
+            }
+            else {
+                ppButton.initPayPalScript(fundingSource, true);
+                btnContainer.show();
+                btnContainerGooglePay.hide();
+            }
+
+            btnNext.hide();
+        });
+
+        $("input[name='paymentmethod']:checked").trigger("change");
+    });
+</script>
+
+<style sm-if="Model.IsPaymentSelection && Model.IsSelectedMethod">
+    .payment-method-next-step-button {
+        display: none;
+    }
+</style>

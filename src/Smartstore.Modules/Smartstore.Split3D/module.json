@@ -1,0 +1,12 @@
+{
+  "$schema": "../module.schema.json",
+  "Group": "Misc",
+  "SystemName": "Smartstore.Split3D",
+  "FriendlyName": "Split3D License Keys",
+  "Description": "Issues signed Split3D activation keys, automatically for paid orders or manually in the admin area.",
+  "Version": "6.4.0",
+  "MinAppVersion": "6.4.0",
+  "Author": "Split3D",
+  "Order": 0,
+  "ResourceRootKey": "Plugins.Split3D"
+}

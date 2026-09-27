@@ -1,0 +1,120 @@
+﻿@using Smartstore.Core.Search.Facets
+@using Smartstore.Web.Models.Catalog
+@using Smartstore.Core.Catalog.Products
+
+@model ProductSummaryModel
+
+@{
+    var sourceResult = Model?.SourceResult;
+    if (sourceResult == null ||
+        (Model.PagedList.TotalCount == 0 && !sourceResult.Facets.Any(x => x.Value.SelectedFacets.Any())))
+    {
+        // INFO: If there is no search hit and no filter applied, nothing should be displayed here, not even via widget zones.
+        return;
+    }
+
+    var templateProvider = Resolve<IFacetTemplateProvider>();
+    var facetGroups = sourceResult.Facets.Select(x => x.Value).OrderBy(x => x.DisplayOrder);
+    int i = 0;
+}
+
+<zone name="search_filters_before" />
+
+<div class="faceted-search-container">
+    <div class="faceted-search" id="faceted-search" data-ak-accordion>
+
+        @* Sorting *@
+        <div sm-if="Model.AllowSorting" class="facet-group d-lg-none" data-key="orderby">
+            <a class="facet-group-header">
+                <span>@T("Categories.OrderBy")</span>
+            </a>
+            <div class="facet-body">
+                <div class="facet-body-inner offcanvas-hstack hstack overflow-x-auto gap-1 small">
+                    @foreach (var sort in Model.AvailableSortOptions)
+                    {
+                        var sortName = (sort.Key == (int)ProductSortingEnum.Relevance ? Model.RelevanceSortOrderName : null) ?? sort.Value;
+                        var isSelected = sort.Key == Model.CurrentSortOrder;
+                        var className = $"badge badge-pill badge-lg badge-orderby fw" + (isSelected ? "m order-0 badge-info badge-subtle selected" : "n order-1 badge-light");
+                        var url = sort.Key > 0
+                            // Add/update query
+                            ? Display.ModifyQueryString(null, $"?o={sort.Key}")
+                            // Remove query
+                            : Display.ModifyQueryString(null, null, removeParamName: "o");
+                        
+                        if (isSelected)
+                        {
+                            <span class="@className">@sortName</span>
+                        }
+                        else
+                        {
+                            <a href="@url" class="@className" rel="nofollow">@sortName</a>
+                        }
+                    }
+                </div>
+            </div>
+        </div>
+
+        @foreach (var group in facetGroups)
+        {
+            i++;
+            var selectedFilters = group.SelectedFacets.ToArray();
+            var selectedCount = selectedFilters.Length;
+            var expanded = i <= 3 || selectedCount > 0;
+            var widget = templateProvider.GetTemplateWidget(group);
+            var key = group.Key;
+            var label = group.Label ?? key;
+            var srLabel = selectedCount > 0 ? $"{label} ({selectedCount})" : label;
+
+            <fieldset class="facet-group" data-key="@key">
+                <legend id="facet-group-legend-@key" class="sr-only">@srLabel</legend>
+                <a class="facet-group-header facet-toggle@(!expanded ? " collapsed" : "")@(selectedCount > 0 ? " has-selection" : "")"
+                   id="facet-group-header-@key"
+                   data-toggle="collapse"
+                   role="button"
+                   href="#facet-body-@(key)"
+                   aria-expanded="@expanded.ToString().ToLower()"
+                   aria-controls="facet-body-@(key)"
+                   aria-labelledby="facet-group-legend-@key"
+                   attr-data-selections="(selectedCount > 0, selectedCount.ToString())">
+                    @label
+                    <span sm-if="selectedCount > 0" class="badge badge-info badge-subtle badge-ring badge-counter facet-selection" aria-hidden="true">@selectedCount</span>
+                </a>
+                <div id="facet-body-@(key)" class="facet-body collapse" attr-class='(expanded, "show")'>
+                    @if (widget != null)
+                    {
+                        @await widget.InvokeAsync(ViewContext)
+                    }
+                    @if (selectedCount > 0)
+                    {
+                        <a id="facet-group-remove-@key"
+                           href="@Url.FacetRemove(selectedFilters)" 
+                           class="btn-remove-group-filters"
+                           aria-labelledby="facet-group-remove-@key facet-group-header-@key">
+                            @T("Search.Facet.RemoveGroupFilters")
+                        </a>
+                    }
+                </div>
+            </fieldset>
+        }
+    </div>
+</div>
+
+<zone name="search_filters_after" />
+
+<script sm-target-zone="scripts" data-origin="Search.Filters">
+    $(function () {
+        $(".facet-group-header").on('expand.ak collapse.ak', (e) => {
+            e.stopPropagation();
+
+            const el = $(e.currentTarget);
+            const isExpanded = el.aria("expanded");
+
+            if (e.type == "collapse" && isExpanded) {
+                el.trigger("click");
+            }
+            else if (e.type == "expand" && !isExpanded) {
+                el.trigger("click");
+            }
+        });
+    });
+</script>

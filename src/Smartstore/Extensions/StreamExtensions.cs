@@ -1,0 +1,316 @@
+﻿using System.Diagnostics;
+using System.Runtime.CompilerServices;
+using System.Text;
+using Smartstore.IO;
+
+namespace Smartstore;
+
+public static class StreamExtensions
+{
+    extension(Stream stream)
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public string AsString()
+            => AsStringInternal(stream, Encoding.UTF8, false).Await();
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public Task<string> AsStringAsync()
+            => AsStringInternal(stream, Encoding.UTF8, true);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public string AsString(Encoding encoding)
+            => AsStringInternal(stream, encoding, false).Await();
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public Task<string> AsStringAsync(Encoding encoding)
+            => AsStringInternal(stream, encoding, true);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public byte[] ToByteArray()
+            => ToByteArrayInternal(stream, false).Await();
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public Task<byte[]> ToByteArrayAsync()
+            => ToByteArrayInternal(stream, true);
+
+        public Stream MakeSeekable()
+        {
+            if (stream.CanSeek)
+            {
+                Debug.WriteLine("The stream is seekable already.");
+            }
+
+            return new SeekableReadOnlyStream(stream, (int)stream.Length);
+        }
+
+        public async Task<bool> CopyToFileAsync(string destinationPath, bool leaveOpen = true)
+        {
+            Guard.NotNull(stream);
+            Guard.NotEmpty(destinationPath);
+
+            try
+            {
+                using (var outStream = new FileStream(
+                    destinationPath,
+                    FileMode.Create,
+                    FileAccess.Write,
+                    FileShare.None,
+                    bufferSize: 4096,
+                    useAsync: true))
+                {
+                    await stream.CopyToAsync(outStream);
+                }
+
+                return File.Exists(destinationPath);
+            }
+            catch (Exception ex)
+            {
+                Debug.Fail(ex.Message);
+                return false;
+            }
+            finally
+            {
+                if (leaveOpen)
+                {
+                    if (stream.CanSeek)
+                    {
+                        stream.Seek(0, SeekOrigin.Begin);
+                    }
+                }
+                else
+                {
+                    stream.Close();
+                    await stream.DisposeAsync();
+                }
+            }
+        }
+
+        public async Task<bool> CopyToFileAsync(IFile destinationFile, bool leaveOpen = true)
+        {
+            Guard.NotNull(stream);
+            Guard.NotNull(destinationFile);
+
+            try
+            {
+                using (var outStream = await destinationFile.OpenWriteAsync())
+                {
+                    await stream.CopyToAsync(outStream);
+                }
+
+                // Refresh & check
+                destinationFile = await destinationFile.FileSystem.GetFileAsync(destinationFile.SubPath);
+                return destinationFile.Exists;
+            }
+            catch (Exception ex)
+            {
+                Debug.Fail(ex.Message);
+                return false;
+            }
+            finally
+            {
+                if (leaveOpen)
+                {
+                    if (stream.CanSeek)
+                    {
+                        stream.Seek(0, SeekOrigin.Begin);
+                    }
+                }
+                else
+                {
+                    stream.Close();
+                    await stream.DisposeAsync();
+                }
+            }
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public bool ContentsEqual(Stream other, bool? forceLengthCompare = null)
+            => ContentsEqualInternal(stream, other, forceLengthCompare, false).Await();
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public Task<bool> ContentsEqualAsync(Stream other, bool? forceLengthCompare = null)
+            => ContentsEqualInternal(stream, other, forceLengthCompare, true);
+
+        /// <summary>
+        /// Asynchronously copies the source stream to the target stream while enforcing
+        /// a maximum number of bytes. Throws <see cref="InvalidOperationException"/>
+        /// if the limit is exceeded.
+        /// </summary>
+        /// <param name="target">The target stream to copy to.</param>
+        /// <param name="maxBytes">Maximum number of bytes allowed.</param>
+        /// <param name="cancelToken">Cancellation token.</param>
+        public async Task CopyToWithLimitAsync(Stream target, long maxBytes, CancellationToken cancelToken = default)
+        {
+            Guard.NotNull(stream);
+            Guard.NotNull(target);
+            Guard.IsPositive(maxBytes);
+
+            var buffer = new byte[81920];
+            long totalBytes = 0;
+            int read;
+
+            while ((read = await stream.ReadAsync(buffer, cancelToken)) > 0)
+            {
+                totalBytes += read;
+                if (totalBytes > maxBytes)
+                {
+                    throw new InvalidOperationException("The stream exceeds the maximum allowed size.");
+                }
+
+                await target.WriteAsync(buffer.AsMemory(0, read), cancelToken);
+            }
+        }
+    }
+
+    extension(MemoryStream stream)
+    {
+        public MemoryStream WriteString(string value, bool seekToBegin = true)
+        {
+            Guard.NotNull(stream);
+            Guard.NotNull(value);
+
+            using var writer = new StreamWriter(stream, Encoding.Unicode, 1024, true);
+
+            writer.Write(value);
+            writer.Flush();
+
+            if (seekToBegin)
+            {
+                stream.Seek(0, SeekOrigin.Begin);
+            }
+
+            return stream;
+        }
+    }
+
+    private static async Task<string> AsStringInternal(Stream stream, Encoding encoding, bool async)
+    {
+        if (encoding == null)
+        {
+            throw new ArgumentNullException(nameof(encoding));
+        }
+
+        if (stream.CanSeek)
+        {
+            stream.Position = 0;
+        }
+
+        using var sr = new StreamReader(stream, encoding);
+        var result = async ? await sr.ReadToEndAsync() : sr.ReadToEnd();
+        return result;
+    }
+
+    private static async Task<byte[]> ToByteArrayInternal(Stream stream, bool async)
+    {
+        if (stream == null)
+        {
+            throw new ArgumentNullException(nameof(stream));
+        }
+
+        if (stream is MemoryStream mem)
+        {
+            if (mem.TryGetBuffer(out var buffer))
+            {
+                return buffer.Array;
+            }
+
+            return mem.ToArray();
+        }
+        else
+        {
+            try
+            {
+                var len = stream.Length;
+                if (len > int.MaxValue)
+                {
+                    return await ToByteArrayCopy(stream, async);
+                }
+
+                var buffer = new byte[(int)len];
+
+                if (async)
+                {
+                    await stream.ReadExactlyAsync(buffer.AsMemory(0, (int)len));
+                }
+                else
+                {
+                    stream.ReadExactly(buffer, 0, (int)len);
+                }
+
+                return buffer;
+            }
+            catch
+            {
+                return await ToByteArrayCopy(stream, async);
+            }
+        }
+
+        static async Task<byte[]> ToByteArrayCopy(Stream stream, bool async)
+        {
+            using var memStream = new MemoryStream();
+            if (async)
+            {
+                await stream.CopyToAsync(memStream);
+            }
+            else
+            {
+                stream.CopyTo(memStream);
+            }
+
+            return memStream.ToArray();
+        }
+    }
+
+    private static async Task<bool> ContentsEqualInternal(Stream src, Stream other, bool? forceLengthCompare, bool async)
+    {
+        Guard.NotNull(src);
+        Guard.NotNull(other);
+
+        if (src == other)
+        {
+            // This is not merely an optimization, as incrementing one stream's position
+            // should not affect the position of the other.
+            return true;
+        }
+
+        // This is not 100% correct, as a stream can be non-seekable but still have a known
+        // length (but hopefully the opposite can never happen). I don't know how to check
+        // if the length is available without throwing an exception if it's not.
+        if ((!forceLengthCompare.HasValue && src.CanSeek && other.CanSeek) || (forceLengthCompare == true))
+        {
+            if (src.Length != other.Length)
+            {
+                return false;
+            }
+        }
+
+        const int intSize = sizeof(long);
+        const int bufferSize = 1024 * intSize; // 2048;
+        var buffer1 = new byte[bufferSize];
+        var buffer2 = new byte[bufferSize];
+
+        while (true)
+        {
+            int len1 = async ? await src.ReadAsync(buffer1.AsMemory(0, bufferSize)) : src.Read(buffer1, 0, bufferSize);
+            int len2 = async ? await other.ReadAsync(buffer2.AsMemory(0, bufferSize)) : other.Read(buffer2, 0, bufferSize);
+
+            if (len1 != len2)
+                return false;
+
+            if (len1 == 0)
+                return true;
+
+            int iterations = (int)Math.Ceiling((double)len1 / sizeof(long));
+
+            for (int i = 0; i < iterations; i++)
+            {
+                if (BitConverter.ToInt64(buffer1, i * intSize) != BitConverter.ToInt64(buffer2, i * intSize))
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+    }
+}

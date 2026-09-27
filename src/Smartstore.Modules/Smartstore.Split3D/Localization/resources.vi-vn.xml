@@ -1,0 +1,3440 @@
+﻿<Language Name="Tiếng Việt" IsDefault="false" IsRightToLeft="false">
+
+    <LocaleResource Name="Plugins.FriendlyName.Smartstore.Split3D" AppendRootKey="false">
+        <Value>Key bản quyền Split3D</Value>
+    </LocaleResource>
+    <LocaleResource Name="Plugins.Description.Smartstore.Split3D" AppendRootKey="false">
+        <Value>Cấp key kích hoạt Split3D đã ký, tự động cho đơn hàng đã thanh toán hoặc thủ công trong trang quản trị.</Value>
+    </LocaleResource>
+
+    <LocaleResource Name="Addons">
+        <Value>Addon &amp; gói</Value>
+    </LocaleResource>
+    <LocaleResource Name="Addons.Manage">
+        <Value>Quản lý addon &amp; sản phẩm theo gói</Value>
+    </LocaleResource>
+    <LocaleResource Name="Addons.None">
+        <Value>Chưa có addon nào.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Addons.Hint">
+        <Value>Mỗi addon là một module Blender bán dưới dạng một file ZIP riêng. &lt;strong&gt;Mã product&lt;/strong&gt; phải trùng với hằng số &lt;code&gt;PRODUCT&lt;/code&gt; trong &lt;code&gt;license_core.py&lt;/code&gt; của addon; mọi addon dùng chung khóa ký trong phần Cấu hình.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Addon.Add">
+        <Value>Thêm addon</Value>
+    </LocaleResource>
+    <LocaleResource Name="Addon.NameRequired">
+        <Value>Hãy nhập tên addon.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Addon.ProductCodeInvalid">
+        <Value>Mã product: 2–100 ký tự, chữ thường, số, '.', '-' hoặc '_'.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Addon.ProductCodeExists">
+        <Value>Mã product này đã được addon khác dùng.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Addon.ProductCodeLocked">
+        <Value>Không thể đổi mã product vì đã có key được cấp cho addon này.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Addon.VersionInvalid">
+        <Value>Phiên bản phải có dạng 1.0 hoặc 3.0.121.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Addon.ProductCodeNote">
+        <Value>Phải trùng với &lt;code&gt;PRODUCT = '...'&lt;/code&gt; trong &lt;code&gt;license_core.py&lt;/code&gt; của addon. Key của addon này không mở được addon khác.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Addon.Products">
+        <Value>Sản phẩm theo gói</Value>
+    </LocaleResource>
+    <LocaleResource Name="Addon.Product">
+        <Value>Sản phẩm</Value>
+    </LocaleResource>
+    <LocaleResource Name="Addon.FileVersions">
+        <Value>Phiên bản file addon</Value>
+    </LocaleResource>
+    <LocaleResource Name="Addon.NoProducts">
+        <Value>Chưa có sản phẩm nào gắn với addon này.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Addon.Unpublished">
+        <Value>chưa hiển thị</Value>
+    </LocaleResource>
+    <LocaleResource Name="Addon.NoFile">
+        <Value>chưa có file</Value>
+    </LocaleResource>
+    <LocaleResource Name="Addon.Unmap">
+        <Value>Gỡ</Value>
+    </LocaleResource>
+    <LocaleResource Name="Addon.UnmapConfirm">
+        <Value>Gỡ sản phẩm khỏi addon? Sản phẩm vẫn còn nhưng người mua sẽ không được cấp key nữa.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Addon.CreateProducts">
+        <Value>Tạo sản phẩm theo gói</Value>
+    </LocaleResource>
+    <LocaleResource Name="Addon.CreateProductsHint">
+        <Value>Tạo một sản phẩm cho mỗi gói được chọn (hàng số, không vận chuyển, mở khóa tải về khi đã thanh toán) trong danh mục 'Addon Blender'. Sản phẩm đã có giữ nguyên giá.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Addon.ZipFile">
+        <Value>File addon (.zip)</Value>
+    </LocaleResource>
+    <LocaleResource Name="Addon.ImageFile">
+        <Value>Ảnh sản phẩm (tùy chọn)</Value>
+    </LocaleResource>
+    <LocaleResource Name="Addon.UploadVersion">
+        <Value>Tải lên phiên bản mới</Value>
+    </LocaleResource>
+    <LocaleResource Name="Addon.UploadVersionHint">
+        <Value>Gắn file ZIP vào mọi sản phẩm của addon. Khách đã mua sẽ tải được bản mới nhất.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Addon.VersionUploaded">
+        <Value>Đã gắn phiên bản {0} vào {1} sản phẩm.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Addon.MapExisting">
+        <Value>Gắn sản phẩm có sẵn</Value>
+    </LocaleResource>
+    <LocaleResource Name="Addon.MapExistingHint">
+        <Value>Dùng một sản phẩm có sẵn trong Catalog cho một gói của addon này (Số ngày chỉ dùng cho gói Tùy chỉnh).</Value>
+    </LocaleResource>
+    <LocaleResource Name="Addon.MappingInvalid">
+        <Value>Hãy chọn sản phẩm và gói (và số ngày nếu là gói Tùy chỉnh).</Value>
+    </LocaleResource>
+    <LocaleResource Name="Addon.NoPlanSelected">
+        <Value>Hãy chọn ít nhất một gói.</Value>
+    </LocaleResource>
+    <LocaleResource Name="MyKeys">
+        <Value>Key của tôi</Value>
+    </LocaleResource>
+    <LocaleResource Name="MyKeys.Empty">
+        <Value>Bạn chưa có đơn hàng hay key Split3D nào.</Value>
+    </LocaleResource>
+    <LocaleResource Name="MyKeys.GoShopping">
+        <Value>Chọn gói ngay</Value>
+    </LocaleResource>
+    <LocaleResource Name="MyKeys.Order">
+        <Value>Đơn hàng</Value>
+    </LocaleResource>
+    <LocaleResource Name="MyKeys.Step.Ordered">
+        <Value>Đã đặt hàng</Value>
+    </LocaleResource>
+    <LocaleResource Name="MyKeys.Step.Paid">
+        <Value>Đã xác nhận thanh toán</Value>
+    </LocaleResource>
+    <LocaleResource Name="MyKeys.Step.KeyIssued">
+        <Value>Đã cấp key</Value>
+    </LocaleResource>
+    <LocaleResource Name="MyKeys.PayHint">
+        <Value>Vui lòng chuyển khoản để hoàn tất đơn hàng:</Value>
+    </LocaleResource>
+    <LocaleResource Name="MyKeys.Amount">
+        <Value>Số tiền</Value>
+    </LocaleResource>
+    <LocaleResource Name="MyKeys.TransferContent">
+        <Value>Nội dung chuyển khoản</Value>
+    </LocaleResource>
+    <LocaleResource Name="MyKeys.AwaitingKeyHint">
+        <Value>Đã nhận thanh toán. Chúng tôi đang cấp key cho bạn – key sẽ được gửi qua email và hiển thị tại đây.</Value>
+    </LocaleResource>
+    <LocaleResource Name="MyKeys.CancelledHint">
+        <Value>Đơn hàng đã bị hủy hoặc hoàn tiền.</Value>
+    </LocaleResource>
+    <LocaleResource Name="MyKeys.DownloadAddon">
+        <Value>Tải file addon</Value>
+    </LocaleResource>
+    <LocaleResource Name="MyKeys.OrderDetails">
+        <Value>Chi tiết đơn hàng</Value>
+    </LocaleResource>
+    <LocaleResource Name="MyKeys.OtherKeys">
+        <Value>Key khác theo email của bạn</Value>
+    </LocaleResource>
+    <LocaleResource Name="MyKeys.ActivateHint">
+        <Value>Kích hoạt: cài addon trong Blender (Edit › Preferences › Add-ons › Install from Disk), mở bảng Split3D, dán toàn bộ key và bấm Kích hoạt.</Value>
+    </LocaleResource>
+    <LocaleResource Name="MyKeys.Track">
+        <Value>Theo dõi đơn &amp; nhận key</Value>
+    </LocaleResource>
+    <LocaleResource Name="OrderState.AwaitingPayment">
+        <Value>Chờ thanh toán</Value>
+    </LocaleResource>
+    <LocaleResource Name="OrderState.AwaitingKey">
+        <Value>Đã thanh toán – chờ cấp key</Value>
+    </LocaleResource>
+    <LocaleResource Name="OrderState.Issued">
+        <Value>Đã cấp key</Value>
+    </LocaleResource>
+    <LocaleResource Name="OrderState.Cancelled">
+        <Value>Đã hủy</Value>
+    </LocaleResource>
+    <LocaleResource Name="Pending.Title">
+        <Value>Đơn chờ xử lý</Value>
+    </LocaleResource>
+    <LocaleResource Name="Pending.AutoOn">
+        <Value>Key tự động cấp khi đơn được đánh dấu đã thanh toán.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Pending.AutoOff">
+        <Value>Kiểm tra tài khoản ngân hàng, sau đó bấm nút để xác nhận thanh toán và cấp key.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Pending.None">
+        <Value>Không có đơn nào đang chờ thanh toán hoặc chờ cấp key.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Pending.Customer">
+        <Value>Khách hàng</Value>
+    </LocaleResource>
+    <LocaleResource Name="Pending.Items">
+        <Value>Sản phẩm</Value>
+    </LocaleResource>
+    <LocaleResource Name="Pending.Confirm">
+        <Value>Xác nhận đã nhận tiền cho đơn #{0} ({1}) và cấp key?</Value>
+    </LocaleResource>
+    <LocaleResource Name="Pending.ConfirmAndIssue">
+        <Value>Đã nhận tiền – cấp key</Value>
+    </LocaleResource>
+    <LocaleResource Name="Pending.Issue">
+        <Value>Cấp key</Value>
+    </LocaleResource>
+    <LocaleResource Name="Pending.NotFound">
+        <Value>Không tìm thấy đơn hàng.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Pending.CannotMarkPaid">
+        <Value>Không thể đánh dấu đơn này là đã thanh toán (ví dụ đơn đã hủy).</Value>
+    </LocaleResource>
+    <LocaleResource Name="Pending.Processed">
+        <Value>Đã xử lý đơn #{0}: cấp {1} key và gửi email cho khách.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Completed.Title">
+        <Value>Các bước tiếp theo để nhận key</Value>
+    </LocaleResource>
+    <LocaleResource Name="Completed.Step1">
+        <Value>Chuyển khoản số tiền đơn hàng tới:</Value>
+    </LocaleResource>
+    <LocaleResource Name="Completed.OrderNumber">
+        <Value>mã đơn hàng của bạn (hiển thị ở trên)</Value>
+    </LocaleResource>
+    <LocaleResource Name="Completed.Step2">
+        <Value>Chúng tôi xác nhận thanh toán và cấp key cho bạn (thường trong giờ làm việc).</Value>
+    </LocaleResource>
+    <LocaleResource Name="Completed.Step3">
+        <Value>Bạn nhận key qua email; key cũng hiển thị ở Tài khoản › Key của tôi, file addon được mở khóa ở mục Tải về.</Value>
+    </LocaleResource>
+    <LocaleResource Name="MenuTitle">
+        <Value>Split3D</Value>
+    </LocaleResource>
+    <LocaleResource Name="Licenses">
+        <Value>Key bản quyền Split3D</Value>
+    </LocaleResource>
+    <LocaleResource Name="IssueKey">
+        <Value>Cấp key</Value>
+    </LocaleResource>
+    <LocaleResource Name="Export">
+        <Value>Xuất Excel</Value>
+    </LocaleResource>
+    <LocaleResource Name="Import">
+        <Value>Nhập dữ liệu</Value>
+    </LocaleResource>
+    <LocaleResource Name="Import.Hint">
+        <Value>Tải lên file CSV hoặc XLSX có cột "Key" (ví dụ file xuất từ phần mềm quản trị cũ). Email, tên và ngày được đọc từ key đã ký; các cột Price, PurchaseDate, KeyType, Phone, Notes là tùy chọn. Key đã có sẽ được bỏ qua.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Import.NoFile">
+        <Value>Hãy chọn một file.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Import.Result">
+        <Value>Đã nhập {0} key, bỏ qua {1} key (đã tồn tại).</Value>
+    </LocaleResource>
+    <LocaleResource Name="CopyKey">
+        <Value>Sao chép key</Value>
+    </LocaleResource>
+    <LocaleResource Name="KeyCopied">
+        <Value>Đã sao chép key.</Value>
+    </LocaleResource>
+    <LocaleResource Name="ResendEmail">
+        <Value>Gửi email</Value>
+    </LocaleResource>
+    <LocaleResource Name="NoEmailAccount">
+        <Value>Chưa cấu hình tài khoản email. Hãy thiết lập tài khoản email mặc định trước.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Issued">
+        <Value>Đã cấp key.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Issued.EmailQueued">
+        <Value>Đã cấp key và xếp hàng gửi email tới {0}.</Value>
+    </LocaleResource>
+    <LocaleResource Name="NoProduct">
+        <Value>-- Không chọn --</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrivateKeyStored">
+        <Value>Đã lưu khóa ký. Để trống để giữ nguyên, hoặc dán nội dung private_key.json mới để thay.</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrivateKeyPaste">
+        <Value>Dán nội dung file private_key.json vào đây.</Value>
+    </LocaleResource>
+    <LocaleResource Name="KeyStatus.Valid">
+        <Value>Khóa ký hợp lệ và khớp với khóa công khai của addon.</Value>
+    </LocaleResource>
+    <LocaleResource Name="KeyStatus.NoPrivateKey">
+        <Value>Chưa cấu hình khóa ký riêng. Có thể nhập key cũ nhưng chưa cấp key mới được.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Group.Keys">
+        <Value>Khóa ký</Value>
+    </LocaleResource>
+    <LocaleResource Name="Group.Products">
+        <Value>Tự động cấp key cho đơn hàng</Value>
+    </LocaleResource>
+    <LocaleResource Name="Group.Email">
+        <Value>Email gửi khách</Value>
+    </LocaleResource>
+    <LocaleResource Name="Group.Payment">
+        <Value>Chuyển khoản ngân hàng</Value>
+    </LocaleResource>
+    <LocaleResource Name="Setup.Title">
+        <Value>Thiết lập cửa hàng bán hàng</Value>
+    </LocaleResource>
+    <LocaleResource Name="Setup.Hint">
+        <Value>Tạo 4 sản phẩm Split3D (3 tháng, 6 tháng, 1 năm, vĩnh viễn) kèm ảnh và file addon để tải, đặt Tiếng Việt và VND làm mặc định, bật chuyển khoản là phương thức thanh toán duy nhất, rút gọn thanh toán cho hàng số và thay trang chủ. &lt;strong&gt;Hãy lưu thông tin ngân hàng ở trên trước.&lt;/strong&gt; Chạy lại an toàn: sản phẩm đã có giữ nguyên giá.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Setup.AddonFile">
+        <Value>File addon (split3d_print.zip) – bỏ trống nếu đã tải lên trước đó</Value>
+    </LocaleResource>
+    <LocaleResource Name="Setup.Run">
+        <Value>Chạy thiết lập</Value>
+    </LocaleResource>
+    <LocaleResource Name="Setup.Running">
+        <Value>Đang thiết lập… (có thể mất một phút)</Value>
+    </LocaleResource>
+    <LocaleResource Name="Setup.Done">
+        <Value>Đã thiết lập cửa hàng:</Value>
+    </LocaleResource>
+    <LocaleResource Name="Setup.ZipRequired">
+        <Value>Hãy tải lên file addon dạng .zip.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Group.AdminMenu">
+        <Value>Menu trang quản trị</Value>
+    </LocaleResource>
+    <LocaleResource Name="State.Active">
+        <Value>Còn hạn</Value>
+    </LocaleResource>
+    <LocaleResource Name="State.Expired">
+        <Value>Hết hạn</Value>
+    </LocaleResource>
+    <LocaleResource Name="State.Lifetime">
+        <Value>Vĩnh viễn</Value>
+    </LocaleResource>
+    <LocaleResource Name="Stats.Transactions">
+        <Value>Giao dịch</Value>
+    </LocaleResource>
+    <LocaleResource Name="Stats.Customers">
+        <Value>Khách hàng</Value>
+    </LocaleResource>
+    <LocaleResource Name="Stats.Revenue">
+        <Value>Doanh thu</Value>
+    </LocaleResource>
+    <LocaleResource Name="Stats.Active">
+        <Value>Key còn hạn</Value>
+    </LocaleResource>
+
+    <LocaleResource Name="Addon.Name">
+        <Value>Tên addon</Value>
+    </LocaleResource>
+    <LocaleResource Name="Addon.Name.Hint">
+        <Value>Tên hiển thị cho khách, trong email và bên cạnh key.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Addon.ProductCode">
+        <Value>Mã product</Value>
+    </LocaleResource>
+    <LocaleResource Name="Addon.ProductCode.Hint">
+        <Value>Hằng số PRODUCT của addon, được ghi vào mỗi key.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Addon.Version">
+        <Value>Phiên bản</Value>
+    </LocaleResource>
+    <LocaleResource Name="Addon.Version.Hint">
+        <Value>Phiên bản hiện tại, dùng làm phiên bản file tải về.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Addon.Description">
+        <Value>Mô tả</Value>
+    </LocaleResource>
+    <LocaleResource Name="Addon.Description.Hint">
+        <Value>Mô tả HTML dùng cho sản phẩm theo gói được tạo mới.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Addon.Active">
+        <Value>Đang bán</Value>
+    </LocaleResource>
+    <LocaleResource Name="Addon.Active.Hint">
+        <Value>Addon ngừng bán sẽ không cấp key cho đơn mới.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Addon.DisplayOrder">
+        <Value>Thứ tự</Value>
+    </LocaleResource>
+    <LocaleResource Name="Addon.DisplayOrder.Hint">
+        <Value>Thứ tự sắp xếp trong danh sách.</Value>
+    </LocaleResource>
+    <LocaleResource Name="License.Addon">
+        <Value>Addon</Value>
+    </LocaleResource>
+    <LocaleResource Name="License.Addon.Hint">
+        <Value>Addon mà key này mở khóa.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Fields.AutoIssueEnabled">
+        <Value>Tự động cấp key</Value>
+    </LocaleResource>
+    <LocaleResource Name="Fields.AutoIssueEnabled.Hint">
+        <Value>Tự động cấp key khi đơn hàng chứa một trong các sản phẩm bên dưới được đánh dấu đã thanh toán.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Fields.SendEmail">
+        <Value>Gửi key qua email</Value>
+    </LocaleResource>
+    <LocaleResource Name="Fields.SendEmail.Hint">
+        <Value>Sau khi tự động cấp key, gửi email chứa key cho khách.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Fields.ProductCode">
+        <Value>Mã sản phẩm</Value>
+    </LocaleResource>
+    <LocaleResource Name="Fields.ProductCode.Hint">
+        <Value>Giá trị "product" được ghi vào mỗi key. Phải khớp với giá trị addon Blender yêu cầu.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Fields.PublicKeyJson">
+        <Value>Khóa công khai (public_key.json)</Value>
+    </LocaleResource>
+    <LocaleResource Name="Fields.PublicKeyJson.Hint">
+        <Value>Nội dung file public_key.json của addon. Dùng để kiểm tra khóa ký và key được nhập.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Fields.PrivateKeyJson">
+        <Value>Khóa ký (private_key.json)</Value>
+    </LocaleResource>
+    <LocaleResource Name="Fields.PrivateKeyJson.Hint">
+        <Value>Nội dung file private_key.json. Được lưu trong cơ sở dữ liệu và không hiển thị lại. Hãy giữ bản sao lưu file này.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Fields.OneYearProductId">
+        <Value>Sản phẩm gói 1 năm</Value>
+    </LocaleResource>
+    <LocaleResource Name="Fields.OneYearProductId.Hint">
+        <Value>Khách mua sản phẩm này nhận key 1 năm (365 ngày).</Value>
+    </LocaleResource>
+    <LocaleResource Name="Fields.SixMonthsProductId">
+        <Value>Sản phẩm gói 6 tháng</Value>
+    </LocaleResource>
+    <LocaleResource Name="Fields.SixMonthsProductId.Hint">
+        <Value>Khách mua sản phẩm này nhận key 6 tháng (180 ngày).</Value>
+    </LocaleResource>
+    <LocaleResource Name="Fields.ThreeMonthsProductId">
+        <Value>Sản phẩm gói 3 tháng</Value>
+    </LocaleResource>
+    <LocaleResource Name="Fields.ThreeMonthsProductId.Hint">
+        <Value>Khách mua sản phẩm này nhận key 3 tháng (90 ngày).</Value>
+    </LocaleResource>
+    <LocaleResource Name="Fields.LifetimeProductId">
+        <Value>Sản phẩm gói vĩnh viễn</Value>
+    </LocaleResource>
+    <LocaleResource Name="Fields.LifetimeProductId.Hint">
+        <Value>Khách mua sản phẩm này nhận key không hết hạn.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Fields.BankName">
+        <Value>Ngân hàng</Value>
+    </LocaleResource>
+    <LocaleResource Name="Fields.BankName.Hint">
+        <Value>Tên ngân hàng hiển thị trong hướng dẫn chuyển khoản.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Fields.BankAccountNumber">
+        <Value>Số tài khoản</Value>
+    </LocaleResource>
+    <LocaleResource Name="Fields.BankAccountNumber.Hint">
+        <Value>Số tài khoản khách chuyển tiền vào.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Fields.BankAccountHolder">
+        <Value>Chủ tài khoản</Value>
+    </LocaleResource>
+    <LocaleResource Name="Fields.BankAccountHolder.Hint">
+        <Value>Tên chủ tài khoản.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Fields.EmailSubject">
+        <Value>Tiêu đề email</Value>
+    </LocaleResource>
+    <LocaleResource Name="Fields.EmailSubject.Hint">
+        <Value>Tiêu đề của email gửi key.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Fields.EmailBody">
+        <Value>Nội dung email</Value>
+    </LocaleResource>
+    <LocaleResource Name="Fields.EmailBody.Hint">
+        <Value>Nội dung email gửi key. Biến thay thế: {CustomerName}, {Email}, {Plan}, {ExpiresOn}, {Price}, {Key}.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Fields.SimplifyAdminMenu">
+        <Value>Rút gọn menu quản trị</Value>
+    </LocaleResource>
+    <LocaleResource Name="Fields.SimplifyAdminMenu.Hint">
+        <Value>Ẩn các mục menu quản trị liệt kê bên dưới. Chỉ ẩn trên menu; trang vẫn truy cập được qua URL và quyền không thay đổi.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Fields.HiddenAdminMenuItems">
+        <Value>Các mục menu bị ẩn</Value>
+    </LocaleResource>
+    <LocaleResource Name="Fields.HiddenAdminMenuItems.Hint">
+        <Value>Mã các mục menu cần ẩn, cách nhau bằng dấu phẩy hoặc xuống dòng (xem Areas/Admin/sitemap.xml). Để trống để dùng lại danh sách mặc định.</Value>
+    </LocaleResource>
+    <LocaleResource Name="License.LicenseId">
+        <Value>Mã giao dịch</Value>
+    </LocaleResource>
+    <LocaleResource Name="License.LicenseId.Hint">
+        <Value>Mã ngẫu nhiên được ghi trong key.</Value>
+    </LocaleResource>
+    <LocaleResource Name="License.Email">
+        <Value>Email</Value>
+    </LocaleResource>
+    <LocaleResource Name="License.Email.Hint">
+        <Value>Email người mua. Được ghi vào key.</Value>
+    </LocaleResource>
+    <LocaleResource Name="License.CustomerName">
+        <Value>Người mua</Value>
+    </LocaleResource>
+    <LocaleResource Name="License.CustomerName.Hint">
+        <Value>Tên người mua. Được ghi vào key.</Value>
+    </LocaleResource>
+    <LocaleResource Name="License.Phone">
+        <Value>Điện thoại</Value>
+    </LocaleResource>
+    <LocaleResource Name="License.Phone.Hint">
+        <Value>Số điện thoại người mua.</Value>
+    </LocaleResource>
+    <LocaleResource Name="License.KeyType">
+        <Value>Gói key</Value>
+    </LocaleResource>
+    <LocaleResource Name="License.KeyType.Hint">
+        <Value>Gói sử dụng. Thời hạn tính từ lúc cấp key.</Value>
+    </LocaleResource>
+    <LocaleResource Name="License.Days">
+        <Value>Số ngày</Value>
+    </LocaleResource>
+    <LocaleResource Name="License.Days.Hint">
+        <Value>Số ngày hiệu lực cho gói tùy chỉnh (1 - 36500).</Value>
+    </LocaleResource>
+    <LocaleResource Name="License.Price">
+        <Value>Giá tiền (VND)</Value>
+    </LocaleResource>
+    <LocaleResource Name="License.Price.Hint">
+        <Value>Giá tiền là số nguyên VND.</Value>
+    </LocaleResource>
+    <LocaleResource Name="License.PurchaseDate">
+        <Value>Ngày mua</Value>
+    </LocaleResource>
+    <LocaleResource Name="License.PurchaseDate.Hint">
+        <Value>Ngày mua (chỉ là thông tin giao dịch).</Value>
+    </LocaleResource>
+    <LocaleResource Name="License.IssuedOn">
+        <Value>Ngày cấp</Value>
+    </LocaleResource>
+    <LocaleResource Name="License.IssuedOn.Hint">
+        <Value>Ngày cấp key.</Value>
+    </LocaleResource>
+    <LocaleResource Name="License.ExpiresOn">
+        <Value>Hết hạn</Value>
+    </LocaleResource>
+    <LocaleResource Name="License.ExpiresOn.Hint">
+        <Value>Ngày hết hạn của key.</Value>
+    </LocaleResource>
+    <LocaleResource Name="License.State">
+        <Value>Thời hạn</Value>
+    </LocaleResource>
+    <LocaleResource Name="License.State.Hint">
+        <Value>Trạng thái theo ngày hết hạn, không theo việc kích hoạt.</Value>
+    </LocaleResource>
+    <LocaleResource Name="License.Token">
+        <Value>Key</Value>
+    </LocaleResource>
+    <LocaleResource Name="License.Token.Hint">
+        <Value>Key kích hoạt đầy đủ.</Value>
+    </LocaleResource>
+    <LocaleResource Name="License.Notes">
+        <Value>Ghi chú</Value>
+    </LocaleResource>
+    <LocaleResource Name="License.Notes.Hint">
+        <Value>Ghi chú giao dịch.</Value>
+    </LocaleResource>
+    <LocaleResource Name="License.Order">
+        <Value>Đơn hàng</Value>
+    </LocaleResource>
+    <LocaleResource Name="License.Order.Hint">
+        <Value>Đơn hàng mà key được cấp.</Value>
+    </LocaleResource>
+    <LocaleResource Name="License.EmailSent">
+        <Value>Đã gửi email</Value>
+    </LocaleResource>
+    <LocaleResource Name="License.EmailSent.Hint">
+        <Value>Email chứa key đã được xếp hàng gửi hay chưa.</Value>
+    </LocaleResource>
+    <LocaleResource Name="License.SearchTerm">
+        <Value>Tìm kiếm</Value>
+    </LocaleResource>
+    <LocaleResource Name="License.SearchTerm.Hint">
+        <Value>Tìm theo email, người mua, điện thoại hoặc mã giao dịch.</Value>
+    </LocaleResource>
+    <LocaleResource Name="License.SendEmailNow">
+        <Value>Gửi email ngay</Value>
+    </LocaleResource>
+    <LocaleResource Name="License.SendEmailNow.Hint">
+        <Value>Gửi email chứa key cho người mua.</Value>
+    </LocaleResource>
+
+    <!-- Devices & online activation -->
+    <LocaleResource Name="Group.Devices">
+        <Value>Thiết bị &amp; kích hoạt online</Value>
+    </LocaleResource>
+    <LocaleResource Name="ActivationEndpoint">
+        <Value>Địa chỉ kích hoạt (SERVER_URL trong online.py của addon là phần đứng trước /split3d/api)</Value>
+    </LocaleResource>
+    <LocaleResource Name="Fields.DefaultMaxDevices">
+        <Value>Số máy mỗi key</Value>
+    </LocaleResource>
+    <LocaleResource Name="Fields.DefaultMaxDevices.Hint">
+        <Value>Một key được kích hoạt đồng thời trên tối đa bao nhiêu máy. Có thể đặt riêng cho từng key ở trang thiết bị của key đó.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Fields.LeaseDays">
+        <Value>Số ngày dùng offline</Value>
+    </LocaleResource>
+    <LocaleResource Name="Fields.LeaseDays.Hint">
+        <Value>Addon vẫn chạy được bao nhiêu ngày khi không có mạng, tính từ lần kiểm tra thành công gần nhất. Máy bị đăng xuất, key bị khoá hoặc hết hạn sẽ bị khoá muộn nhất sau khoảng thời gian này.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Fields.CustomerDeactivationLimit">
+        <Value>Số lần khách tự đăng xuất máy / 30 ngày</Value>
+    </LocaleResource>
+    <LocaleResource Name="Fields.CustomerDeactivationLimit.Hint">
+        <Value>Khách được tự đăng xuất tối đa bao nhiêu máy trên web trong 30 ngày (0 = không giới hạn). Chống việc chuyền một key cho nhiều người. Đăng xuất ngay trong Blender trên chính máy đó thì luôn được phép.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Devices">
+        <Value>Thiết bị</Value>
+    </LocaleResource>
+    <LocaleResource Name="Devices.All">
+        <Value>Tất cả thiết bị</Value>
+    </LocaleResource>
+    <LocaleResource Name="Devices.Manage">
+        <Value>Thiết bị</Value>
+    </LocaleResource>
+    <LocaleResource Name="Devices.OfKey">
+        <Value>Thiết bị của key này</Value>
+    </LocaleResource>
+    <LocaleResource Name="Devices.ActiveOfMax">
+        <Value>Đang dùng trên {0} / {1} máy cho phép</Value>
+    </LocaleResource>
+    <LocaleResource Name="Devices.ActiveCount">
+        <Value>Máy đang kích hoạt</Value>
+    </LocaleResource>
+    <LocaleResource Name="Devices.TodayCount">
+        <Value>Online trong 24 giờ qua</Value>
+    </LocaleResource>
+    <LocaleResource Name="Devices.Hint">
+        <Value>Addon kiểm tra key online khi mở Blender và vài giờ một lần. Máy bị đăng xuất, key bị khoá hoặc hết hạn sẽ khoá addon ở lần kiểm tra kế tiếp, hoặc khi hết số ngày dùng offline.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Device.DeviceName">
+        <Value>Tên máy</Value>
+    </LocaleResource>
+    <LocaleResource Name="Device.DeviceName.Hint">
+        <Value>Tên máy tính do addon gửi lên.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Device.Platform">
+        <Value>Hệ điều hành</Value>
+    </LocaleResource>
+    <LocaleResource Name="Device.Platform.Hint">
+        <Value>Hệ điều hành do addon gửi lên.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Device.BlenderVersion">
+        <Value>Blender</Value>
+    </LocaleResource>
+    <LocaleResource Name="Device.BlenderVersion.Hint">
+        <Value>Phiên bản Blender ở lần kiểm tra gần nhất.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Device.AddonVersion">
+        <Value>Addon</Value>
+    </LocaleResource>
+    <LocaleResource Name="Device.AddonVersion.Hint">
+        <Value>Phiên bản addon ở lần kiểm tra gần nhất.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Device.LastIpAddress">
+        <Value>Địa chỉ IP</Value>
+    </LocaleResource>
+    <LocaleResource Name="Device.LastIpAddress.Hint">
+        <Value>Địa chỉ IP ở lần kiểm tra gần nhất.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Device.FirstActivatedOn">
+        <Value>Kích hoạt lần đầu</Value>
+    </LocaleResource>
+    <LocaleResource Name="Device.FirstActivatedOn.Hint">
+        <Value>Thời điểm key được kích hoạt trên máy này lần đầu tiên.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Device.ActivatedOn">
+        <Value>Kích hoạt lúc</Value>
+    </LocaleResource>
+    <LocaleResource Name="Device.ActivatedOn.Hint">
+        <Value>Thời điểm bắt đầu lần kích hoạt hiện tại trên máy này.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Device.ActiveFor">
+        <Value>Đã dùng</Value>
+    </LocaleResource>
+    <LocaleResource Name="Device.ActiveFor.Hint">
+        <Value>Key đã tồn tại trên máy này được bao lâu.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Device.LastSeenOn">
+        <Value>Kiểm tra gần nhất</Value>
+    </LocaleResource>
+    <LocaleResource Name="Device.LastSeenOn.Hint">
+        <Value>Lần gần nhất addon trên máy này kiểm tra online thành công.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Device.Status">
+        <Value>Trạng thái</Value>
+    </LocaleResource>
+    <LocaleResource Name="Device.Status.Hint">
+        <Value>Key còn đang kích hoạt trên máy này hay không.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Device.Status.Active">
+        <Value>Đang kích hoạt</Value>
+    </LocaleResource>
+    <LocaleResource Name="Device.Status.Deactivated">
+        <Value>Đã đăng xuất bởi {0} · {1}</Value>
+    </LocaleResource>
+    <LocaleResource Name="Device.By.Device">
+        <Value>máy</Value>
+    </LocaleResource>
+    <LocaleResource Name="Device.By.Customer">
+        <Value>khách</Value>
+    </LocaleResource>
+    <LocaleResource Name="Device.By.Admin">
+        <Value>admin</Value>
+    </LocaleResource>
+    <LocaleResource Name="Device.SearchTerm">
+        <Value>Tìm kiếm</Value>
+    </LocaleResource>
+    <LocaleResource Name="Device.SearchTerm.Hint">
+        <Value>Tìm theo tên máy, IP, email, người mua hoặc mã giao dịch.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Device.SearchActiveOnly">
+        <Value>Chỉ máy đang kích hoạt</Value>
+    </LocaleResource>
+    <LocaleResource Name="Device.SearchActiveOnly.Hint">
+        <Value>Ẩn các máy đã đăng xuất.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Device.Deactivate">
+        <Value>Đăng xuất</Value>
+    </LocaleResource>
+    <LocaleResource Name="Device.DeactivateConfirm">
+        <Value>Đăng xuất key khỏi máy "{0}"? Addon trên máy đó sẽ bị khoá ở lần kiểm tra online kế tiếp.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Device.Deactivated">
+        <Value>Đã đăng xuất máy "{0}". Bạn có thể kích hoạt key trên máy khác.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Device.DeactivatedCount">
+        <Value>Đã đăng xuất {0} máy.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Device.DeactivateSelected">
+        <Value>Đăng xuất máy đã chọn</Value>
+    </LocaleResource>
+    <LocaleResource Name="Device.DeactivateSelectedConfirm">
+        <Value>Đăng xuất các máy đã chọn? Addon trên các máy đó sẽ bị khoá ở lần kiểm tra online kế tiếp.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Device.DeactivationLimitReached">
+        <Value>Bạn chỉ được tự đăng xuất tối đa {0} máy trong {1} ngày. Nếu bạn đổi máy, vui lòng liên hệ chúng tôi.</Value>
+    </LocaleResource>
+    <LocaleResource Name="License.Devices">
+        <Value>Thiết bị</Value>
+    </LocaleResource>
+    <LocaleResource Name="License.Devices.Hint">
+        <Value>Số máy đang kích hoạt / số máy cho phép.</Value>
+    </LocaleResource>
+    <LocaleResource Name="License.MaxDevices">
+        <Value>Số máy cho phép</Value>
+    </LocaleResource>
+    <LocaleResource Name="License.MaxDevices.Hint">
+        <Value>Đặt riêng số máy cho key này. Để trống để dùng giá trị mặc định trong Cấu hình.</Value>
+    </LocaleResource>
+    <LocaleResource Name="License.MaxDevicesInvalid">
+        <Value>Số máy cho phép phải từ 1 đến 100.</Value>
+    </LocaleResource>
+    <LocaleResource Name="License.Blocked">
+        <Value>Khoá key</Value>
+    </LocaleResource>
+    <LocaleResource Name="License.Blocked.Hint">
+        <Value>Key bị khoá sẽ bị máy chủ từ chối: addon trên mọi máy sẽ bị khoá ở lần kiểm tra online kế tiếp.</Value>
+    </LocaleResource>
+    <LocaleResource Name="State.Blocked">
+        <Value>Đã khoá</Value>
+    </LocaleResource>
+    <LocaleResource Name="MyKeys.Remaining">
+        <Value>còn {0}</Value>
+    </LocaleResource>
+    <LocaleResource Name="MyKeys.Devices">
+        <Value>Thiết bị đang dùng: {0} / {1}</Value>
+    </LocaleResource>
+    <LocaleResource Name="MyKeys.NoDevices">
+        <Value>Key chưa được kích hoạt trên máy nào.</Value>
+    </LocaleResource>
+    <LocaleResource Name="MyKeys.DevicesHint">
+        <Value>Muốn chuyển key sang máy khác: đăng xuất máy cũ trong Blender (bảng Split3D) hoặc ngay tại đây.</Value>
+    </LocaleResource>
+    <LocaleResource Name="MyKeys.RemainingDeactivations">
+        <Value>Bạn còn được đăng xuất {0} máy tại đây trong {1} ngày.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Duration.Days">
+        <Value>{0} ngày</Value>
+    </LocaleResource>
+    <LocaleResource Name="Duration.Hours">
+        <Value>{0} giờ</Value>
+    </LocaleResource>
+    <LocaleResource Name="Duration.LessThanHour">
+        <Value>&lt; 1 giờ</Value>
+    </LocaleResource>
+
+    <!-- Storefront overrides of the core Vietnamese language pack (translate.smartstore.com), whose
+         machine translation is often word by word. AppendRootKey="false" targets the core keys. -->
+    <LocaleResource Name="Account.AccountActivation.Activated" AppendRootKey="false">
+        <Value>Tài khoản của bạn đã được kích hoạt.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Account.AccountActivation.InvalidEmailOrToken" AppendRootKey="false">
+        <Value>Email hoặc mã xác nhận không hợp lệ. Vui lòng đăng ký lại.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Account.Administration" AppendRootKey="false">
+        <Value>Trang quản trị</Value>
+    </LocaleResource>
+    <LocaleResource Name="Account.AssociatedExternalAuth" AppendRootKey="false">
+        <Value>Đăng nhập bằng tài khoản bên ngoài</Value>
+    </LocaleResource>
+    <LocaleResource Name="Account.AssociatedExternalAuth.AuthMethodName" AppendRootKey="false">
+        <Value>Phương thức đăng nhập</Value>
+    </LocaleResource>
+    <LocaleResource Name="Account.AssociatedExternalAuth.Email" AppendRootKey="false">
+        <Value>Email</Value>
+    </LocaleResource>
+    <LocaleResource Name="Account.AssociatedExternalAuth.ExternalIdentifier" AppendRootKey="false">
+        <Value>Mã định danh bên ngoài</Value>
+    </LocaleResource>
+    <LocaleResource Name="Account.AssociatedExternalAuth.YourAccountWillBeLinkedTo" AppendRootKey="false">
+        <Value>Liên kết tài khoản: tài khoản mới của bạn sẽ được liên kết với</Value>
+    </LocaleResource>
+    <LocaleResource Name="Account.Avatar" AppendRootKey="false">
+        <Value>Ảnh đại diện</Value>
+    </LocaleResource>
+    <LocaleResource Name="Account.Avatar.MaximumUploadedFileSize" AppendRootKey="false">
+        <Value>Dung lượng ảnh đại diện tối đa là {0}</Value>
+    </LocaleResource>
+    <LocaleResource Name="Account.Avatar.UploadRules" AppendRootKey="false">
+        <Value>Ảnh đại diện phải có định dạng GIF, PNG hoặc JPG, dung lượng tối đa {0}</Value>
+    </LocaleResource>
+    <LocaleResource Name="Account.BackInStockSubscriptions" AppendRootKey="false">
+        <Value>Thông báo khi có hàng</Value>
+    </LocaleResource>
+    <LocaleResource Name="Account.BackInStockSubscriptions.Description" AppendRootKey="false">
+        <Value>Bạn sẽ nhận email khi sản phẩm có hàng trở lại.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Account.BackInStockSubscriptions.NoSubscriptions" AppendRootKey="false">
+        <Value>Bạn chưa đăng ký nhận thông báo có hàng cho sản phẩm nào.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Account.CheckUsernameAvailability.Available" AppendRootKey="false">
+        <Value>Tên đăng nhập có thể sử dụng</Value>
+    </LocaleResource>
+    <LocaleResource Name="Account.CheckUsernameAvailability.Button" AppendRootKey="false">
+        <Value>Kiểm tra tên đăng nhập</Value>
+    </LocaleResource>
+    <LocaleResource Name="Account.CheckUsernameAvailability.CurrentUsername" AppendRootKey="false">
+        <Value>Tên đăng nhập hiện tại</Value>
+    </LocaleResource>
+    <LocaleResource Name="Account.CheckUsernameAvailability.NotAvailable" AppendRootKey="false">
+        <Value>Tên đăng nhập đã có người dùng</Value>
+    </LocaleResource>
+    <LocaleResource Name="Account.CompanyDetails" AppendRootKey="false">
+        <Value>Thông tin công ty</Value>
+    </LocaleResource>
+    <LocaleResource Name="Account.CustomerAddresses.AddNew" AppendRootKey="false">
+        <Value>Thêm địa chỉ mới</Value>
+    </LocaleResource>
+    <LocaleResource Name="Account.CustomerAddresses.NoAddresses" AppendRootKey="false">
+        <Value>Chưa có địa chỉ nào</Value>
+    </LocaleResource>
+    <LocaleResource Name="Account.CustomerOrders" AppendRootKey="false">
+        <Value>Đơn hàng</Value>
+    </LocaleResource>
+    <LocaleResource Name="Account.CustomerOrders.NoOrders" AppendRootKey="false">
+        <Value>Chưa có đơn hàng nào</Value>
+    </LocaleResource>
+    <LocaleResource Name="Account.CustomerOrders.NotYourOrder" AppendRootKey="false">
+        <Value>Đơn hàng này không thuộc tài khoản của bạn.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Account.CustomerOrders.OrderNumber" AppendRootKey="false">
+        <Value>Mã đơn hàng</Value>
+    </LocaleResource>
+    <LocaleResource Name="Account.CustomerOrders.OrderStatus" AppendRootKey="false">
+        <Value>Trạng thái đơn hàng</Value>
+    </LocaleResource>
+    <LocaleResource Name="Account.CustomerOrders.OrderTotal" AppendRootKey="false">
+        <Value>Tổng tiền</Value>
+    </LocaleResource>
+    <LocaleResource Name="Account.CustomerOrders.RecurringOrders" AppendRootKey="false">
+        <Value>Đơn hàng định kỳ</Value>
+    </LocaleResource>
+    <LocaleResource Name="Account.CustomerOrders.RecurringOrders.CancelDelivery" AppendRootKey="false">
+        <Value>Bạn có muốn hủy giao hàng định kỳ không?</Value>
+    </LocaleResource>
+    <LocaleResource Name="Account.CustomerOrders.RecurringOrders.CycleInfo" AppendRootKey="false">
+        <Value>Chu kỳ</Value>
+    </LocaleResource>
+    <LocaleResource Name="Account.CustomerOrders.RecurringOrders.SuccessfullyCanceled" AppendRootKey="false">
+        <Value>Đã hủy giao hàng định kỳ.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Account.CustomerOrders.RecurringOrders.TotalCycles" AppendRootKey="false">
+        <Value>Tổng số lần giao</Value>
+    </LocaleResource>
+    <LocaleResource Name="Account.CustomerOrders.ReturnItems" AppendRootKey="false">
+        <Value>Trả hàng</Value>
+    </LocaleResource>
+    <LocaleResource Name="Account.CustomerReturnRequests" AppendRootKey="false">
+        <Value>Hủy và trả hàng</Value>
+    </LocaleResource>
+    <LocaleResource Name="Account.CustomerReturnRequests.Action" AppendRootKey="false">
+        <Value>Hình thức xử lý</Value>
+    </LocaleResource>
+    <LocaleResource Name="Account.CustomerReturnRequests.Comments" AppendRootKey="false">
+        <Value>Ghi chú của bạn:</Value>
+    </LocaleResource>
+    <LocaleResource Name="Account.CustomerReturnRequests.Date" AppendRootKey="false">
+        <Value>Ngày yêu cầu</Value>
+    </LocaleResource>
+    <LocaleResource Name="Account.CustomerReturnRequests.Item" AppendRootKey="false">
+        <Value>Sản phẩm</Value>
+    </LocaleResource>
+    <LocaleResource Name="Account.CustomerReturnRequests.Reason" AppendRootKey="false">
+        <Value>Lý do trả hàng</Value>
+    </LocaleResource>
+    <LocaleResource Name="Account.CustomerSince" AppendRootKey="false">
+        <Value>Khách hàng từ {0}</Value>
+    </LocaleResource>
+    <LocaleResource Name="Account.DownloadableProducts" AppendRootKey="false">
+        <Value>Sản phẩm tải về</Value>
+    </LocaleResource>
+    <LocaleResource Name="Account.Fields.ConfirmPassword.Required" AppendRootKey="false">
+        <Value>Vui lòng nhập lại mật khẩu.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Account.Fields.Email" AppendRootKey="false">
+        <Value>Email</Value>
+    </LocaleResource>
+    <LocaleResource Name="Account.Fields.FirstName" AppendRootKey="false">
+        <Value>Tên</Value>
+    </LocaleResource>
+    <LocaleResource Name="Account.Fields.FullName" AppendRootKey="false">
+        <Value>Họ tên</Value>
+    </LocaleResource>
+    <LocaleResource Name="Account.Fields.Gender.Female" AppendRootKey="false">
+        <Value>Nữ</Value>
+    </LocaleResource>
+    <LocaleResource Name="Account.Fields.Gender.Male" AppendRootKey="false">
+        <Value>Nam</Value>
+    </LocaleResource>
+    <LocaleResource Name="Account.Fields.Newsletter" AppendRootKey="false">
+        <Value>Tôi muốn đăng ký nhận bản tin. Tôi đồng ý với &lt;a href="{0}"&gt;Chính sách bảo mật&lt;/a&gt;. Có thể hủy đăng ký bất cứ lúc nào.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Account.Fields.Password" AppendRootKey="false">
+        <Value>Mật khẩu</Value>
+    </LocaleResource>
+    <LocaleResource Name="Account.Fields.StateProvince" AppendRootKey="false">
+        <Value>Tỉnh / thành phố</Value>
+    </LocaleResource>
+    <LocaleResource Name="Account.Fields.StreetAddress" AppendRootKey="false">
+        <Value>Địa chỉ</Value>
+    </LocaleResource>
+    <LocaleResource Name="Account.Fields.StreetAddress2" AppendRootKey="false">
+        <Value>Địa chỉ (dòng 2)</Value>
+    </LocaleResource>
+    <LocaleResource Name="Account.Fields.Title" AppendRootKey="false">
+        <Value>Danh xưng</Value>
+    </LocaleResource>
+    <LocaleResource Name="Account.Fields.VatNumber" AppendRootKey="false">
+        <Value>Mã số thuế</Value>
+    </LocaleResource>
+    <LocaleResource Name="Account.Fields.VatNumber.Note" AppendRootKey="false">
+        <Value>LƯU Ý: Nhập mã số thuế kèm mã quốc gia (ví dụ: GB 111 111 11)</Value>
+    </LocaleResource>
+    <LocaleResource Name="Account.Fields.ZipPostalCode" AppendRootKey="false">
+        <Value>Mã bưu chính</Value>
+    </LocaleResource>
+    <LocaleResource Name="Account.ForumSubscriptions" AppendRootKey="false">
+        <Value>Theo dõi diễn đàn</Value>
+    </LocaleResource>
+    <LocaleResource Name="Account.ForumSubscriptions.DeleteSelected" AppendRootKey="false">
+        <Value>Xóa mục đã chọn</Value>
+    </LocaleResource>
+    <LocaleResource Name="Account.ForumSubscriptions.Description" AppendRootKey="false">
+        <Value>Bạn sẽ nhận email khi có chủ đề hoặc bài viết mới trên diễn đàn.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Account.ForumSubscriptions.NoSubscriptions" AppendRootKey="false">
+        <Value>Bạn chưa theo dõi diễn đàn nào</Value>
+    </LocaleResource>
+    <LocaleResource Name="Account.ImpersonatedAs" AppendRootKey="false">
+        <Value>Đang đăng nhập thay cho {0}</Value>
+    </LocaleResource>
+    <LocaleResource Name="Account.ImpersonatedAs.Finish" AppendRootKey="false">
+        <Value>Thoát phiên đăng nhập thay</Value>
+    </LocaleResource>
+    <LocaleResource Name="Account.ImpersonatedAs.Finish.Hint" AppendRootKey="false">
+        <Value>Bấm vào đây để thoát phiên đăng nhập thay</Value>
+    </LocaleResource>
+    <LocaleResource Name="Account.Login.CheckEmailAccount" AppendRootKey="false">
+        <Value>Thông tin đăng nhập không đúng hoặc tài khoản chưa được kích hoạt. Vui lòng kiểm tra hộp thư và xác nhận đăng ký.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Account.Login.CheckoutAsGuest" AppendRootKey="false">
+        <Value>Mua hàng không cần tài khoản</Value>
+    </LocaleResource>
+    <LocaleResource Name="Account.Login.CheckoutAsGuestOrRegister" AppendRootKey="false">
+        <Value>Mua hàng không cần tài khoản hoặc đăng ký</Value>
+    </LocaleResource>
+    <LocaleResource Name="Account.Login.Fields.Email" AppendRootKey="false">
+        <Value>Email</Value>
+    </LocaleResource>
+    <LocaleResource Name="Account.Login.Fields.RememberMe" AppendRootKey="false">
+        <Value>Ghi nhớ đăng nhập</Value>
+    </LocaleResource>
+    <LocaleResource Name="Account.Login.Fields.UsernameOrEmail" AppendRootKey="false">
+        <Value>Tên đăng nhập hoặc email</Value>
+    </LocaleResource>
+    <LocaleResource Name="Account.Login.NotRegisteredYet" AppendRootKey="false">
+        <Value>Chưa có tài khoản?</Value>
+    </LocaleResource>
+    <LocaleResource Name="Account.Login.ReturningCustomer" AppendRootKey="false">
+        <Value>Tôi đã có tài khoản</Value>
+    </LocaleResource>
+    <LocaleResource Name="Account.Login.Unsuccessful" AppendRootKey="false">
+        <Value>Đăng nhập không thành công. Vui lòng kiểm tra lại thông tin và thử lại.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Account.Login.WrongCredentials" AppendRootKey="false">
+        <Value>Thông tin đăng nhập không chính xác</Value>
+    </LocaleResource>
+    <LocaleResource Name="Account.PasswordRecovery.ChangePasswordButton" AppendRootKey="false">
+        <Value>Đặt lại mật khẩu</Value>
+    </LocaleResource>
+    <LocaleResource Name="Account.PasswordRecovery.Email" AppendRootKey="false">
+        <Value>Địa chỉ email của bạn</Value>
+    </LocaleResource>
+    <LocaleResource Name="Account.PasswordRecovery.EmailHasBeenSent" AppendRootKey="false">
+        <Value>Nếu email này đã đăng ký tài khoản, chúng tôi đã gửi đường dẫn để đặt lại mật khẩu.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Account.PasswordRecovery.OldPassword.Required" AppendRootKey="false">
+        <Value>Vui lòng nhập mật khẩu cũ.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Account.PasswordRecovery.PasswordHasBeenChanged" AppendRootKey="false">
+        <Value>Mật khẩu của bạn đã được thay đổi.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Account.PasswordRecovery.RecoverButton" AppendRootKey="false">
+        <Value>Gửi yêu cầu</Value>
+    </LocaleResource>
+    <LocaleResource Name="Account.PasswordRecovery.Tooltip" AppendRootKey="false">
+        <Value>Vui lòng nhập địa chỉ email bên dưới. Bạn sẽ nhận được đường dẫn để đặt lại mật khẩu.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Account.PasswordRecoveryConfirm.InvalidEmailOrToken" AppendRootKey="false">
+        <Value>Email hoặc mã xác nhận không hợp lệ. Nếu muốn đặt lại mật khẩu, vui lòng bấm "Quên mật khẩu" một lần nữa.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Account.Preferences" AppendRootKey="false">
+        <Value>Tùy chọn cá nhân</Value>
+    </LocaleResource>
+    <LocaleResource Name="Account.Register" AppendRootKey="false">
+        <Value>Đăng ký</Value>
+    </LocaleResource>
+    <LocaleResource Name="Account.Register.Button" AppendRootKey="false">
+        <Value>Đăng ký</Value>
+    </LocaleResource>
+    <LocaleResource Name="Account.Register.Errors.AlreadyRegistered" AppendRootKey="false">
+        <Value>Khách hàng này đã đăng ký.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Account.Register.Errors.CannotRegisterSearchEngine" AppendRootKey="false">
+        <Value>Không thể đăng ký tài khoản cho công cụ tìm kiếm.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Account.Register.Errors.CannotRegisterTaskAccount" AppendRootKey="false">
+        <Value>Không thể đăng ký tài khoản tác vụ nền.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Account.Register.Errors.EmailIsNotProvided" AppendRootKey="false">
+        <Value>Chưa nhập email</Value>
+    </LocaleResource>
+    <LocaleResource Name="Account.Register.Errors.PasswordIsNotProvided" AppendRootKey="false">
+        <Value>Chưa nhập mật khẩu</Value>
+    </LocaleResource>
+    <LocaleResource Name="Account.Register.Errors.UsernameIsNotProvided" AppendRootKey="false">
+        <Value>Chưa nhập tên đăng nhập</Value>
+    </LocaleResource>
+    <LocaleResource Name="Account.Register.Result.AlreadyRegistered" AppendRootKey="false">
+        <Value>Bạn đã đăng ký rồi.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Account.Register.Result.Disabled" AppendRootKey="false">
+        <Value>Hiện tại chưa mở đăng ký tài khoản.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Account.Register.Result.EmailValidation" AppendRootKey="false">
+        <Value>Đăng ký thành công. Chúng tôi đã gửi email hướng dẫn kích hoạt tài khoản cho bạn.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Account.Register.Result.MeetPasswordRules" AppendRootKey="false">
+        <Value>Mật khẩu phải đáp ứng các yêu cầu sau: {0}</Value>
+    </LocaleResource>
+    <LocaleResource Name="Account.Register.Result.Standard" AppendRootKey="false">
+        <Value>Đăng ký thành công</Value>
+    </LocaleResource>
+    <LocaleResource Name="Account.Register.Unsuccessful" AppendRootKey="false">
+        <Value>Đăng ký chưa hoàn tất. Vui lòng kiểm tra lại thông tin và thử lại.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Account.YourContactInformation" AppendRootKey="false">
+        <Value>Thông tin liên hệ</Value>
+    </LocaleResource>
+    <LocaleResource Name="Address" AppendRootKey="false">
+        <Value>Địa chỉ</Value>
+    </LocaleResource>
+    <LocaleResource Name="Address.Fields.Address1" AppendRootKey="false">
+        <Value>Địa chỉ</Value>
+    </LocaleResource>
+    <LocaleResource Name="Address.Fields.Address1.Required" AppendRootKey="false">
+        <Value>Vui lòng nhập địa chỉ.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Address.Fields.Address2" AppendRootKey="false">
+        <Value>Địa chỉ (dòng 2)</Value>
+    </LocaleResource>
+    <LocaleResource Name="Address.Fields.Address2.Required" AppendRootKey="false">
+        <Value>Vui lòng nhập địa chỉ (dòng 2).</Value>
+    </LocaleResource>
+    <LocaleResource Name="Address.Fields.City.Required" AppendRootKey="false">
+        <Value>Vui lòng nhập thành phố.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Address.Fields.Company.Required" AppendRootKey="false">
+        <Value>Vui lòng nhập tên công ty.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Address.Fields.Country.Required" AppendRootKey="false">
+        <Value>Vui lòng chọn quốc gia.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Address.Fields.Email" AppendRootKey="false">
+        <Value>Email</Value>
+    </LocaleResource>
+    <LocaleResource Name="Address.Fields.EmailMatch" AppendRootKey="false">
+        <Value>Nhập lại email</Value>
+    </LocaleResource>
+    <LocaleResource Name="Address.Fields.FaxNumber.Required" AppendRootKey="false">
+        <Value>Vui lòng nhập số fax.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Address.Fields.FirstName" AppendRootKey="false">
+        <Value>Tên</Value>
+    </LocaleResource>
+    <LocaleResource Name="Address.Fields.PhoneNumber.Required" AppendRootKey="false">
+        <Value>Vui lòng nhập số điện thoại.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Address.Fields.Salutation" AppendRootKey="false">
+        <Value>Xưng hô</Value>
+    </LocaleResource>
+    <LocaleResource Name="Address.Fields.StateProvince" AppendRootKey="false">
+        <Value>Tỉnh / thành phố</Value>
+    </LocaleResource>
+    <LocaleResource Name="Address.Fields.StateProvince.Required" AppendRootKey="false">
+        <Value>Vui lòng chọn tỉnh / thành phố.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Address.Fields.Title" AppendRootKey="false">
+        <Value>Danh xưng</Value>
+    </LocaleResource>
+    <LocaleResource Name="Address.Fields.ZipPostalCode" AppendRootKey="false">
+        <Value>Mã bưu chính</Value>
+    </LocaleResource>
+    <LocaleResource Name="Address.Fields.ZipPostalCode.Required" AppendRootKey="false">
+        <Value>Vui lòng nhập mã bưu chính.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Address.IsDefaultAddress" AppendRootKey="false">
+        <Value>Địa chỉ mặc định</Value>
+    </LocaleResource>
+    <LocaleResource Name="Address.IsDefaultBillingAddress" AppendRootKey="false">
+        <Value>Địa chỉ thanh toán mặc định</Value>
+    </LocaleResource>
+    <LocaleResource Name="Address.IsDefaultShippingAddress" AppendRootKey="false">
+        <Value>Địa chỉ giao hàng mặc định</Value>
+    </LocaleResource>
+    <LocaleResource Name="Address.OtherNonUS" AppendRootKey="false">
+        <Value>Khác (ngoài Hoa Kỳ)</Value>
+    </LocaleResource>
+    <LocaleResource Name="Address.SetDefaultAddress" AppendRootKey="false">
+        <Value>Đặt làm địa chỉ thanh toán và giao hàng mặc định.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Aria.Description.InstantSearch" AppendRootKey="false">
+        <Value>Nhập từ khóa tìm kiếm. Kết quả sẽ tự hiện khi bạn gõ. Nhấn Enter để xem tất cả kết quả.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Aria.Label.ActiveFilters" AppendRootKey="false">
+        <Value>Bộ lọc đang áp dụng</Value>
+    </LocaleResource>
+    <LocaleResource Name="Aria.Label.ApplyPriceRange" AppendRootKey="false">
+        <Value>Áp dụng khoảng giá</Value>
+    </LocaleResource>
+    <LocaleResource Name="Aria.Label.BuyHint" AppendRootKey="false">
+        <Value>Khi bấm "Mua", tôi đồng ý với các điều khoản và điều kiện.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Aria.Label.CartItemSummary" AppendRootKey="false">
+        <Value>{0} giá {1}.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Aria.Label.CartItemSummaryWithAttributes" AppendRootKey="false">
+        <Value>{0} giá {1}, số lượng {2}. {3}</Value>
+    </LocaleResource>
+    <LocaleResource Name="Aria.Label.CartItemSummaryWithTotal" AppendRootKey="false">
+        <Value>{0} giá {1} mỗi sản phẩm, số lượng {2}, thành tiền {3}.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Aria.Label.CartTotalSummary" AppendRootKey="false">
+        <Value>Đơn hàng của bạn: {0} {1}, {2} sản phẩm.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Aria.Label.CheckoutStep.Pending" AppendRootKey="false">
+        <Value>Chưa thực hiện</Value>
+    </LocaleResource>
+    <LocaleResource Name="Aria.Label.ExpandItem" AppendRootKey="false">
+        <Value>Nhấn ENTER để xem thêm tùy chọn cho {0}</Value>
+    </LocaleResource>
+    <LocaleResource Name="Aria.Label.MediaGallery" AppendRootKey="false">
+        <Value>Thư viện ảnh</Value>
+    </LocaleResource>
+    <LocaleResource Name="Aria.Label.OffCanvasCartTab" AppendRootKey="false">
+        <Value>Sản phẩm của tôi</Value>
+    </LocaleResource>
+    <LocaleResource Name="Aria.Label.OffCanvasMenuTab" AppendRootKey="false">
+        <Value>Danh mục cửa hàng</Value>
+    </LocaleResource>
+    <LocaleResource Name="Aria.Label.PriceRange" AppendRootKey="false">
+        <Value>Khoảng giá</Value>
+    </LocaleResource>
+    <LocaleResource Name="Aria.Label.ProductOfOrderPlacedOn" AppendRootKey="false">
+        <Value>Đơn hàng {0} ngày {1}, {2}</Value>
+    </LocaleResource>
+    <LocaleResource Name="Aria.Label.Rating" AppendRootKey="false">
+        <Value>Đánh giá: {0}/5 sao. {1}</Value>
+    </LocaleResource>
+    <LocaleResource Name="Aria.Label.SearchFilters" AppendRootKey="false">
+        <Value>Bộ lọc tìm kiếm</Value>
+    </LocaleResource>
+    <LocaleResource Name="Aria.Label.SelectDeselectEntry" AppendRootKey="false">
+        <Value>Chọn hoặc bỏ chọn mục</Value>
+    </LocaleResource>
+    <LocaleResource Name="Aria.Label.UploaderProgressBar" AppendRootKey="false">
+        <Value>Đang tải lên {0}</Value>
+    </LocaleResource>
+    <LocaleResource Name="Categories" AppendRootKey="false">
+        <Value>Danh mục</Value>
+    </LocaleResource>
+    <LocaleResource Name="Categories.PageSize" AppendRootKey="false">
+        <Value>Hiển thị</Value>
+    </LocaleResource>
+    <LocaleResource Name="Categories.PageSize.PerPage" AppendRootKey="false">
+        <Value>mỗi trang</Value>
+    </LocaleResource>
+    <LocaleResource Name="Categories.ViewMode" AppendRootKey="false">
+        <Value>Kiểu hiển thị</Value>
+    </LocaleResource>
+    <LocaleResource Name="Categories.Wishlist" AppendRootKey="false">
+        <Value>Danh sách yêu thích</Value>
+    </LocaleResource>
+    <LocaleResource Name="Checkout" AppendRootKey="false">
+        <Value>Thanh toán</Value>
+    </LocaleResource>
+    <LocaleResource Name="Checkout.AnonymousNotAllowed" AppendRootKey="false">
+        <Value>Bạn cần đăng nhập để thanh toán.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Checkout.BillToThisAddress" AppendRootKey="false">
+        <Value>Dùng địa chỉ này để thanh toán</Value>
+    </LocaleResource>
+    <LocaleResource Name="Checkout.Button" AppendRootKey="false">
+        <Value>Thanh toán</Value>
+    </LocaleResource>
+    <LocaleResource Name="Checkout.ConfirmHint" AppendRootKey="false">
+        <Value>Vui lòng kiểm tra tổng tiền đơn hàng, địa chỉ thanh toán và địa chỉ giao hàng (nếu có). Bạn có thể sửa thông tin bất cứ lúc nào bằng cách bấm &lt;strong&gt;Thay đổi&lt;/strong&gt;. Nếu mọi thứ đã đúng, hãy bấm &lt;strong&gt;Xác nhận&lt;/strong&gt; để gửi đơn hàng.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Checkout.DownloadUserAgreement.PleaseAgree" AppendRootKey="false">
+        <Value>Vui lòng đồng ý với điều khoản sử dụng của sản phẩm tải về.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Checkout.EsdRevocationWaiverConfirmation" AppendRootKey="false">
+        <Value>Có, tôi muốn nhận nội dung số ngay và hiểu rằng tôi sẽ mất quyền hủy đơn khi đã truy cập nội dung.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Checkout.EsdRevocationWaiverConfirmation.PleaseAgree" AppendRootKey="false">
+        <Value>Vui lòng xác nhận rằng bạn muốn nhận nội dung số ngay.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Checkout.MaxOrderSubtotalAmount" AppendRootKey="false">
+        <Value>Tổng giá trị đơn hàng tối đa là {0}.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Checkout.MinOrderPlacementInterval" AppendRootKey="false">
+        <Value>Bạn vừa đặt một đơn hàng. Vui lòng đợi vài giây trước khi đặt đơn mới.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Checkout.MinOrderSubtotalAmount" AppendRootKey="false">
+        <Value>Tổng giá trị đơn hàng tối thiểu là {0}.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Checkout.NextButton" AppendRootKey="false">
+        <Value>Tiếp tục</Value>
+    </LocaleResource>
+    <LocaleResource Name="Checkout.NoPaymentMethods" AppendRootKey="false">
+        <Value>Hiện không có phương thức thanh toán nào</Value>
+    </LocaleResource>
+    <LocaleResource Name="Checkout.OrderCompletes" AppendRootKey="false">
+        <Value>Đơn hàng của bạn sẽ được hoàn tất.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Checkout.OrderHasBeenReceived" AppendRootKey="false">
+        <Value>Chúng tôi đã nhận được đơn hàng của bạn</Value>
+    </LocaleResource>
+    <LocaleResource Name="Checkout.OrderNumber" AppendRootKey="false">
+        <Value>Mã đơn hàng của bạn</Value>
+    </LocaleResource>
+    <LocaleResource Name="Checkout.OrderSummary" AppendRootKey="false">
+        <Value>Tóm tắt đơn hàng</Value>
+    </LocaleResource>
+    <LocaleResource Name="Checkout.PlacedOrderDetails" AppendRootKey="false">
+        <Value>Chi tiết đơn hàng</Value>
+    </LocaleResource>
+    <LocaleResource Name="Checkout.Process.Terminal" AppendRootKey="false">
+        <Value>Rút gọn</Value>
+    </LocaleResource>
+    <LocaleResource Name="Checkout.Process.Terminal.Hint" AppendRootKey="false">
+        <Value>Khách được chuyển thẳng đến trang xác nhận, bỏ qua địa chỉ, phương thức vận chuyển và thanh toán.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Checkout.Process.Terminal.PaymentMethod" AppendRootKey="false">
+        <Value>Rút gọn, có chọn thanh toán</Value>
+    </LocaleResource>
+    <LocaleResource Name="Checkout.Process.Terminal.PaymentMethod.Hint" AppendRootKey="false">
+        <Value>Khách chọn phương thức thanh toán rồi đến trang xác nhận, bỏ qua địa chỉ và phương thức vận chuyển.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Checkout.Progress.Address" AppendRootKey="false">
+        <Value>Địa chỉ</Value>
+    </LocaleResource>
+    <LocaleResource Name="Checkout.Progress.Cart" AppendRootKey="false">
+        <Value>Giỏ hàng</Value>
+    </LocaleResource>
+    <LocaleResource Name="Checkout.Progress.Complete" AppendRootKey="false">
+        <Value>Hoàn tất</Value>
+    </LocaleResource>
+    <LocaleResource Name="Checkout.Progress.Shipping" AppendRootKey="false">
+        <Value>Vận chuyển</Value>
+    </LocaleResource>
+    <LocaleResource Name="Checkout.SelectBillingAddressOrEnterNewOne" AppendRootKey="false">
+        <Value>Chọn địa chỉ thanh toán trong sổ địa chỉ hoặc nhập địa chỉ mới.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Checkout.SelectShippingAddressOrEnterNewOne" AppendRootKey="false">
+        <Value>Chọn địa chỉ giao hàng trong sổ địa chỉ hoặc nhập địa chỉ mới.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Checkout.ShippingIsNotAllowed" AppendRootKey="false">
+        <Value>Không hỗ trợ giao hàng</Value>
+    </LocaleResource>
+    <LocaleResource Name="Checkout.ShippingMethod" AppendRootKey="false">
+        <Value>Phương thức vận chuyển</Value>
+    </LocaleResource>
+    <LocaleResource Name="Checkout.ShippingOptionCouldNotBeLoaded" AppendRootKey="false">
+        <Value>Không tải được các tùy chọn vận chuyển</Value>
+    </LocaleResource>
+    <LocaleResource Name="Checkout.SpecifyDifferingShippingAddress" AppendRootKey="false">
+        <Value>Tôi muốn nhập địa chỉ giao hàng khác sau khi nhập địa chỉ thanh toán.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Checkout.SubmittingOrder" AppendRootKey="false">
+        <Value>Đang gửi đơn hàng...</Value>
+    </LocaleResource>
+    <LocaleResource Name="Checkout.TermsOfService.IAccept" AppendRootKey="false">
+        <Value>Tôi đồng ý và cam kết tuân thủ {0}điều khoản dịch vụ{1}. Tôi đã đọc {3}chính sách bảo mật{1} và đồng ý cho lưu trữ điện tử dữ liệu mà tôi cung cấp.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Checkout.ThankYou" AppendRootKey="false">
+        <Value>Cảm ơn bạn đã mua hàng!</Value>
+    </LocaleResource>
+    <LocaleResource Name="Checkout.UseRewardPoints" AppendRootKey="false">
+        <Value>Dùng điểm thưởng: hiện có {0} điểm ({1})</Value>
+    </LocaleResource>
+    <LocaleResource Name="Common.Active" AppendRootKey="false">
+        <Value>Đang hoạt động</Value>
+    </LocaleResource>
+    <LocaleResource Name="Common.AdditionalShippingSurcharge" AppendRootKey="false">
+        <Value>Cộng thêm &lt;b&gt;{0}&lt;/b&gt; phụ phí vận chuyển</Value>
+    </LocaleResource>
+    <LocaleResource Name="Common.All" AppendRootKey="false">
+        <Value>Tất cả</Value>
+    </LocaleResource>
+    <LocaleResource Name="Common.Any" AppendRootKey="false">
+        <Value>Bất kỳ</Value>
+    </LocaleResource>
+    <LocaleResource Name="Common.Apply" AppendRootKey="false">
+        <Value>Áp dụng</Value>
+    </LocaleResource>
+    <LocaleResource Name="Common.Back" AppendRootKey="false">
+        <Value>Quay lại</Value>
+    </LocaleResource>
+    <LocaleResource Name="Common.BottomRight" AppendRootKey="false">
+        <Value>Dưới cùng bên phải</Value>
+    </LocaleResource>
+    <LocaleResource Name="Common.Buttons.Light" AppendRootKey="false">
+        <Value>Sáng</Value>
+    </LocaleResource>
+    <LocaleResource Name="Common.Buttons.Primary" AppendRootKey="false">
+        <Value>Chính</Value>
+    </LocaleResource>
+    <LocaleResource Name="Common.Buttons.Secondary" AppendRootKey="false">
+        <Value>Phụ</Value>
+    </LocaleResource>
+    <LocaleResource Name="Common.Buttons.Success" AppendRootKey="false">
+        <Value>Thành công</Value>
+    </LocaleResource>
+    <LocaleResource Name="Common.Cancel" AppendRootKey="false">
+        <Value>Hủy</Value>
+    </LocaleResource>
+    <LocaleResource Name="Common.CannotDisplayView" AppendRootKey="false">
+        <Value>Không thể hiển thị giao diện "{0}".</Value>
+    </LocaleResource>
+    <LocaleResource Name="Common.CaptchaCheckFailed" AppendRootKey="false">
+        <Value>Kiểm tra CAPTCHA không thành công. Lỗi: {0}.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Common.CaptchaUnableToVerify" AppendRootKey="false">
+        <Value>Không thể xác minh CAPTCHA.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Common.Catalog.EditProduct" AppendRootKey="false">
+        <Value>Sửa sản phẩm</Value>
+    </LocaleResource>
+    <LocaleResource Name="Common.Center" AppendRootKey="false">
+        <Value>Giữa</Value>
+    </LocaleResource>
+    <LocaleResource Name="Common.Close" AppendRootKey="false">
+        <Value>Đóng</Value>
+    </LocaleResource>
+    <LocaleResource Name="Common.Cms.EditBlogPost" AppendRootKey="false">
+        <Value>Sửa bài viết blog</Value>
+    </LocaleResource>
+    <LocaleResource Name="Common.Cms.EditNewsItem" AppendRootKey="false">
+        <Value>Sửa tin tức</Value>
+    </LocaleResource>
+    <LocaleResource Name="Common.Consent" AppendRootKey="false">
+        <Value>Đồng ý</Value>
+    </LocaleResource>
+    <LocaleResource Name="Common.CopyToClipboard.Succeeded" AppendRootKey="false">
+        <Value>Đã sao chép!</Value>
+    </LocaleResource>
+    <LocaleResource Name="Common.Count" AppendRootKey="false">
+        <Value>Số lượng</Value>
+    </LocaleResource>
+    <LocaleResource Name="Common.Create" AppendRootKey="false">
+        <Value>Tạo</Value>
+    </LocaleResource>
+    <LocaleResource Name="Common.CreatedOn" AppendRootKey="false">
+        <Value>Ngày tạo</Value>
+    </LocaleResource>
+    <LocaleResource Name="Common.CrossReferences" AppendRootKey="false">
+        <Value>Tham chiếu chéo</Value>
+    </LocaleResource>
+    <LocaleResource Name="Common.CustomerNumberAlreadyExists" AppendRootKey="false">
+        <Value>Mã khách hàng đã tồn tại, vui lòng chọn mã khác.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Common.CustomerRules" AppendRootKey="false">
+        <Value>Quy tắc khách hàng</Value>
+    </LocaleResource>
+    <LocaleResource Name="Common.Day" AppendRootKey="false">
+        <Value>Ngày</Value>
+    </LocaleResource>
+    <LocaleResource Name="Common.Deactivated" AppendRootKey="false">
+        <Value>Đã vô hiệu hóa</Value>
+    </LocaleResource>
+    <LocaleResource Name="Common.Delete" AppendRootKey="false">
+        <Value>Xóa</Value>
+    </LocaleResource>
+    <LocaleResource Name="Common.DeleteConfirmation" AppendRootKey="false">
+        <Value>Bạn có chắc muốn xóa mục này?</Value>
+    </LocaleResource>
+    <LocaleResource Name="Common.DeleteConfirmationParam" AppendRootKey="false">
+        <Value>Bạn có chắc muốn xóa "{0}"?</Value>
+    </LocaleResource>
+    <LocaleResource Name="Common.DeleteSelected" AppendRootKey="false">
+        <Value>Xóa mục đã chọn</Value>
+    </LocaleResource>
+    <LocaleResource Name="Common.Deny" AppendRootKey="false">
+        <Value>Từ chối</Value>
+    </LocaleResource>
+    <LocaleResource Name="Common.Description" AppendRootKey="false">
+        <Value>Mô tả</Value>
+    </LocaleResource>
+    <LocaleResource Name="Common.Description.Hint" AppendRootKey="false">
+        <Value>Mô tả</Value>
+    </LocaleResource>
+    <LocaleResource Name="Common.DisplayOrder" AppendRootKey="false">
+        <Value>Thứ tự hiển thị</Value>
+    </LocaleResource>
+    <LocaleResource Name="Common.DisplayOrder.Hint" AppendRootKey="false">
+        <Value>Thứ tự hiển thị. Số 1 nằm đầu danh sách.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Common.Done" AppendRootKey="false">
+        <Value>Xong</Value>
+    </LocaleResource>
+    <LocaleResource Name="Common.DontAskAgain" AppendRootKey="false">
+        <Value>Không hỏi lại</Value>
+    </LocaleResource>
+    <LocaleResource Name="Common.Download.Delete" AppendRootKey="false">
+        <Value>Xóa file tải về</Value>
+    </LocaleResource>
+    <LocaleResource Name="Common.Download.HasNoSample" AppendRootKey="false">
+        <Value>Sản phẩm này không có bản dùng thử để tải về.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Common.Download.MaxNumberReached" AppendRootKey="false">
+        <Value>Bạn đã đạt số lượt tải tối đa ({0}).</Value>
+    </LocaleResource>
+    <LocaleResource Name="Common.Download.NoDataAvailable" AppendRootKey="false">
+        <Value>Dữ liệu tải về không còn nữa.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Common.Download.NotAllowed" AppendRootKey="false">
+        <Value>Không được phép tải về.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Common.Download.NotAvailable" AppendRootKey="false">
+        <Value>File không còn để tải về.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Common.Download.SampleNotAvailable" AppendRootKey="false">
+        <Value>Bản dùng thử không còn để tải về.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Common.Download.Version.Hint" AppendRootKey="false">
+        <Value>Nhập số phiên bản đúng định dạng (ví dụ: 1.0.0.0, 2.0 hoặc 3.1.5).</Value>
+    </LocaleResource>
+    <LocaleResource Name="Common.Edit" AppendRootKey="false">
+        <Value>Sửa</Value>
+    </LocaleResource>
+    <LocaleResource Name="Common.Empty" AppendRootKey="false">
+        <Value>Trống</Value>
+    </LocaleResource>
+    <LocaleResource Name="Common.EnlargeView" AppendRootKey="false">
+        <Value>Phóng to</Value>
+    </LocaleResource>
+    <LocaleResource Name="Common.EnterKey" AppendRootKey="false">
+        <Value>Enter</Value>
+    </LocaleResource>
+    <LocaleResource Name="Common.Entity.BlogPost" AppendRootKey="false">
+        <Value>Bài viết blog</Value>
+    </LocaleResource>
+    <LocaleResource Name="Common.Entity.Category" AppendRootKey="false">
+        <Value>Danh mục</Value>
+    </LocaleResource>
+    <LocaleResource Name="Common.Entity.Customer" AppendRootKey="false">
+        <Value>Khách hàng</Value>
+    </LocaleResource>
+    <LocaleResource Name="Common.Entity.Download" AppendRootKey="false">
+        <Value>Tải về</Value>
+    </LocaleResource>
+    <LocaleResource Name="Common.Entity.ForumGroup" AppendRootKey="false">
+        <Value>Nhóm diễn đàn</Value>
+    </LocaleResource>
+    <LocaleResource Name="Common.Entity.Manufacturer" AppendRootKey="false">
+        <Value>Nhà sản xuất</Value>
+    </LocaleResource>
+    <LocaleResource Name="Common.Entity.NewsItem" AppendRootKey="false">
+        <Value>Tin tức</Value>
+    </LocaleResource>
+    <LocaleResource Name="Common.Entity.ProductAttributeOption" AppendRootKey="false">
+        <Value>Bộ tùy chọn thuộc tính sản phẩm</Value>
+    </LocaleResource>
+    <LocaleResource Name="Common.Entity.SelectCategories" AppendRootKey="false">
+        <Value>Chọn danh mục</Value>
+    </LocaleResource>
+    <LocaleResource Name="Common.Entity.SelectTopic" AppendRootKey="false">
+        <Value>Chọn trang nội dung</Value>
+    </LocaleResource>
+    <LocaleResource Name="Common.Entity.SelectTopics" AppendRootKey="false">
+        <Value>Chọn trang nội dung</Value>
+    </LocaleResource>
+    <LocaleResource Name="Common.Entity.SpecificationAttribute" AppendRootKey="false">
+        <Value>Thông số kỹ thuật</Value>
+    </LocaleResource>
+    <LocaleResource Name="Common.Entity.SpecificationAttributeOption" AppendRootKey="false">
+        <Value>Tùy chọn thông số kỹ thuật</Value>
+    </LocaleResource>
+    <LocaleResource Name="Common.Entity.Topic" AppendRootKey="false">
+        <Value>Trang nội dung</Value>
+    </LocaleResource>
+    <LocaleResource Name="Common.EntityPicker.MultiPickNote" AppendRootKey="false">
+        <Value>Bấm vào một mục để chọn hoặc bỏ chọn, sau đó bấm OK để áp dụng.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Common.EntityPicker.NoMoreItemsFound" AppendRootKey="false">
+        <Value>Không còn mục nào.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Common.EntityPicker.SinglePickNote" AppendRootKey="false">
+        <Value>Bấm vào một mục để chọn, sau đó bấm OK để áp dụng.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Common.Error" AppendRootKey="false">
+        <Value>Lỗi</Value>
+    </LocaleResource>
+    <LocaleResource Name="Common.Error.AliasAlreadyExists" AppendRootKey="false">
+        <Value>Bí danh "{0}" đã tồn tại.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Common.Error.BotsNotPermitted" AppendRootKey="false">
+        <Value>Thao tác này không dành cho công cụ tìm kiếm (bot).</Value>
+    </LocaleResource>
+    <LocaleResource Name="Common.Error.ChooseDifferentValue" AppendRootKey="false">
+        <Value>Vui lòng chọn giá trị khác.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Common.Error.NoActiveLanguage" AppendRootKey="false">
+        <Value>Không tải được ngôn ngữ nào đang hoạt động.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Common.Error.NoEmailAccount" AppendRootKey="false">
+        <Value>Không tải được tài khoản email nào.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Common.Error.SendMail" AppendRootKey="false">
+        <Value>Có lỗi khi gửi email. Vui lòng thử lại sau.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Common.EscKey" AppendRootKey="false">
+        <Value>Esc</Value>
+    </LocaleResource>
+    <LocaleResource Name="Common.Example" AppendRootKey="false">
+        <Value>Ví dụ</Value>
+    </LocaleResource>
+    <LocaleResource Name="Common.ExecutedOn" AppendRootKey="false">
+        <Value>Thực hiện lúc</Value>
+    </LocaleResource>
+    <LocaleResource Name="Common.Execution" AppendRootKey="false">
+        <Value>Thực thi</Value>
+    </LocaleResource>
+    <LocaleResource Name="Common.Exit" AppendRootKey="false">
+        <Value>Thoát</Value>
+    </LocaleResource>
+    <LocaleResource Name="Common.ExpandCollapseAll" AppendRootKey="false">
+        <Value>Mở rộng/thu gọn tất cả</Value>
+    </LocaleResource>
+    <LocaleResource Name="Common.Export" AppendRootKey="false">
+        <Value>Xuất</Value>
+    </LocaleResource>
+    <LocaleResource Name="Common.File" AppendRootKey="false">
+        <Value>File</Value>
+    </LocaleResource>
+    <LocaleResource Name="Common.FileType.Documents" AppendRootKey="false">
+        <Value>Tài liệu</Value>
+    </LocaleResource>
+    <LocaleResource Name="Common.FileType.Flash" AppendRootKey="false">
+        <Value>Flash</Value>
+    </LocaleResource>
+    <LocaleResource Name="Common.FileType.Texts" AppendRootKey="false">
+        <Value>Văn bản</Value>
+    </LocaleResource>
+    <LocaleResource Name="Common.FileUploader.Cancel" AppendRootKey="false">
+        <Value>Hủy</Value>
+    </LocaleResource>
+    <LocaleResource Name="Common.FileUploader.DropFiles" AppendRootKey="false">
+        <Value>Thả file vào đây để tải lên</Value>
+    </LocaleResource>
+    <LocaleResource Name="Common.FileUploader.Upload" AppendRootKey="false">
+        <Value>Kéo thả file vào đây hoặc bấm để tải lên.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Common.FileUploader.UploadAvatar" AppendRootKey="false">
+        <Value>Kéo thả ảnh vào đây hoặc bấm để tải ảnh đại diện lên.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Common.FinishedOn" AppendRootKey="false">
+        <Value>Kết thúc lúc</Value>
+    </LocaleResource>
+    <LocaleResource Name="Common.FormFields.Required.Hint" AppendRootKey="false">
+        <Value>* Các trường có dấu sao là bắt buộc.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Common.FriendlyName" AppendRootKey="false">
+        <Value>Tên hiển thị</Value>
+    </LocaleResource>
+    <LocaleResource Name="Common.Hide" AppendRootKey="false">
+        <Value>Ẩn</Value>
+    </LocaleResource>
+    <LocaleResource Name="Common.Home" AppendRootKey="false">
+        <Value>Trang chủ</Value>
+    </LocaleResource>
+    <LocaleResource Name="Common.Import" AppendRootKey="false">
+        <Value>Nhập</Value>
+    </LocaleResource>
+    <LocaleResource Name="Common.License" AppendRootKey="false">
+        <Value>Bản quyền</Value>
+    </LocaleResource>
+    <LocaleResource Name="Common.LikeIt" AppendRootKey="false">
+        <Value>Tôi thích</Value>
+    </LocaleResource>
+    <LocaleResource Name="Common.Loading" AppendRootKey="false">
+        <Value>Đang tải</Value>
+    </LocaleResource>
+    <LocaleResource Name="Common.LoadingNextStep" AppendRootKey="false">
+        <Value>Đang tải bước tiếp theo...</Value>
+    </LocaleResource>
+    <LocaleResource Name="Common.MachineName" AppendRootKey="false">
+        <Value>Tên máy</Value>
+    </LocaleResource>
+    <LocaleResource Name="Common.Menu" AppendRootKey="false">
+        <Value>Menu</Value>
+    </LocaleResource>
+    <LocaleResource Name="Common.MethodNotSupportedForGuests" AppendRootKey="false">
+        <Value>Chức năng này chỉ dành cho khách đã đăng nhập.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Common.Misc" AppendRootKey="false">
+        <Value>Khác</Value>
+    </LocaleResource>
+    <LocaleResource Name="Common.Month" AppendRootKey="false">
+        <Value>Tháng</Value>
+    </LocaleResource>
+    <LocaleResource Name="Common.MoveDown" AppendRootKey="false">
+        <Value>Chuyển xuống</Value>
+    </LocaleResource>
+    <LocaleResource Name="Common.MoveUp" AppendRootKey="false">
+        <Value>Chuyển lên</Value>
+    </LocaleResource>
+    <LocaleResource Name="Common.Navigation" AppendRootKey="false">
+        <Value>Điều hướng</Value>
+    </LocaleResource>
+    <LocaleResource Name="Common.Next" AppendRootKey="false">
+        <Value>Tiếp</Value>
+    </LocaleResource>
+    <LocaleResource Name="Common.NoCancel" AppendRootKey="false">
+        <Value>Không, hủy</Value>
+    </LocaleResource>
+    <LocaleResource Name="Common.NoFileUploaded" AppendRootKey="false">
+        <Value>Chưa có file nào được tải lên.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Common.NoFilesAvailable" AppendRootKey="false">
+        <Value>Chưa có file nào.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Common.NoImageAvail" AppendRootKey="false">
+        <Value>Chưa có ảnh</Value>
+    </LocaleResource>
+    <LocaleResource Name="Common.NoPreview" AppendRootKey="false">
+        <Value>Không có bản xem trước.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Common.NoProcessingSecurityIssue" AppendRootKey="false">
+        <Value>Thao tác không được thực hiện vì lý do bảo mật.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Common.NoProductsFound" AppendRootKey="false">
+        <Value>Không tìm thấy sản phẩm nào.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Common.NotSelectable" AppendRootKey="false">
+        <Value>Không thể chọn</Value>
+    </LocaleResource>
+    <LocaleResource Name="Common.Note" AppendRootKey="false">
+        <Value>Ghi chú</Value>
+    </LocaleResource>
+    <LocaleResource Name="Common.Old" AppendRootKey="false">
+        <Value>Cũ</Value>
+    </LocaleResource>
+    <LocaleResource Name="Common.On" AppendRootKey="false">
+        <Value>Bật</Value>
+    </LocaleResource>
+    <LocaleResource Name="Common.OpenInShop" AppendRootKey="false">
+        <Value>Xem trên cửa hàng</Value>
+    </LocaleResource>
+    <LocaleResource Name="Common.OptimizeTableSuccess" AppendRootKey="false">
+        <Value>Đã tối ưu bảng '{0}': {1} &amp;rarr; {2}. Chênh lệch: {3} ({4}).</Value>
+    </LocaleResource>
+    <LocaleResource Name="Common.Or" AppendRootKey="false">
+        <Value>Hoặc</Value>
+    </LocaleResource>
+    <LocaleResource Name="Common.PageviewsCount" AppendRootKey="false">
+        <Value>{0} lượt xem trang</Value>
+    </LocaleResource>
+    <LocaleResource Name="Common.Partition" AppendRootKey="false">
+        <Value>Phân vùng</Value>
+    </LocaleResource>
+    <LocaleResource Name="Common.Payment.NoCaptureSupport" AppendRootKey="false">
+        <Value>Không hỗ trợ thu tiền (capture)</Value>
+    </LocaleResource>
+    <LocaleResource Name="Common.Payment.NoVoidSupport" AppendRootKey="false">
+        <Value>Không hỗ trợ hủy giao dịch</Value>
+    </LocaleResource>
+    <LocaleResource Name="Common.PleaseSelect" AppendRootKey="false">
+        <Value>Vui lòng chọn</Value>
+    </LocaleResource>
+    <LocaleResource Name="Common.Preset" AppendRootKey="false">
+        <Value>Mẫu thiết lập sẵn</Value>
+    </LocaleResource>
+    <LocaleResource Name="Common.Print" AppendRootKey="false">
+        <Value>In</Value>
+    </LocaleResource>
+    <LocaleResource Name="Common.ProductRules" AppendRootKey="false">
+        <Value>Quy tắc sản phẩm</Value>
+    </LocaleResource>
+    <LocaleResource Name="Common.Projection" AppendRootKey="false">
+        <Value>Phép chiếu</Value>
+    </LocaleResource>
+    <LocaleResource Name="Common.Provider" AppendRootKey="false">
+        <Value>Nhà cung cấp</Value>
+    </LocaleResource>
+    <LocaleResource Name="Common.Public" AppendRootKey="false">
+        <Value>công khai</Value>
+    </LocaleResource>
+    <LocaleResource Name="Common.Published" AppendRootKey="false">
+        <Value>Đang hiển thị</Value>
+    </LocaleResource>
+    <LocaleResource Name="Common.Publishing" AppendRootKey="false">
+        <Value>Hiển thị</Value>
+    </LocaleResource>
+    <LocaleResource Name="Common.Recommended" AppendRootKey="false">
+        <Value>Khuyên dùng</Value>
+    </LocaleResource>
+    <LocaleResource Name="Common.Refresh" AppendRootKey="false">
+        <Value>Làm mới</Value>
+    </LocaleResource>
+    <LocaleResource Name="Common.Remove" AppendRootKey="false">
+        <Value>Xóa</Value>
+    </LocaleResource>
+    <LocaleResource Name="Common.RequestProcessingFailed" AppendRootKey="false">
+        <Value>Không thể xử lý yêu cầu.&lt;br /&gt;Controller: {0}, Action: {1}, Lý do: {2}.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Common.Resume" AppendRootKey="false">
+        <Value>Tiếp tục</Value>
+    </LocaleResource>
+    <LocaleResource Name="Common.Right" AppendRootKey="false">
+        <Value>Phải</Value>
+    </LocaleResource>
+    <LocaleResource Name="Common.Save" AppendRootKey="false">
+        <Value>Lưu</Value>
+    </LocaleResource>
+    <LocaleResource Name="Common.Scheduled" AppendRootKey="false">
+        <Value>Đã lên lịch</Value>
+    </LocaleResource>
+    <LocaleResource Name="Common.SearchProducts" AppendRootKey="false">
+        <Value>Tìm sản phẩm</Value>
+    </LocaleResource>
+    <LocaleResource Name="Common.SecurityPrompt" AppendRootKey="false">
+        <Value>Xác nhận bảo mật</Value>
+    </LocaleResource>
+    <LocaleResource Name="Common.SelectView" AppendRootKey="false">
+        <Value>Chọn kiểu xem</Value>
+    </LocaleResource>
+    <LocaleResource Name="Common.SetDefault" AppendRootKey="false">
+        <Value>Đặt làm mặc định</Value>
+    </LocaleResource>
+    <LocaleResource Name="Common.ShiftKey" AppendRootKey="false">
+        <Value>Shift</Value>
+    </LocaleResource>
+    <LocaleResource Name="Common.Shopbar.Basket" AppendRootKey="false">
+        <Value>Giỏ hàng</Value>
+    </LocaleResource>
+    <LocaleResource Name="Common.Shopbar.BasketPartOne" AppendRootKey="false">
+        <Value>Giỏ</Value>
+    </LocaleResource>
+    <LocaleResource Name="Common.Shopbar.BasketPartTwo" AppendRootKey="false">
+        <Value>hàng</Value>
+    </LocaleResource>
+    <LocaleResource Name="Common.Shopbar.CompareProductsPartTwo" AppendRootKey="false">
+        <Value>sản phẩm</Value>
+    </LocaleResource>
+    <LocaleResource Name="Common.Shopbar.GuestGreeting" AppendRootKey="false">
+        <Value>Xin chào quý khách</Value>
+    </LocaleResource>
+    <LocaleResource Name="Common.Shopbar.WishlistPartOne" AppendRootKey="false">
+        <Value>Yêu</Value>
+    </LocaleResource>
+    <LocaleResource Name="Common.Shopbar.WishlistPartTwo" AppendRootKey="false">
+        <Value>thích</Value>
+    </LocaleResource>
+    <LocaleResource Name="Common.Show" AppendRootKey="false">
+        <Value>Hiện</Value>
+    </LocaleResource>
+    <LocaleResource Name="Common.ShowMore" AppendRootKey="false">
+        <Value>Xem thêm</Value>
+    </LocaleResource>
+    <LocaleResource Name="Common.Shrink" AppendRootKey="false">
+        <Value>Thu nhỏ</Value>
+    </LocaleResource>
+    <LocaleResource Name="Common.ShrinkDatabaseSuccessful" AppendRootKey="false">
+        <Value>Đã thu gọn cơ sở dữ liệu</Value>
+    </LocaleResource>
+    <LocaleResource Name="Common.SkipToMainContent" AppendRootKey="false">
+        <Value>Đến nội dung chính</Value>
+    </LocaleResource>
+    <LocaleResource Name="Common.Submit" AppendRootKey="false">
+        <Value>Gửi</Value>
+    </LocaleResource>
+    <LocaleResource Name="Common.Top" AppendRootKey="false">
+        <Value>Trên cùng</Value>
+    </LocaleResource>
+    <LocaleResource Name="Common.Trash" AppendRootKey="false">
+        <Value>Thùng rác</Value>
+    </LocaleResource>
+    <LocaleResource Name="Common.Type" AppendRootKey="false">
+        <Value>Loại</Value>
+    </LocaleResource>
+    <LocaleResource Name="Common.Unavailable" AppendRootKey="false">
+        <Value>Không khả dụng</Value>
+    </LocaleResource>
+    <LocaleResource Name="Common.Unknown" AppendRootKey="false">
+        <Value>Không xác định</Value>
+    </LocaleResource>
+    <LocaleResource Name="Common.Unpublished" AppendRootKey="false">
+        <Value>Đang ẩn</Value>
+    </LocaleResource>
+    <LocaleResource Name="Common.Unscheduled" AppendRootKey="false">
+        <Value>Chưa lên lịch</Value>
+    </LocaleResource>
+    <LocaleResource Name="Common.UnsupportedBrowser" AppendRootKey="false">
+        <Value>Bạn đang dùng trình duyệt không được hỗ trợ! Hãy chuyển sang trình duyệt hiện đại như Google Chrome, Firefox hoặc Opera để mua sắm thuận tiện nhất.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Common.UpdatedOn" AppendRootKey="false">
+        <Value>Ngày cập nhật</Value>
+    </LocaleResource>
+    <LocaleResource Name="Common.UpdatedOn.Hint" AppendRootKey="false">
+        <Value>Ngày sửa đổi gần nhất.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Common.Upload" AppendRootKey="false">
+        <Value>Tải lên</Value>
+    </LocaleResource>
+    <LocaleResource Name="Common.View" AppendRootKey="false">
+        <Value>Xem</Value>
+    </LocaleResource>
+    <LocaleResource Name="Common.Waiting" AppendRootKey="false">
+        <Value>Đang chờ</Value>
+    </LocaleResource>
+    <LocaleResource Name="Common.Website" AppendRootKey="false">
+        <Value>Website</Value>
+    </LocaleResource>
+    <LocaleResource Name="Common.White" AppendRootKey="false">
+        <Value>Trắng</Value>
+    </LocaleResource>
+    <LocaleResource Name="Common.WrongEmail" AppendRootKey="false">
+        <Value>Email không đúng</Value>
+    </LocaleResource>
+    <LocaleResource Name="Common.Yes" AppendRootKey="false">
+        <Value>Có</Value>
+    </LocaleResource>
+    <LocaleResource Name="ContactUs" AppendRootKey="false">
+        <Value>Liên hệ</Value>
+    </LocaleResource>
+    <LocaleResource Name="ContactUs.Button" AppendRootKey="false">
+        <Value>Gửi</Value>
+    </LocaleResource>
+    <LocaleResource Name="ContactUs.Email.Hint" AppendRootKey="false">
+        <Value>Nhập địa chỉ email của bạn</Value>
+    </LocaleResource>
+    <LocaleResource Name="ContactUs.EmailSubject" AppendRootKey="false">
+        <Value>{0}. Liên hệ</Value>
+    </LocaleResource>
+    <LocaleResource Name="ContactUs.Enquiry" AppendRootKey="false">
+        <Value>Nội dung</Value>
+    </LocaleResource>
+    <LocaleResource Name="ContactUs.Enquiry.Hint" AppendRootKey="false">
+        <Value>Nhập nội dung cần hỏi</Value>
+    </LocaleResource>
+    <LocaleResource Name="ContactUs.YourEnquiryHasBeenSent" AppendRootKey="false">
+        <Value>Yêu cầu của bạn đã được gửi đến cửa hàng.</Value>
+    </LocaleResource>
+    <LocaleResource Name="CookieManager.Dialog.AdPersonalizationConsent.Heading" AppendRootKey="false">
+        <Value>Cá nhân hóa</Value>
+    </LocaleResource>
+    <LocaleResource Name="CookieManager.Dialog.AdPersonalizationConsent.Intro" AppendRootKey="false">
+        <Value>Khi bạn đồng ý cá nhân hóa, chúng tôi có thể cung cấp thêm tính năng và nội dung phù hợp với bạn. Các cookie này có thể do chúng tôi hoặc các nhà cung cấp dịch vụ bên thứ ba trên trang đặt.</Value>
+    </LocaleResource>
+    <LocaleResource Name="CookieManager.Dialog.AdUserDataConsent.Intro" AppendRootKey="false">
+        <Value>Nếu bạn đồng ý, đối tác quảng cáo của chúng tôi có thể đặt cookie để tạo hồ sơ sở thích và hiển thị quảng cáo phù hợp với bạn. Để làm việc này, chúng tôi chia sẻ một mã định danh riêng của tài khoản bạn với các dịch vụ đó.</Value>
+    </LocaleResource>
+    <LocaleResource Name="CookieManager.Dialog.Analytics.Intro" AppendRootKey="false">
+        <Value>Các cookie này giúp chúng tôi cải thiện website nhờ thống kê ẩn danh về hiệu năng và cách sử dụng trang.</Value>
+    </LocaleResource>
+    <LocaleResource Name="CookieManager.Dialog.Button.AcceptSelected" AppendRootKey="false">
+        <Value>Chấp nhận mục đã chọn</Value>
+    </LocaleResource>
+    <LocaleResource Name="CookieManager.Dialog.Hide" AppendRootKey="false">
+        <Value>Ẩn</Value>
+    </LocaleResource>
+    <LocaleResource Name="CookieManager.Dialog.Intro" AppendRootKey="false">
+        <Value>Bạn tự quyết định cho phép hoặc từ chối những cookie nào. Bạn có thể thay đổi lựa chọn bất cứ lúc nào trong &lt;a href='{0}'&gt;Tài khoản của tôi&lt;/a&gt;. Xem thêm tại &lt;a href='{1}'&gt;chính sách bảo mật&lt;/a&gt; của chúng tôi.</Value>
+    </LocaleResource>
+    <LocaleResource Name="CookieManager.Dialog.Required.Heading" AppendRootKey="false">
+        <Value>Cookie bắt buộc</Value>
+    </LocaleResource>
+    <LocaleResource Name="CookieManager.Dialog.Required.Intro" AppendRootKey="false">
+        <Value>Cookie bắt buộc về mặt kỹ thuật giúp website hoạt động. Chúng phục vụ các chức năng cơ bản như hiển thị sản phẩm hay đăng nhập, nên cần thiết để sử dụng trang.</Value>
+    </LocaleResource>
+    <LocaleResource Name="CookieManager.Dialog.Show" AppendRootKey="false">
+        <Value>Hiện</Value>
+    </LocaleResource>
+    <LocaleResource Name="CookieManager.Dialog.ThirdParty.Intro" AppendRootKey="false">
+        <Value>Các cookie này cho phép chúng tôi dùng các tiện ích của nhà cung cấp dịch vụ khác và tích hợp chúng vào cửa hàng.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Customer.Downloads.NoChangelogAvailable" AppendRootKey="false">
+        <Value>Chưa có nhật ký thay đổi.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Customer.UserAgreement.OrderItemNotFound" AppendRootKey="false">
+        <Value>Không tìm thấy sản phẩm tương ứng trong đơn hàng.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Customer.UserAgreement.ProductNotFound" AppendRootKey="false">
+        <Value>Không tìm thấy sản phẩm tương ứng.</Value>
+    </LocaleResource>
+    <LocaleResource Name="DeliveryTimes.Dates.NotBefore" AppendRootKey="false">
+        <Value>không sớm hơn &lt;b&gt;{0}&lt;/b&gt;</Value>
+    </LocaleResource>
+    <LocaleResource Name="DeliveryTimes.Dates.Tomorrow" AppendRootKey="false">
+        <Value>ngày mai</Value>
+    </LocaleResource>
+    <LocaleResource Name="DeliveryTimes.Dates.Until" AppendRootKey="false">
+        <Value>đến &lt;b&gt;{0}&lt;/b&gt;</Value>
+    </LocaleResource>
+    <LocaleResource Name="DownloadableProducts.Fields.DownloadLicense" AppendRootKey="false">
+        <Value>Tải file bản quyền</Value>
+    </LocaleResource>
+    <LocaleResource Name="DownloadableProducts.Fields.Order" AppendRootKey="false">
+        <Value>Đơn hàng #</Value>
+    </LocaleResource>
+    <LocaleResource Name="DownloadableProducts.HasNoUserAgreement" AppendRootKey="false">
+        <Value>Sản phẩm không có điều khoản sử dụng.</Value>
+    </LocaleResource>
+    <LocaleResource Name="DownloadableProducts.NoItems" AppendRootKey="false">
+        <Value>Chưa có sản phẩm tải về nào</Value>
+    </LocaleResource>
+    <LocaleResource Name="DownloadableProducts.UserAgreement" AppendRootKey="false">
+        <Value>Điều khoản sử dụng</Value>
+    </LocaleResource>
+    <LocaleResource Name="DownloadableProducts.UserAgreementConfirmation" AppendRootKey="false">
+        <Value>Có, tôi đồng ý với &lt;a href='javascript:void(0)' data-id='{0}' class='download-user-agreement'&gt;điều khoản sử dụng&lt;/a&gt; của sản phẩm này.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Enums.OrderStatus.Complete" AppendRootKey="false">
+        <Value>Hoàn tất</Value>
+    </LocaleResource>
+    <LocaleResource Name="Enums.OrderStatus.Pending" AppendRootKey="false">
+        <Value>Chờ xử lý</Value>
+    </LocaleResource>
+    <LocaleResource Name="Enums.OrderStatus.Processing" AppendRootKey="false">
+        <Value>Đang xử lý</Value>
+    </LocaleResource>
+    <LocaleResource Name="Enums.PaymentStatus.Authorized" AppendRootKey="false">
+        <Value>Đã ủy quyền</Value>
+    </LocaleResource>
+    <LocaleResource Name="Enums.PaymentStatus.Paid" AppendRootKey="false">
+        <Value>Đã thanh toán</Value>
+    </LocaleResource>
+    <LocaleResource Name="Enums.PaymentStatus.PartiallyRefunded" AppendRootKey="false">
+        <Value>Đã hoàn tiền một phần</Value>
+    </LocaleResource>
+    <LocaleResource Name="Enums.PaymentStatus.Pending" AppendRootKey="false">
+        <Value>Chờ thanh toán</Value>
+    </LocaleResource>
+    <LocaleResource Name="Enums.PaymentStatus.Refunded" AppendRootKey="false">
+        <Value>Đã hoàn tiền</Value>
+    </LocaleResource>
+    <LocaleResource Name="Enums.PaymentStatus.Voided" AppendRootKey="false">
+        <Value>Đã hủy giao dịch</Value>
+    </LocaleResource>
+    <LocaleResource Name="Enums.ShippingStatus.Delivered" AppendRootKey="false">
+        <Value>Đã giao hàng</Value>
+    </LocaleResource>
+    <LocaleResource Name="Enums.ShippingStatus.NotYetShipped" AppendRootKey="false">
+        <Value>Chưa giao hàng</Value>
+    </LocaleResource>
+    <LocaleResource Name="Enums.ShippingStatus.PartiallyShipped" AppendRootKey="false">
+        <Value>Đã giao một phần</Value>
+    </LocaleResource>
+    <LocaleResource Name="Enums.ShippingStatus.Shipped" AppendRootKey="false">
+        <Value>Đã gửi hàng</Value>
+    </LocaleResource>
+    <LocaleResource Name="Enums.ShippingStatus.ShippingNotRequired" AppendRootKey="false">
+        <Value>Không cần giao hàng</Value>
+    </LocaleResource>
+    <LocaleResource Name="FileUploader.Dropzone.DictCancelUploadConfirmation" AppendRootKey="false">
+        <Value>Bạn có chắc muốn hủy tải lên?</Value>
+    </LocaleResource>
+    <LocaleResource Name="FileUploader.Dropzone.DictDefaultMessage" AppendRootKey="false">
+        <Value>Thả file vào đây để tải lên</Value>
+    </LocaleResource>
+    <LocaleResource Name="FileUploader.Dropzone.DictFallbackMessage" AppendRootKey="false">
+        <Value>Trình duyệt của bạn không hỗ trợ kéo thả file để tải lên.</Value>
+    </LocaleResource>
+    <LocaleResource Name="FileUploader.Dropzone.DictFallbackText" AppendRootKey="false">
+        <Value>Vui lòng dùng biểu mẫu bên dưới để tải file lên.</Value>
+    </LocaleResource>
+    <LocaleResource Name="FileUploader.Dropzone.DictFileTooBig" AppendRootKey="false">
+        <Value>File quá lớn ({{filesize}} MiB). Dung lượng tối đa: {{maxFilesize}} MiB.</Value>
+    </LocaleResource>
+    <LocaleResource Name="FileUploader.Dropzone.DictInvalidFileType" AppendRootKey="false">
+        <Value>Không thể tải lên loại file này.</Value>
+    </LocaleResource>
+    <LocaleResource Name="FileUploader.Dropzone.DictMaxFilesExceeded" AppendRootKey="false">
+        <Value>Bạn không thể tải thêm file.</Value>
+    </LocaleResource>
+    <LocaleResource Name="FileUploader.Dropzone.DictRemoveFile" AppendRootKey="false">
+        <Value>Xóa file</Value>
+    </LocaleResource>
+    <LocaleResource Name="FileUploader.Dropzone.DictResponseError" AppendRootKey="false">
+        <Value>Máy chủ trả về mã lỗi {{statusCode}}.</Value>
+    </LocaleResource>
+    <LocaleResource Name="FileUploader.Dropzone.DictUploadCanceled" AppendRootKey="false">
+        <Value>Đã hủy tải lên.</Value>
+    </LocaleResource>
+    <LocaleResource Name="FileUploader.Dropzone.Message" AppendRootKey="false">
+        <Value>Kéo thả file vào đây hoặc bấm để tải lên</Value>
+    </LocaleResource>
+    <LocaleResource Name="FileUploader.DuplicateDialog.DupeFile.Title" AppendRootKey="false">
+        <Value>File nguồn</Value>
+    </LocaleResource>
+    <LocaleResource Name="FileUploader.DuplicateDialog.ExistingFile.Title" AppendRootKey="false">
+        <Value>File đích</Value>
+    </LocaleResource>
+    <LocaleResource Name="FileUploader.DuplicateDialog.Intro" AppendRootKey="false">
+        <Value>Thư mục đích đã có file tên &lt;span class='current-file'&gt;&lt;/span&gt;.</Value>
+    </LocaleResource>
+    <LocaleResource Name="FileUploader.DuplicateDialog.Option.Rename" AppendRootKey="false">
+        <Value>Đổi tên file</Value>
+    </LocaleResource>
+    <LocaleResource Name="FileUploader.DuplicateDialog.Option.Replace" AppendRootKey="false">
+        <Value>Thay thế file ở thư mục đích</Value>
+    </LocaleResource>
+    <LocaleResource Name="FileUploader.DuplicateDialog.Option.SaveSelection" AppendRootKey="false">
+        <Value>Ghi nhớ lựa chọn và áp dụng cho các file trùng còn lại</Value>
+    </LocaleResource>
+    <LocaleResource Name="FileUploader.DuplicateDialog.Option.Skip" AppendRootKey="false">
+        <Value>Bỏ qua file này</Value>
+    </LocaleResource>
+    <LocaleResource Name="FileUploader.MultiFiles.MainMediaFile" AppendRootKey="false">
+        <Value>File ảnh chính</Value>
+    </LocaleResource>
+    <LocaleResource Name="FileUploader.Preview.DeleteEntityMedia.Title" AppendRootKey="false">
+        <Value>Gỡ ảnh</Value>
+    </LocaleResource>
+    <LocaleResource Name="FileUploader.Preview.SetMainMedia.Title" AppendRootKey="false">
+        <Value>Đặt làm ảnh chính</Value>
+    </LocaleResource>
+    <LocaleResource Name="FileUploader.StatusWindow.Canceled.File" AppendRootKey="false">
+        <Value>đã hủy tải lên</Value>
+    </LocaleResource>
+    <LocaleResource Name="FileUploader.StatusWindow.Canceled.Files" AppendRootKey="false">
+        <Value>đã hủy tải lên</Value>
+    </LocaleResource>
+    <LocaleResource Name="FileUploader.StatusWindow.Collapse.Title" AppendRootKey="false">
+        <Value>Thu nhỏ</Value>
+    </LocaleResource>
+    <LocaleResource Name="FileUploader.StatusWindow.Complete.File" AppendRootKey="false">
+        <Value>đã tải lên xong</Value>
+    </LocaleResource>
+    <LocaleResource Name="FileUploader.StatusWindow.Complete.Files" AppendRootKey="false">
+        <Value>đã tải lên xong</Value>
+    </LocaleResource>
+    <LocaleResource Name="FileUploader.StatusWindow.Uploading.File" AppendRootKey="false">
+        <Value>file đang tải lên</Value>
+    </LocaleResource>
+    <LocaleResource Name="FileUploader.StatusWindow.Uploading.Files" AppendRootKey="false">
+        <Value>file đang tải lên</Value>
+    </LocaleResource>
+    <LocaleResource Name="Filtering.PriceRangeFilter.Over" AppendRootKey="false">
+        <Value>Trên {0}</Value>
+    </LocaleResource>
+    <LocaleResource Name="Filtering.SpecificationFilter.CurrentlyFilteredBy" AppendRootKey="false">
+        <Value>Đang lọc theo:</Value>
+    </LocaleResource>
+    <LocaleResource Name="Footer.Seals" AppendRootKey="false">
+        <Value>Chứng nhận &amp;amp; Logo</Value>
+    </LocaleResource>
+    <LocaleResource Name="Footer.Social" AppendRootKey="false">
+        <Value>Theo dõi chúng tôi</Value>
+    </LocaleResource>
+    <LocaleResource Name="Footer.Themes" AppendRootKey="false">
+        <Value>Giao diện</Value>
+    </LocaleResource>
+    <LocaleResource Name="Gdpr.Anonymous" AppendRootKey="false">
+        <Value>Ẩn danh</Value>
+    </LocaleResource>
+    <LocaleResource Name="Gdpr.Consent.DetailText" AppendRootKey="false">
+        <Value>Tôi đã đọc &lt;a href="{0}"&gt;chính sách bảo mật&lt;/a&gt; và đồng ý cho lưu trữ điện tử dữ liệu mà tôi cung cấp. Dữ liệu này chỉ được dùng để xử lý yêu cầu của tôi.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Gdpr.Consent.DetailText.Small" AppendRootKey="false">
+        <Value>Tôi đồng ý với &lt;a href="{0}"&gt;Chính sách bảo mật&lt;/a&gt;.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Gdpr.Consent.ValidationMessage" AppendRootKey="false">
+        <Value>Vui lòng đồng ý cho phép xử lý dữ liệu của bạn.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Gdpr.DeletedLongText" AppendRootKey="false">
+        <Value>Nội dung này đã bị tác giả xóa.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Homepage.TopBrands" AppendRootKey="false">
+        <Value>Thương hiệu nổi bật</Value>
+    </LocaleResource>
+    <LocaleResource Name="Homepage.TopCategories" AppendRootKey="false">
+        <Value>Danh mục nổi bật</Value>
+    </LocaleResource>
+    <LocaleResource Name="Identity.AuthenticationCredentials" AppendRootKey="false">
+        <Value>Thông tin đăng nhập</Value>
+    </LocaleResource>
+    <LocaleResource Name="Identity.Error.ConcurrencyFailure" AppendRootKey="false">
+        <Value>Dữ liệu vừa bị thay đổi bởi thao tác khác nên không lưu được. Vui lòng thử lại.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Identity.Error.DefaultError" AppendRootKey="false">
+        <Value>Đã có lỗi xảy ra. Vui lòng thử lại.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Identity.Error.DuplicateRoleName" AppendRootKey="false">
+        <Value>Tên nhóm khách hàng '{0}' đã tồn tại.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Identity.Error.DuplicateUserName" AppendRootKey="false">
+        <Value>Tên đăng nhập '{0}' đã được sử dụng.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Identity.Error.InvalidEmail" AppendRootKey="false">
+        <Value>Email không hợp lệ.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Identity.Error.InvalidRoleName" AppendRootKey="false">
+        <Value>Tên '{0}' không hợp lệ cho nhóm khách hàng.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Identity.Error.InvalidToken" AppendRootKey="false">
+        <Value>Mã xác nhận không hợp lệ.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Identity.Error.InvalidUserName" AppendRootKey="false">
+        <Value>Tên đăng nhập '{0}' không hợp lệ.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Identity.Error.LoginAlreadyAssociated" AppendRootKey="false">
+        <Value>Khách hàng này đã đăng ký.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Identity.Error.PasswordMismatch" AppendRootKey="false">
+        <Value>Mật khẩu nhập lại không khớp.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Identity.Error.PasswordRequiresUniqueChars" AppendRootKey="false">
+        <Value>Ít nhất {0} ký tự khác nhau</Value>
+    </LocaleResource>
+    <LocaleResource Name="Identity.Error.RecoveryCodeRedemptionFailed" AppendRootKey="false">
+        <Value>Mã khôi phục không hợp lệ.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Identity.Error.UserAlreadyHasPassword" AppendRootKey="false">
+        <Value>Tài khoản đã có mật khẩu.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Identity.Error.UserAlreadyInRole" AppendRootKey="false">
+        <Value>Tài khoản đã thuộc nhóm khách hàng '{0}'.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Identity.Error.UserLockoutNotEnabled" AppendRootKey="false">
+        <Value>Chưa bật tính năng khóa tài khoản.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Identity.Error.UserNotInRole" AppendRootKey="false">
+        <Value>Bạn không có quyền thực hiện thao tác này.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Jquery.Validate.Date" AppendRootKey="false">
+        <Value>Vui lòng nhập ngày hợp lệ.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Jquery.Validate.DateISO" AppendRootKey="false">
+        <Value>Vui lòng nhập ngày hợp lệ (ISO).</Value>
+    </LocaleResource>
+    <LocaleResource Name="Jquery.Validate.Digits" AppendRootKey="false">
+        <Value>Vui lòng chỉ nhập chữ số.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Jquery.Validate.Email" AppendRootKey="false">
+        <Value>Vui lòng nhập địa chỉ email hợp lệ.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Jquery.Validate.EqualTo" AppendRootKey="false">
+        <Value>Giá trị nhập lại không khớp.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Jquery.Validate.Max" AppendRootKey="false">
+        <Value>Vui lòng nhập giá trị nhỏ hơn hoặc bằng {0}.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Jquery.Validate.Number" AppendRootKey="false">
+        <Value>Vui lòng nhập số hợp lệ.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Jquery.Validate.Range" AppendRootKey="false">
+        <Value>Vui lòng nhập giá trị từ {0} đến {1}.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Jquery.Validate.Rangelength" AppendRootKey="false">
+        <Value>Vui lòng nhập từ {0} đến {1} ký tự.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Jquery.Validate.Remote" AppendRootKey="false">
+        <Value>Vui lòng kiểm tra lại trường này.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Jquery.Validate.Required" AppendRootKey="false">
+        <Value>Vui lòng nhập thông tin này.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Manufacturers" AppendRootKey="false">
+        <Value>Thương hiệu</Value>
+    </LocaleResource>
+    <LocaleResource Name="Manufacturers.List" AppendRootKey="false">
+        <Value>Tất cả thương hiệu</Value>
+    </LocaleResource>
+    <LocaleResource Name="Manufacturers.PageSize" AppendRootKey="false">
+        <Value>Hiển thị</Value>
+    </LocaleResource>
+    <LocaleResource Name="Manufacturers.PageSize.PerPage" AppendRootKey="false">
+        <Value>mỗi trang</Value>
+    </LocaleResource>
+    <LocaleResource Name="Manufacturers.ViewMode" AppendRootKey="false">
+        <Value>Kiểu hiển thị</Value>
+    </LocaleResource>
+    <LocaleResource Name="Media.Manufacturer.ImageLinkTitleFormat" AppendRootKey="false">
+        <Value>Tất cả sản phẩm của {0}</Value>
+    </LocaleResource>
+    <LocaleResource Name="Media.Product.ImageLinkTitleFormat" AppendRootKey="false">
+        <Value>Xem chi tiết {0}</Value>
+    </LocaleResource>
+    <LocaleResource Name="Messages.Order.OrderTotal" AppendRootKey="false">
+        <Value>Tổng cộng:</Value>
+    </LocaleResource>
+    <LocaleResource Name="Messages.Order.PaymentMethodAdditionalFee" AppendRootKey="false">
+        <Value>Phụ phí phương thức thanh toán:</Value>
+    </LocaleResource>
+    <LocaleResource Name="Messages.Order.Product(s)" AppendRootKey="false">
+        <Value>Sản phẩm</Value>
+    </LocaleResource>
+    <LocaleResource Name="Messages.Order.Product(s).Price" AppendRootKey="false">
+        <Value>Đơn giá</Value>
+    </LocaleResource>
+    <LocaleResource Name="Messages.Order.Product(s).Total" AppendRootKey="false">
+        <Value>Thành tiền</Value>
+    </LocaleResource>
+    <LocaleResource Name="Messages.Order.Shipping" AppendRootKey="false">
+        <Value>Phí vận chuyển:</Value>
+    </LocaleResource>
+    <LocaleResource Name="Messages.Order.SubTotal" AppendRootKey="false">
+        <Value>Tạm tính:</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mobile.DetailImages.Next" AppendRootKey="false">
+        <Value>Tiếp</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mobile.ViewFullSite" AppendRootKey="false">
+        <Value>Phiên bản máy tính</Value>
+    </LocaleResource>
+    <LocaleResource Name="Newsletter.Button" AppendRootKey="false">
+        <Value>Gửi</Value>
+    </LocaleResource>
+    <LocaleResource Name="Newsletter.Email" AppendRootKey="false">
+        <Value>Email</Value>
+    </LocaleResource>
+    <LocaleResource Name="Newsletter.Email.Wrong" AppendRootKey="false">
+        <Value>Vui lòng nhập email hợp lệ</Value>
+    </LocaleResource>
+    <LocaleResource Name="Newsletter.ResultActivated" AppendRootKey="false">
+        <Value>Bạn đã đăng ký nhận bản tin thành công.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Newsletter.ResultDeactivated" AppendRootKey="false">
+        <Value>Bạn đã hủy đăng ký nhận bản tin.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Newsletter.Subscribe" AppendRootKey="false">
+        <Value>Đăng ký</Value>
+    </LocaleResource>
+    <LocaleResource Name="Newsletter.SubscribeEmailSent" AppendRootKey="false">
+        <Value>Cảm ơn bạn đã đăng ký! Chúng tôi đã gửi email xác nhận cho bạn.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Newsletter.Title" AppendRootKey="false">
+        <Value>Đăng ký nhận bản tin</Value>
+    </LocaleResource>
+    <LocaleResource Name="Newsletter.UnsubscribeEmailSent" AppendRootKey="false">
+        <Value>Chúng tôi đã gửi email xác nhận. Cảm ơn bạn!</Value>
+    </LocaleResource>
+    <LocaleResource Name="Offcanvas.Menu.Brands" AppendRootKey="false">
+        <Value>Thương hiệu</Value>
+    </LocaleResource>
+    <LocaleResource Name="Offcanvas.Menu.Categories" AppendRootKey="false">
+        <Value>Danh mục</Value>
+    </LocaleResource>
+    <LocaleResource Name="Offcanvas.Menu.ShowCurrentCat" AppendRootKey="false">
+        <Value>Xem {0}</Value>
+    </LocaleResource>
+    <LocaleResource Name="Order.BillingAddressMissing" AppendRootKey="false">
+        <Value>Thiếu địa chỉ thanh toán.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Order.CannotCalculateOrderTotal" AppendRootKey="false">
+        <Value>Không tính được tổng tiền đơn hàng.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Order.CannotCalculateShippingTotal" AppendRootKey="false">
+        <Value>Không tính được phí vận chuyển.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Order.CannotCapture" AppendRootKey="false">
+        <Value>Không thể thu tiền cho đơn hàng.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Order.CannotMarkCompleted" AppendRootKey="false">
+        <Value>Không thể đánh dấu đơn hàng là hoàn tất.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Order.CannotMarkPaid" AppendRootKey="false">
+        <Value>Không thể đánh dấu đơn hàng là đã thanh toán.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Order.CannotPartialRefund" AppendRootKey="false">
+        <Value>Không thể hoàn tiền một phần cho đơn hàng.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Order.CannotRefund" AppendRootKey="false">
+        <Value>Không thể hoàn tiền cho đơn hàng.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Order.CannotVoid" AppendRootKey="false">
+        <Value>Không thể hủy giao dịch thanh toán của đơn hàng.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Order.CompletePayment" AppendRootKey="false">
+        <Value>Hoàn tất thanh toán</Value>
+    </LocaleResource>
+    <LocaleResource Name="Order.CompletePayment.AdminNote" AppendRootKey="false">
+        <Value>Đơn hàng đang chờ thanh toán. Người mua có thể thanh toán bằng nút &lt;b&gt;Hoàn tất thanh toán&lt;/b&gt; trên &lt;a href='{0}'&gt;trang chi tiết đơn hàng&lt;/a&gt;.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Order.CompletePayment.Hint" AppendRootKey="false">
+        <Value>Nếu bạn chưa thanh toán và muốn thanh toán lại, hãy bấm "Hoàn tất thanh toán".</Value>
+    </LocaleResource>
+    <LocaleResource Name="Order.CountryNotAllowedForBilling" AppendRootKey="false">
+        <Value>Không hỗ trợ thanh toán cho quốc gia '{0}'.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Order.CountryNotAllowedForShipping" AppendRootKey="false">
+        <Value>Không hỗ trợ giao hàng đến quốc gia '{0}'.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Order.Email" AppendRootKey="false">
+        <Value>Email</Value>
+    </LocaleResource>
+    <LocaleResource Name="Order.InitialOrderDoesNotExistForRecurringPayment" AppendRootKey="false">
+        <Value>Không tìm thấy đơn hàng gốc của thanh toán định kỳ.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Order.NotFound" AppendRootKey="false">
+        <Value>Không tìm thấy đơn hàng {0}.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Order.Notes" AppendRootKey="false">
+        <Value>Ghi chú</Value>
+    </LocaleResource>
+    <LocaleResource Name="Order.Notes.CreatedOn" AppendRootKey="false">
+        <Value>Ngày tạo</Value>
+    </LocaleResource>
+    <LocaleResource Name="Order.Notes.Note" AppendRootKey="false">
+        <Value>Ghi chú</Value>
+    </LocaleResource>
+    <LocaleResource Name="Order.Order#" AppendRootKey="false">
+        <Value>Đơn hàng #</Value>
+    </LocaleResource>
+    <LocaleResource Name="Order.OrderDetails" AppendRootKey="false">
+        <Value>Chi tiết đơn hàng</Value>
+    </LocaleResource>
+    <LocaleResource Name="Order.OrderInformation" AppendRootKey="false">
+        <Value>Thông tin đơn hàng</Value>
+    </LocaleResource>
+    <LocaleResource Name="Order.OrderStatus" AppendRootKey="false">
+        <Value>Trạng thái đơn hàng</Value>
+    </LocaleResource>
+    <LocaleResource Name="Order.OrderTotal" AppendRootKey="false">
+        <Value>Tổng cộng</Value>
+    </LocaleResource>
+    <LocaleResource Name="Order.PaymentMethodAdditionalFee" AppendRootKey="false">
+        <Value>Phụ phí phương thức thanh toán</Value>
+    </LocaleResource>
+    <LocaleResource Name="Order.PdfInvoiceFileName" AppendRootKey="false">
+        <Value>don-hang-{0}.pdf</Value>
+    </LocaleResource>
+    <LocaleResource Name="Order.Product(s)" AppendRootKey="false">
+        <Value>Sản phẩm</Value>
+    </LocaleResource>
+    <LocaleResource Name="Order.Product(s).Item" AppendRootKey="false">
+        <Value>Sản phẩm</Value>
+    </LocaleResource>
+    <LocaleResource Name="Order.Product(s).OrderedQuantity" AppendRootKey="false">
+        <Value>Số lượng đặt</Value>
+    </LocaleResource>
+    <LocaleResource Name="Order.Product(s).Price" AppendRootKey="false">
+        <Value>Đơn giá</Value>
+    </LocaleResource>
+    <LocaleResource Name="Order.Product(s).Total" AppendRootKey="false">
+        <Value>Thành tiền</Value>
+    </LocaleResource>
+    <LocaleResource Name="Order.PurchaseOrderNumber" AppendRootKey="false">
+        <Value>Số đơn đặt hàng (PO)</Value>
+    </LocaleResource>
+    <LocaleResource Name="Order.ReturnItems" AppendRootKey="false">
+        <Value>Trả hàng</Value>
+    </LocaleResource>
+    <LocaleResource Name="Order.ShipmentStatusEvents" AppendRootKey="false">
+        <Value>Trạng thái vận chuyển</Value>
+    </LocaleResource>
+    <LocaleResource Name="Order.ShipmentStatusEvents.Event" AppendRootKey="false">
+        <Value>Sự kiện</Value>
+    </LocaleResource>
+    <LocaleResource Name="Order.Shipments" AppendRootKey="false">
+        <Value>Lần giao hàng</Value>
+    </LocaleResource>
+    <LocaleResource Name="Order.Shipments.DeliveryDate" AppendRootKey="false">
+        <Value>Ngày nhận hàng</Value>
+    </LocaleResource>
+    <LocaleResource Name="Order.Shipments.Email" AppendRootKey="false">
+        <Value>Email</Value>
+    </LocaleResource>
+    <LocaleResource Name="Order.Shipments.ID" AppendRootKey="false">
+        <Value>Mã giao hàng #</Value>
+    </LocaleResource>
+    <LocaleResource Name="Order.Shipments.Information" AppendRootKey="false">
+        <Value>Giao hàng #{0}</Value>
+    </LocaleResource>
+    <LocaleResource Name="Order.Shipments.Order#" AppendRootKey="false">
+        <Value>Đơn hàng #</Value>
+    </LocaleResource>
+    <LocaleResource Name="Order.Shipments.Product(s)" AppendRootKey="false">
+        <Value>Sản phẩm đã gửi</Value>
+    </LocaleResource>
+    <LocaleResource Name="Order.Shipments.Product(s).Quantity" AppendRootKey="false">
+        <Value>Số lượng đã gửi</Value>
+    </LocaleResource>
+    <LocaleResource Name="Order.Shipments.ShippedDate" AppendRootKey="false">
+        <Value>Ngày gửi hàng</Value>
+    </LocaleResource>
+    <LocaleResource Name="Order.Shipments.ShippingMethod" AppendRootKey="false">
+        <Value>Phương thức vận chuyển</Value>
+    </LocaleResource>
+    <LocaleResource Name="Order.Shipments.TrackingNumber" AppendRootKey="false">
+        <Value>Mã vận đơn</Value>
+    </LocaleResource>
+    <LocaleResource Name="Order.Shipping" AppendRootKey="false">
+        <Value>Phí vận chuyển</Value>
+    </LocaleResource>
+    <LocaleResource Name="Order.ShippingAddressMissing" AppendRootKey="false">
+        <Value>Thiếu địa chỉ giao hàng.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Order.ShippingMethod" AppendRootKey="false">
+        <Value>Phương thức vận chuyển</Value>
+    </LocaleResource>
+    <LocaleResource Name="Order.SubTotal" AppendRootKey="false">
+        <Value>Tạm tính</Value>
+    </LocaleResource>
+    <LocaleResource Name="Order.VATNumber" AppendRootKey="false">
+        <Value>Mã số thuế</Value>
+    </LocaleResource>
+    <LocaleResource Name="PageDescription.AllProductTags" AppendRootKey="false">
+        <Value>Khám phá tất cả thẻ sản phẩm tại cửa hàng trực tuyến {0}.</Value>
+    </LocaleResource>
+    <LocaleResource Name="PageDescription.CompareProducts" AppendRootKey="false">
+        <Value>So sánh sản phẩm tại cửa hàng trực tuyến {0}.</Value>
+    </LocaleResource>
+    <LocaleResource Name="PageDescription.Manufacturers" AppendRootKey="false">
+        <Value>Khám phá tất cả thương hiệu tại cửa hàng trực tuyến {0}.</Value>
+    </LocaleResource>
+    <LocaleResource Name="PageDescription.RecentlyAddedProducts" AppendRootKey="false">
+        <Value>Khám phá sản phẩm mới tại cửa hàng trực tuyến {0}.</Value>
+    </LocaleResource>
+    <LocaleResource Name="PageDescription.RecentlyViewedProducts" AppendRootKey="false">
+        <Value>Các sản phẩm bạn đã xem gần đây tại cửa hàng trực tuyến {0}.</Value>
+    </LocaleResource>
+    <LocaleResource Name="PageTitle.AllProductTags" AppendRootKey="false">
+        <Value>Tất cả thẻ sản phẩm</Value>
+    </LocaleResource>
+    <LocaleResource Name="PageTitle.BackInStockSubscriptions" AppendRootKey="false">
+        <Value>Thông báo khi có hàng</Value>
+    </LocaleResource>
+    <LocaleResource Name="PageTitle.Blog.Month" AppendRootKey="false">
+        <Value>Bài viết blog tháng {0}</Value>
+    </LocaleResource>
+    <LocaleResource Name="PageTitle.Blog.Tag" AppendRootKey="false">
+        <Value>Bài viết blog với thẻ {0}</Value>
+    </LocaleResource>
+    <LocaleResource Name="PageTitle.Checkout" AppendRootKey="false">
+        <Value>Thanh toán</Value>
+    </LocaleResource>
+    <LocaleResource Name="PageTitle.Checkout.Completed" AppendRootKey="false">
+        <Value>Cảm ơn bạn!</Value>
+    </LocaleResource>
+    <LocaleResource Name="PageTitle.Checkout.PaymentMethod" AppendRootKey="false">
+        <Value>Phương thức thanh toán</Value>
+    </LocaleResource>
+    <LocaleResource Name="PageTitle.Checkout.ShippingAddress" AppendRootKey="false">
+        <Value>Địa chỉ giao hàng</Value>
+    </LocaleResource>
+    <LocaleResource Name="PageTitle.Checkout.ShippingMethod" AppendRootKey="false">
+        <Value>Phương thức vận chuyển</Value>
+    </LocaleResource>
+    <LocaleResource Name="PageTitle.ContactUs" AppendRootKey="false">
+        <Value>Liên hệ</Value>
+    </LocaleResource>
+    <LocaleResource Name="PageTitle.ForumSubscriptions" AppendRootKey="false">
+        <Value>Theo dõi diễn đàn</Value>
+    </LocaleResource>
+    <LocaleResource Name="PageTitle.Manufacturers" AppendRootKey="false">
+        <Value>Thương hiệu</Value>
+    </LocaleResource>
+    <LocaleResource Name="PageTitle.NewsArchive" AppendRootKey="false">
+        <Value>Lưu trữ tin tức</Value>
+    </LocaleResource>
+    <LocaleResource Name="PageTitle.PrivateMessages" AppendRootKey="false">
+        <Value>Tin nhắn riêng</Value>
+    </LocaleResource>
+    <LocaleResource Name="PageTitle.ProductEmailAFriend" AppendRootKey="false">
+        <Value>Gửi cho bạn bè</Value>
+    </LocaleResource>
+    <LocaleResource Name="PageTitle.ProductsByTag" AppendRootKey="false">
+        <Value>Sản phẩm có thẻ '{0}'</Value>
+    </LocaleResource>
+    <LocaleResource Name="PageTitle.RecentlyAddedProducts" AppendRootKey="false">
+        <Value>Sản phẩm mới</Value>
+    </LocaleResource>
+    <LocaleResource Name="PageTitle.RecentlyViewedProducts" AppendRootKey="false">
+        <Value>Sản phẩm đã xem</Value>
+    </LocaleResource>
+    <LocaleResource Name="PageTitle.Register" AppendRootKey="false">
+        <Value>Đăng ký</Value>
+    </LocaleResource>
+    <LocaleResource Name="PageTitle.ReturnItems" AppendRootKey="false">
+        <Value>Trả hàng</Value>
+    </LocaleResource>
+    <LocaleResource Name="PageTitle.SendPM" AppendRootKey="false">
+        <Value>Gửi tin nhắn riêng</Value>
+    </LocaleResource>
+    <LocaleResource Name="PageTitle.ShipmentDetails" AppendRootKey="false">
+        <Value>Chi tiết giao hàng</Value>
+    </LocaleResource>
+    <LocaleResource Name="PageTitle.StoreClosed" AppendRootKey="false">
+        <Value>Cửa hàng tạm đóng</Value>
+    </LocaleResource>
+    <LocaleResource Name="PageTitle.Wishlist" AppendRootKey="false">
+        <Value>Danh sách yêu thích</Value>
+    </LocaleResource>
+    <LocaleResource Name="PageTitle.WishlistEmailAFriend" AppendRootKey="false">
+        <Value>Gửi danh sách yêu thích cho bạn bè</Value>
+    </LocaleResource>
+    <LocaleResource Name="Pager.CurrentPage" AppendRootKey="false">
+        <Value>Trang {0}/{1} (tổng {2})</Value>
+    </LocaleResource>
+    <LocaleResource Name="Pager.First" AppendRootKey="false">
+        <Value>Đầu</Value>
+    </LocaleResource>
+    <LocaleResource Name="Pager.FirstPageTitle" AppendRootKey="false">
+        <Value>Trang đầu</Value>
+    </LocaleResource>
+    <LocaleResource Name="Pager.Last" AppendRootKey="false">
+        <Value>Cuối</Value>
+    </LocaleResource>
+    <LocaleResource Name="Pager.Next" AppendRootKey="false">
+        <Value>Tiếp</Value>
+    </LocaleResource>
+    <LocaleResource Name="Pager.PageXOfY" AppendRootKey="false">
+        <Value>Trang {0}/{1}</Value>
+    </LocaleResource>
+    <LocaleResource Name="Pager.PageXOfYShort" AppendRootKey="false">
+        <Value>{0}/{1}</Value>
+    </LocaleResource>
+    <LocaleResource Name="Pager.Previous" AppendRootKey="false">
+        <Value>Trước</Value>
+    </LocaleResource>
+    <LocaleResource Name="Payment.CannotCalculateNextPaymentDate" AppendRootKey="false">
+        <Value>Không tính được ngày thanh toán tiếp theo.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Payment.CardNumber.Wrong" AppendRootKey="false">
+        <Value>Số thẻ không đúng</Value>
+    </LocaleResource>
+    <LocaleResource Name="Payment.CouldNotLoadMethod" AppendRootKey="false">
+        <Value>Không tải được phương thức thanh toán.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Payment.ExpirationDate" AppendRootKey="false">
+        <Value>Ngày hết hạn</Value>
+    </LocaleResource>
+    <LocaleResource Name="Payment.ExpireMonth.Required" AppendRootKey="false">
+        <Value>Vui lòng chọn tháng hết hạn</Value>
+    </LocaleResource>
+    <LocaleResource Name="Payment.ExpireYear.Required" AppendRootKey="false">
+        <Value>Vui lòng chọn năm hết hạn</Value>
+    </LocaleResource>
+    <LocaleResource Name="Payment.InvalidCredentials" AppendRootKey="false">
+        <Value>Thông tin kết nối cổng thanh toán chưa đầy đủ. Vui lòng nhập đủ trong phần cấu hình của phương thức thanh toán.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Payment.MethodNotAvailable" AppendRootKey="false">
+        <Value>Phương thức thanh toán không khả dụng.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Payment.MissingCheckoutState" AppendRootKey="false">
+        <Value>Thiếu dữ liệu phiên thanh toán ({0}) nên không thể xử lý thanh toán. Vui lòng quay lại giỏ hàng và thanh toán lại.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Payment.OneActiveMethodProviderRequired" AppendRootKey="false">
+        <Value>Cần bật ít nhất một phương thức thanh toán.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Payment.PaymentFailure" AppendRootKey="false">
+        <Value>Phương thức thanh toán này gặp sự cố. Vui lòng thử lại hoặc chọn phương thức khác.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Payment.RecurringPaymentNotActive" AppendRootKey="false">
+        <Value>Thanh toán định kỳ chưa được kích hoạt.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Payment.RecurringPaymentNotSupported" AppendRootKey="false">
+        <Value>Phương thức thanh toán đã chọn không hỗ trợ thanh toán định kỳ.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Products.AskQuestion" AppendRootKey="false">
+        <Value>Bạn có câu hỏi về sản phẩm?</Value>
+    </LocaleResource>
+    <LocaleResource Name="Products.AskQuestion.Question.GeneralInquiry" AppendRootKey="false">
+        <Value>Tôi có câu hỏi về sản phẩm {0}:</Value>
+    </LocaleResource>
+    <LocaleResource Name="Products.AskQuestion.Question.QuoteRequest" AppendRootKey="false">
+        <Value>Tôi muốn nhận báo giá cho sản phẩm: {0}</Value>
+    </LocaleResource>
+    <LocaleResource Name="Products.AskQuestion.Sent" AppendRootKey="false">
+        <Value>Cảm ơn bạn. Câu hỏi của bạn đã được gửi.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Products.AskQuestion.Short" AppendRootKey="false">
+        <Value>Có câu hỏi?</Value>
+    </LocaleResource>
+    <LocaleResource Name="Products.Availability" AppendRootKey="false">
+        <Value>Tình trạng</Value>
+    </LocaleResource>
+    <LocaleResource Name="Products.Availability.Backordering" AppendRootKey="false">
+        <Value>Tạm hết hàng - sẽ giao ngay khi có hàng trở lại.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Products.Availability.InStock" AppendRootKey="false">
+        <Value>Còn hàng</Value>
+    </LocaleResource>
+    <LocaleResource Name="Products.Availability.InStockWithQuantity" AppendRootKey="false">
+        <Value>Còn {0} sản phẩm</Value>
+    </LocaleResource>
+    <LocaleResource Name="Products.Availability.IsNotActive" AppendRootKey="false">
+        <Value>Ngừng kinh doanh</Value>
+    </LocaleResource>
+    <LocaleResource Name="Products.BasePriceInfo" AppendRootKey="false">
+        <Value>Dung tích: {0} {1} ({2} / {3} {1})</Value>
+    </LocaleResource>
+    <LocaleResource Name="Products.Breadcrumb.Top" AppendRootKey="false">
+        <Value>Trang chủ</Value>
+    </LocaleResource>
+    <LocaleResource Name="Products.Bundle.BundleIncludes" AppendRootKey="false">
+        <Value>Combo gồm</Value>
+    </LocaleResource>
+    <LocaleResource Name="Products.Bundle.PriceWithDiscount.Note" AppendRootKey="false">
+        <Value>Chỉ khi mua combo</Value>
+    </LocaleResource>
+    <LocaleResource Name="Products.Bundle.YouSave" AppendRootKey="false">
+        <Value>Combo chỉ {0} thay vì {1}</Value>
+    </LocaleResource>
+    <LocaleResource Name="Products.Bundle.YouSaveWithoutDiscount" AppendRootKey="false">
+        <Value>Combo chỉ {0}</Value>
+    </LocaleResource>
+    <LocaleResource Name="Products.Compare.Clear" AppendRootKey="false">
+        <Value>Xóa danh sách</Value>
+    </LocaleResource>
+    <LocaleResource Name="Products.Compare.CompareNow" AppendRootKey="false">
+        <Value>So sánh ngay</Value>
+    </LocaleResource>
+    <LocaleResource Name="Products.Compare.List" AppendRootKey="false">
+        <Value>Danh sách so sánh sản phẩm</Value>
+    </LocaleResource>
+    <LocaleResource Name="Products.Compare.Price" AppendRootKey="false">
+        <Value>Giá</Value>
+    </LocaleResource>
+    <LocaleResource Name="Products.DeliveryDate" AppendRootKey="false">
+        <Value>Dự kiến giao:</Value>
+    </LocaleResource>
+    <LocaleResource Name="Products.DimensionsValue" AppendRootKey="false">
+        <Value>{0} x {1} x {2} (R/C/D)</Value>
+    </LocaleResource>
+    <LocaleResource Name="Products.DimensionsValue.Full" AppendRootKey="false">
+        <Value>{0} × {1} × {2} {3} (R×C×D)</Value>
+    </LocaleResource>
+    <LocaleResource Name="Products.DownloadSample" AppendRootKey="false">
+        <Value>Tải bản dùng thử</Value>
+    </LocaleResource>
+    <LocaleResource Name="Products.EmailAFriend" AppendRootKey="false">
+        <Value>Gửi cho bạn bè</Value>
+    </LocaleResource>
+    <LocaleResource Name="Products.EmailAFriend.LoginNote" AppendRootKey="false">
+        <Value>Vui lòng đăng nhập để dùng chức năng này. &lt;a href='{0}'&gt;Đăng nhập ngay&lt;/a&gt;</Value>
+    </LocaleResource>
+    <LocaleResource Name="Products.EmailAFriend.OnlyRegisteredUsers" AppendRootKey="false">
+        <Value>Chỉ khách hàng đã đăng ký mới dùng được chức năng gửi cho bạn bè</Value>
+    </LocaleResource>
+    <LocaleResource Name="Products.EmailAFriend.PersonalMessage" AppendRootKey="false">
+        <Value>Lời nhắn</Value>
+    </LocaleResource>
+    <LocaleResource Name="Products.EmailAFriend.PersonalMessage.Hint" AppendRootKey="false">
+        <Value>Nhập lời nhắn (không bắt buộc)</Value>
+    </LocaleResource>
+    <LocaleResource Name="Products.EmailAFriend.Title" AppendRootKey="false">
+        <Value>Gửi cho bạn bè</Value>
+    </LocaleResource>
+    <LocaleResource Name="Products.EmailAFriend.YourEmailAddress" AppendRootKey="false">
+        <Value>Địa chỉ email của bạn</Value>
+    </LocaleResource>
+    <LocaleResource Name="Products.EmailAFriend.YourEmailAddress.Hint" AppendRootKey="false">
+        <Value>Nhập địa chỉ email của bạn</Value>
+    </LocaleResource>
+    <LocaleResource Name="Products.EnterProductPrice" AppendRootKey="false">
+        <Value>Vui lòng nhập giá bạn muốn trả</Value>
+    </LocaleResource>
+    <LocaleResource Name="Products.ExclTaxSuffix" AppendRootKey="false">
+        <Value>{0} *</Value>
+    </LocaleResource>
+    <LocaleResource Name="Products.GiftCard.Message" AppendRootKey="false">
+        <Value>Lời nhắn</Value>
+    </LocaleResource>
+    <LocaleResource Name="Products.InclTaxSuffix" AppendRootKey="false">
+        <Value>{0} *</Value>
+    </LocaleResource>
+    <LocaleResource Name="Products.LoginForPrice" AppendRootKey="false">
+        <Value>Vui lòng đăng nhập để xem giá.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Products.Longdesc.More" AppendRootKey="false">
+        <Value>Xem thêm</Value>
+    </LocaleResource>
+    <LocaleResource Name="Products.Manufacturer" AppendRootKey="false">
+        <Value>Thương hiệu</Value>
+    </LocaleResource>
+    <LocaleResource Name="Products.Manufacturers" AppendRootKey="false">
+        <Value>Thương hiệu</Value>
+    </LocaleResource>
+    <LocaleResource Name="Products.NewProducts" AppendRootKey="false">
+        <Value>Sản phẩm mới</Value>
+    </LocaleResource>
+    <LocaleResource Name="Products.NewProducts.RSS.Hint" AppendRootKey="false">
+        <Value>Bấm vào đây để nhận thông báo tự động khi có sản phẩm mới</Value>
+    </LocaleResource>
+    <LocaleResource Name="Products.NoAssociatedProducts" AppendRootKey="false">
+        <Value>Sản phẩm này đã bán hết.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Products.NoBundledItems" AppendRootKey="false">
+        <Value>Combo chưa có sản phẩm nào</Value>
+    </LocaleResource>
+    <LocaleResource Name="Products.PaymentOptions.Heading" AppendRootKey="false">
+        <Value>Phương thức thanh toán</Value>
+    </LocaleResource>
+    <LocaleResource Name="Products.PlusOption" AppendRootKey="false">
+        <Value>Thêm tùy chọn</Value>
+    </LocaleResource>
+    <LocaleResource Name="Products.PlusOptions" AppendRootKey="false">
+        <Value>Thêm tùy chọn</Value>
+    </LocaleResource>
+    <LocaleResource Name="Products.Price" AppendRootKey="false">
+        <Value>Giá</Value>
+    </LocaleResource>
+    <LocaleResource Name="Products.Price.OfferCountdown" AppendRootKey="false">
+        <Value>Kết thúc sau &lt;b class="fwm"&gt;{0}&lt;/b&gt;</Value>
+    </LocaleResource>
+    <LocaleResource Name="Products.Price.OldPrice" AppendRootKey="false">
+        <Value>Giá gốc</Value>
+    </LocaleResource>
+    <LocaleResource Name="Products.Price.WithDiscount" AppendRootKey="false">
+        <Value>Giá của bạn</Value>
+    </LocaleResource>
+    <LocaleResource Name="Products.ProductCodeNotFound" AppendRootKey="false">
+        <Value>Không tìm thấy sản phẩm có mã &lt;b&gt;{0}&lt;/b&gt;.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Products.ProductHasBeenAddedToTheCart" AppendRootKey="false">
+        <Value>Đã thêm sản phẩm vào giỏ hàng</Value>
+    </LocaleResource>
+    <LocaleResource Name="Products.ProductHasBeenAddedToTheWishlist" AppendRootKey="false">
+        <Value>Đã thêm sản phẩm vào danh sách yêu thích</Value>
+    </LocaleResource>
+    <LocaleResource Name="Products.ProductNotAddedToTheCart" AppendRootKey="false">
+        <Value>Không thể thêm sản phẩm vào giỏ hàng.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Products.ProductsHaveBeenAddedToTheCart" AppendRootKey="false">
+        <Value>Đã thêm {0}/{1} sản phẩm vào giỏ hàng.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Products.RecentlyViewedProducts" AppendRootKey="false">
+        <Value>Sản phẩm đã xem</Value>
+    </LocaleResource>
+    <LocaleResource Name="Products.RelatedProducts" AppendRootKey="false">
+        <Value>Sản phẩm liên quan</Value>
+    </LocaleResource>
+    <LocaleResource Name="Products.SavingBadgeLabel" AppendRootKey="false">
+        <Value>&amp;minus; {0} %</Value>
+    </LocaleResource>
+    <LocaleResource Name="Products.SelectProducts" AppendRootKey="false">
+        <Value>Vui lòng chọn sản phẩm bạn muốn.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Products.Sorting.Featured" AppendRootKey="false">
+        <Value>Đề xuất</Value>
+    </LocaleResource>
+    <LocaleResource Name="Products.Specs" AppendRootKey="false">
+        <Value>Thông số</Value>
+    </LocaleResource>
+    <LocaleResource Name="Products.Specs.AdditionalFeatures" AppendRootKey="false">
+        <Value>Tính năng bổ sung</Value>
+    </LocaleResource>
+    <LocaleResource Name="Products.SwitchToGrid" AppendRootKey="false">
+        <Value>Hiện</Value>
+    </LocaleResource>
+    <LocaleResource Name="Products.SwitchToList" AppendRootKey="false">
+        <Value>Hiện</Value>
+    </LocaleResource>
+    <LocaleResource Name="Products.Tags.All" AppendRootKey="false">
+        <Value>Tất cả thẻ sản phẩm</Value>
+    </LocaleResource>
+    <LocaleResource Name="Products.Tags.PageSize" AppendRootKey="false">
+        <Value>Hiển thị</Value>
+    </LocaleResource>
+    <LocaleResource Name="Products.Tags.PageSize.PerPage" AppendRootKey="false">
+        <Value>mỗi trang</Value>
+    </LocaleResource>
+    <LocaleResource Name="Products.Tags.ProductsTaggedWith" AppendRootKey="false">
+        <Value>Sản phẩm có thẻ {0}</Value>
+    </LocaleResource>
+    <LocaleResource Name="Products.TierPrices" AppendRootKey="false">
+        <Value>Giá theo số lượng</Value>
+    </LocaleResource>
+    <LocaleResource Name="Products.TierPrices.Price" AppendRootKey="false">
+        <Value>Giá</Value>
+    </LocaleResource>
+    <LocaleResource Name="Products.Weight" AppendRootKey="false">
+        <Value>Khối lượng</Value>
+    </LocaleResource>
+    <LocaleResource Name="Profile.LatestPosts.NoPosts" AppendRootKey="false">
+        <Value>Chưa có bài viết nào</Value>
+    </LocaleResource>
+    <LocaleResource Name="Profile.PostedOn" AppendRootKey="false">
+        <Value>Đăng lúc</Value>
+    </LocaleResource>
+    <LocaleResource Name="Profile.Statistics" AppendRootKey="false">
+        <Value>Thống kê</Value>
+    </LocaleResource>
+    <LocaleResource Name="Profile.Topic" AppendRootKey="false">
+        <Value>Chủ đề</Value>
+    </LocaleResource>
+    <LocaleResource Name="Reviews" AppendRootKey="false">
+        <Value>Đánh giá</Value>
+    </LocaleResource>
+    <LocaleResource Name="Reviews.Empty" AppendRootKey="false">
+        <Value>Chưa có đánh giá nào</Value>
+    </LocaleResource>
+    <LocaleResource Name="Reviews.ExistingReviews" AppendRootKey="false">
+        <Value>Các đánh giá</Value>
+    </LocaleResource>
+    <LocaleResource Name="Reviews.Fields.Rating" AppendRootKey="false">
+        <Value>Bạn chấm mấy sao?</Value>
+    </LocaleResource>
+    <LocaleResource Name="Reviews.Fields.Rating.Bad" AppendRootKey="false">
+        <Value>Tệ</Value>
+    </LocaleResource>
+    <LocaleResource Name="Reviews.Fields.ReviewText" AppendRootKey="false">
+        <Value>Nhận xét của bạn về sản phẩm</Value>
+    </LocaleResource>
+    <LocaleResource Name="Reviews.Fields.Title" AppendRootKey="false">
+        <Value>Tiêu đề đánh giá</Value>
+    </LocaleResource>
+    <LocaleResource Name="Reviews.Helpfulness.OnlyRegistered" AppendRootKey="false">
+        <Value>Chỉ khách hàng đã đăng ký mới có thể bình chọn đánh giá</Value>
+    </LocaleResource>
+    <LocaleResource Name="Reviews.Helpfulness.SuccessfullyVoted" AppendRootKey="false">
+        <Value>Cảm ơn bạn đã bình chọn.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Reviews.Helpfulness.WasHelpful?" AppendRootKey="false">
+        <Value>Đánh giá này có hữu ích không?</Value>
+    </LocaleResource>
+    <LocaleResource Name="Reviews.Helpfulness.YourOwnReview" AppendRootKey="false">
+        <Value>Bạn không thể bình chọn cho đánh giá của chính mình</Value>
+    </LocaleResource>
+    <LocaleResource Name="Reviews.NotFound" AppendRootKey="false">
+        <Value>Không tìm thấy đánh giá sản phẩm {0}.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Reviews.OnlyRegisteredUsersCanWriteReviews" AppendRootKey="false">
+        <Value>Chỉ khách hàng đã đăng ký mới có thể viết đánh giá</Value>
+    </LocaleResource>
+    <LocaleResource Name="Reviews.Overview.AddNew" AppendRootKey="false">
+        <Value>Viết đánh giá</Value>
+    </LocaleResource>
+    <LocaleResource Name="Reviews.Overview.First" AppendRootKey="false">
+        <Value>Hãy là người đầu tiên đánh giá sản phẩm này</Value>
+    </LocaleResource>
+    <LocaleResource Name="Reviews.Overview.ReadAll" AppendRootKey="false">
+        <Value>Xem tất cả đánh giá</Value>
+    </LocaleResource>
+    <LocaleResource Name="Reviews.Overview.Review" AppendRootKey="false">
+        <Value>Đánh giá: {0}/5 sao. {1} lượt đánh giá.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Reviews.Overview.Reviews" AppendRootKey="false">
+        <Value>Đánh giá: {0}/5 sao. {1} lượt đánh giá.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Reviews.ProductReviewsFor" AppendRootKey="false">
+        <Value>Đánh giá sản phẩm</Value>
+    </LocaleResource>
+    <LocaleResource Name="Reviews.SeeAfterApproving" AppendRootKey="false">
+        <Value>Đánh giá của bạn sẽ hiển thị sau khi được quản trị viên duyệt.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Reviews.SuccessfullyAdded" AppendRootKey="false">
+        <Value>Đã gửi đánh giá sản phẩm.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Reviews.Unverified" AppendRootKey="false">
+        <Value>Chưa xác minh mua hàng</Value>
+    </LocaleResource>
+    <LocaleResource Name="Reviews.Verified" AppendRootKey="false">
+        <Value>Đã mua hàng</Value>
+    </LocaleResource>
+    <LocaleResource Name="Reviews.Write" AppendRootKey="false">
+        <Value>Viết đánh giá của bạn</Value>
+    </LocaleResource>
+    <LocaleResource Name="Search.Category" AppendRootKey="false">
+        <Value>Danh mục</Value>
+    </LocaleResource>
+    <LocaleResource Name="Search.EnterSearchTerms" AppendRootKey="false">
+        <Value>Vui lòng nhập từ khóa tìm kiếm</Value>
+    </LocaleResource>
+    <LocaleResource Name="Search.Facet.Availability" AppendRootKey="false">
+        <Value>Tình trạng</Value>
+    </LocaleResource>
+    <LocaleResource Name="Search.Facet.Category" AppendRootKey="false">
+        <Value>Danh mục</Value>
+    </LocaleResource>
+    <LocaleResource Name="Search.Facet.Customer" AppendRootKey="false">
+        <Value>Tên đăng nhập</Value>
+    </LocaleResource>
+    <LocaleResource Name="Search.Facet.Date" AppendRootKey="false">
+        <Value>Thời gian</Value>
+    </LocaleResource>
+    <LocaleResource Name="Search.Facet.Date.Older" AppendRootKey="false">
+        <Value>và cũ hơn</Value>
+    </LocaleResource>
+    <LocaleResource Name="Search.Facet.ExcludeOutOfStock" AppendRootKey="false">
+        <Value>Ẩn sản phẩm hết hàng</Value>
+    </LocaleResource>
+    <LocaleResource Name="Search.Facet.FindPlaceholder" AppendRootKey="false">
+        <Value>Tìm {0}...</Value>
+    </LocaleResource>
+    <LocaleResource Name="Search.Facet.IncludeOutOfStock" AppendRootKey="false">
+        <Value>Hiện cả sản phẩm hết hàng</Value>
+    </LocaleResource>
+    <LocaleResource Name="Search.Facet.LastDays" AppendRootKey="false">
+        <Value>{0} ngày gần đây</Value>
+    </LocaleResource>
+    <LocaleResource Name="Search.Facet.Manufacturer" AppendRootKey="false">
+        <Value>Thương hiệu</Value>
+    </LocaleResource>
+    <LocaleResource Name="Search.Facet.NewArrivals" AppendRootKey="false">
+        <Value>Hàng mới về</Value>
+    </LocaleResource>
+    <LocaleResource Name="Search.Facet.Price" AppendRootKey="false">
+        <Value>Giá</Value>
+    </LocaleResource>
+    <LocaleResource Name="Search.Facet.RangeMax" AppendRootKey="false">
+        <Value>đến {0}</Value>
+    </LocaleResource>
+    <LocaleResource Name="Search.Facet.Rating" AppendRootKey="false">
+        <Value>Đánh giá</Value>
+    </LocaleResource>
+    <LocaleResource Name="Search.Facet.RemoveAllFilters" AppendRootKey="false">
+        <Value>Xóa tất cả bộ lọc</Value>
+    </LocaleResource>
+    <LocaleResource Name="Search.Facet.StarsAndMore" AppendRootKey="false">
+        <Value>trở lên</Value>
+    </LocaleResource>
+    <LocaleResource Name="Search.Facet.XStarsAndMore" AppendRootKey="false">
+        <Value>{0} sao trở lên</Value>
+    </LocaleResource>
+    <LocaleResource Name="Search.Fields.ProductAttributeOptionName" AppendRootKey="false">
+        <Value>Tên tùy chọn thuộc tính sản phẩm</Value>
+    </LocaleResource>
+    <LocaleResource Name="Search.Fields.SpecificationAttributeOptionName" AppendRootKey="false">
+        <Value>Tên tùy chọn thông số kỹ thuật</Value>
+    </LocaleResource>
+    <LocaleResource Name="Search.FilterBy" AppendRootKey="false">
+        <Value>Lọc theo</Value>
+    </LocaleResource>
+    <LocaleResource Name="Search.FilterNoResultsText" AppendRootKey="false">
+        <Value>Không có sản phẩm nào khớp với bộ lọc.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Search.Hits" AppendRootKey="false">
+        <Value>Kết quả</Value>
+    </LocaleResource>
+    <LocaleResource Name="Search.HitsFor" AppendRootKey="false">
+        <Value>{0} kết quả cho {1}</Value>
+    </LocaleResource>
+    <LocaleResource Name="Search.IncludeSubCategories" AppendRootKey="false">
+        <Value>Tìm cả trong danh mục con</Value>
+    </LocaleResource>
+    <LocaleResource Name="Search.IndexingRequiredNotification" AppendRootKey="false">
+        <Value>Đây là tìm kiếm mặc định. Tìm kiếm nâng cao cần lập chỉ mục. &lt;a href='{0}'&gt;Bắt đầu lập chỉ mục&lt;/a&gt; hoặc &lt;a href='{1}'&gt;mở cấu hình&lt;/a&gt;.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Search.Manufacturer" AppendRootKey="false">
+        <Value>Thương hiệu</Value>
+    </LocaleResource>
+    <LocaleResource Name="Search.NoMoreHitsFound" AppendRootKey="false">
+        <Value>Không còn kết quả nào.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Search.NoResultsText" AppendRootKey="false">
+        <Value>Không tìm thấy sản phẩm nào phù hợp.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Search.NumHits" AppendRootKey="false">
+        <Value>{0} kết quả</Value>
+    </LocaleResource>
+    <LocaleResource Name="Search.PagingInfo" AppendRootKey="false">
+        <Value>{0}/{1}</Value>
+    </LocaleResource>
+    <LocaleResource Name="Search.PriceRange" AppendRootKey="false">
+        <Value>Khoảng giá</Value>
+    </LocaleResource>
+    <LocaleResource Name="Search.RelatedSearchTerms" AppendRootKey="false">
+        <Value>Từ khóa liên quan</Value>
+    </LocaleResource>
+    <LocaleResource Name="Search.SearchBox.Tooltip" AppendRootKey="false">
+        <Value>Bạn đang tìm gì?</Value>
+    </LocaleResource>
+    <LocaleResource Name="Search.SearchInDescriptions" AppendRootKey="false">
+        <Value>Tìm trong mô tả sản phẩm</Value>
+    </LocaleResource>
+    <LocaleResource Name="Search.SearchTerm" AppendRootKey="false">
+        <Value>Từ khóa tìm kiếm</Value>
+    </LocaleResource>
+    <LocaleResource Name="Search.SearchTermMinimumLengthIsNCharacters" AppendRootKey="false">
+        <Value>Từ khóa tìm kiếm phải có ít nhất {0} ký tự.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Search.TermCorrectedHint" AppendRootKey="false">
+        <Value>Đang hiển thị kết quả cho {0}. Không tìm thấy kết quả nào cho {1}.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Shipping.CouldNotLoadMethod" AppendRootKey="false">
+        <Value>Không tải được phương thức tính phí vận chuyển.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Shipping.OneActiveMethodProviderRequired" AppendRootKey="false">
+        <Value>Cần bật ít nhất một phương thức tính phí vận chuyển.</Value>
+    </LocaleResource>
+    <LocaleResource Name="ShoppingCart.AddOnlySimpleProductsToCart" AppendRootKey="false">
+        <Value>Chỉ có thể thêm sản phẩm đơn vào giỏ hàng.</Value>
+    </LocaleResource>
+    <LocaleResource Name="ShoppingCart.AddToWishlist" AppendRootKey="false">
+        <Value>Thêm vào danh sách yêu thích</Value>
+    </LocaleResource>
+    <LocaleResource Name="ShoppingCart.AddToWishlist.Short" AppendRootKey="false">
+        <Value>Yêu thích</Value>
+    </LocaleResource>
+    <LocaleResource Name="ShoppingCart.AlternativePaymentButtons" AppendRootKey="false">
+        <Value>- HOẶC -</Value>
+    </LocaleResource>
+    <LocaleResource Name="ShoppingCart.AttributeError" AppendRootKey="false">
+        <Value>Đã có lỗi không xác định khi kiểm tra biến thể sản phẩm đã chọn.</Value>
+    </LocaleResource>
+    <LocaleResource Name="ShoppingCart.Bundle.BundleItemNotFound" AppendRootKey="false">
+        <Value>Không tìm thấy sản phẩm "{0}" trong combo.</Value>
+    </LocaleResource>
+    <LocaleResource Name="ShoppingCart.Bundle.BundleItemUnpublished" AppendRootKey="false">
+        <Value>Sản phẩm "{0}" trong combo đang bị ẩn.</Value>
+    </LocaleResource>
+    <LocaleResource Name="ShoppingCart.Bundle.MissingProduct" AppendRootKey="false">
+        <Value>Sản phẩm "{0}" trong combo bị thiếu liên kết sản phẩm hoặc combo.</Value>
+    </LocaleResource>
+    <LocaleResource Name="ShoppingCart.Bundle.NoAttributes" AppendRootKey="false">
+        <Value>Combo không hỗ trợ thuộc tính.</Value>
+    </LocaleResource>
+    <LocaleResource Name="ShoppingCart.Bundle.NoCustomerEnteredPrice" AppendRootKey="false">
+        <Value>Combo này không cho phép đề xuất giá.</Value>
+    </LocaleResource>
+    <LocaleResource Name="ShoppingCart.Bundle.ProductResrictions" AppendRootKey="false">
+        <Value>Sản phẩm "{0}" trong combo là hàng tải về hoặc thanh toán định kỳ, loại này không được hỗ trợ.</Value>
+    </LocaleResource>
+    <LocaleResource Name="ShoppingCart.Bundle.Quantity" AppendRootKey="false">
+        <Value>Sản phẩm "{0}" trong combo có số lượng bằng 0 hoặc nhỏ hơn 0.</Value>
+    </LocaleResource>
+    <LocaleResource Name="ShoppingCart.BuyingDisabled" AppendRootKey="false">
+        <Value>Sản phẩm này hiện không bán</Value>
+    </LocaleResource>
+    <LocaleResource Name="ShoppingCart.CannotLoadProduct" AppendRootKey="false">
+        <Value>Không tải được sản phẩm (Id={0})</Value>
+    </LocaleResource>
+    <LocaleResource Name="ShoppingCart.CannotMixStandardAndAutoshipProducts" AppendRootKey="false">
+        <Value>Giỏ hàng có cả sản phẩm thường và sản phẩm giao định kỳ. Mỗi đơn hàng chỉ được chứa một loại.</Value>
+    </LocaleResource>
+    <LocaleResource Name="ShoppingCart.CommentBox" AppendRootKey="false">
+        <Value>Bạn có muốn ghi chú gì cho đơn hàng này không?</Value>
+    </LocaleResource>
+    <LocaleResource Name="ShoppingCart.ConflictingShipmentSchedules" AppendRootKey="false">
+        <Value>Giỏ hàng có các sản phẩm giao định kỳ với lịch giao khác nhau. Mỗi đơn hàng chỉ được có một lịch giao định kỳ.</Value>
+    </LocaleResource>
+    <LocaleResource Name="ShoppingCart.CrossSells" AppendRootKey="false">
+        <Value>Có thể bạn cũng quan tâm</Value>
+    </LocaleResource>
+    <LocaleResource Name="ShoppingCart.DeleteCartItem.Failed" AppendRootKey="false">
+        <Value>Đã có lỗi khi xóa sản phẩm.</Value>
+    </LocaleResource>
+    <LocaleResource Name="ShoppingCart.DeleteCartItem.Success" AppendRootKey="false">
+        <Value>Đã xóa sản phẩm.</Value>
+    </LocaleResource>
+    <LocaleResource Name="ShoppingCart.DeselectAllProducts" AppendRootKey="false">
+        <Value>&lt;a href="{0}" class="deselect-cart-items" rel="nofollow"&gt;Bỏ chọn tất cả sản phẩm&lt;/a&gt;.</Value>
+    </LocaleResource>
+    <LocaleResource Name="ShoppingCart.DiscountCouponCode.Applied" AppendRootKey="false">
+        <Value>Đã áp dụng mã giảm giá</Value>
+    </LocaleResource>
+    <LocaleResource Name="ShoppingCart.DiscountCouponCode.Button" AppendRootKey="false">
+        <Value>Áp dụng mã</Value>
+    </LocaleResource>
+    <LocaleResource Name="ShoppingCart.DiscountCouponCode.CurrentCode" AppendRootKey="false">
+        <Value>Mã giảm giá đã nhập: {0}</Value>
+    </LocaleResource>
+    <LocaleResource Name="ShoppingCart.DiscountCouponCode.NoMoreDiscount" AppendRootKey="false">
+        <Value>Không thể áp dụng thêm giảm giá.</Value>
+    </LocaleResource>
+    <LocaleResource Name="ShoppingCart.DiscountCouponCode.WrongDiscount" AppendRootKey="false">
+        <Value>Mã giảm giá bạn nhập không áp dụng được cho đơn hàng này</Value>
+    </LocaleResource>
+    <LocaleResource Name="ShoppingCart.EditCart" AppendRootKey="false">
+        <Value>Sửa giỏ hàng</Value>
+    </LocaleResource>
+    <LocaleResource Name="ShoppingCart.EnterAttributeValue" AppendRootKey="false">
+        <Value>Vui lòng nhập &lt;b class="fwm"&gt;{0}&lt;/b&gt;.</Value>
+    </LocaleResource>
+    <LocaleResource Name="ShoppingCart.EstimateShipping" AppendRootKey="false">
+        <Value>Ước tính phí vận chuyển</Value>
+    </LocaleResource>
+    <LocaleResource Name="ShoppingCart.EstimateShipping.Button" AppendRootKey="false">
+        <Value>Ước tính phí vận chuyển</Value>
+    </LocaleResource>
+    <LocaleResource Name="ShoppingCart.EstimateShipping.StateProvince" AppendRootKey="false">
+        <Value>Tỉnh / thành phố</Value>
+    </LocaleResource>
+    <LocaleResource Name="ShoppingCart.EstimateShipping.Tooltip" AppendRootKey="false">
+        <Value>Nhập nơi nhận để ước tính phí vận chuyển</Value>
+    </LocaleResource>
+    <LocaleResource Name="ShoppingCart.EstimateShipping.ZipPostalCode" AppendRootKey="false">
+        <Value>Mã bưu chính</Value>
+    </LocaleResource>
+    <LocaleResource Name="ShoppingCart.FileUploaded" AppendRootKey="false">
+        <Value>Đã tải file lên thành công!</Value>
+    </LocaleResource>
+    <LocaleResource Name="ShoppingCart.GiftCardCouponCode.DontWorkWithAutoshipProducts" AppendRootKey="false">
+        <Value>Không thể dùng thẻ quà tặng cho sản phẩm giao định kỳ.</Value>
+    </LocaleResource>
+    <LocaleResource Name="ShoppingCart.GiftCardCouponCode.Removed" AppendRootKey="false">
+        <Value>Đã gỡ mã thẻ quà tặng</Value>
+    </LocaleResource>
+    <LocaleResource Name="ShoppingCart.GiftCardCouponCode.WrongGiftCard" AppendRootKey="false">
+        <Value>Mã thẻ quà tặng bạn nhập không áp dụng được cho đơn hàng này</Value>
+    </LocaleResource>
+    <LocaleResource Name="ShoppingCart.IsDisabled" AppendRootKey="false">
+        <Value>Giỏ hàng đang tắt.</Value>
+    </LocaleResource>
+    <LocaleResource Name="ShoppingCart.ItemTotal" AppendRootKey="false">
+        <Value>Thành tiền</Value>
+    </LocaleResource>
+    <LocaleResource Name="ShoppingCart.MaximumShoppingCartItems" AppendRootKey="false">
+        <Value>Giỏ hàng đã đạt số sản phẩm tối đa</Value>
+    </LocaleResource>
+    <LocaleResource Name="ShoppingCart.MaximumWishlistItems" AppendRootKey="false">
+        <Value>Danh sách yêu thích đã đạt số sản phẩm tối đa</Value>
+    </LocaleResource>
+    <LocaleResource Name="ShoppingCart.Mini.AddedItemToCart" AppendRootKey="false">
+        <Value>Đã thêm {0} vào giỏ hàng</Value>
+    </LocaleResource>
+    <LocaleResource Name="ShoppingCart.Mini.AddedItemToCompare" AppendRootKey="false">
+        <Value>Đã thêm {0} vào danh sách so sánh</Value>
+    </LocaleResource>
+    <LocaleResource Name="ShoppingCart.Mini.AddedItemToWishlist" AppendRootKey="false">
+        <Value>Đã thêm {0} vào danh sách yêu thích</Value>
+    </LocaleResource>
+    <LocaleResource Name="ShoppingCart.Mini.EmptyCart.Info" AppendRootKey="false">
+        <Value>Bạn chưa thêm sản phẩm nào vào giỏ hàng. Bấm biểu tượng &lt;i class='{0}'&gt;&lt;/i&gt; để thêm sản phẩm vào giỏ.</Value>
+    </LocaleResource>
+    <LocaleResource Name="ShoppingCart.Mini.EmptyCompare.Info" AppendRootKey="false">
+        <Value>Bạn chưa thêm sản phẩm nào để so sánh. Bấm biểu tượng &lt;i class='{0}'&gt;&lt;/i&gt; để thêm sản phẩm vào danh sách so sánh.</Value>
+    </LocaleResource>
+    <LocaleResource Name="ShoppingCart.Mini.EmptyCompare.Title" AppendRootKey="false">
+        <Value>Chưa có sản phẩm để so sánh</Value>
+    </LocaleResource>
+    <LocaleResource Name="ShoppingCart.Mini.EmptyWishlist.Info" AppendRootKey="false">
+        <Value>Bạn chưa thêm sản phẩm nào vào danh sách yêu thích. Bấm biểu tượng &lt;i class='{0}'&gt;&lt;/i&gt; để thêm sản phẩm vào danh sách yêu thích.</Value>
+    </LocaleResource>
+    <LocaleResource Name="ShoppingCart.Mini.EmptyWishlist.Title" AppendRootKey="false">
+        <Value>Danh sách yêu thích trống</Value>
+    </LocaleResource>
+    <LocaleResource Name="ShoppingCart.Mini.More.Plural" AppendRootKey="false">
+        <Value>và {0} sản phẩm khác</Value>
+    </LocaleResource>
+    <LocaleResource Name="ShoppingCart.Mini.More.Singular" AppendRootKey="false">
+        <Value>và {0} sản phẩm khác</Value>
+    </LocaleResource>
+    <LocaleResource Name="ShoppingCart.Mini.NoItems" AppendRootKey="false">
+        <Value>Giỏ hàng của bạn chưa có sản phẩm nào.</Value>
+    </LocaleResource>
+    <LocaleResource Name="ShoppingCart.Mini.OneItem" AppendRootKey="false">
+        <Value>1 sản phẩm</Value>
+    </LocaleResource>
+    <LocaleResource Name="ShoppingCart.Mini.SeveralItems" AppendRootKey="false">
+        <Value>{0} sản phẩm</Value>
+    </LocaleResource>
+    <LocaleResource Name="ShoppingCart.Mini.ViewCart" AppendRootKey="false">
+        <Value>Xem giỏ hàng</Value>
+    </LocaleResource>
+    <LocaleResource Name="ShoppingCart.MoveToWishlist" AppendRootKey="false">
+        <Value>Chuyển sang danh sách yêu thích</Value>
+    </LocaleResource>
+    <LocaleResource Name="ShoppingCart.NoProductsSelectedSelectAll" AppendRootKey="false">
+        <Value>Chưa chọn sản phẩm nào. &lt;a href="{0}" class="select-cart-items" rel="nofollow"&gt;Chọn tất cả sản phẩm&lt;/a&gt;.</Value>
+    </LocaleResource>
+    <LocaleResource Name="ShoppingCart.NotAvailable" AppendRootKey="false">
+        <Value>Sản phẩm không khả dụng</Value>
+    </LocaleResource>
+    <LocaleResource Name="ShoppingCart.NotAvailableVariant" AppendRootKey="false">
+        <Value>Biến thể sản phẩm đã chọn không khả dụng.</Value>
+    </LocaleResource>
+    <LocaleResource Name="ShoppingCart.OutOfStock" AppendRootKey="false">
+        <Value>Hết hàng</Value>
+    </LocaleResource>
+    <LocaleResource Name="ShoppingCart.Product(s)" AppendRootKey="false">
+        <Value>Sản phẩm</Value>
+    </LocaleResource>
+    <LocaleResource Name="ShoppingCart.ProductDeleted" AppendRootKey="false">
+        <Value>Sản phẩm đã bị xóa</Value>
+    </LocaleResource>
+    <LocaleResource Name="ShoppingCart.ProductLinkageProductNotLoading" AppendRootKey="false">
+        <Value>Không tải được sản phẩm liên kết có ID {0}.</Value>
+    </LocaleResource>
+    <LocaleResource Name="ShoppingCart.ProductNotAvailableForOrder" AppendRootKey="false">
+        <Value>Sản phẩm này hiện không thể đặt hàng.</Value>
+    </LocaleResource>
+    <LocaleResource Name="ShoppingCart.ProductUnpublished" AppendRootKey="false">
+        <Value>Sản phẩm đang bị ẩn</Value>
+    </LocaleResource>
+    <LocaleResource Name="ShoppingCart.Products" AppendRootKey="false">
+        <Value>Sản phẩm</Value>
+    </LocaleResource>
+    <LocaleResource Name="ShoppingCart.Quantity" AppendRootKey="false">
+        <Value>SL</Value>
+    </LocaleResource>
+    <LocaleResource Name="ShoppingCart.QuantityExceedsStock" AppendRootKey="false">
+        <Value>Số lượng vượt quá tồn kho. Bạn chỉ có thể thêm tối đa {0}.</Value>
+    </LocaleResource>
+    <LocaleResource Name="ShoppingCart.QuantityShouldPositive" AppendRootKey="false">
+        <Value>Số lượng phải lớn hơn 0</Value>
+    </LocaleResource>
+    <LocaleResource Name="ShoppingCart.RecurringPeriod" AppendRootKey="false">
+        <Value>[Giao định kỳ mỗi {0} {1}]</Value>
+    </LocaleResource>
+    <LocaleResource Name="ShoppingCart.Remove" AppendRootKey="false">
+        <Value>Xóa</Value>
+    </LocaleResource>
+    <LocaleResource Name="ShoppingCart.RequiredProductWarning" AppendRootKey="false">
+        <Value>Sản phẩm này cần đặt kèm sản phẩm: &lt;a href="{1}" class="alert-link"&gt;{0}&lt;/a&gt;.</Value>
+    </LocaleResource>
+    <LocaleResource Name="ShoppingCart.RewardPoints.Applied" AppendRootKey="false">
+        <Value>Đã áp dụng điểm thưởng.</Value>
+    </LocaleResource>
+    <LocaleResource Name="ShoppingCart.RewardPoints.Button" AppendRootKey="false">
+        <Value>Áp dụng</Value>
+    </LocaleResource>
+    <LocaleResource Name="ShoppingCart.RewardPoints.Removed" AppendRootKey="false">
+        <Value>Đã gỡ điểm thưởng.</Value>
+    </LocaleResource>
+    <LocaleResource Name="ShoppingCart.SelectAllProducts" AppendRootKey="false">
+        <Value>&lt;a href="{0}" class="select-cart-items" rel="nofollow"&gt;Chọn tất cả sản phẩm&lt;/a&gt;.</Value>
+    </LocaleResource>
+    <LocaleResource Name="ShoppingCart.SelectAtLeastOneProduct" AppendRootKey="false">
+        <Value>Vui lòng chọn ít nhất một sản phẩm để thanh toán.</Value>
+    </LocaleResource>
+    <LocaleResource Name="ShoppingCart.SelectAttribute" AppendRootKey="false">
+        <Value>Vui lòng chọn &lt;b class="fwm"&gt;{0}&lt;/b&gt;.</Value>
+    </LocaleResource>
+    <LocaleResource Name="ShoppingCart.ShippingInfoLink" AppendRootKey="false">
+        <Value>Xem bảng phí vận chuyển đầy đủ &lt;a href="{0}"&gt;tại đây&lt;/a&gt;.</Value>
+    </LocaleResource>
+    <LocaleResource Name="ShoppingCart.SyncedRequiredProductQuantityInfo" AppendRootKey="false">
+        <Value>Số lượng được tính tự động theo sản phẩm chính.</Value>
+    </LocaleResource>
+    <LocaleResource Name="ShoppingCart.SyncedRequiredProductQuantityWarning" AppendRootKey="false">
+        <Value>Không cho phép số lượng {0}. Số lượng bắt buộc là {1}.</Value>
+    </LocaleResource>
+    <LocaleResource Name="ShoppingCart.Totals.CalculatedDuringCheckout" AppendRootKey="false">
+        <Value>Tính khi thanh toán</Value>
+    </LocaleResource>
+    <LocaleResource Name="ShoppingCart.Totals.CreditBalance" AppendRootKey="false">
+        <Value>Số dư</Value>
+    </LocaleResource>
+    <LocaleResource Name="ShoppingCart.Totals.OrderTotal" AppendRootKey="false">
+        <Value>Tổng cộng</Value>
+    </LocaleResource>
+    <LocaleResource Name="ShoppingCart.Totals.PaymentMethodAdditionalFee" AppendRootKey="false">
+        <Value>Phụ phí phương thức thanh toán</Value>
+    </LocaleResource>
+    <LocaleResource Name="ShoppingCart.Totals.Shipping" AppendRootKey="false">
+        <Value>Phí vận chuyển</Value>
+    </LocaleResource>
+    <LocaleResource Name="ShoppingCart.Totals.Shipping.NotRequired" AppendRootKey="false">
+        <Value>Không cần</Value>
+    </LocaleResource>
+    <LocaleResource Name="ShoppingCart.Totals.ShippingWithinCountry" AppendRootKey="false">
+        <Value>Giao hàng trong {0}</Value>
+    </LocaleResource>
+    <LocaleResource Name="ShoppingCart.Totals.SubTotal" AppendRootKey="false">
+        <Value>Tạm tính</Value>
+    </LocaleResource>
+    <LocaleResource Name="ShoppingCart.Totals.SubTotalSelectedProducts" AppendRootKey="false">
+        <Value>Tạm tính &lt;span class="text-nowrap"&gt;({0} sản phẩm)&lt;/span&gt;</Value>
+    </LocaleResource>
+    <LocaleResource Name="ShoppingCart.Totals.TaxRateLineExcl" AppendRootKey="false">
+        <Value>Cộng {0}% thuế</Value>
+    </LocaleResource>
+    <LocaleResource Name="ShoppingCart.Totals.TaxRateLineIncl" AppendRootKey="false">
+        <Value>Đã gồm {0}% thuế</Value>
+    </LocaleResource>
+    <LocaleResource Name="ShoppingCart.UnitPrice" AppendRootKey="false">
+        <Value>Đơn giá</Value>
+    </LocaleResource>
+    <LocaleResource Name="ShoppingCart.UploadAttributeFile" AppendRootKey="false">
+        <Value>Vui lòng tải lên &lt;b class="fwm"&gt;{0}&lt;/b&gt;.</Value>
+    </LocaleResource>
+    <LocaleResource Name="ShoppingCart.Weight" AppendRootKey="false">
+        <Value>Khối lượng</Value>
+    </LocaleResource>
+    <LocaleResource Name="ShoppingCart.WishlistDisabled" AppendRootKey="false">
+        <Value>Sản phẩm này không thể thêm vào danh sách yêu thích</Value>
+    </LocaleResource>
+    <LocaleResource Name="StoreClosed" AppendRootKey="false">
+        <Value>Chúng tôi sẽ quay lại sớm.</Value>
+    </LocaleResource>
+    <LocaleResource Name="StoreClosed.Hint" AppendRootKey="false">
+        <Value>Cửa hàng đang được nâng cấp và sẽ sớm hoạt động trở lại.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Tax.ExclVAT" AppendRootKey="false">
+        <Value>chưa gồm VAT</Value>
+    </LocaleResource>
+    <LocaleResource Name="Tax.Exclusive" AppendRootKey="false">
+        <Value>Hiển thị giá chưa gồm thuế</Value>
+    </LocaleResource>
+    <LocaleResource Name="Tax.InclVAT" AppendRootKey="false">
+        <Value>đã gồm VAT</Value>
+    </LocaleResource>
+    <LocaleResource Name="Tax.Inclusive" AppendRootKey="false">
+        <Value>Hiển thị giá đã gồm thuế</Value>
+    </LocaleResource>
+    <LocaleResource Name="Tax.LegalInfoFooter" AppendRootKey="false">
+        <Value>* Tất cả giá {0}, chưa gồm &lt;a href="{1}"&gt;phí vận chuyển&lt;/a&gt;</Value>
+    </LocaleResource>
+    <LocaleResource Name="Tax.LegalInfoFooter2" AppendRootKey="false">
+        <Value>* Tất cả giá {0}, chưa gồm phí vận chuyển</Value>
+    </LocaleResource>
+    <LocaleResource Name="Tax.LegalInfoProductDetail" AppendRootKey="false">
+        <Value>{0} {1} {2}chưa gồm &lt;a href="{3}"&gt;phí vận chuyển&lt;/a&gt;</Value>
+    </LocaleResource>
+    <LocaleResource Name="Tax.LegalInfoProductDetail2" AppendRootKey="false">
+        <Value>{0} {1} {2}chưa gồm phí vận chuyển</Value>
+    </LocaleResource>
+    <LocaleResource Name="Tax.LegalInfoProductGrid" AppendRootKey="false">
+        <Value>{0} {1} {2}chưa gồm &lt;a href="{3}"&gt;phí vận chuyển&lt;/a&gt;</Value>
+    </LocaleResource>
+    <LocaleResource Name="Tax.LegalInfoProductList" AppendRootKey="false">
+        <Value>{0} {1} {2}chưa gồm &lt;a href="{3}"&gt;phí vận chuyển&lt;/a&gt;</Value>
+    </LocaleResource>
+    <LocaleResource Name="Tax.LegalInfoShort" AppendRootKey="false">
+        <Value>Giá {0}, chưa gồm &lt;a href='{1}'&gt;phí vận chuyển&lt;/a&gt;</Value>
+    </LocaleResource>
+    <LocaleResource Name="Tax.LegalInfoShort2" AppendRootKey="false">
+        <Value>Giá {0}, chưa gồm phí vận chuyển</Value>
+    </LocaleResource>
+    <LocaleResource Name="Tax.SelectType" AppendRootKey="false">
+        <Value>Cách hiển thị thuế</Value>
+    </LocaleResource>
+    <LocaleResource Name="Time.Day" AppendRootKey="false">
+        <Value>Ngày</Value>
+    </LocaleResource>
+    <LocaleResource Name="Time.DayAbbr" AppendRootKey="false">
+        <Value>ng</Value>
+    </LocaleResource>
+    <LocaleResource Name="Time.DaysAbbr" AppendRootKey="false">
+        <Value>ng</Value>
+    </LocaleResource>
+    <LocaleResource Name="Time.HourAbbr" AppendRootKey="false">
+        <Value>g</Value>
+    </LocaleResource>
+    <LocaleResource Name="Time.HoursAbbr" AppendRootKey="false">
+        <Value>g</Value>
+    </LocaleResource>
+    <LocaleResource Name="Time.Milliseconds" AppendRootKey="false">
+        <Value>Mili giây</Value>
+    </LocaleResource>
+    <LocaleResource Name="Time.MinuteAbbr" AppendRootKey="false">
+        <Value>ph</Value>
+    </LocaleResource>
+    <LocaleResource Name="Time.MinutesAbbr" AppendRootKey="false">
+        <Value>ph</Value>
+    </LocaleResource>
+    <LocaleResource Name="Time.Month" AppendRootKey="false">
+        <Value>Tháng</Value>
+    </LocaleResource>
+    <LocaleResource Name="Time.Months" AppendRootKey="false">
+        <Value>Tháng</Value>
+    </LocaleResource>
+    <LocaleResource Name="Time.Second" AppendRootKey="false">
+        <Value>Giây</Value>
+    </LocaleResource>
+    <LocaleResource Name="Time.SecondAbbr" AppendRootKey="false">
+        <Value>gi</Value>
+    </LocaleResource>
+    <LocaleResource Name="Time.SecondsAbbr" AppendRootKey="false">
+        <Value>gi</Value>
+    </LocaleResource>
+    <LocaleResource Name="Topic.WrongPassword" AppendRootKey="false">
+        <Value>Mật khẩu không đúng</Value>
+    </LocaleResource>
+    <LocaleResource Name="Validation.MustBeANumber" AppendRootKey="false">
+        <Value>'{PropertyName}' phải là số.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Validation.NonPropertyMustBeANumber" AppendRootKey="false">
+        <Value>Trường này phải là số.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Wishlist" AppendRootKey="false">
+        <Value>Danh sách yêu thích</Value>
+    </LocaleResource>
+    <LocaleResource Name="Wishlist.CartIsEmpty" AppendRootKey="false">
+        <Value>Danh sách yêu thích đang trống!</Value>
+    </LocaleResource>
+    <LocaleResource Name="Wishlist.EmailAFriend" AppendRootKey="false">
+        <Value>Gửi cho bạn bè</Value>
+    </LocaleResource>
+    <LocaleResource Name="Wishlist.EmailAFriend.OnlyRegisteredUsers" AppendRootKey="false">
+        <Value>Chỉ khách hàng đã đăng ký mới dùng được chức năng gửi cho bạn bè</Value>
+    </LocaleResource>
+    <LocaleResource Name="Wishlist.EmailAFriend.PersonalMessage" AppendRootKey="false">
+        <Value>Lời nhắn</Value>
+    </LocaleResource>
+    <LocaleResource Name="Wishlist.EmailAFriend.PersonalMessage.Hint" AppendRootKey="false">
+        <Value>Nhập lời nhắn (không bắt buộc)</Value>
+    </LocaleResource>
+    <LocaleResource Name="Wishlist.EmailAFriend.Title" AppendRootKey="false">
+        <Value>Gửi danh sách yêu thích cho bạn bè</Value>
+    </LocaleResource>
+    <LocaleResource Name="Wishlist.EmailAFriend.YourEmailAddress" AppendRootKey="false">
+        <Value>Địa chỉ email của bạn</Value>
+    </LocaleResource>
+    <LocaleResource Name="Wishlist.EmailAFriend.YourEmailAddress.Hint" AppendRootKey="false">
+        <Value>Nhập địa chỉ email của bạn</Value>
+    </LocaleResource>
+    <LocaleResource Name="Wishlist.IsDisabled" AppendRootKey="false">
+        <Value>Danh sách yêu thích đang tắt.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Wishlist.Mini.ViewWishlist" AppendRootKey="false">
+        <Value>Xem danh sách yêu thích</Value>
+    </LocaleResource>
+    <LocaleResource Name="Wishlist.UpdateCart" AppendRootKey="false">
+        <Value>Cập nhật danh sách yêu thích</Value>
+    </LocaleResource>
+    <LocaleResource Name="Wishlist.WishlistOf" AppendRootKey="false">
+        <Value>Danh sách yêu thích của {0}</Value>
+    </LocaleResource>
+    <LocaleResource Name="Wishlist.YourWishlistURL" AppendRootKey="false">
+        <Value>Đường dẫn chia sẻ danh sách yêu thích</Value>
+    </LocaleResource>
+
+</Language>

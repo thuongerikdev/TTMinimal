@@ -1,0 +1,23 @@
+﻿@using Smartstore.Web.Models.Cart
+
+@model OrderTotalsModel
+
+@{
+    var showLegalHint = Model.ShowConfirmOrderLegalHint && !Model.IsEditable;
+}
+
+<div class="bottom-order-total" attr-aria-describedby='(showLegalHint, "order-legal-hint")'>
+    <zone name="order_totals_before" />
+
+    <span class="total-item fs-h5 fwm">@T("ShoppingCart.Totals.OrderTotal"):</span>
+    @if (Model.OrderTotal != null)
+    {
+        <data asp-for="@Model.OrderTotal" class="total-item fs-h5 fwm">@Model.OrderTotal</data>
+    }
+    else
+    {
+        <span class="total-item fs-h6 text-muted">@T("ShoppingCart.Totals.CalculatedDuringCheckout")</span>
+    }
+
+    <zone name="order_totals_after" />
+</div>

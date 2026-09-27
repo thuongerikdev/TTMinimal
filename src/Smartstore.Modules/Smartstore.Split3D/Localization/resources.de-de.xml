@@ -1,0 +1,776 @@
+﻿<Language Name="Deutsch" IsDefault="false" IsRightToLeft="false">
+
+    <LocaleResource Name="Plugins.FriendlyName.Smartstore.Split3D" AppendRootKey="false">
+        <Value>Split3D-Lizenzschlüssel</Value>
+    </LocaleResource>
+    <LocaleResource Name="Plugins.Description.Smartstore.Split3D" AppendRootKey="false">
+        <Value>Stellt signierte Split3D-Aktivierungsschlüssel aus, automatisch für bezahlte Bestellungen oder manuell im Admin-Bereich.</Value>
+    </LocaleResource>
+
+    <LocaleResource Name="Addons">
+        <Value>Addons &amp; Pakete</Value>
+    </LocaleResource>
+    <LocaleResource Name="Addons.Manage">
+        <Value>Addons &amp; Paketprodukte verwalten</Value>
+    </LocaleResource>
+    <LocaleResource Name="Addons.None">
+        <Value>Noch keine Addons.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Addons.Hint">
+        <Value>Jedes Addon ist ein Blender-Modul mit eigener ZIP-Datei. Der &lt;strong&gt;Produktcode&lt;/strong&gt; muss der Konstante &lt;code&gt;PRODUCT&lt;/code&gt; in &lt;code&gt;license_core.py&lt;/code&gt; des Addons entsprechen; alle Addons nutzen den in den Einstellungen hinterlegten Signaturschlüssel.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Addon.Add">
+        <Value>Addon hinzufügen</Value>
+    </LocaleResource>
+    <LocaleResource Name="Addon.NameRequired">
+        <Value>Bitte einen Namen eingeben.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Addon.ProductCodeInvalid">
+        <Value>Produktcode: 2–100 Zeichen, Kleinbuchstaben, Ziffern, '.', '-' oder '_'.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Addon.ProductCodeExists">
+        <Value>Ein anderes Addon verwendet diesen Produktcode bereits.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Addon.ProductCodeLocked">
+        <Value>Der Produktcode kann nicht geändert werden, da bereits Schlüssel für dieses Addon ausgestellt wurden.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Addon.VersionInvalid">
+        <Value>Die Version muss wie 1.0 oder 3.0.121 aussehen.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Addon.ProductCodeNote">
+        <Value>Muss &lt;code&gt;PRODUCT = '...'&lt;/code&gt; in &lt;code&gt;license_core.py&lt;/code&gt; des Addons entsprechen. Schlüssel eines Addons schalten kein anderes frei.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Addon.Products">
+        <Value>Paketprodukte</Value>
+    </LocaleResource>
+    <LocaleResource Name="Addon.Product">
+        <Value>Produkt</Value>
+    </LocaleResource>
+    <LocaleResource Name="Addon.FileVersions">
+        <Value>Addon-Dateiversionen</Value>
+    </LocaleResource>
+    <LocaleResource Name="Addon.NoProducts">
+        <Value>Diesem Addon sind noch keine Produkte zugeordnet.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Addon.Unpublished">
+        <Value>nicht veröffentlicht</Value>
+    </LocaleResource>
+    <LocaleResource Name="Addon.NoFile">
+        <Value>keine Datei</Value>
+    </LocaleResource>
+    <LocaleResource Name="Addon.Unmap">
+        <Value>Entfernen</Value>
+    </LocaleResource>
+    <LocaleResource Name="Addon.UnmapConfirm">
+        <Value>Produkt vom Addon entfernen? Das Produkt bleibt erhalten, Käufer erhalten aber keine Schlüssel mehr dafür.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Addon.CreateProducts">
+        <Value>Paketprodukte anlegen</Value>
+    </LocaleResource>
+    <LocaleResource Name="Addon.CreateProductsHint">
+        <Value>Legt pro gewähltem Paket ein Katalogprodukt an (digital, ohne Versand, Download nach Bezahlung) in der Kategorie 'Addon Blender'. Bestehende Produkte behalten ihre Preise.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Addon.ZipFile">
+        <Value>Addon-Datei (.zip)</Value>
+    </LocaleResource>
+    <LocaleResource Name="Addon.ImageFile">
+        <Value>Produktbild (optional)</Value>
+    </LocaleResource>
+    <LocaleResource Name="Addon.UploadVersion">
+        <Value>Neue Version hochladen</Value>
+    </LocaleResource>
+    <LocaleResource Name="Addon.UploadVersionHint">
+        <Value>Hängt die ZIP-Datei an alle Produkte dieses Addons. Käufer können die neueste Version herunterladen.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Addon.VersionUploaded">
+        <Value>Version {0} an {1} Produkt(e) angehängt.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Addon.MapExisting">
+        <Value>Vorhandenes Produkt zuordnen</Value>
+    </LocaleResource>
+    <LocaleResource Name="Addon.MapExistingHint">
+        <Value>Ein vorhandenes Katalogprodukt für ein Paket dieses Addons verwenden (Tage nur für individuelles Paket).</Value>
+    </LocaleResource>
+    <LocaleResource Name="Addon.MappingInvalid">
+        <Value>Bitte Produkt und Paket wählen (und Tage für ein individuelles Paket).</Value>
+    </LocaleResource>
+    <LocaleResource Name="Addon.NoPlanSelected">
+        <Value>Bitte mindestens ein Paket wählen.</Value>
+    </LocaleResource>
+    <LocaleResource Name="MyKeys">
+        <Value>Meine Lizenzschlüssel</Value>
+    </LocaleResource>
+    <LocaleResource Name="MyKeys.Empty">
+        <Value>Sie haben noch keine Split3D-Bestellungen oder -Schlüssel.</Value>
+    </LocaleResource>
+    <LocaleResource Name="MyKeys.GoShopping">
+        <Value>Paket wählen</Value>
+    </LocaleResource>
+    <LocaleResource Name="MyKeys.Order">
+        <Value>Bestellung</Value>
+    </LocaleResource>
+    <LocaleResource Name="MyKeys.Step.Ordered">
+        <Value>Bestellt</Value>
+    </LocaleResource>
+    <LocaleResource Name="MyKeys.Step.Paid">
+        <Value>Zahlung bestätigt</Value>
+    </LocaleResource>
+    <LocaleResource Name="MyKeys.Step.KeyIssued">
+        <Value>Schlüssel ausgestellt</Value>
+    </LocaleResource>
+    <LocaleResource Name="MyKeys.PayHint">
+        <Value>Bitte überweisen Sie den Betrag, um die Bestellung abzuschließen:</Value>
+    </LocaleResource>
+    <LocaleResource Name="MyKeys.Amount">
+        <Value>Betrag</Value>
+    </LocaleResource>
+    <LocaleResource Name="MyKeys.TransferContent">
+        <Value>Verwendungszweck</Value>
+    </LocaleResource>
+    <LocaleResource Name="MyKeys.AwaitingKeyHint">
+        <Value>Zahlung erhalten. Ihr Schlüssel wird ausgestellt – Sie erhalten ihn per E-Mail und er erscheint hier.</Value>
+    </LocaleResource>
+    <LocaleResource Name="MyKeys.CancelledHint">
+        <Value>Diese Bestellung wurde storniert oder erstattet.</Value>
+    </LocaleResource>
+    <LocaleResource Name="MyKeys.DownloadAddon">
+        <Value>Addon herunterladen</Value>
+    </LocaleResource>
+    <LocaleResource Name="MyKeys.OrderDetails">
+        <Value>Bestelldetails</Value>
+    </LocaleResource>
+    <LocaleResource Name="MyKeys.OtherKeys">
+        <Value>Weitere Schlüssel zu Ihrer E-Mail</Value>
+    </LocaleResource>
+    <LocaleResource Name="MyKeys.ActivateHint">
+        <Value>Aktivierung: Addon in Blender installieren (Edit › Preferences › Add-ons › Install from Disk), Split3D-Panel öffnen, vollständigen Schlüssel einfügen und auf Aktivieren klicken.</Value>
+    </LocaleResource>
+    <LocaleResource Name="MyKeys.Track">
+        <Value>Bestellung verfolgen &amp; Schlüssel abrufen</Value>
+    </LocaleResource>
+    <LocaleResource Name="OrderState.AwaitingPayment">
+        <Value>Zahlung ausstehend</Value>
+    </LocaleResource>
+    <LocaleResource Name="OrderState.AwaitingKey">
+        <Value>Bezahlt – Schlüssel ausstehend</Value>
+    </LocaleResource>
+    <LocaleResource Name="OrderState.Issued">
+        <Value>Schlüssel ausgestellt</Value>
+    </LocaleResource>
+    <LocaleResource Name="OrderState.Cancelled">
+        <Value>Storniert</Value>
+    </LocaleResource>
+    <LocaleResource Name="Pending.Title">
+        <Value>Zu bearbeitende Bestellungen</Value>
+    </LocaleResource>
+    <LocaleResource Name="Pending.AutoOn">
+        <Value>Schlüssel werden automatisch ausgestellt, sobald eine Bestellung als bezahlt markiert wird.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Pending.AutoOff">
+        <Value>Kontoauszug prüfen und dann per Klick Zahlung bestätigen und Schlüssel ausstellen.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Pending.None">
+        <Value>Keine Bestellungen, die auf Zahlung oder Schlüssel warten.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Pending.Customer">
+        <Value>Kunde</Value>
+    </LocaleResource>
+    <LocaleResource Name="Pending.Items">
+        <Value>Artikel</Value>
+    </LocaleResource>
+    <LocaleResource Name="Pending.Confirm">
+        <Value>Bestätigen, dass die Überweisung für Bestellung #{0} ({1}) eingegangen ist, und Schlüssel ausstellen?</Value>
+    </LocaleResource>
+    <LocaleResource Name="Pending.ConfirmAndIssue">
+        <Value>Zahlung erhalten – Schlüssel ausstellen</Value>
+    </LocaleResource>
+    <LocaleResource Name="Pending.Issue">
+        <Value>Schlüssel ausstellen</Value>
+    </LocaleResource>
+    <LocaleResource Name="Pending.NotFound">
+        <Value>Bestellung nicht gefunden.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Pending.CannotMarkPaid">
+        <Value>Diese Bestellung kann nicht als bezahlt markiert werden (z. B. storniert).</Value>
+    </LocaleResource>
+    <LocaleResource Name="Pending.Processed">
+        <Value>Bestellung #{0} bearbeitet: {1} Schlüssel ausgestellt und an den Kunden gesendet.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Completed.Title">
+        <Value>Nächste Schritte zu Ihrem Schlüssel</Value>
+    </LocaleResource>
+    <LocaleResource Name="Completed.Step1">
+        <Value>Überweisen Sie den Gesamtbetrag an:</Value>
+    </LocaleResource>
+    <LocaleResource Name="Completed.OrderNumber">
+        <Value>Ihre Bestellnummer (siehe oben)</Value>
+    </LocaleResource>
+    <LocaleResource Name="Completed.Step2">
+        <Value>Wir bestätigen die Zahlung und stellen Ihren Schlüssel aus (in der Regel während der Geschäftszeiten).</Value>
+    </LocaleResource>
+    <LocaleResource Name="Completed.Step3">
+        <Value>Sie erhalten den Schlüssel per E-Mail; er erscheint auch unter Mein Konto › Meine Lizenzschlüssel, die Addon-Datei wird unter Downloads freigeschaltet.</Value>
+    </LocaleResource>
+    <LocaleResource Name="MenuTitle">
+        <Value>Split3D</Value>
+    </LocaleResource>
+    <LocaleResource Name="Licenses">
+        <Value>Split3D-Lizenzschlüssel</Value>
+    </LocaleResource>
+    <LocaleResource Name="IssueKey">
+        <Value>Schlüssel ausstellen</Value>
+    </LocaleResource>
+    <LocaleResource Name="Export">
+        <Value>Excel-Export</Value>
+    </LocaleResource>
+    <LocaleResource Name="Import">
+        <Value>Importieren</Value>
+    </LocaleResource>
+    <LocaleResource Name="Import.Hint">
+        <Value>Laden Sie eine CSV- oder XLSX-Datei mit einer Spalte "Key" hoch (z. B. den Export des alten License Studio). E-Mail, Name und Daten werden aus dem signierten Schlüssel gelesen; die Spalten Price, PurchaseDate, KeyType, Phone und Notes sind optional. Bereits vorhandene Schlüssel werden übersprungen.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Import.NoFile">
+        <Value>Bitte wählen Sie eine Datei aus.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Import.Result">
+        <Value>{0} Schlüssel importiert, {1} übersprungen (bereits vorhanden).</Value>
+    </LocaleResource>
+    <LocaleResource Name="CopyKey">
+        <Value>Schlüssel kopieren</Value>
+    </LocaleResource>
+    <LocaleResource Name="KeyCopied">
+        <Value>Schlüssel in die Zwischenablage kopiert.</Value>
+    </LocaleResource>
+    <LocaleResource Name="ResendEmail">
+        <Value>E-Mail senden</Value>
+    </LocaleResource>
+    <LocaleResource Name="NoEmailAccount">
+        <Value>Es ist kein E-Mail-Konto konfiguriert. Bitte richten Sie zuerst ein Standard-E-Mail-Konto ein.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Issued">
+        <Value>Der Schlüssel wurde ausgestellt.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Issued.EmailQueued">
+        <Value>Der Schlüssel wurde ausgestellt und zum Versand an {0} eingereiht.</Value>
+    </LocaleResource>
+    <LocaleResource Name="NoProduct">
+        <Value>-- Keines --</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrivateKeyStored">
+        <Value>Ein Signaturschlüssel ist gespeichert. Leer lassen, um ihn beizubehalten, oder eine neue private_key.json einfügen, um ihn zu ersetzen.</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrivateKeyPaste">
+        <Value>Fügen Sie hier den Inhalt von private_key.json ein.</Value>
+    </LocaleResource>
+    <LocaleResource Name="KeyStatus.Valid">
+        <Value>Der Signaturschlüssel ist gültig und passt zum öffentlichen Schlüssel des Addons.</Value>
+    </LocaleResource>
+    <LocaleResource Name="KeyStatus.NoPrivateKey">
+        <Value>Der private Signaturschlüssel ist nicht konfiguriert. Schlüssel können importiert, aber nicht ausgestellt werden.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Group.Keys">
+        <Value>Signaturschlüssel</Value>
+    </LocaleResource>
+    <LocaleResource Name="Group.Products">
+        <Value>Automatische Ausstellung für Bestellungen</Value>
+    </LocaleResource>
+    <LocaleResource Name="Group.Email">
+        <Value>Kunden-E-Mail</Value>
+    </LocaleResource>
+    <LocaleResource Name="Group.Payment">
+        <Value>Banküberweisung</Value>
+    </LocaleResource>
+    <LocaleResource Name="Setup.Title">
+        <Value>Shop einrichten</Value>
+    </LocaleResource>
+    <LocaleResource Name="Setup.Hint">
+        <Value>Legt die Split3D-Produkte (3 Monate, 6 Monate, 1 Jahr, unbegrenzt) mit Bildern und der Addon-Datei als Download an, setzt Vietnamesisch und VND als Standard, aktiviert Banküberweisung als einzige Zahlungsart, vereinfacht den Checkout für digitale Produkte und ersetzt die Startseite. &lt;strong&gt;Speichern Sie zuerst die Bankdaten oben.&lt;/strong&gt; Kann erneut ausgeführt werden: bestehende Produkte behalten ihre Preise.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Setup.AddonFile">
+        <Value>Addon-Datei (split3d_print.zip) – optional, wenn bereits hochgeladen</Value>
+    </LocaleResource>
+    <LocaleResource Name="Setup.Run">
+        <Value>Einrichtung starten</Value>
+    </LocaleResource>
+    <LocaleResource Name="Setup.Running">
+        <Value>Wird eingerichtet… (kann eine Minute dauern)</Value>
+    </LocaleResource>
+    <LocaleResource Name="Setup.Done">
+        <Value>Shop-Einrichtung abgeschlossen:</Value>
+    </LocaleResource>
+    <LocaleResource Name="Setup.ZipRequired">
+        <Value>Bitte laden Sie das Addon als .zip-Datei hoch.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Group.AdminMenu">
+        <Value>Admin-Menü</Value>
+    </LocaleResource>
+    <LocaleResource Name="State.Active">
+        <Value>Gültig</Value>
+    </LocaleResource>
+    <LocaleResource Name="State.Expired">
+        <Value>Abgelaufen</Value>
+    </LocaleResource>
+    <LocaleResource Name="State.Lifetime">
+        <Value>Unbegrenzt</Value>
+    </LocaleResource>
+    <LocaleResource Name="Stats.Transactions">
+        <Value>Transaktionen</Value>
+    </LocaleResource>
+    <LocaleResource Name="Stats.Customers">
+        <Value>Kunden</Value>
+    </LocaleResource>
+    <LocaleResource Name="Stats.Revenue">
+        <Value>Umsatz</Value>
+    </LocaleResource>
+    <LocaleResource Name="Stats.Active">
+        <Value>Gültige Schlüssel</Value>
+    </LocaleResource>
+
+    <LocaleResource Name="Addon.Name">
+        <Value>Name</Value>
+    </LocaleResource>
+    <LocaleResource Name="Addon.Name.Hint">
+        <Value>Name für Kunden, in E-Mails und bei Schlüsseln.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Addon.ProductCode">
+        <Value>Produktcode</Value>
+    </LocaleResource>
+    <LocaleResource Name="Addon.ProductCode.Hint">
+        <Value>Die PRODUCT-Konstante des Addons, in jeden Schlüssel eingebettet.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Addon.Version">
+        <Value>Version</Value>
+    </LocaleResource>
+    <LocaleResource Name="Addon.Version.Hint">
+        <Value>Aktuelle Version, als Download-Dateiversion verwendet.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Addon.Description">
+        <Value>Beschreibung</Value>
+    </LocaleResource>
+    <LocaleResource Name="Addon.Description.Hint">
+        <Value>HTML-Beschreibung für neu angelegte Paketprodukte.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Addon.Active">
+        <Value>Aktiv</Value>
+    </LocaleResource>
+    <LocaleResource Name="Addon.Active.Hint">
+        <Value>Inaktive Addons stellen für neue Bestellungen keine Schlüssel aus.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Addon.DisplayOrder">
+        <Value>Reihenfolge</Value>
+    </LocaleResource>
+    <LocaleResource Name="Addon.DisplayOrder.Hint">
+        <Value>Sortierung in Listen.</Value>
+    </LocaleResource>
+    <LocaleResource Name="License.Addon">
+        <Value>Addon</Value>
+    </LocaleResource>
+    <LocaleResource Name="License.Addon.Hint">
+        <Value>Das Addon, das der Schlüssel freischaltet.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Fields.AutoIssueEnabled">
+        <Value>Schlüssel automatisch ausstellen</Value>
+    </LocaleResource>
+    <LocaleResource Name="Fields.AutoIssueEnabled.Hint">
+        <Value>Stellt Schlüssel automatisch aus, sobald eine Bestellung mit einem der unten gewählten Produkte als bezahlt markiert wird.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Fields.SendEmail">
+        <Value>Schlüssel per E-Mail senden</Value>
+    </LocaleResource>
+    <LocaleResource Name="Fields.SendEmail.Hint">
+        <Value>Reiht nach der automatischen Ausstellung eine E-Mail mit dem Schlüssel an den Kunden ein.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Fields.ProductCode">
+        <Value>Produktcode</Value>
+    </LocaleResource>
+    <LocaleResource Name="Fields.ProductCode.Hint">
+        <Value>Der in jeden Schlüssel eingebettete Wert "product". Muss dem vom Blender-Addon erwarteten Wert entsprechen.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Fields.PublicKeyJson">
+        <Value>Öffentlicher Schlüssel (public_key.json)</Value>
+    </LocaleResource>
+    <LocaleResource Name="Fields.PublicKeyJson.Hint">
+        <Value>Inhalt der public_key.json des Addons. Dient zur Prüfung des Signaturschlüssels und importierter Schlüssel.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Fields.PrivateKeyJson">
+        <Value>Signaturschlüssel (private_key.json)</Value>
+    </LocaleResource>
+    <LocaleResource Name="Fields.PrivateKeyJson.Hint">
+        <Value>Inhalt von private_key.json. Wird in der Datenbank gespeichert und nie wieder angezeigt. Bewahren Sie eine Sicherung der Datei auf.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Fields.OneYearProductId">
+        <Value>Produkt für 1 Jahr</Value>
+    </LocaleResource>
+    <LocaleResource Name="Fields.OneYearProductId.Hint">
+        <Value>Kunden, die dieses Produkt kaufen, erhalten einen 1-Jahres-Schlüssel (365 Tage).</Value>
+    </LocaleResource>
+    <LocaleResource Name="Fields.SixMonthsProductId">
+        <Value>Produkt für 6 Monate</Value>
+    </LocaleResource>
+    <LocaleResource Name="Fields.SixMonthsProductId.Hint">
+        <Value>Kunden, die dieses Produkt kaufen, erhalten einen 6-Monats-Schlüssel (180 Tage).</Value>
+    </LocaleResource>
+    <LocaleResource Name="Fields.ThreeMonthsProductId">
+        <Value>Produkt für 3 Monate</Value>
+    </LocaleResource>
+    <LocaleResource Name="Fields.ThreeMonthsProductId.Hint">
+        <Value>Kunden, die dieses Produkt kaufen, erhalten einen 3-Monats-Schlüssel (90 Tage).</Value>
+    </LocaleResource>
+    <LocaleResource Name="Fields.LifetimeProductId">
+        <Value>Produkt für unbegrenzte Laufzeit</Value>
+    </LocaleResource>
+    <LocaleResource Name="Fields.LifetimeProductId.Hint">
+        <Value>Kunden, die dieses Produkt kaufen, erhalten einen Schlüssel ohne Ablaufdatum.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Fields.BankName">
+        <Value>Bank</Value>
+    </LocaleResource>
+    <LocaleResource Name="Fields.BankName.Hint">
+        <Value>Name der Bank in den Zahlungshinweisen.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Fields.BankAccountNumber">
+        <Value>Kontonummer</Value>
+    </LocaleResource>
+    <LocaleResource Name="Fields.BankAccountNumber.Hint">
+        <Value>Kontonummer, auf die Kunden überweisen.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Fields.BankAccountHolder">
+        <Value>Kontoinhaber</Value>
+    </LocaleResource>
+    <LocaleResource Name="Fields.BankAccountHolder.Hint">
+        <Value>Name des Kontoinhabers.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Fields.EmailSubject">
+        <Value>E-Mail-Betreff</Value>
+    </LocaleResource>
+    <LocaleResource Name="Fields.EmailSubject.Hint">
+        <Value>Betreff der Schlüssel-E-Mail.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Fields.EmailBody">
+        <Value>E-Mail-Text</Value>
+    </LocaleResource>
+    <LocaleResource Name="Fields.EmailBody.Hint">
+        <Value>Text der Schlüssel-E-Mail. Platzhalter: {CustomerName}, {Email}, {Plan}, {ExpiresOn}, {Price}, {Key}.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Fields.SimplifyAdminMenu">
+        <Value>Admin-Menü vereinfachen</Value>
+    </LocaleResource>
+    <LocaleResource Name="Fields.SimplifyAdminMenu.Hint">
+        <Value>Blendet die unten aufgeführten Admin-Menüpunkte aus. Nur das Menü ist betroffen; die Seiten bleiben per URL erreichbar und Berechtigungen bleiben unverändert.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Fields.HiddenAdminMenuItems">
+        <Value>Ausgeblendete Menüpunkte</Value>
+    </LocaleResource>
+    <LocaleResource Name="Fields.HiddenAdminMenuItems.Hint">
+        <Value>IDs der auszublendenden Menüpunkte, getrennt durch Kommas oder Zeilenumbrüche (siehe Areas/Admin/sitemap.xml). Leer lassen, um die Standardliste wiederherzustellen.</Value>
+    </LocaleResource>
+    <LocaleResource Name="License.LicenseId">
+        <Value>Transaktions-ID</Value>
+    </LocaleResource>
+    <LocaleResource Name="License.LicenseId.Hint">
+        <Value>Im Schlüssel eingebettete Zufalls-ID.</Value>
+    </LocaleResource>
+    <LocaleResource Name="License.Email">
+        <Value>E-Mail</Value>
+    </LocaleResource>
+    <LocaleResource Name="License.Email.Hint">
+        <Value>E-Mail-Adresse des Käufers. Wird im Schlüssel eingebettet.</Value>
+    </LocaleResource>
+    <LocaleResource Name="License.CustomerName">
+        <Value>Käufer</Value>
+    </LocaleResource>
+    <LocaleResource Name="License.CustomerName.Hint">
+        <Value>Name des Käufers. Wird im Schlüssel eingebettet.</Value>
+    </LocaleResource>
+    <LocaleResource Name="License.Phone">
+        <Value>Telefon</Value>
+    </LocaleResource>
+    <LocaleResource Name="License.Phone.Hint">
+        <Value>Telefonnummer des Käufers.</Value>
+    </LocaleResource>
+    <LocaleResource Name="License.KeyType">
+        <Value>Paket</Value>
+    </LocaleResource>
+    <LocaleResource Name="License.KeyType.Hint">
+        <Value>Lizenzpaket. Die Laufzeit zählt ab Ausstellung des Schlüssels.</Value>
+    </LocaleResource>
+    <LocaleResource Name="License.Days">
+        <Value>Tage</Value>
+    </LocaleResource>
+    <LocaleResource Name="License.Days.Hint">
+        <Value>Laufzeit in Tagen für ein individuelles Paket (1 - 36500).</Value>
+    </LocaleResource>
+    <LocaleResource Name="License.Price">
+        <Value>Preis (VND)</Value>
+    </LocaleResource>
+    <LocaleResource Name="License.Price.Hint">
+        <Value>Preis als ganzzahliger VND-Betrag.</Value>
+    </LocaleResource>
+    <LocaleResource Name="License.PurchaseDate">
+        <Value>Kaufdatum</Value>
+    </LocaleResource>
+    <LocaleResource Name="License.PurchaseDate.Hint">
+        <Value>Kaufdatum (nur Transaktionsinfo).</Value>
+    </LocaleResource>
+    <LocaleResource Name="License.IssuedOn">
+        <Value>Ausgestellt am</Value>
+    </LocaleResource>
+    <LocaleResource Name="License.IssuedOn.Hint">
+        <Value>Datum der Ausstellung.</Value>
+    </LocaleResource>
+    <LocaleResource Name="License.ExpiresOn">
+        <Value>Läuft ab am</Value>
+    </LocaleResource>
+    <LocaleResource Name="License.ExpiresOn.Hint">
+        <Value>Ablaufdatum des Schlüssels.</Value>
+    </LocaleResource>
+    <LocaleResource Name="License.State">
+        <Value>Gültigkeit</Value>
+    </LocaleResource>
+    <LocaleResource Name="License.State.Hint">
+        <Value>Gültigkeit anhand des Ablaufdatums, nicht der Aktivierung.</Value>
+    </LocaleResource>
+    <LocaleResource Name="License.Token">
+        <Value>Schlüssel</Value>
+    </LocaleResource>
+    <LocaleResource Name="License.Token.Hint">
+        <Value>Der vollständige Aktivierungsschlüssel.</Value>
+    </LocaleResource>
+    <LocaleResource Name="License.Notes">
+        <Value>Notizen</Value>
+    </LocaleResource>
+    <LocaleResource Name="License.Notes.Hint">
+        <Value>Notizen zur Transaktion.</Value>
+    </LocaleResource>
+    <LocaleResource Name="License.Order">
+        <Value>Bestellung</Value>
+    </LocaleResource>
+    <LocaleResource Name="License.Order.Hint">
+        <Value>Die Bestellung, für die der Schlüssel ausgestellt wurde.</Value>
+    </LocaleResource>
+    <LocaleResource Name="License.EmailSent">
+        <Value>E-Mail gesendet</Value>
+    </LocaleResource>
+    <LocaleResource Name="License.EmailSent.Hint">
+        <Value>Gibt an, ob die Schlüssel-E-Mail eingereiht wurde.</Value>
+    </LocaleResource>
+    <LocaleResource Name="License.SearchTerm">
+        <Value>Suche</Value>
+    </LocaleResource>
+    <LocaleResource Name="License.SearchTerm.Hint">
+        <Value>Suche nach E-Mail, Käufer, Telefon oder Transaktions-ID.</Value>
+    </LocaleResource>
+    <LocaleResource Name="License.SendEmailNow">
+        <Value>E-Mail jetzt senden</Value>
+    </LocaleResource>
+    <LocaleResource Name="License.SendEmailNow.Hint">
+        <Value>Reiht eine E-Mail mit dem Schlüssel an den Käufer ein.</Value>
+    </LocaleResource>
+
+    <!-- Devices & online activation -->
+    <LocaleResource Name="Group.Devices">
+        <Value>Geräte &amp; Online-Aktivierung</Value>
+    </LocaleResource>
+    <LocaleResource Name="ActivationEndpoint">
+        <Value>Aktivierungs-Endpunkt (SERVER_URL in online.py des Addons ist der Teil vor /split3d/api)</Value>
+    </LocaleResource>
+    <LocaleResource Name="Fields.DefaultMaxDevices">
+        <Value>Geräte pro Schlüssel</Value>
+    </LocaleResource>
+    <LocaleResource Name="Fields.DefaultMaxDevices.Hint">
+        <Value>Auf wie vielen Computern ein Schlüssel gleichzeitig aktiv sein darf. Kann pro Schlüssel auf dessen Geräteseite überschrieben werden.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Fields.LeaseDays">
+        <Value>Offline-Tage</Value>
+    </LocaleResource>
+    <LocaleResource Name="Fields.LeaseDays.Hint">
+        <Value>Wie viele Tage das Addon nach der letzten erfolgreichen Prüfung ohne Internet weiterläuft. Abgemeldete, gesperrte oder abgelaufene Schlüssel sperren spätestens nach dieser Zeit.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Fields.CustomerDeactivationLimit">
+        <Value>Kunden-Abmeldungen pro 30 Tage</Value>
+    </LocaleResource>
+    <LocaleResource Name="Fields.CustomerDeactivationLimit.Hint">
+        <Value>Wie viele Geräte ein Kunde innerhalb von 30 Tagen auf der Website abmelden darf (0 = unbegrenzt). Verhindert das Weitergeben eines Schlüssels. Die Abmeldung in Blender am Gerät selbst ist immer erlaubt.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Devices">
+        <Value>Geräte</Value>
+    </LocaleResource>
+    <LocaleResource Name="Devices.All">
+        <Value>Alle Geräte</Value>
+    </LocaleResource>
+    <LocaleResource Name="Devices.Manage">
+        <Value>Geräte</Value>
+    </LocaleResource>
+    <LocaleResource Name="Devices.OfKey">
+        <Value>Geräte dieses Schlüssels</Value>
+    </LocaleResource>
+    <LocaleResource Name="Devices.ActiveOfMax">
+        <Value>Aktiv auf {0} von {1} erlaubten Geräten</Value>
+    </LocaleResource>
+    <LocaleResource Name="Devices.ActiveCount">
+        <Value>Aktive Geräte</Value>
+    </LocaleResource>
+    <LocaleResource Name="Devices.TodayCount">
+        <Value>Online in den letzten 24 h</Value>
+    </LocaleResource>
+    <LocaleResource Name="Devices.Hint">
+        <Value>Das Addon prüft seinen Schlüssel beim Start von Blender und alle paar Stunden online. Ein abgemeldetes Gerät, ein gesperrter oder abgelaufener Schlüssel sperrt das Addon bei der nächsten Prüfung oder wenn die Offline-Zeit abläuft.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Device.DeviceName">
+        <Value>Gerät</Value>
+    </LocaleResource>
+    <LocaleResource Name="Device.DeviceName.Hint">
+        <Value>Vom Addon gemeldeter Computername.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Device.Platform">
+        <Value>Betriebssystem</Value>
+    </LocaleResource>
+    <LocaleResource Name="Device.Platform.Hint">
+        <Value>Vom Addon gemeldetes Betriebssystem.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Device.BlenderVersion">
+        <Value>Blender</Value>
+    </LocaleResource>
+    <LocaleResource Name="Device.BlenderVersion.Hint">
+        <Value>Blender-Version der letzten Prüfung.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Device.AddonVersion">
+        <Value>Addon</Value>
+    </LocaleResource>
+    <LocaleResource Name="Device.AddonVersion.Hint">
+        <Value>Addon-Version der letzten Prüfung.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Device.LastIpAddress">
+        <Value>IP-Adresse</Value>
+    </LocaleResource>
+    <LocaleResource Name="Device.LastIpAddress.Hint">
+        <Value>IP-Adresse der letzten Prüfung.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Device.FirstActivatedOn">
+        <Value>Erstmals aktiviert</Value>
+    </LocaleResource>
+    <LocaleResource Name="Device.FirstActivatedOn.Hint">
+        <Value>Wann der Schlüssel zum allerersten Mal auf diesem Gerät aktiviert wurde.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Device.ActivatedOn">
+        <Value>Aktiviert am</Value>
+    </LocaleResource>
+    <LocaleResource Name="Device.ActivatedOn.Hint">
+        <Value>Beginn der aktuellen Aktivierung auf diesem Gerät.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Device.ActiveFor">
+        <Value>In Gebrauch seit</Value>
+    </LocaleResource>
+    <LocaleResource Name="Device.ActiveFor.Hint">
+        <Value>Wie lange der Schlüssel auf diesem Gerät aktiv ist.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Device.LastSeenOn">
+        <Value>Letzte Prüfung</Value>
+    </LocaleResource>
+    <LocaleResource Name="Device.LastSeenOn.Hint">
+        <Value>Letzte erfolgreiche Online-Prüfung des Addons auf diesem Gerät.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Device.Status">
+        <Value>Status</Value>
+    </LocaleResource>
+    <LocaleResource Name="Device.Status.Hint">
+        <Value>Ob der Schlüssel auf diesem Gerät noch aktiv ist.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Device.Status.Active">
+        <Value>Aktiv</Value>
+    </LocaleResource>
+    <LocaleResource Name="Device.Status.Deactivated">
+        <Value>Abgemeldet durch {0} · {1}</Value>
+    </LocaleResource>
+    <LocaleResource Name="Device.By.Device">
+        <Value>Gerät</Value>
+    </LocaleResource>
+    <LocaleResource Name="Device.By.Customer">
+        <Value>Kunde</Value>
+    </LocaleResource>
+    <LocaleResource Name="Device.By.Admin">
+        <Value>Admin</Value>
+    </LocaleResource>
+    <LocaleResource Name="Device.SearchTerm">
+        <Value>Suche</Value>
+    </LocaleResource>
+    <LocaleResource Name="Device.SearchTerm.Hint">
+        <Value>Suche nach Gerätename, IP, E-Mail, Käufer oder Transaktions-ID.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Device.SearchActiveOnly">
+        <Value>Nur aktive Geräte</Value>
+    </LocaleResource>
+    <LocaleResource Name="Device.SearchActiveOnly.Hint">
+        <Value>Blendet abgemeldete Geräte aus.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Device.Deactivate">
+        <Value>Abmelden</Value>
+    </LocaleResource>
+    <LocaleResource Name="Device.DeactivateConfirm">
+        <Value>Schlüssel von "{0}" abmelden? Das Addon auf diesem Computer sperrt bei der nächsten Online-Prüfung.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Device.Deactivated">
+        <Value>"{0}" wurde abgemeldet. Sie können den Schlüssel jetzt auf einem anderen Computer aktivieren.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Device.DeactivatedCount">
+        <Value>{0} Gerät(e) abgemeldet.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Device.DeactivateSelected">
+        <Value>Ausgewählte abmelden</Value>
+    </LocaleResource>
+    <LocaleResource Name="Device.DeactivateSelectedConfirm">
+        <Value>Ausgewählte Geräte abmelden? Das Addon sperrt dort bei der nächsten Online-Prüfung.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Device.DeactivationLimitReached">
+        <Value>Sie können innerhalb von {1} Tagen höchstens {0} Gerät(e) abmelden. Bitte kontaktieren Sie uns, wenn Sie Ihren Computer gewechselt haben.</Value>
+    </LocaleResource>
+    <LocaleResource Name="License.Devices">
+        <Value>Geräte</Value>
+    </LocaleResource>
+    <LocaleResource Name="License.Devices.Hint">
+        <Value>Aktive Geräte / erlaubte Geräte.</Value>
+    </LocaleResource>
+    <LocaleResource Name="License.MaxDevices">
+        <Value>Erlaubte Geräte</Value>
+    </LocaleResource>
+    <LocaleResource Name="License.MaxDevices.Hint">
+        <Value>Überschreibt die Standard-Geräteanzahl für diesen Schlüssel. Leer lassen, um den Standard aus den Einstellungen zu verwenden.</Value>
+    </LocaleResource>
+    <LocaleResource Name="License.MaxDevicesInvalid">
+        <Value>Erlaubte Geräte muss zwischen 1 und 100 liegen.</Value>
+    </LocaleResource>
+    <LocaleResource Name="License.Blocked">
+        <Value>Schlüssel sperren</Value>
+    </LocaleResource>
+    <LocaleResource Name="License.Blocked.Hint">
+        <Value>Ein gesperrter Schlüssel wird vom Aktivierungsserver abgelehnt: Das Addon sperrt auf allen Geräten bei der nächsten Online-Prüfung.</Value>
+    </LocaleResource>
+    <LocaleResource Name="State.Blocked">
+        <Value>Gesperrt</Value>
+    </LocaleResource>
+    <LocaleResource Name="MyKeys.Remaining">
+        <Value>noch {0}</Value>
+    </LocaleResource>
+    <LocaleResource Name="MyKeys.Devices">
+        <Value>Geräte: {0} / {1}</Value>
+    </LocaleResource>
+    <LocaleResource Name="MyKeys.NoDevices">
+        <Value>Der Schlüssel ist noch auf keinem Computer aktiviert.</Value>
+    </LocaleResource>
+    <LocaleResource Name="MyKeys.DevicesHint">
+        <Value>Um einen Schlüssel auf einen anderen Computer zu übertragen, melden Sie den alten Computer in Blender (Split3D-Panel) oder hier ab.</Value>
+    </LocaleResource>
+    <LocaleResource Name="MyKeys.RemainingDeactivations">
+        <Value>Sie können hier innerhalb von {1} Tagen noch {0} Gerät(e) abmelden.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Duration.Days">
+        <Value>{0} Tage</Value>
+    </LocaleResource>
+    <LocaleResource Name="Duration.Hours">
+        <Value>{0} Stunden</Value>
+    </LocaleResource>
+    <LocaleResource Name="Duration.LessThanHour">
+        <Value>&lt; 1 Stunde</Value>
+    </LocaleResource>
+
+</Language>

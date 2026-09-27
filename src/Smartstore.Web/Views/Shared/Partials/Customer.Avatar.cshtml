@@ -1,0 +1,53 @@
+﻿@using Smartstore.Web.Models.Customers
+
+@model CustomerAvatarModel
+
+@{
+    if (!Model.AvatarColor.HasValue())
+    {
+        Model.AvatarColor = "light";
+    }
+
+    var canViewProfile = Model.AllowViewingProfiles && !(Request?.RouteValues?.IsSameRoute("Identity", "CustomerProfile") ?? false);
+    var textColor = Model.AvatarColor == "light" ? "text-muted" : "text-light";
+
+    async Task Avatar()
+    {
+        if (Model.FileId.GetValueOrDefault() != 0)
+        {
+            <img class="avatar-img avatar-ring"
+                 src="@await Url.MediaAsync(Model.FileId, Model.AvatarPictureSize, null, false)"
+                 attr-class='(Model.DisplayRing, "avatar-ring")'
+                 role="presentation"
+                 alt="" />
+        }
+        else
+        {
+            <span class="avatar-letter bg-@(Model.AvatarColor) @(textColor)"
+                  role="img"
+                  aria-label="@Model.UserName"
+                  attr-style='(!canViewProfile, "cursor: default")'>
+                @Model.AvatarLetter
+            </span>
+        }
+    }
+}
+
+<div class="@(Model.Large ? "customer-avatar-lg" : "customer-avatar")">
+    @if (canViewProfile)
+    {
+        <a class="avatar-link avatar-outer focus-inset" 
+           asp-route="CustomerProfile" 
+           asp-route-id="@Model.Id" 
+           title="@Model.UserName" 
+           aria-label="@Model.UserName @T("Common.Profile")">
+            @{ await Avatar(); }
+        </a>
+    }
+    else
+    {
+        <span title="@Model.UserName" class="avatar-outer">
+            @{ await Avatar(); }
+        </span>
+    }
+</div>

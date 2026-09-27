@@ -1,0 +1,45 @@
+﻿@{
+    var currencies = ViewBag.AvailableCurrencies as IList<CurrencyModel>;
+    if (currencies.Count <= 1)
+    {
+        return;
+    }
+
+    var activeCurr = currencies.FirstOrDefault(x => x.Id == WorkContext.WorkingCurrency.Id) ?? currencies.FirstOrDefault();
+    var returnUrl = Context.Request.Query["returnUrl"].ToString().UrlEncode();
+}
+
+<div class="dropdown">
+    <button id="currency-selector" 
+            type="button" 
+            class="menubar-link reset" 
+            data-toggle="dropdown" 
+            role="combobox" 
+            aria-haspopup="listbox" 
+            aria-expanded="false"
+            aria-controls="currency-options"
+            aria-label="@T("Aria.Label.CurrencySelector", activeCurr.Name)">
+        <span aria-hidden="true">@activeCurr.ISOCode</span>
+        <span aria-hidden="true" class="lrm">(@activeCurr.Symbol)</span>
+        <i class="fa fa-angle-down" aria-hidden="true"></i>
+    </button>
+    <div id="currency-options" class="dropdown-menu" aria-labelledby="currency-selector" role="listbox">
+        @foreach (var curr in currencies)
+        {
+            var changeCurrencyUrl = Url.RouteUrl("ChangeCurrency", new { customerCurrency = curr.Id });
+            var href = Display.ModifyQueryString(changeCurrencyUrl, "returnUrl=" + returnUrl);
+            var isSelected = curr.Id == activeCurr.Id;
+
+            <a role="option" attr-aria-selected='(isSelected, "true")' attr-aria-current='(isSelected, "page")' attr-aria-disabled='(isSelected, "false")'
+               href="@href"
+               class="dropdown-item" attr-class='(isSelected, "disabled")'
+               title="@curr.Name"
+               rel="nofollow"
+               data-selected="@(isSelected ? "true" : "false")"
+               data-abbreviation="@($"{curr.ISOCode} ({curr.Symbol})")">
+                <span>@curr.Name</span>
+                <span class="abbreviation">- @curr.ISOCode <span class="lrm">(@curr.Symbol)</span></span>
+            </a>
+        }
+    </div>
+</div>

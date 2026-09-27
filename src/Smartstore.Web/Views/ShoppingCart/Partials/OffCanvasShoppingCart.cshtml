@@ -1,0 +1,103 @@
+﻿@using Smartstore.Web.Models.Cart
+@using Smartstore.Core.Checkout.Cart
+
+@model MiniShoppingCartModel
+
+@{
+    var hasItems = !Model.Items.IsNullOrEmpty();
+    // Items added in the last 2 seconds are considered to be current.
+    var currentItem = Model.Items?.FirstOrDefault(x => x.CreatedOnUtc >= DateTime.UtcNow.AddSeconds(-2));
+    var checkoutUrl = Model.AnonymousCheckoutAllowed && Model.CurrentCustomerIsGuest
+        ? Url.RouteUrl("Login", new { checkoutAsGuest = true, returnUrl = Url.RouteUrl("ShoppingCart") })
+        : Url.RouteUrl("Checkout");
+}
+
+<div class="offcanvas-cart-body offcanvas-scrollable">
+    <div sm-if="!hasItems" class="no-items" role="status">
+        <h4 class="no-item-title">
+            @T("ShoppingCart.Mini.EmptyCart.Title")
+        </h4>
+        <p class="no-item-icon">
+            <i class="fa fa-shopping-basket fa-4x" aria-hidden="true"></i>
+        </p>
+        <p class="no-item-info text-muted">
+            @Html.Raw(T("ShoppingCart.Mini.EmptyCart.Info", "fa fa-lg fa-cart-arrow-down"))
+        </p>
+    </div>
+    @if (hasItems)
+    {
+        <div sm-if="currentItem != null" class="alert alert-success alert-dismissible rounded-0 fade show" role="alert">
+            <button type="button" class="btn-close" data-dismiss="alert" aria-label="@T("Common.Close")"></button>
+            <span sm-language-attributes-for="currentItem.ProductName">
+                @Html.Raw(T("ShoppingCart.Mini.AddedItemToCart", $"<strong>{currentItem.ProductName.Value.Truncate(50, "…")}</strong>"))
+            </span>
+        </div>
+        <div class="offcanvas-items-container">
+            <partial name="OffCanvasShoppingCart.Items" model="Model" />
+        </div>
+    }
+    <zone name="offcanvas_cart_items_after" />
+</div>
+
+<div sm-if="hasItems || Model.DisplayShoppingCartButton" class="offcanvas-cart-footer">
+    <div class="offcanvas-cart-footer-row">
+        @if (hasItems)
+        {
+            <div class="offcanvas-cart-footer-col mr-3">
+                <div>
+                    <div class="sub-total-caption">
+                        @T("ShoppingCart.Totals.SubTotal"):
+                    </div>
+                    <data asp-for="@Model.SubTotal" class="sub-total price">
+                        @Model.SubTotal
+                    </data>
+                </div>
+            </div>
+            <div class="offcanvas-cart-footer-col row gy-1 gx-2 flex-wrap">
+                @if (Model.DisplayCheckoutButton)
+                {
+                    <div class="col">
+                        <a class="btn btn-success btn-flat btn-flat-light btn-block btn-action" asp-route="ShoppingCart">
+                            @T("ShoppingCart.Mini.ViewCart")
+                        </a>
+                    </div>
+                    <div class="col">
+                        <a class="btn btn-clear btn-block btn-action" href="@checkoutUrl" rel="nofollow">
+                            <i class="fa fa-check" aria-hidden="true"></i>
+                            <span>@T("Checkout.Button")</span>
+                        </a>
+                    </div>
+                }
+                else
+                {
+                    <div class="col">
+                        <a class="btn btn-clear btn-block btn-action" asp-route="ShoppingCart">
+                            <i class="fa fa-check" aria-hidden="true"></i>
+                            <span>@T("ShoppingCart.Mini.ViewCart")</span>
+                        </a>
+                    </div>
+                }
+            </div>
+        }
+        else if (Model.DisplayShoppingCartButton)
+        {
+            <a class="btn btn-clear btn-block btn-action" asp-route="ShoppingCart">
+                <i class="fa fa-check" aria-hidden="true"></i>
+                <span>@T("ShoppingCart.Mini.ViewCart")</span>
+            </a>
+        }
+    </div>
+
+    <zone name="offcanvas_cart_footer_after" />
+        
+    @if (Model.DisplayCheckoutButton)
+    {
+        <div sm-suppress-if-empty-zone="offcanvas_cart_summary" class="offcanvas-cart-external-checkout">
+            <div class="heading heading-center py-0">
+                <span class="heading-title fs-h5 fwn">@T("Common.Or")</span>
+            </div>
+            @*INFO: written like this so pseudo selector :not(:empty) can work and suppress padding, in case we need to return Empty() from ViewComponent directly*@
+            <div class="d-flex justify-content-center align-items-center flex-wrap flex-column"><zone name="offcanvas_cart_summary" /></div>
+        </div>
+    }
+</div>

@@ -1,0 +1,32 @@
+﻿@model ShopLogoModel
+
+<a asp-route="Homepage" class="brand@(Model.LogoUploaded ? "" : " textual")">
+    @if (Model.LogoUploaded)
+    {
+        var logoUrl = Model.LogoUrl.EmptyNull();
+
+        @* "Above the fold" image: preload logo to render it fast. *@
+        <link sm-target-zone="head_links" as="image" rel="preload" href="@logoUrl" />
+
+        <img src='@logoUrl'
+             alt="@Model.LogoTitle"
+             title="@Model.LogoTitle"
+             class="img-fluid"
+             attr-width="(Model.LogoWidth > 0, Model.LogoWidth.ToStringInvariant())"
+             attr-height="(Model.LogoHeight > 0, Model.LogoHeight.ToStringInvariant())" />
+
+        if (logoUrl.HasValue() && Assets.JsonLd.TryGetFragment("Organization", out var org))
+        {
+            org.Obj("logo", JsonLdFragment.Create("ImageObject", new
+            {
+                url = Request.ToAbsoluteUrl(logoUrl),
+                width = Model.LogoWidth,
+                height = Model.LogoHeight
+            }));
+        }
+    }
+    else
+    {
+        @Model.LogoTitle
+    }
+</a>

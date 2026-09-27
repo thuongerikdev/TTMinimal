@@ -1,0 +1,397 @@
+; (function ($, window, document, undefined) {
+
+    var pluginName = 'productDetail';
+    var galPluginName = "smartGallery";
+
+    function ProductDetail(element, options) {
+        var self = this;
+
+        this.element = element;
+        var el = this.el = $(element);
+
+        var meta = $.metadata ? $.metadata.get(element) : {};
+        var opts = this.options = $.extend(true, {}, options, meta || {});
+        var updating = false;
+        const swatchLabelRestoreDelay = 150;
+        const swatchScrollPositions = new Map();
+
+        this.init = function () {
+            var opts = this.options;
+            const associatedProducts = $('#associated-products');
+
+            this.createGallery(opts.galleryStartIndex);
+
+            $(el).on('click', '.stock-subscriber', function (e) {
+                e.preventDefault();
+                openPopup({ url: $(this).attr('href'), large: false, flex: false });
+                return false;
+            });
+
+            $(el).on('keydown', '.qty-input .form-control, .choice-textbox', function (e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    return false;
+                }
+            });
+
+            $(el)
+                .on('mouseenter focusin', '.swatch', function () {
+                    const swatch = $(this);
+                    const choice = swatch.closest('.choice');
+                    clearSwatchLabelRestore(choice);
+
+                    if (supportsSwatchLabelPreview(swatch)) {
+                        updateSwatchLabel(swatch);
+                    }
+                    else {
+                        restoreSwatchLabel(choice);
+                    }
+                })
+                .on('mouseleave focusout', '.swatch', function (e) {
+                    if (e.type === 'focusout' && e.relatedTarget && $.contains(this, e.relatedTarget)) {
+                        return;
+                    }
+
+                    const swatch = $(this);
+                    if (supportsSwatchLabelPreview(swatch)) {
+                        const choice = swatch.closest('.choice');
+                        if (e.type === 'mouseleave') {
+                            scheduleSwatchLabelRestore(choice);
+                        }
+                        else {
+                            restoreSwatchLabel(choice);
+                        }
+                    }
+                })
+                .on('change', '.swatch-input', function () {
+                    updateSwatchLabel($(this).closest('.swatch'));
+                });
+
+            // Update product data and gallery
+            $(el).on('change', ':input:not(.skip-pd-ajax-update)', function (e) {
+                if (updating) {
+                    return;
+                }
+
+                let inputCtrl = $(this);
+                let inputId = inputCtrl.attr('id');
+                let isNumberInput = inputCtrl.parent(".numberinput-group").length > 0;
+                let isFileUpload = inputCtrl.data("fileupload");
+                let isDateTime = inputCtrl.hasClass("date-part");
+                let ctx = inputCtrl.closest('.update-container');
+
+                if (ctx.length === 0) {
+                    // It's an associated product or a bundle item.
+                    ctx = el;
+                }
+
+                ctx.ajax({
+                    data: ctx.find(':input').serialize(),
+                    success: function (response) {
+                        updating = true;
+                        self.updateDetailData(response, ctx, isNumberInput, isFileUpload, isDateTime);
+
+                        if (ctx.hasClass('pd-bundle-item')) {
+                            // Update bundle price too.
+                            $('#main-update-container').ajax({
+                                data: $('.pd-bundle-items').find(':input').serialize(),
+                                success: function (response2) {
+                                    self.updateDetailData(response2, $('#main-update-container'), isNumberInput, isFileUpload, isDateTime);
+                                }
+                            });
+                        }
+
+                        updating = false;
+
+                        if (inputId) {
+                            inputCtrl = ctx.find('#' + inputId);
+                            if (inputCtrl.is('.swatch-input')) {
+                                // Restoring focus must not override the row's restored scroll position.
+                                inputCtrl[0].focus({ preventScroll: true });
+                            }
+                            else {
+                                inputCtrl.trigger('focus');
+                            }
+                        }
+                    }
+                });
+            });
+
+            self.initAssociatedProducts(associatedProducts);
+
+            // Track user scrolling so replacement markup can resume at the same position.
+            el[0].addEventListener('scroll', function (event) {
+                if (event.target.matches?.('.swatch-group-cards')) {
+                    const key = getSwatchScrollKey(event.target);
+                    key && swatchScrollPositions.set(key, event.target.scrollLeft);
+                }
+            }, true);
+
+            restoreSwatchScrollPositions(el);
+
+            el.on('shown.bs.collapse', function (event) {
+                // Hidden rows can only be measured after opening.
+                restoreSwatchScrollPositions($(event.target));
+            });
+
+            return this;
+        };
+
+        function getSwatchScrollKey(group) {
+            // Input names survive partial replacement and distinguish product/bundle attribute mappings.
+            return group.querySelector('.swatch-input')?.name;
+        }
+
+        function restoreSwatchScrollPositions(ctx) {
+            ctx.find('.swatch-group-cards').each(function () {
+                const key = getSwatchScrollKey(this);
+                if (!key || this.scrollWidth <= this.clientWidth) {
+                    return;
+                }
+
+                const savedPosition = swatchScrollPositions.get(key);
+                if (savedPosition !== undefined) {
+                    this.scrollLeft = savedPosition;
+                    return;
+                }
+
+                const selected = this.querySelector('.swatch-input:checked')?.closest('.swatch');
+                if (!selected) {
+                    return;
+                }
+
+                const viewport = this.getBoundingClientRect();
+                const bounds = selected.getBoundingClientRect();
+                const style = getComputedStyle(this);
+                // Keep the selected outline inside the row padding and move only as far as needed.
+                const left = viewport.left + parseFloat(style.paddingLeft);
+                const right = viewport.right - parseFloat(style.paddingRight);
+                this.scrollLeft += bounds.left < left ? bounds.left - left : Math.max(0, bounds.right - right);
+            });
+        }
+
+        function updateSwatchLabel(swatch) {
+            const selection = swatch.closest('.choice').find('.choice-label-value').first();
+
+            if (!selection.length) {
+                return;
+            }
+
+            const valueName = swatch.data('swatch-value') || '';
+            if (valueName) {
+                selection
+                    .removeClass('text-danger text-muted')
+                    .text(valueName);
+            }
+        }
+
+        function supportsSwatchLabelPreview(swatch) {
+            // Non-card swatches use the dynamic label as their visible replacement for the former tooltip.
+            return !swatch.find('.swatch-card').length;
+        }
+
+        function clearSwatchLabelRestore(choice) {
+            const timer = choice.data('swatch-label-restore-timer');
+
+            if (timer) {
+                window.clearTimeout(timer);
+                choice.removeData('swatch-label-restore-timer');
+            }
+        }
+
+        function scheduleSwatchLabelRestore(choice) {
+            clearSwatchLabelRestore(choice);
+
+            const timer = window.setTimeout(function () {
+                choice.removeData('swatch-label-restore-timer');
+                restoreSwatchLabel(choice);
+            }, swatchLabelRestoreDelay);
+
+            choice.data('swatch-label-restore-timer', timer);
+        }
+
+        function restoreSwatchLabel(choice) {
+            const selectedSwatch = choice.find('.swatch-input:checked').closest('.swatch');
+
+            if (selectedSwatch.length) {
+                updateSwatchLabel(selectedSwatch);
+                return;
+            }
+
+            const selection = choice.find('.choice-label-value').first();
+            const emptyClass = selection.attr('data-swatch-empty-class');
+
+            selection
+                .removeClass('text-danger text-muted')
+                .addClass(emptyClass || '')
+                .text(selection.attr('data-swatch-empty-value') || '');
+        }
+
+        this.initAssociatedProducts = function (associatedProducts) {
+            if (!associatedProducts.length || !associatedProducts.find('.pd-assoc-list').length) {
+                // No associated products nor collapsible. Nothing to init.
+                return;
+            }
+
+            var elError = null;
+
+            associatedProducts.on('click', '.pd-assoc-header', function (e) {
+                // Collapse/expand body if the header was clicked (excluding controls with 'pd-interaction').
+                if (!$(e.target).closest('.pd-interaction').length) {
+                    $($(this).data('target')).collapse('toggle');
+                }
+            }).on('show.bs.collapse shown.bs.collapse hide.bs.collapse', '.pd-assoc > .collapse', function (e) {
+                if (e.type === 'shown') {
+                    if (elError !== null) {
+                        scrollToCard(elError);
+                        elError = null;
+                    }
+                }
+                else {
+                    const expanded = e.type === 'show';
+                    const header = $(e.target).prev('.pd-assoc-header');
+                    const syncHeader = () => header
+                        .toggleClass('collapsed', !expanded)
+                        .attr('aria-expanded', expanded);
+
+                    // Bootstrap adds .collapsing after the hide event. Defer the closed state so opacity can transition.
+                    if (expanded) {
+                        syncHeader();
+                    }
+                    else {
+                        requestAnimationFrame(syncHeader);
+                    }
+                }
+            });
+
+            $('#pd-assoc-search-btn').on('click', function (e) {
+                e.preventDefault();
+                return false;
+            });
+
+            EventBroker.subscribe('ajaxcart.error', function (msg, data) {
+                // Expand item to let the user select attributes.
+                var el = $('#associated-product' + data.response.productId);
+                if (el.hasClass('show')) {
+                    scrollToCard(el);
+                }
+                else {
+                    elError = el.collapse('show');
+                }
+            });
+
+            function scrollToCard(el) {
+                $('body, html').animate({ scrollTop: el.closest('.pd-assoc').offset().top }, 'slow');
+            }
+        };
+
+        this.updateDetailData = function (data, ctx, isNumberInput, isFileUpload, isDateTime) {
+            var gallery = $('#pd-gallery').data(galPluginName);
+
+            // Image gallery needs special treatment.
+            if (!isFileUpload) {
+                if (data.GalleryHtml) {
+                    var cnt = $('#pd-gallery-container');
+                    gallery.reset();
+                    cnt.html(data.GalleryHtml);
+                    self.createGallery(data.GalleryStartIndex);
+                }
+                else if (data.GalleryStartIndex >= 0) {
+                    if (data.GalleryStartIndex !== gallery.currentIndex) {
+                        gallery.goTo(data.GalleryStartIndex);
+                    }
+                }
+            }
+
+            ctx.find('[data-partial]').each(function (i, el) {
+                // Iterate all elements with [data-partial] attribute.
+                var $el = $(el);
+                var partial = $el.data('partial');
+
+                if (partial && !(isNumberInput && partial === 'OfferActions') && !(isDateTime && partial === 'Variants')) {
+                    // ...fetch the updated html from the corresponding AJAX result object's properties
+                    if (data.Partials && data.Partials.hasOwnProperty(partial)) {
+                        if (partial === 'Variants' || partial === 'BundleItemVariants') {
+                            $el.find('[data-toggle=tooltip], .tooltip-toggle').tooltip('hide');
+                        }
+
+                        var updatedHtml = data.Partials[partial] || "";
+                        // ...and update the inner html
+                        $el.html($(updatedHtml.trim()));
+                    }
+                }
+            });
+
+            applyCommonPlugins(ctx);
+            // Restore after plugins have initialized the replacement markup and its layout.
+            restoreSwatchScrollPositions(ctx);
+
+            ctx.find(".pd-tierprices").html(data.Partials["TierPrices"]);
+
+            if (data.DynamicThumblUrl && data.DynamicThumblUrl.length > 0) {
+                $(ctx).find('.pd-dyn-thumb').attr('src', data.DynamicThumblUrl);
+            }
+
+            if (!_.isEmpty(data.ProductUrl) && location.hostname !== "localhost") {
+                try {
+                    // Replace state to not flood history when variant changed.
+                    history.replaceState(null, '', data.ProductUrl);
+                }
+                catch (ex) {
+                    console.log(ex);
+                }
+            }
+
+            // Trigger event for plugins devs to subscribe.
+            $('#main-update-container').trigger("updated");
+        };
+
+        this.initialized = false;
+        this.init();
+        this.initialized = true;
+    }
+
+    ProductDetail.prototype = {
+        gallery: null,
+        activePictureIndex: 0,
+
+        createGallery: function (startIndex) {
+            var self = this;
+            var opts = this.options;
+
+            this.gallery = $('#pd-gallery').smartGallery({
+                startIndex: startIndex || 0,
+                zoom: {
+                    enabled: opts.enableZoom
+                },
+                box: {
+                    enabled: true,
+                    hidePageScrollbars: false
+                }
+            });
+        }
+    };
+
+    // the global, default plugin options
+    _.provide('$.' + pluginName);
+
+    $[pluginName].defaults = {
+        // The 0-based image index to start the gallery with
+        galleryStartIndex: 0,
+        // whether to enable image zoom
+        enableZoom: true,
+        // url to the ajax method, which loads variant combination data
+        updateUrl: null,
+    };
+
+    $.fn[pluginName] = function (options) {
+
+        return this.each(function () {
+            if (!$.data(this, 'plugin_' + pluginName)) {
+                options = $.extend(true, {}, $[pluginName].defaults, options);
+                $.data(this, 'plugin_' + pluginName, new ProductDetail(this, options));
+            }
+        });
+    };
+
+})(jQuery, window, document);

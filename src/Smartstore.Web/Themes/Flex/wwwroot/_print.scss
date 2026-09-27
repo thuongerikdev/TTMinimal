@@ -1,0 +1,24 @@
+/// <reference path="references.scss" />
+
+//
+// Print optimization
+// --------------------------------------------------
+
+@media print {
+    .menubar-section,
+    .megamenu-section,
+    .shopbar-col:not(.shop-logo),
+    #content-left,
+    #content-right,
+    .cart-row-actions,
+    footer
+    {
+        display: none !important;
+    }
+
+    .text-expander {
+        max-height: none !important;
+        > .text-expander-content { mask-image: none !important; }
+        .text-expander-toggle { display: none !important; }
+    }
+}

@@ -1,0 +1,62 @@
+# -----------------------------------------------------------
+# Builds Smartstore from the local source (incl. custom modules
+# such as Smartstore.Split3D) and runs it with PostgreSQL.
+#
+#   copy .env.example .env      (then adjust passwords)
+#   docker compose -f docker-compose.local.yml up -d --build
+#
+# Open http://localhost:${WEB_PORT} and complete the install wizard with:
+#   Database: PostgreSQL | Server: db | Database: ${POSTGRES_DB}
+#   User: ${POSTGRES_USER} | Password: ${POSTGRES_PASSWORD}
+# -----------------------------------------------------------
+
+name: smartstore
+
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: smartstore-local:latest
+    container_name: smartstore-web
+    restart: unless-stopped
+    ports:
+      - "${WEB_PORT:-8090}:80"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      TZ: ${TZ:-Asia/Ho_Chi_Minh}
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      # Tenant settings (connection string), media, bundle cache
+      - smartstore-tenants:/app/App_Data/Tenants
+      # Keeps auth cookies valid across container re-creation
+      - smartstore-keys:/app/App_Data/DataProtection-Keys
+      - smartstore-logs:/app/App_Data/Logs
+
+  db:
+    image: postgres:17-alpine
+    container_name: smartstore-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-smartstore}
+      POSTGRES_USER: ${POSTGRES_USER:-smartstore}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-Smartstore2026!}
+      TZ: ${TZ:-Asia/Ho_Chi_Minh}
+    ports:
+      # Exposed on the host for pgAdmin/DBeaver; remove in production
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+volumes:
+  smartstore-tenants:
+  smartstore-keys:
+  smartstore-logs:
+  postgres-data:

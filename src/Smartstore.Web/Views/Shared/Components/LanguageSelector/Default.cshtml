@@ -1,0 +1,52 @@
+﻿@using Smartstore.Web.Components
+
+@{
+    var localizedUrls = ViewBag.LocalizedUrls as List<LocalizedUrl>;
+    if (localizedUrls.Count <= 1)
+    {
+        return;
+    }
+
+    var languages = localizedUrls.Select(x => x.Language);
+    var activeLang = languages.FirstOrDefault(x => x.Id == WorkContext.WorkingLanguage.Id) ?? languages.FirstOrDefault();
+}
+
+<div class="dropdown">
+    <button id="language-selector" 
+            type="button" 
+            class="menubar-link reset" 
+            data-toggle="dropdown" 
+            role="combobox"
+            aria-haspopup="listbox" 
+            aria-expanded="false"
+            aria-controls="language-options"
+            aria-label="@T("Aria.Label.LanguageSelector", activeLang.LocalizedShortName)">
+        <span aria-hidden="true">@activeLang.UniqueSeoCode.ToUpper()</span>
+        <i class="fa fa-angle-down" aria-hidden="true"></i>
+    </button>
+    <div id="language-options" class="dropdown-menu" aria-labelledby="language-selector" role="listbox">
+        @foreach (var localizedUrl in localizedUrls)
+        {
+            var lang = localizedUrl.Language;
+            var name = (bool)ViewBag.DisplayLongName ? lang.Name : lang.ShortName;
+            var returnUrl = localizedUrl.Url;
+            var href = Display.ModifyQueryString(Url.RouteUrl("ChangeLanguage", new { langid = lang.Id }), "returnUrl=" + returnUrl.UrlEncode());
+            var isSelected = lang.Id == activeLang.Id;
+
+            <a role="option" attr-aria-selected='(isSelected, "true")' attr-aria-current='(isSelected, "page")' attr-aria-disabled='(isSelected, "false")'
+               href="@href"
+               title="@lang.LocalizedName (@lang.UniqueSeoCode.ToUpper())"
+               rel="nofollow"
+               class="dropdown-item" attr-class='(isSelected, "disabled")'
+               data-selected="@(isSelected ? "true" : "false")"
+               data-abbreviation="@name">
+                @if (ViewBag.UseImages == true)
+                {
+                    // INFO: No alt-Attribute here because there's also a span which already contains the purpose of this link.
+                    <img src="@Url.Content("~/images/flags/" + lang.FlagImageFileName)" role="presentation" />
+                }
+                <span>@name</span>
+            </a>
+        }
+    </div>
+</div>

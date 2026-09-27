@@ -1,0 +1,38 @@
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc.ViewComponents;
+using Microsoft.AspNetCore.Mvc.ViewFeatures;
+using Smartstore.Events;
+
+namespace Smartstore.Web.Components;
+
+public abstract class ViewComponentEventBase : IEventMessage
+{
+    protected ViewComponentEventBase(ViewComponentContext context)
+    {
+        Guard.NotNull(context);
+
+        ViewComponentContext = context;
+    }
+
+    public ViewComponentContext ViewComponentContext { get; }
+
+    public HttpContext HttpContext
+    {
+        get => ViewComponentContext.ViewContext.HttpContext;
+    }
+
+    public ViewDataDictionary ViewData
+    {
+        get => ViewComponentContext.ViewData;
+    }
+
+    public ViewComponentDescriptor Descriptor
+    {
+        get => ViewComponentContext.ViewComponentDescriptor;
+    }
+
+    public Type ComponentType
+    {
+        get => Descriptor.TypeInfo.AsType();
+    }
+}

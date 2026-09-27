@@ -1,0 +1,83 @@
+@model LicenseModel
+
+<datagrid id="split3d-licenses-grid"
+          class="h-100"
+          allow-resize="true"
+          allow-row-selection="true"
+          allow-column-reordering="true"
+          onrowclass="split3d_onRowClass">
+    <datasource read="@Url.Action("LicenseList")" delete="@Url.Action("LicenseDelete")" />
+    <paging position="Bottom" page-index="1" show-size-chooser="true" />
+    <sorting allow-unsort="true" allow-multisort="false">
+        <sort by="IssuedOn" by-entity-member="IssuedOnUtc" descending="true" />
+    </sorting>
+    <toolbar>
+        <toolbar-group>
+            <button datagrid-action="DataGridToolAction.ToggleSearchPanel" type="button" class="btn btn-plain btn-icon">
+                <bootstrap-icon name="funnel" />
+            </button>
+        </toolbar-group>
+        <zone name="datagrid_toolbar_alpha"></zone>
+        <toolbar-group class="omega"></toolbar-group>
+        <zone name="datagrid_toolbar_omega"></zone>
+        <toolbar-group>
+            <button datagrid-action="DataGridToolAction.DeleteSelectedRows" type="button" class="btn btn-danger no-anims btn-flat">
+                <bootstrap-icon name="trash" />
+                <span>@T("Admin.Common.Delete.Selected")</span>
+            </button>
+        </toolbar-group>
+    </toolbar>
+    <search-panel>
+        <partial name="_Grid.Licenses.Search" model="new LicenseListModel()" />
+    </search-panel>
+    <columns>
+        <column for="AddonName" entity-member="AddonId" width="160px" />
+        <column for="Email" hideable="false" width="240px" />
+        <column for="CustomerName" width="180px" />
+        <column for="KeyType" width="110px" />
+        <column for="PurchaseDate" entity-member="PurchaseDateUtc" width="120px">
+            <display-template>{{ item.row.PurchaseDateString }}</display-template>
+        </column>
+        <column for="Price" halign="end" width="130px">
+            <display-template>{{ item.row.PriceString }}</display-template>
+        </column>
+        <column for="IssuedOn" entity-member="IssuedOnUtc" width="150px" />
+        <column for="ExpiresOn" entity-member="ExpiresOnUtc" width="150px">
+            <display-template>{{ item.row.ExpiresOnString }}</display-template>
+        </column>
+        <column for="State" sortable="false" width="110px">
+            <display-template>
+                <span class="badge" :class="item.row.Blocked ? 'badge-dark' : item.row.IsExpired ? 'badge-danger' : 'badge-success'">{{ item.value }}</span>
+            </display-template>
+        </column>
+        <column for="ActiveDevices" sortable="false" halign="center" width="100px">
+            <display-template>
+                <a :href="item.row.DevicesUrl" :class="item.value >= item.row.MaxDevices ? 'font-weight-bold' : ''">
+                    <i class="bi bi-pc-display"></i> {{ item.value }} / {{ item.row.MaxDevices }}
+                </a>
+            </display-template>
+        </column>
+        <column for="Token" sortable="false" width="220px">
+            <display-template>
+                <button type="button" class="btn btn-sm btn-light split3d-copy" :data-token="item.row.Token" title="@T("Plugins.Split3D.CopyKey")">
+                    <i class="far fa-copy"></i>
+                </button>
+                <span class="text-monospace text-muted small">{{ item.value.substring(0, 18) }}…</span>
+            </display-template>
+        </column>
+        <column for="OrderId" width="90px">
+            <display-template>
+                <a v-if="item.row.OrderUrl" :href="item.row.OrderUrl">#{{ item.value }}</a>
+            </display-template>
+        </column>
+        <column for="EmailSent" halign="center" width="90px" />
+        <column for="Phone" visible="false" />
+        <column for="Notes" visible="false" />
+        <column for="LicenseId" visible="false" />
+    </columns>
+    <row-commands>
+        <a datarow-action="DataRowAction.Custom" :href="item.row.DevicesUrl">@T("Plugins.Split3D.Devices.Manage")</a>
+        <a datarow-action="DataRowAction.Custom" href="#" class="split3d-resend" :data-id="item.row.Id">@T("Plugins.Split3D.ResendEmail")</a>
+        <a datarow-action="DataRowAction.Delete">@T("Common.Delete")</a>
+    </row-commands>
+</datagrid>
