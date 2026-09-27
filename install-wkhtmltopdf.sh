@@ -25,6 +25,5 @@ apt-get -y --fix-broken install
 # Cleanup
 rm ./wkhtmltox_0.12.6.1-3.bookworm_amd64.deb
 rm /etc/apt/sources.list.d/bookworm.list
-apt-get update
 apt-get clean
 rm -rf /var/lib/apt/lists/*

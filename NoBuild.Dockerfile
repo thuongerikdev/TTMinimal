@@ -9,6 +9,13 @@ EXPOSE 80
 EXPOSE 443
 ENV ASPNETCORE_URLS="http://+:80;https://+:443"
 
+# Install wkhtmltopdf BEFORE copying the app, so this slow layer stays cached
+COPY install-wkhtmltopdf.sh /tmp/
+RUN sed -i 's/\r$//' /tmp/install-wkhtmltopdf.sh && \
+    chmod +x /tmp/install-wkhtmltopdf.sh && \
+    /tmp/install-wkhtmltopdf.sh && \
+    rm /tmp/install-wkhtmltopdf.sh
+
 # Copy
 ARG EDITION=Community
 ARG VERSION=6.4.0
@@ -17,11 +24,5 @@ ARG SOURCE=build/artifacts/${EDITION}.${VERSION}.${RUNTIME}
 
 WORKDIR /app
 COPY ${SOURCE} ./
-
-# Install wkhtmltopdf
-COPY install-wkhtmltopdf.sh /tmp/
-RUN chmod +x /tmp/install-wkhtmltopdf.sh && \
-    /tmp/install-wkhtmltopdf.sh && \
-    rm /tmp/install-wkhtmltopdf.sh
 
 ENTRYPOINT ["./Smartstore.Web", "--urls", "http://0.0.0.0:80"]

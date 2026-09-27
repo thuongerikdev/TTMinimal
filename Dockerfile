@@ -20,12 +20,14 @@ COPY nuget.config ./
 # Create Modules dir if missing
 RUN mkdir /app/src/Smartstore.Web/Modules -p -v
 
-# Build
-RUN dotnet build $SOLUTION -c Release
+# Build (NuGet packages kept in a BuildKit cache mount between builds)
+RUN --mount=type=cache,id=nuget,target=/root/.nuget/packages \
+    dotnet build $SOLUTION -c Release
 
-# Publish
+# Publish (same cache mount: --no-restore needs the packages restored above)
 WORKDIR /app/src/Smartstore.Web
-RUN dotnet publish Smartstore.Web.csproj -c Release -o /app/release/publish \
+RUN --mount=type=cache,id=nuget,target=/root/.nuget/packages \
+    dotnet publish Smartstore.Web.csproj -c Release -o /app/release/publish \
 	--no-self-contained \
 	--no-restore
 
@@ -34,15 +36,17 @@ FROM mcr.microsoft.com/dotnet/aspnet:10.0
 EXPOSE 80
 EXPOSE 443
 ENV ASPNETCORE_URLS="http://+:80;https://+:443"
-WORKDIR /app
-COPY --from=build /app/release/publish .
 
-# Install wkhtmltopdf
+# Install wkhtmltopdf BEFORE copying the app, so this slow layer stays cached
+# and is only rebuilt when the script or base image changes (not on code edits)
 COPY install-wkhtmltopdf.sh /tmp/
 # Strip CR in case the script was checked out with Windows line endings
 RUN sed -i 's/\r$//' /tmp/install-wkhtmltopdf.sh && \
     chmod +x /tmp/install-wkhtmltopdf.sh && \
     /tmp/install-wkhtmltopdf.sh && \
     rm /tmp/install-wkhtmltopdf.sh
+
+WORKDIR /app
+COPY --from=build /app/release/publish .
 
 ENTRYPOINT ["./Smartstore.Web", "--urls", "http://0.0.0.0:80"]
