@@ -65,7 +65,7 @@ public class Split3DDeviceController : AdminController
                 MaxDevices = license.MaxDevices,
                 Blocked = license.Blocked,
                 RepoUrl = license.RepoToken.HasValue()
-                    ? Url.Action("Index", "Split3DRepo", new { token = license.RepoToken, area = "" }, Request.Scheme)
+                    ? Split3DRepoService.GetFolderUrl(Request, license.RepoToken) + "index.json"
                     : null
             };
         }

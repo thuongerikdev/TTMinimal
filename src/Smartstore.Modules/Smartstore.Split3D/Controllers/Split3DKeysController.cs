@@ -135,11 +135,9 @@ public class Split3DKeysController : PublicController
                 continue;
             }
 
-            var minVersion = package.Fields.FirstOrDefault(x => x.Key == "blender_version_min").Value as string ?? "4.2.0";
             key.PackageVersion = package.Version;
-            key.RepoUrl = Url.Action("Index", "Split3DRepo", new { token = license.RepoToken, area = "" }, Request.Scheme);
-            key.InstallUrl = Url.Action("Download", "Split3DRepo", new { token = license.RepoToken, fileName = package.FileName, area = "" }, Request.Scheme)
-                + "?repository=.%2Findex.json&blender_version_min=" + Uri.EscapeDataString(minVersion);
+            key.RepoUrl = Split3DRepoService.GetFolderUrl(Request, license.RepoToken) + "index.json";
+            key.InstallUrl = Split3DRepoService.GetInstallUrl(Request, license.RepoToken, package);
         }
     }
 

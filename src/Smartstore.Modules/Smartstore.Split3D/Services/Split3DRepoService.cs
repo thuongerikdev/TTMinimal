@@ -2,6 +2,7 @@
 
 using System.Security.Cryptography;
 using System.Text.RegularExpressions;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Caching.Memory;
 using Smartstore.Core.Catalog.Products;
 using Smartstore.Core.Content.Media;
@@ -46,6 +47,31 @@ public partial class Split3DRepoService
 
     public static string NewToken()
         => Convert.ToHexStringLower(RandomNumberGenerator.GetBytes(16));
+
+    /// <summary>
+    /// Absolute URL of the repository folder, ending with "/". Built by hand on purpose: Smartstore's URL
+    /// generation may append a trailing slash ("…/index.json/", "…zip/"), and Blender only accepts a dropped
+    /// install URL whose path ends in ".zip" and resolves "./file.zip" against the index URL.
+    /// </summary>
+    public static string GetFolderUrl(HttpRequest request, string token)
+    {
+        Guard.NotNull(request);
+        Guard.NotEmpty(token);
+
+        return $"{request.Scheme}://{request.Host}{request.PathBase}/split3d/repo/{token}/";
+    }
+
+    /// <summary>
+    /// Link to drag into Blender: installs the package and adds the repository in one step.
+    /// </summary>
+    public static string GetInstallUrl(HttpRequest request, string token, Split3DPackageInfo package)
+    {
+        Guard.NotNull(package);
+
+        var minVersion = package.Fields.FirstOrDefault(x => x.Key == "blender_version_min").Value as string ?? "4.2.0";
+        return GetFolderUrl(request, token) + package.FileName
+            + "?repository=.%2Findex.json&blender_version_min=" + Uri.EscapeDataString(minVersion);
+    }
 
     public Task<Split3DLicense?> FindByTokenAsync(string? token, CancellationToken cancelToken = default)
     {
