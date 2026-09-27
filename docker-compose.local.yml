@@ -25,6 +25,9 @@ services:
     environment:
       ASPNETCORE_ENVIRONMENT: Production
       TZ: ${TZ:-Asia/Ho_Chi_Minh}
+      # Trust X-Forwarded-* from a reverse proxy (Nginx on the host reaches
+      # the container through the Docker bridge, not loopback).
+      Smartstore__ReverseProxy__KnownNetworks__0: 172.16.0.0/12
     depends_on:
       db:
         condition: service_healthy
