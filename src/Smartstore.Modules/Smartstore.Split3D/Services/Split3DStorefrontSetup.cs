@@ -230,6 +230,8 @@ public class Split3DStorefrontSetup
         catalogSettings.ShowPopularProductTagsOnHomepage = false;
         catalogSettings.LegalInfoInLists = ProductLegalInfo.None;
         catalogSettings.LegalInfoInProductDetail = ProductLegalInfo.None;
+        // The category and product descriptions hold the landing page: show them in full instead of behind "Show more".
+        catalogSettings.EnableHtmlTextCollapser = false;
         await _services.SettingFactory.SaveSettingsAsync(catalogSettings);
     }
 
