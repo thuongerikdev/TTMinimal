@@ -143,7 +143,7 @@
         <Value>Key khác theo email của bạn</Value>
     </LocaleResource>
     <LocaleResource Name="MyKeys.ActivateHint">
-        <Value>Kích hoạt: cài addon vào Blender (kéo nút "Kéo vào Blender" thả vào cửa sổ Blender, cần Blender 4.2 trở lên), mở bảng Split3D, dán toàn bộ key rồi bấm Kích hoạt.</Value>
+        <Value>Kích hoạt: cài addon (tải file cài đặt ở trên rồi kéo file zip vào Blender 4.2 trở lên), mở tab Split3D, dán toàn bộ key rồi bấm Kích hoạt.</Value>
     </LocaleResource>
     <LocaleResource Name="MyKeys.Track">
         <Value>Theo dõi đơn &amp; nhận key</Value>
@@ -580,13 +580,13 @@
         <Value>Đã sao chép link cập nhật.</Value>
     </LocaleResource>
     <LocaleResource Name="MyKeys.Install.Step1">
-        <Value>Kéo nút vào cửa sổ Blender (4.2 trở lên) rồi xác nhận: Blender cài addon và ghi nhớ cửa hàng này làm kho extension. Bản cũ được thay tự động, không cần gỡ.</Value>
+        <Value>Kéo file zip vừa tải (từ thanh tải xuống của trình duyệt hoặc thư mục Downloads) thả vào cửa sổ Blender (4.2 trở lên), tích "Enable Add-on" rồi bấm OK. Bản cũ được thay tự động, không cần gỡ.</Value>
     </LocaleResource>
     <LocaleResource Name="MyKeys.Install.Step2">
-        <Value>Khi có bản mới: Edit › Preferences › Get Extensions › Check for Updates rồi bấm Update. Bật "Check for Updates on Startup" của kho này để Blender tự báo mỗi lần mở.</Value>
+        <Value>Khi có bản mới: tab Split3D hiện nút "Cập nhật lên bản …", bấm một lần là tự tải và cài. Addon tự kiểm tra bản mới mỗi khi mở Blender.</Value>
     </LocaleResource>
     <LocaleResource Name="MyKeys.Install.Step3">
-        <Value>Không kéo thả được? Thêm link đã sao chép tại Get Extensions › Repositories › + › Add Remote Repository, rồi cài Split3D Print trong danh sách. Không chia sẻ link này: nó chỉ dùng được khi key của bạn còn hạn.</Value>
+        <Value>Kéo nút vào Blender: lần đầu Blender chỉ thêm kho của cửa hàng (bấm "Add Repository…"), kéo thêm lần nữa để cài. Hoặc dán link đã sao chép tại Edit › Preferences › Get Extensions › Repositories › + › Add Remote Repository. Không chia sẻ link: nó chỉ dùng được khi key còn hạn.</Value>
     </LocaleResource>
     <LocaleResource Name="License.RepoUrl">
         <Value>Kho cập nhật</Value>
@@ -605,6 +605,12 @@
     </LocaleResource>
     <LocaleResource Name="License.RepoTokenReset">
         <Value>Đã tạo link cập nhật mới.</Value>
+    </LocaleResource>
+    <LocaleResource Name="MyKeys.Install.Download">
+        <Value>Tải file cài đặt (.zip)</Value>
+    </LocaleResource>
+    <LocaleResource Name="MyKeys.Install.Advanced">
+        <Value>Cách khác (kho extension của Blender)</Value>
     </LocaleResource>
     <!-- Devices & online activation -->
     <LocaleResource Name="Group.Devices">

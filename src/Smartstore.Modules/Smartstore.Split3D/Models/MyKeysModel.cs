@@ -62,6 +62,11 @@ public class MyKeyModel
     /// </summary>
     public string InstallUrl { get; set; }
 
+    /// <summary>
+    /// Direct download of the package zip: dropping the file into Blender installs it in one step.
+    /// </summary>
+    public string DownloadUrl { get; set; }
+
     public string PackageVersion { get; set; }
 }
 

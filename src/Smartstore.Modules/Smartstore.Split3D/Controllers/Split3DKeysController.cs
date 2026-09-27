@@ -138,6 +138,7 @@ public class Split3DKeysController : PublicController
             key.PackageVersion = package.Version;
             key.RepoUrl = Split3DRepoService.GetFolderUrl(Request, license.RepoToken) + "index.json";
             key.InstallUrl = Split3DRepoService.GetInstallUrl(Request, license.RepoToken, package);
+            key.DownloadUrl = Split3DRepoService.GetFolderUrl(Request, license.RepoToken) + package.FileName;
         }
     }
 

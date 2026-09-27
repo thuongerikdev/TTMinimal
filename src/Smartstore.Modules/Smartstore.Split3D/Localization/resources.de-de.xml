@@ -143,7 +143,7 @@
         <Value>Weitere Schlüssel zu Ihrer E-Mail</Value>
     </LocaleResource>
     <LocaleResource Name="MyKeys.ActivateHint">
-        <Value>Aktivieren: Addon in Blender installieren (Schaltfläche "In Blender ziehen" in das Blender-Fenster ziehen, ab Blender 4.2), Split3D-Panel öffnen, den ganzen Schlüssel einfügen und Aktivieren klicken.</Value>
+        <Value>Aktivieren: Addon installieren (Installationsdatei oben herunterladen und die Zip-Datei in Blender ab 4.2 ziehen), Split3D-Tab öffnen, den ganzen Schlüssel einfügen und Aktivieren klicken.</Value>
     </LocaleResource>
     <LocaleResource Name="MyKeys.Track">
         <Value>Bestellung verfolgen &amp; Schlüssel abrufen</Value>
@@ -580,13 +580,13 @@
         <Value>Update-Link kopiert.</Value>
     </LocaleResource>
     <LocaleResource Name="MyKeys.Install.Step1">
-        <Value>Schaltfläche in das Blender-Fenster ziehen (ab 4.2) und bestätigen: Blender installiert das Addon und merkt sich diesen Shop als Erweiterungs-Repository. Ältere Versionen werden automatisch ersetzt.</Value>
+        <Value>Die heruntergeladene Zip-Datei (aus der Download-Leiste des Browsers oder dem Download-Ordner) in das Blender-Fenster ziehen (ab 4.2), "Enable Add-on" ankreuzen und OK klicken. Eine ältere Version wird automatisch ersetzt.</Value>
     </LocaleResource>
     <LocaleResource Name="MyKeys.Install.Step2">
-        <Value>Neue Versionen: Bearbeiten › Einstellungen › Erweiterungen › Nach Updates suchen, dann Aktualisieren. "Check for Updates on Startup" für das Repository aktivieren, um automatisch benachrichtigt zu werden.</Value>
+        <Value>Neue Versionen: Der Split3D-Tab zeigt "Auf Version … aktualisieren"; ein Klick lädt und installiert sie. Das Addon sucht beim Start von Blender nach Updates.</Value>
     </LocaleResource>
     <LocaleResource Name="MyKeys.Install.Step3">
-        <Value>Kein Drag &amp; Drop? Den kopierten Link unter Erweiterungen › Repositories › + › Add Remote Repository hinzufügen und Split3D Print aus der Liste installieren. Link nicht weitergeben: er funktioniert nur, solange Ihr Schlüssel gültig ist.</Value>
+        <Value>Schaltfläche in Blender ziehen: beim ersten Mal fügt Blender nur das Repository hinzu ("Add Repository…"), danach erneut ziehen zum Installieren. Oder den kopierten Link unter Bearbeiten › Einstellungen › Erweiterungen › Repositories › + › Add Remote Repository hinzufügen. Link nicht weitergeben.</Value>
     </LocaleResource>
     <LocaleResource Name="License.RepoUrl">
         <Value>Update-Repository</Value>
@@ -605,6 +605,12 @@
     </LocaleResource>
     <LocaleResource Name="License.RepoTokenReset">
         <Value>Neuer Update-Link erstellt.</Value>
+    </LocaleResource>
+    <LocaleResource Name="MyKeys.Install.Download">
+        <Value>Installationsdatei herunterladen (.zip)</Value>
+    </LocaleResource>
+    <LocaleResource Name="MyKeys.Install.Advanced">
+        <Value>Weitere Wege (Blender-Erweiterungs-Repository)</Value>
     </LocaleResource>
     <!-- Devices & online activation -->
     <LocaleResource Name="Group.Devices">

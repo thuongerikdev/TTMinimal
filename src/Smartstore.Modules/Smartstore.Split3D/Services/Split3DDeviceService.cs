@@ -83,8 +83,44 @@ public sealed class Split3DActivationResult
     [JsonPropertyName("max_devices")]
     public int? MaxDevices { get; init; }
 
+    /// <summary>
+    /// A newer addon version the key may install from inside Blender. <c>null</c> if none.
+    /// </summary>
+    [JsonPropertyName("update")]
+    public Split3DUpdateInfo? Update { get; set; }
+
+    /// <summary>
+    /// The <see cref="Split3DLicense"/> record of a successful activation (not serialized).
+    /// </summary>
+    [JsonIgnore]
+    public int LicenseRecordId { get; init; }
+
     public static Split3DActivationResult Fail(string code, string message)
         => new() { Code = code, Message = message };
+}
+
+/// <summary>
+/// A newer addon package offered to the addon's built-in updater.
+/// </summary>
+public sealed class Split3DUpdateInfo
+{
+    [JsonPropertyName("version")]
+    public required string Version { get; init; }
+
+    /// <summary>
+    /// Download URL of the package in the key's repository.
+    /// </summary>
+    [JsonPropertyName("url")]
+    public required string Url { get; init; }
+
+    [JsonPropertyName("size")]
+    public long Size { get; init; }
+
+    /// <summary>
+    /// "sha256:&lt;hex&gt;", checked by the addon before installing.
+    /// </summary>
+    [JsonPropertyName("hash")]
+    public required string Hash { get; init; }
 }
 
 /// <summary>
@@ -212,7 +248,8 @@ public partial class Split3DDeviceService
             Code = Split3DActivationCodes.Ok,
             Message = "Activated.",
             Lease = lease,
-            MaxDevices = maxDevices
+            MaxDevices = maxDevices,
+            LicenseRecordId = license.Id
         };
     }
 

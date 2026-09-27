@@ -2,6 +2,7 @@ using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Smartstore.Core.Data;
 using Smartstore.Core.Identity;
 using Smartstore.Core.Web;
 
@@ -17,12 +18,20 @@ public class Split3DActivationController : Controller
 {
     private const int MaxBodyLength = 32 * 1024;
 
+    private readonly SmartDbContext _db;
     private readonly Split3DDeviceService _deviceService;
+    private readonly Split3DRepoService _repoService;
     private readonly IWebHelper _webHelper;
 
-    public Split3DActivationController(Split3DDeviceService deviceService, IWebHelper webHelper)
+    public Split3DActivationController(
+        SmartDbContext db,
+        Split3DDeviceService deviceService,
+        Split3DRepoService repoService,
+        IWebHelper webHelper)
     {
+        _db = db;
         _deviceService = deviceService;
+        _repoService = repoService;
         _webHelper = webHelper;
     }
 
@@ -55,6 +64,11 @@ public class Split3DActivationController : Controller
             {
                 request.IpAddress = _webHelper.ClientInfo.IpAddress?.ToString();
                 result = await action(request);
+
+                if (result.Ok && result.LicenseRecordId > 0)
+                {
+                    result.Update = await GetUpdateAsync(result.LicenseRecordId, request.AddonVersion);
+                }
             }
         }
         catch (Exception ex) when (ex is not OperationCanceledException)
@@ -66,6 +80,39 @@ public class Split3DActivationController : Controller
         // Always 200: the addon reads "ok"/"code" and never has to parse HTTP error pages.
         Response.Headers.CacheControl = "no-store";
         return Content(JsonSerializer.Serialize(result), "application/json");
+    }
+
+    /// <summary>
+    /// The newest extension package of the key's addon, if it is newer than the version the addon reported.
+    /// The addon's built-in updater downloads it from the key's repository and installs it with Blender's installer.
+    /// </summary>
+    private async Task<Split3DUpdateInfo> GetUpdateAsync(int licenseId, string installedVersion)
+    {
+        var license = await _db.Split3DLicenses().FindByIdAsync(licenseId);
+        if (license == null || !Split3DRepoService.CanUpdate(license))
+        {
+            return null;
+        }
+
+        var latest = await _repoService.GetLatestPackageAsync(license.AddonId, HttpContext.RequestAborted);
+        if (latest is not { } entry || Split3DAddonPackage.CompareVersions(entry.Package.Version, installedVersion) <= 0)
+        {
+            return null;
+        }
+
+        if (license.RepoToken.IsEmpty())
+        {
+            Split3DRepoService.EnsureToken(license);
+            await _db.SaveChangesAsync();
+        }
+
+        return new Split3DUpdateInfo
+        {
+            Version = entry.Package.Version,
+            Url = Split3DRepoService.GetFolderUrl(Request, license.RepoToken) + entry.Package.FileName,
+            Size = entry.Package.Size,
+            Hash = entry.Package.Hash
+        };
     }
 
     private async Task<Split3DDeviceRequest> ReadRequestAsync()
