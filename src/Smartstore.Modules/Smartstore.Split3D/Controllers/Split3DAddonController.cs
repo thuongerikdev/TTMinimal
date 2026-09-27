@@ -188,6 +188,18 @@ public partial class Split3DAddonController : AdminController
 
             var category = await _setup.GetAddonCategoryAsync();
             var log = new List<string>();
+
+            if (zipBytes != null)
+            {
+                (zipBytes, var package) = _setup.PrepareAddonFile(zipBytes, log);
+                if (package != null)
+                {
+                    addon.Version = package.Version;
+                    zipName = package.FileName;
+                    await _db.SaveChangesAsync();
+                }
+            }
+
             await _setup.CreatePlanProductsAsync(addon, specs, category, zipBytes, zipName, log);
 
             NotifySuccess(string.Join("<br>", log.Select(System.Net.WebUtility.HtmlEncode)));
@@ -210,8 +222,8 @@ public partial class Split3DAddonController : AdminController
             return NotFound();
         }
 
-        version = version?.Trim();
-        if (version.IsEmpty() || !VersionRegex().IsMatch(version))
+        version = version?.Trim().NullEmpty();
+        if (version != null && !VersionRegex().IsMatch(version))
         {
             NotifyError(T("Plugins.Split3D.Addon.VersionInvalid"));
             return RedirectToAction(nameof(Edit), new { id = addon.Id });
@@ -226,11 +238,29 @@ public partial class Split3DAddonController : AdminController
                 return RedirectToAction(nameof(Edit), new { id = addon.Id });
             }
 
+            var log = new List<string>();
+            (zipBytes, var package) = _setup.PrepareAddonFile(zipBytes, log);
+
+            // An extension package carries its own version; a different typed version would mislabel the download.
+            if (package != null && version != null && version != package.Version)
+            {
+                NotifyError(T("Plugins.Split3D.Addon.VersionMismatch", version, package.Version));
+                return RedirectToAction(nameof(Edit), new { id = addon.Id });
+            }
+
+            version = package?.Version ?? version;
+            if (version == null)
+            {
+                NotifyError(T("Plugins.Split3D.Addon.VersionInvalid"));
+                return RedirectToAction(nameof(Edit), new { id = addon.Id });
+            }
+
             addon.Version = version;
             await _db.SaveChangesAsync();
 
-            var count = await _setup.AttachAddonFileAsync(addon, zipBytes, zipName);
-            NotifySuccess(T("Plugins.Split3D.Addon.VersionUploaded", version, count));
+            var count = await _setup.AttachAddonFileAsync(addon, zipBytes, package?.FileName ?? zipName);
+            NotifySuccess(T("Plugins.Split3D.Addon.VersionUploaded", version, count) + "<br>"
+                + string.Join("<br>", log.Select(System.Net.WebUtility.HtmlEncode)));
         }
         catch (ArgumentException ex)
         {

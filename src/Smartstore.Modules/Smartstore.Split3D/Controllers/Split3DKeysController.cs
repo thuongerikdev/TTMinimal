@@ -14,13 +14,20 @@ public class Split3DKeysController : PublicController
     private readonly SmartDbContext _db;
     private readonly Split3DOrderQuery _orderQuery;
     private readonly Split3DDeviceService _deviceService;
+    private readonly Split3DRepoService _repoService;
     private readonly Split3DSettings _settings;
 
-    public Split3DKeysController(SmartDbContext db, Split3DOrderQuery orderQuery, Split3DDeviceService deviceService, Split3DSettings settings)
+    public Split3DKeysController(
+        SmartDbContext db,
+        Split3DOrderQuery orderQuery,
+        Split3DDeviceService deviceService,
+        Split3DRepoService repoService,
+        Split3DSettings settings)
     {
         _db = db;
         _orderQuery = orderQuery;
         _deviceService = deviceService;
+        _repoService = repoService;
         _settings = settings;
     }
 
@@ -82,7 +89,58 @@ public class Split3DKeysController : PublicController
             model.RemainingDeactivations = Math.Max(0, _settings.CustomerDeactivationLimit - used);
         }
 
+        await AddRepositoryLinksAsync(
+            orders.SelectMany(x => x.Licenses).Concat(otherKeys),
+            model.Orders.SelectMany(x => x.Keys).Concat(model.OtherKeys));
+
         return View(model);
+    }
+
+    /// <summary>
+    /// Adds the Blender install/update links to keys whose addon has an extension package.
+    /// </summary>
+    private async Task AddRepositoryLinksAsync(IEnumerable<Split3DLicense> licenses, IEnumerable<MyKeyModel> keys)
+    {
+        var valid = licenses.Where(Split3DRepoService.CanUpdate).DistinctBy(x => x.Id).ToDictionary(x => x.Id);
+        if (valid.Count == 0)
+        {
+            return;
+        }
+
+        var packages = new Dictionary<int, Split3DPackageInfo>();
+        foreach (var addonId in valid.Values.Select(x => x.AddonId).Distinct())
+        {
+            if (await _repoService.GetLatestPackageAsync(addonId, HttpContext.RequestAborted) is { } latest)
+            {
+                packages[addonId] = latest.Package;
+            }
+        }
+
+        var needToken = valid.Values.Where(x => packages.ContainsKey(x.AddonId) && x.RepoToken.IsEmpty()).Select(x => x.Id).ToArray();
+        if (needToken.Length > 0)
+        {
+            var tracked = await _db.Split3DLicenses().Where(x => needToken.Contains(x.Id)).ToListAsync();
+            foreach (var license in tracked)
+            {
+                valid[license.Id].RepoToken = Split3DRepoService.EnsureToken(license);
+            }
+
+            await _db.SaveChangesAsync();
+        }
+
+        foreach (var key in keys)
+        {
+            if (!valid.TryGetValue(key.Id, out var license) || !packages.TryGetValue(license.AddonId, out var package))
+            {
+                continue;
+            }
+
+            var minVersion = package.Fields.FirstOrDefault(x => x.Key == "blender_version_min").Value as string ?? "4.2.0";
+            key.PackageVersion = package.Version;
+            key.RepoUrl = Url.Action("Index", "Split3DRepo", new { token = license.RepoToken, area = "" }, Request.Scheme);
+            key.InstallUrl = Url.Action("Download", "Split3DRepo", new { token = license.RepoToken, fileName = package.FileName, area = "" }, Request.Scheme)
+                + "?repository=.%2Findex.json&blender_version_min=" + Uri.EscapeDataString(minVersion);
+        }
     }
 
     /// <summary>

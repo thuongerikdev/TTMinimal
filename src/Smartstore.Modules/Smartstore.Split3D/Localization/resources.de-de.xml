@@ -80,7 +80,7 @@
         <Value>Neue Version hochladen</Value>
     </LocaleResource>
     <LocaleResource Name="Addon.UploadVersionHint">
-        <Value>Hängt die ZIP-Datei an alle Produkte dieses Addons. Käufer können die neueste Version herunterladen.</Value>
+        <Value>Hängt das Zip an alle Produkte des Addons; Käufer laden die neueste Version. Bei einer Blender-Erweiterung (Zip mit blender_manifest.toml) wird die Version aus der Datei gelesen, die Shop-Adresse eingetragen, und Kunden mit gültigem Schlüssel erhalten sie als Update in Blender.</Value>
     </LocaleResource>
     <LocaleResource Name="Addon.VersionUploaded">
         <Value>Version {0} an {1} Produkt(e) angehängt.</Value>
@@ -143,7 +143,7 @@
         <Value>Weitere Schlüssel zu Ihrer E-Mail</Value>
     </LocaleResource>
     <LocaleResource Name="MyKeys.ActivateHint">
-        <Value>Aktivierung: Addon in Blender installieren (Edit › Preferences › Add-ons › Install from Disk), Split3D-Panel öffnen, vollständigen Schlüssel einfügen und auf Aktivieren klicken.</Value>
+        <Value>Aktivieren: Addon in Blender installieren (Schaltfläche "In Blender ziehen" in das Blender-Fenster ziehen, ab Blender 4.2), Split3D-Panel öffnen, den ganzen Schlüssel einfügen und Aktivieren klicken.</Value>
     </LocaleResource>
     <LocaleResource Name="MyKeys.Track">
         <Value>Bestellung verfolgen &amp; Schlüssel abrufen</Value>
@@ -567,12 +567,69 @@
         <Value>Reiht eine E-Mail mit dem Schlüssel an den Käufer ein.</Value>
     </LocaleResource>
 
+    <LocaleResource Name="Fields.ActivationServerUrl">
+        <Value>Shop-Adresse für das Addon</Value>
+    </LocaleResource>
+    <LocaleResource Name="Fields.ActivationServerUrl.Hint">
+        <Value>Öffentliche Adresse (https://…), unter der Blender diesen Shop erreicht. Sie wird in online.py jedes hochgeladenen Addon-Zips geschrieben. Leer = Shop-URL. Nach einer Änderung das Addon erneut hochladen.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Fields.ActivationServerUrl.Invalid">
+        <Value>Geben Sie eine vollständige Adresse mit https:// oder http:// ein.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Addon.VersionAuto">
+        <Value>aus der Datei</Value>
+    </LocaleResource>
+    <LocaleResource Name="Addon.VersionMismatch">
+        <Value>Sie haben Version {0} eingegeben, die Datei ist aber Version {1}. Feld leer lassen, um die Version der Datei zu verwenden.</Value>
+    </LocaleResource>
+    <LocaleResource Name="MyKeys.Install.Title">
+        <Value>In Blender installieren / aktualisieren (Version {0})</Value>
+    </LocaleResource>
+    <LocaleResource Name="MyKeys.Install.Drag">
+        <Value>In Blender ziehen</Value>
+    </LocaleResource>
+    <LocaleResource Name="MyKeys.Install.DragTitle">
+        <Value>Diese Schaltfläche mit der Maus in das Blender-Fenster ziehen.</Value>
+    </LocaleResource>
+    <LocaleResource Name="MyKeys.Install.CopyRepo">
+        <Value>Update-Link kopieren</Value>
+    </LocaleResource>
+    <LocaleResource Name="MyKeys.Install.RepoCopied">
+        <Value>Update-Link kopiert.</Value>
+    </LocaleResource>
+    <LocaleResource Name="MyKeys.Install.Step1">
+        <Value>Schaltfläche in das Blender-Fenster ziehen (ab 4.2) und bestätigen: Blender installiert das Addon und merkt sich diesen Shop als Erweiterungs-Repository. Ältere Versionen werden automatisch ersetzt.</Value>
+    </LocaleResource>
+    <LocaleResource Name="MyKeys.Install.Step2">
+        <Value>Neue Versionen: Bearbeiten › Einstellungen › Erweiterungen › Nach Updates suchen, dann Aktualisieren. "Check for Updates on Startup" für das Repository aktivieren, um automatisch benachrichtigt zu werden.</Value>
+    </LocaleResource>
+    <LocaleResource Name="MyKeys.Install.Step3">
+        <Value>Kein Drag &amp; Drop? Den kopierten Link unter Erweiterungen › Repositories › + › Add Remote Repository hinzufügen und Split3D Print aus der Liste installieren. Link nicht weitergeben: er funktioniert nur, solange Ihr Schlüssel gültig ist.</Value>
+    </LocaleResource>
+    <LocaleResource Name="License.RepoUrl">
+        <Value>Update-Repository</Value>
+    </LocaleResource>
+    <LocaleResource Name="License.RepoUrl.Hint">
+        <Value>Blender-Erweiterungs-Repository dieses Schlüssels. Blender installiert und aktualisiert das Addon daraus, solange der Schlüssel gültig ist.</Value>
+    </LocaleResource>
+    <LocaleResource Name="License.RepoUrlNone">
+        <Value>noch nicht erstellt (wird erstellt, wenn der Kunde Meine Schlüssel öffnet)</Value>
+    </LocaleResource>
+    <LocaleResource Name="License.RepoTokenResetButton">
+        <Value>Neuer Link</Value>
+    </LocaleResource>
+    <LocaleResource Name="License.RepoTokenResetConfirm">
+        <Value>Neuen Update-Link erstellen? Der alte Link funktioniert nicht mehr; der Kunde sieht den neuen unter Meine Schlüssel.</Value>
+    </LocaleResource>
+    <LocaleResource Name="License.RepoTokenReset">
+        <Value>Neuer Update-Link erstellt.</Value>
+    </LocaleResource>
     <!-- Devices & online activation -->
     <LocaleResource Name="Group.Devices">
         <Value>Geräte &amp; Online-Aktivierung</Value>
     </LocaleResource>
     <LocaleResource Name="ActivationEndpoint">
-        <Value>Aktivierungs-Endpunkt (SERVER_URL in online.py des Addons ist der Teil vor /split3d/api)</Value>
+        <Value>Das Addon ruft auf</Value>
     </LocaleResource>
     <LocaleResource Name="Fields.DefaultMaxDevices">
         <Value>Geräte pro Schlüssel</Value>

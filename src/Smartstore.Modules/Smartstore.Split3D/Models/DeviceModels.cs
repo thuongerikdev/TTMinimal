@@ -88,4 +88,7 @@ public class LicenseDevicesModel : EntityModelBase
 
     [LocalizedDisplay("*Blocked")]
     public bool Blocked { get; set; }
+
+    [LocalizedDisplay("*RepoUrl")]
+    public string RepoUrl { get; set; }
 }

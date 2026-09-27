@@ -53,8 +53,9 @@ public static class Split3DStorefrontContent
     public const string ShortDescription =
         "Addon Blender cắt mô hình quá khổ thành nhiều mảnh vừa bàn in 3D và tự tạo khớp nối để ráp lại chắc chắn. Giao diện Tiếng Việt / English.";
 
-    public static string ProductFullDescription(Split3DPlanProduct plan)
+    public static string ProductFullDescription(Split3DPlanProduct plan, string version = null)
     {
+        version = version.NullEmpty() ?? AddonVersion;
         var duration = plan.Plan switch
         {
             Split3DPlans.ThreeMonths => "90 ngày kể từ lúc cấp key",
@@ -69,7 +70,7 @@ public static class Split3DStorefrontContent
             <h4>Bạn nhận được</h4>
             <ul>
               <li><strong>Key kích hoạt</strong> gửi qua email và hiển thị trong chi tiết đơn hàng.</li>
-              <li><strong>File cài đặt addon</strong> (bản {AddonVersion}) tải tại <em>Tài khoản › Tải về</em>.</li>
+              <li><strong>File cài đặt addon</strong> (bản {version}) tải tại <em>Tài khoản › Tải về</em>.</li>
               <li><strong>Thời hạn:</strong> {duration}.</li>
               <li>Dùng được trên nhiều bản Blender trên cùng máy; nhập lại key khi đổi máy.</li>
             </ul>
@@ -99,8 +100,9 @@ public static class Split3DStorefrontContent
     /// <summary>
     /// Home page body. <paramref name="urls"/> maps SKU to product URL, <paramref name="prices"/> SKU to formatted price.
     /// </summary>
-    public static string HomePage(IReadOnlyDictionary<string, string> urls, IReadOnlyDictionary<string, string> prices)
+    public static string HomePage(IReadOnlyDictionary<string, string> urls, IReadOnlyDictionary<string, string> prices, string version = null)
     {
+        version = version.NullEmpty() ?? AddonVersion;
         string Card(Split3DPlanProduct p, string period, string[] perks)
         {
             var featured = p.Featured ? " s3d-card--featured" : string.Empty;
@@ -179,7 +181,7 @@ public static class Split3DStorefrontContent
               <section class="s3d-hero">
                 <div class="row align-items-center">
                   <div class="col-lg-7">
-                    <div class="s3d-badge">Addon Blender · Phiên bản {{AddonVersion}} · Tiếng Việt / English</div>
+                    <div class="s3d-badge">Addon Blender · Phiên bản {{version}} · Tiếng Việt / English</div>
                     <h1>In mô hình lớn hơn bàn in.<br>Cắt gọn, nối khít với Split3D Print.</h1>
                     <p class="lead">Chia mô hình quá khổ thành các mảnh vừa máy in 3D và tự động tạo chốt, lỗ khớp nối để ráp lại chắc chắn — làm tất cả ngay trong Blender.</p>
                     <a href="#s3d-pricing" class="btn btn-warning btn-lg font-weight-bold">Xem bảng giá</a>

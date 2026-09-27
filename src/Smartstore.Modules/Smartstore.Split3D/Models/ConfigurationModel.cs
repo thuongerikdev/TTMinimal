@@ -49,6 +49,14 @@ public class ConfigurationModel : ModelBase
     [Range(0, 100)]
     public int CustomerDeactivationLimit { get; set; }
 
+    [LocalizedDisplay("*ActivationServerUrl")]
+    public string ActivationServerUrl { get; set; }
+
+    /// <summary>
+    /// The address used when <see cref="ActivationServerUrl"/> is empty.
+    /// </summary>
+    public string DefaultActivationServerUrl { get; set; }
+
     [LocalizedDisplay("*SimplifyAdminMenu")]
     public bool SimplifyAdminMenu { get; set; }
 

@@ -64,6 +64,24 @@
                         </form>
                     </div>
                 </div>
+                <div class="d-flex flex-wrap align-items-center border-top pt-2 mt-1 small">
+                    <span class="mr-2 text-muted"><smart-label asp-for="License.RepoUrl" /></span>
+                    @if (license.RepoUrl != null)
+                    {
+                        <code class="mr-2 text-break">@license.RepoUrl</code>
+                    }
+                    else
+                    {
+                        <span class="mr-2 text-muted">@T("Plugins.Split3D.License.RepoUrlNone")</span>
+                    }
+                    <form asp-action="ResetRepoToken" asp-route-id="@license.Id" method="post" class="d-inline"
+                          onsubmit="return confirm('@T("Plugins.Split3D.License.RepoTokenResetConfirm")')">
+                        <button type="submit" class="btn btn-outline-secondary btn-sm">
+                            <i class="bi bi-arrow-repeat"></i>
+                            <span>@T("Plugins.Split3D.License.RepoTokenResetButton")</span>
+                        </button>
+                    </form>
+                </div>
             </div>
         </div>
     }

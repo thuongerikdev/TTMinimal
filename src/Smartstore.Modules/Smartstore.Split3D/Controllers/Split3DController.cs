@@ -48,6 +48,7 @@ public class Split3DController : AdminController
             DefaultMaxDevices = _settings.DefaultMaxDevices,
             LeaseDays = _settings.LeaseDays,
             CustomerDeactivationLimit = _settings.CustomerDeactivationLimit,
+            ActivationServerUrl = _settings.ActivationServerUrl,
             EmailSubject = _settings.EmailSubject,
             EmailBody = _settings.EmailBody,
             SimplifyAdminMenu = _settings.SimplifyAdminMenu,
@@ -58,6 +59,7 @@ public class Split3DController : AdminController
         };
 
         (model.KeyValid, model.KeyStatus) = GetKeyStatus();
+        model.DefaultActivationServerUrl = Services.StoreContext.CurrentStore.GetBaseUrl().TrimEnd('/');
         await PrepareProductsAsync();
 
         return View(model);
@@ -81,10 +83,20 @@ public class Split3DController : AdminController
             ModelState.AddModelError(string.Empty, ex.Message);
         }
 
+        model.ActivationServerUrl = model.ActivationServerUrl?.Trim().TrimEnd('/').NullEmpty();
+        if (model.ActivationServerUrl != null
+            && (!Uri.TryCreate(model.ActivationServerUrl, UriKind.Absolute, out var serverUri)
+                || (serverUri.Scheme != Uri.UriSchemeHttps && serverUri.Scheme != Uri.UriSchemeHttp)
+                || model.ActivationServerUrl.Contains('\'')))
+        {
+            ModelState.AddModelError(nameof(model.ActivationServerUrl), T("Plugins.Split3D.Fields.ActivationServerUrl.Invalid"));
+        }
+
         if (!ModelState.IsValid)
         {
             model.HasPrivateKey = _settings.PrivateKeyJson.HasValue();
             model.PrivateKeyJson = null;
+            model.DefaultActivationServerUrl = Services.StoreContext.CurrentStore.GetBaseUrl().TrimEnd('/');
             (model.KeyValid, model.KeyStatus) = GetKeyStatus();
             await PrepareProductsAsync();
 
@@ -96,6 +108,7 @@ public class Split3DController : AdminController
         _settings.DefaultMaxDevices = model.DefaultMaxDevices;
         _settings.LeaseDays = model.LeaseDays;
         _settings.CustomerDeactivationLimit = model.CustomerDeactivationLimit;
+        _settings.ActivationServerUrl = model.ActivationServerUrl;
         _settings.PublicKeyJson = model.PublicKeyJson?.Trim();
         _settings.PrivateKeyJson = privateKeyJson;
         _settings.EmailSubject = model.EmailSubject?.Trim();

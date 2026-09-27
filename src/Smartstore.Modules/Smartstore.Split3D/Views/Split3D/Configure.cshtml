@@ -94,11 +94,13 @@
             </div>
         </div>
         <div class="adminRow">
-            <div class="adminTitle"></div>
+            <div class="adminTitle"><smart-label asp-for="ActivationServerUrl" /></div>
             <div class="adminData">
+                <input asp-for="ActivationServerUrl" placeholder="@Model.DefaultActivationServerUrl" />
+                <span asp-validation-for="ActivationServerUrl"></span>
                 <div class="form-text text-muted">
                     @T("Plugins.Split3D.ActivationEndpoint"):
-                    <code>@Url.Action("Activate", "Split3DActivation", new { area = "" }, Context.Request.Scheme)</code>
+                    <code>@(Model.ActivationServerUrl.NullEmpty() ?? Model.DefaultActivationServerUrl)/split3d/api/activate</code>
                 </div>
             </div>
         </div>

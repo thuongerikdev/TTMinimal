@@ -44,6 +44,13 @@ public class Split3DSettings : ISettings
     public int CustomerDeactivationLimit { get; set; } = 3;
 
     /// <summary>
+    /// Address of this shop as the addon reaches it. Written as SERVER_URL into every uploaded addon zip.
+    /// Empty = the store URL (Configuration > Stores). Defaults to the production shop, so zips uploaded
+    /// on a local development copy still point customers to the live server.
+    /// </summary>
+    public string ActivationServerUrl { get; set; } = "https://ttminimal.com";
+
+    /// <summary>
     /// Subject of the key email. Supports the same placeholders as <see cref="EmailBody"/>.
     /// </summary>
     public string EmailSubject { get; set; } = "Key kích hoạt Split3D Print";

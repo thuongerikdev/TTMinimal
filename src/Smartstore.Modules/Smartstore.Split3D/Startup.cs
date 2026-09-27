@@ -17,6 +17,7 @@ internal class Startup : StarterBase
         services.AddTransient<IDbContextConfigurationSource<SmartDbContext>, SmartDbContextConfigurer>();
         services.AddScoped<Split3DLicenseService>();
         services.AddScoped<Split3DDeviceService>();
+        services.AddScoped<Split3DRepoService>();
         services.AddScoped<Split3DStorefrontSetup>();
         services.AddScoped<Split3DOrderQuery>();
 

@@ -10,6 +10,7 @@ namespace Smartstore.Split3D.Domain;
 [Index(nameof(LicenseId), IsUnique = true)]
 [Index(nameof(Email))]
 [Index(nameof(OrderItemId))]
+[Index(nameof(RepoToken))]
 public class Split3DLicense : BaseEntity
 {
     /// <summary>
@@ -105,4 +106,11 @@ public class Split3DLicense : BaseEntity
     /// A blocked key is refused by the activation server, so the addon locks on all devices at their next check.
     /// </summary>
     public bool Blocked { get; set; }
+
+    /// <summary>
+    /// Secret part of the key's Blender extension repository URL (/split3d/repo/{token}/index.json).
+    /// Created on first use; replacing it invalidates links the customer shared.
+    /// </summary>
+    [StringLength(32)]
+    public string RepoToken { get; set; }
 }

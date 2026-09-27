@@ -46,6 +46,31 @@
             <span>@T("Plugins.Split3D.CopyKey")</span>
         </button>
 
+        @if (key.InstallUrl != null)
+        {
+            <div class="mt-3 p-3 rounded s3d-install">
+                <div class="font-weight-medium mb-2">
+                    <i class="bi bi-box-arrow-in-down mr-1"></i>
+                    @T("Plugins.Split3D.MyKeys.Install.Title", key.PackageVersion)
+                </div>
+                <div class="d-flex flex-wrap align-items-center">
+                    <a href="@key.InstallUrl" draggable="true" class="btn btn-primary btn-sm mr-2 mb-2 s3d-drag" title="@T("Plugins.Split3D.MyKeys.Install.DragTitle")">
+                        <i class="bi bi-arrows-move"></i>
+                        <span>@T("Plugins.Split3D.MyKeys.Install.Drag")</span>
+                    </a>
+                    <button type="button" class="btn btn-outline-secondary btn-sm mb-2 split3d-copy" data-token="@key.RepoUrl" data-copied="@T("Plugins.Split3D.MyKeys.Install.RepoCopied")">
+                        <i class="far fa-copy"></i>
+                        <span>@T("Plugins.Split3D.MyKeys.Install.CopyRepo")</span>
+                    </button>
+                </div>
+                <ol class="small text-muted mb-0 pl-3">
+                    <li>@T("Plugins.Split3D.MyKeys.Install.Step1")</li>
+                    <li>@T("Plugins.Split3D.MyKeys.Install.Step2")</li>
+                    <li>@T("Plugins.Split3D.MyKeys.Install.Step3")</li>
+                </ol>
+            </div>
+        }
+
         <div class="mt-3">
             <div class="font-weight-medium mb-1">
                 <i class="bi bi-pc-display mr-1"></i>

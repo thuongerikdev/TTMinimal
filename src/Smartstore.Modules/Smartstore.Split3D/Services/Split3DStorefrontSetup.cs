@@ -278,6 +278,15 @@ public class Split3DStorefrontSetup
         var addon = await EnsureDefaultAddonAsync(cancelToken);
         var module = _moduleCatalog.GetModuleByAssembly(GetType().Assembly);
         var addonBytes = addonFile != null ? await ReadAllBytesAsync(addonFile, cancelToken) : null;
+        if (addonBytes != null)
+        {
+            (addonBytes, var package) = PrepareAddonFile(addonBytes, log);
+            if (package != null)
+            {
+                addon.Version = package.Version;
+                await _db.SaveChangesAsync(cancelToken);
+            }
+        }
 
         var specs = new List<Split3DPlanProductSpec>();
         foreach (var plan in Split3DStorefrontContent.Plans)
@@ -291,7 +300,7 @@ public class Split3DStorefrontSetup
                 Slug = plan.Slug,
                 Price = plan.Price,
                 ShortDescription = Split3DStorefrontContent.ShortDescription,
-                FullDescription = Split3DStorefrontContent.ProductFullDescription(plan),
+                FullDescription = Split3DStorefrontContent.ProductFullDescription(plan, addon.Version),
                 ImageFileName = plan.ImageFile,
                 ImageBytes = image != null && image.Exists ? await ReadFileInfoAsync(image, cancelToken) : null,
                 ShowOnHomePage = false
@@ -326,7 +335,8 @@ public class Split3DStorefrontSetup
             _db.Split3DAddons().Add(addon);
         }
 
-        addon.Version = Split3DStorefrontContent.AddonVersion;
+        // The version of an uploaded extension package wins; the built-in value is only a fallback.
+        addon.Version = addon.Version.NullEmpty() ?? Split3DStorefrontContent.AddonVersion;
         await _db.SaveChangesAsync(cancelToken);
 
         return addon;
@@ -440,6 +450,34 @@ public class Split3DStorefrontSetup
         }
 
         return result;
+    }
+
+    /// <summary>
+    /// The address the addon uses to reach this shop: <see cref="Split3DSettings.ActivationServerUrl"/> or the store URL.
+    /// </summary>
+    public string GetActivationServerUrl()
+        => (_settings.ActivationServerUrl.NullEmpty() ?? _services.StoreContext.CurrentStore.GetBaseUrl()).Trim().TrimEnd('/');
+
+    /// <summary>
+    /// Prepares an uploaded addon zip: embeds this shop as SERVER_URL and reads the extension manifest.
+    /// </summary>
+    /// <exception cref="ArgumentException">The zip or its manifest is invalid.</exception>
+    public (byte[] Bytes, Split3DPackageInfo Package) PrepareAddonFile(byte[] addonBytes, List<string> log)
+    {
+        Guard.NotNull(addonBytes);
+
+        var serverUrl = GetActivationServerUrl();
+        var bytes = Split3DAddonPackage.SetServerUrl(addonBytes, serverUrl, out var patched);
+        var package = Split3DAddonPackage.Read(bytes);
+
+        log?.Add(patched
+            ? $"Addon file: activation server set to {serverUrl}."
+            : "WARNING: the addon file has no online.py with SERVER_URL; online activation is not configured in it.");
+        log?.Add(package != null
+            ? $"Addon file: Blender extension \"{package.Id}\" {package.Version} (installs over older versions, updates from the shop repository)."
+            : "WARNING: the addon file has no blender_manifest.toml (legacy add-on): it cannot be updated from inside Blender.");
+
+        return (bytes, package);
     }
 
     /// <summary>
@@ -628,7 +666,7 @@ public class Split3DStorefrontSetup
             prices[sku] = product.Price.ToString("#,##0", culture) + " ₫";
         }
 
-        await UpsertTopicAsync("HomePageText", string.Empty, Split3DStorefrontContent.HomePage(urls, prices), cancelToken, topic =>
+        await UpsertTopicAsync("HomePageText", string.Empty, Split3DStorefrontContent.HomePage(urls, prices, (await EnsureDefaultAddonAsync(cancelToken)).Version), cancelToken, topic =>
         {
             topic.RenderAsWidget = true;
             topic.WidgetWrapContent = false;

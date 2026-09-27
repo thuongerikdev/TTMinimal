@@ -80,7 +80,7 @@
         <Value>Tải lên phiên bản mới</Value>
     </LocaleResource>
     <LocaleResource Name="Addon.UploadVersionHint">
-        <Value>Gắn file ZIP vào mọi sản phẩm của addon. Khách đã mua sẽ tải được bản mới nhất.</Value>
+        <Value>Gắn file zip vào mọi sản phẩm của addon; khách đã mua tải được bản mới nhất. Với Blender extension (zip có blender_manifest.toml), số phiên bản được đọc từ file, địa chỉ cửa hàng được ghi vào file, và khách có key còn hạn sẽ nhận bản này dưới dạng cập nhật ngay trong Blender.</Value>
     </LocaleResource>
     <LocaleResource Name="Addon.VersionUploaded">
         <Value>Đã gắn phiên bản {0} vào {1} sản phẩm.</Value>
@@ -143,7 +143,7 @@
         <Value>Key khác theo email của bạn</Value>
     </LocaleResource>
     <LocaleResource Name="MyKeys.ActivateHint">
-        <Value>Kích hoạt: cài addon trong Blender (Edit › Preferences › Add-ons › Install from Disk), mở bảng Split3D, dán toàn bộ key và bấm Kích hoạt.</Value>
+        <Value>Kích hoạt: cài addon vào Blender (kéo nút "Kéo vào Blender" thả vào cửa sổ Blender, cần Blender 4.2 trở lên), mở bảng Split3D, dán toàn bộ key rồi bấm Kích hoạt.</Value>
     </LocaleResource>
     <LocaleResource Name="MyKeys.Track">
         <Value>Theo dõi đơn &amp; nhận key</Value>
@@ -567,12 +567,69 @@
         <Value>Gửi email chứa key cho người mua.</Value>
     </LocaleResource>
 
+    <LocaleResource Name="Fields.ActivationServerUrl">
+        <Value>Địa chỉ cửa hàng gắn vào addon</Value>
+    </LocaleResource>
+    <LocaleResource Name="Fields.ActivationServerUrl.Hint">
+        <Value>Địa chỉ công khai (https://…) mà Blender dùng để gọi tới cửa hàng. Địa chỉ này được tự ghi vào online.py của mọi file zip addon bạn tải lên, nên addon sẽ kích hoạt key tại đây. Để trống = URL cửa hàng. Đổi xong phải tải lại file addon.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Fields.ActivationServerUrl.Invalid">
+        <Value>Hãy nhập địa chỉ đầy đủ bắt đầu bằng https:// hoặc http://.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Addon.VersionAuto">
+        <Value>tự lấy từ file</Value>
+    </LocaleResource>
+    <LocaleResource Name="Addon.VersionMismatch">
+        <Value>Bạn nhập phiên bản {0} nhưng file là phiên bản {1}. Để trống ô phiên bản để dùng số trong file.</Value>
+    </LocaleResource>
+    <LocaleResource Name="MyKeys.Install.Title">
+        <Value>Cài / cập nhật trong Blender (bản {0})</Value>
+    </LocaleResource>
+    <LocaleResource Name="MyKeys.Install.Drag">
+        <Value>Kéo vào Blender</Value>
+    </LocaleResource>
+    <LocaleResource Name="MyKeys.Install.DragTitle">
+        <Value>Giữ chuột vào nút này rồi thả vào cửa sổ Blender.</Value>
+    </LocaleResource>
+    <LocaleResource Name="MyKeys.Install.CopyRepo">
+        <Value>Sao chép link cập nhật</Value>
+    </LocaleResource>
+    <LocaleResource Name="MyKeys.Install.RepoCopied">
+        <Value>Đã sao chép link cập nhật.</Value>
+    </LocaleResource>
+    <LocaleResource Name="MyKeys.Install.Step1">
+        <Value>Kéo nút vào cửa sổ Blender (4.2 trở lên) rồi xác nhận: Blender cài addon và ghi nhớ cửa hàng này làm kho extension. Bản cũ được thay tự động, không cần gỡ.</Value>
+    </LocaleResource>
+    <LocaleResource Name="MyKeys.Install.Step2">
+        <Value>Khi có bản mới: Edit › Preferences › Get Extensions › Check for Updates rồi bấm Update. Bật "Check for Updates on Startup" của kho này để Blender tự báo mỗi lần mở.</Value>
+    </LocaleResource>
+    <LocaleResource Name="MyKeys.Install.Step3">
+        <Value>Không kéo thả được? Thêm link đã sao chép tại Get Extensions › Repositories › + › Add Remote Repository, rồi cài Split3D Print trong danh sách. Không chia sẻ link này: nó chỉ dùng được khi key của bạn còn hạn.</Value>
+    </LocaleResource>
+    <LocaleResource Name="License.RepoUrl">
+        <Value>Kho cập nhật</Value>
+    </LocaleResource>
+    <LocaleResource Name="License.RepoUrl.Hint">
+        <Value>Kho extension Blender của key này. Blender cài và cập nhật addon từ đây khi key còn hạn.</Value>
+    </LocaleResource>
+    <LocaleResource Name="License.RepoUrlNone">
+        <Value>chưa tạo (tự tạo khi khách mở trang Key của tôi)</Value>
+    </LocaleResource>
+    <LocaleResource Name="License.RepoTokenResetButton">
+        <Value>Tạo link mới</Value>
+    </LocaleResource>
+    <LocaleResource Name="License.RepoTokenResetConfirm">
+        <Value>Tạo link cập nhật mới? Link cũ sẽ ngừng hoạt động; khách thấy link mới ở trang Key của tôi và phải kéo lại vào Blender.</Value>
+    </LocaleResource>
+    <LocaleResource Name="License.RepoTokenReset">
+        <Value>Đã tạo link cập nhật mới.</Value>
+    </LocaleResource>
     <!-- Devices & online activation -->
     <LocaleResource Name="Group.Devices">
         <Value>Thiết bị &amp; kích hoạt online</Value>
     </LocaleResource>
     <LocaleResource Name="ActivationEndpoint">
-        <Value>Địa chỉ kích hoạt (SERVER_URL trong online.py của addon là phần đứng trước /split3d/api)</Value>
+        <Value>Addon gọi tới</Value>
     </LocaleResource>
     <LocaleResource Name="Fields.DefaultMaxDevices">
         <Value>Số máy mỗi key</Value>

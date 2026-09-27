@@ -63,11 +63,35 @@ public class Split3DDeviceController : AdminController
                 ActiveDevices = await devices.CountAsync(x => x.Split3DLicenseId == license.Id && x.DeactivatedOnUtc == null),
                 DefaultMaxDevices = _settings.DefaultMaxDevices,
                 MaxDevices = license.MaxDevices,
-                Blocked = license.Blocked
+                Blocked = license.Blocked,
+                RepoUrl = license.RepoToken.HasValue()
+                    ? Url.Action("Index", "Split3DRepo", new { token = license.RepoToken, area = "" }, Request.Scheme)
+                    : null
             };
         }
 
         return View(model);
+    }
+
+    /// <summary>
+    /// Replaces the key's repository token. Links shared before stop working; the customer gets the new one on "My keys".
+    /// </summary>
+    [HttpPost]
+    [Permission(Permissions.Configuration.Module.Update)]
+    public async Task<IActionResult> ResetRepoToken(int id)
+    {
+        var license = await _db.Split3DLicenses().FindByIdAsync(id);
+        if (license == null)
+        {
+            return NotFound();
+        }
+
+        license.RepoToken = Split3DRepoService.NewToken();
+        await _db.SaveChangesAsync();
+
+        NotifySuccess(T("Plugins.Split3D.License.RepoTokenReset"));
+
+        return RedirectToAction(nameof(List), new { licenseId = license.Id });
     }
 
     [HttpPost]

@@ -50,6 +50,19 @@ public class MyKeyModel
 
     public int MaxDevices { get; set; }
     public List<MyDeviceModel> Devices { get; set; } = [];
+
+    /// <summary>
+    /// Blender repository URL of the key (paste into Preferences > Get Extensions > Repositories).
+    /// <c>null</c> when the addon has no extension package or the key cannot receive updates.
+    /// </summary>
+    public string RepoUrl { get; set; }
+
+    /// <summary>
+    /// Link to drag into Blender: installs the addon and adds the repository in one step.
+    /// </summary>
+    public string InstallUrl { get; set; }
+
+    public string PackageVersion { get; set; }
 }
 
 public class MyDeviceModel
