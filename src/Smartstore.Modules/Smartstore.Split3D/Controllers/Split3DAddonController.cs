@@ -201,6 +201,7 @@ public partial class Split3DAddonController : AdminController
             }
 
             await _setup.CreatePlanProductsAsync(addon, specs, category, zipBytes, zipName, log);
+            await _setup.RefreshContentAsync();
 
             NotifySuccess(string.Join("<br>", log.Select(System.Net.WebUtility.HtmlEncode)));
         }
@@ -259,6 +260,9 @@ public partial class Split3DAddonController : AdminController
             await _db.SaveChangesAsync();
 
             var count = await _setup.AttachAddonFileAsync(addon, zipBytes, package?.FileName ?? zipName);
+
+            // The home page shows the addon version.
+            await _setup.RefreshContentAsync();
             NotifySuccess(T("Plugins.Split3D.Addon.VersionUploaded", version, count) + "<br>"
                 + string.Join("<br>", log.Select(System.Net.WebUtility.HtmlEncode)));
         }

@@ -280,24 +280,6 @@
     <LocaleResource Name="Group.Payment">
         <Value>Chuyển khoản ngân hàng</Value>
     </LocaleResource>
-    <LocaleResource Name="Setup.Title">
-        <Value>Thiết lập cửa hàng bán hàng</Value>
-    </LocaleResource>
-    <LocaleResource Name="Setup.Hint">
-        <Value>Tạo 4 sản phẩm Split3D (3 tháng, 6 tháng, 1 năm, vĩnh viễn) kèm ảnh và file addon để tải, đặt Tiếng Việt và VND làm mặc định, bật chuyển khoản là phương thức thanh toán duy nhất, rút gọn thanh toán cho hàng số và thay trang chủ. &lt;strong&gt;Hãy lưu thông tin ngân hàng ở trên trước.&lt;/strong&gt; Chạy lại an toàn: sản phẩm đã có giữ nguyên giá.</Value>
-    </LocaleResource>
-    <LocaleResource Name="Setup.AddonFile">
-        <Value>File addon (split3d_print.zip) – bỏ trống nếu đã tải lên trước đó</Value>
-    </LocaleResource>
-    <LocaleResource Name="Setup.Run">
-        <Value>Chạy thiết lập</Value>
-    </LocaleResource>
-    <LocaleResource Name="Setup.Running">
-        <Value>Đang thiết lập… (có thể mất một phút)</Value>
-    </LocaleResource>
-    <LocaleResource Name="Setup.Done">
-        <Value>Đã thiết lập cửa hàng:</Value>
-    </LocaleResource>
     <LocaleResource Name="Setup.ZipRequired">
         <Value>Hãy tải lên file addon dạng .zip.</Value>
     </LocaleResource>

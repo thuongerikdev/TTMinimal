@@ -54,10 +54,13 @@
                     @T("Plugins.Split3D.MyKeys.Install.Title", key.PackageVersion)
                 </div>
                 <div class="d-flex flex-wrap align-items-center">
-                    <a href="@key.InstallUrl" draggable="true" class="btn btn-primary btn-sm mr-2 mb-2 s3d-drag" title="@T("Plugins.Split3D.MyKeys.Install.DragTitle")">
+                    @* A <button> whose dragstart sets only text/plain, like extensions.blender.org: dragging an <a>
+                       makes Windows browsers also send a .url shortcut file, which Blender ignores. *@
+                    <button type="button" draggable="true" data-install-url="@key.InstallUrl"
+                            class="btn btn-primary btn-sm mr-2 mb-2 s3d-drag" title="@T("Plugins.Split3D.MyKeys.Install.DragTitle")">
                         <i class="bi bi-arrows-move"></i>
                         <span>@T("Plugins.Split3D.MyKeys.Install.Drag")</span>
-                    </a>
+                    </button>
                     <button type="button" class="btn btn-outline-secondary btn-sm mb-2 split3d-copy" data-token="@key.RepoUrl" data-copied="@T("Plugins.Split3D.MyKeys.Install.RepoCopied")">
                         <i class="far fa-copy"></i>
                         <span>@T("Plugins.Split3D.MyKeys.Install.CopyRepo")</span>

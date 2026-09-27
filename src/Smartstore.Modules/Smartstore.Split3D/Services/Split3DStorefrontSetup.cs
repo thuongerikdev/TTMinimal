@@ -82,6 +82,50 @@ public class Split3DStorefrontSetup
         return log;
     }
 
+    /// <summary>
+    /// Returns whether the storefront has been set up already (Vietnamese language and addon category exist).
+    /// </summary>
+    public async Task<bool> IsSetUpAsync(CancellationToken cancelToken = default)
+    {
+        return await _db.Languages.AnyAsync(x => x.LanguageCulture == VietnameseCulture, cancelToken)
+            && await _db.Categories.AnyAsync(x => x.Name == Split3DStorefrontContent.CategoryName && !x.Deleted, cancelToken);
+    }
+
+    /// <summary>
+    /// Regenerates the content that depends on the bank details, plan prices and addon version:
+    /// the bank transfer description, the home page and the terms, shipping and payment pages.
+    /// Store settings and products are left untouched.
+    /// </summary>
+    public async Task RefreshContentAsync(CancellationToken cancelToken = default)
+    {
+        var method = await _db.PaymentMethods.FirstOrDefaultAsync(x => x.PaymentMethodSystemName == PrepaymentSystemName, cancelToken);
+        if (method != null)
+        {
+            method.FullDescription = Split3DStorefrontContent.PaymentDescription(_settings.BankName, _settings.BankAccountNumber, _settings.BankAccountHolder);
+            await _db.SaveChangesAsync(cancelToken);
+        }
+
+        var skus = Split3DStorefrontContent.Plans.Select(x => x.Sku).ToArray();
+        var products = (await _db.Products
+            .Where(x => skus.Contains(x.Sku) && !x.Deleted)
+            .OrderBy(x => x.Id)
+            .ToListAsync(cancelToken))
+            .DistinctBy(x => x.Sku)
+            .ToDictionary(x => x.Sku, StringComparer.OrdinalIgnoreCase);
+
+        if (products.Count < skus.Length)
+        {
+            // The home page links every plan product. Without all of them there is nothing sensible to render.
+            Logger.Warn("Split3D: home page not refreshed because not all plan products exist.");
+            return;
+        }
+
+        await SetupTopicsAsync(products, null, [], cancelToken);
+
+        // Topics are rendered as cached widgets.
+        await _services.Cache.ClearAsync();
+    }
+
     #region Language
 
     private async Task SetupLanguageAsync(List<string> log, CancellationToken cancelToken)
@@ -316,7 +360,7 @@ public class Split3DStorefrontSetup
 
         if (addonBytes == null && !await _db.Downloads.AnyAsync(x => x.EntityName == nameof(Product) && x.EntityId == products["S3D-1Y"].Id, cancelToken))
         {
-            log.Add("WARNING: no addon file uploaded yet. Upload split3d_print.zip and run the setup again.");
+            log.Add("WARNING: no addon file uploaded yet. Upload split3d_print.zip under Addons & plans > Upload new version.");
         }
 
         return products;

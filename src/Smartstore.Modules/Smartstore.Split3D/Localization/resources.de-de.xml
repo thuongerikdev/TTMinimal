@@ -280,24 +280,6 @@
     <LocaleResource Name="Group.Payment">
         <Value>Banküberweisung</Value>
     </LocaleResource>
-    <LocaleResource Name="Setup.Title">
-        <Value>Shop einrichten</Value>
-    </LocaleResource>
-    <LocaleResource Name="Setup.Hint">
-        <Value>Legt die Split3D-Produkte (3 Monate, 6 Monate, 1 Jahr, unbegrenzt) mit Bildern und der Addon-Datei als Download an, setzt Vietnamesisch und VND als Standard, aktiviert Banküberweisung als einzige Zahlungsart, vereinfacht den Checkout für digitale Produkte und ersetzt die Startseite. &lt;strong&gt;Speichern Sie zuerst die Bankdaten oben.&lt;/strong&gt; Kann erneut ausgeführt werden: bestehende Produkte behalten ihre Preise.</Value>
-    </LocaleResource>
-    <LocaleResource Name="Setup.AddonFile">
-        <Value>Addon-Datei (split3d_print.zip) – optional, wenn bereits hochgeladen</Value>
-    </LocaleResource>
-    <LocaleResource Name="Setup.Run">
-        <Value>Einrichtung starten</Value>
-    </LocaleResource>
-    <LocaleResource Name="Setup.Running">
-        <Value>Wird eingerichtet… (kann eine Minute dauern)</Value>
-    </LocaleResource>
-    <LocaleResource Name="Setup.Done">
-        <Value>Shop-Einrichtung abgeschlossen:</Value>
-    </LocaleResource>
     <LocaleResource Name="Setup.ZipRequired">
         <Value>Bitte laden Sie das Addon als .zip-Datei hoch.</Value>
     </LocaleResource>

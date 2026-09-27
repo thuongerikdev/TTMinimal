@@ -280,24 +280,6 @@
     <LocaleResource Name="Group.Payment">
         <Value>Bank transfer</Value>
     </LocaleResource>
-    <LocaleResource Name="Setup.Title">
-        <Value>Set up storefront</Value>
-    </LocaleResource>
-    <LocaleResource Name="Setup.Hint">
-        <Value>Creates the Split3D products (3 months, 6 months, 1 year, lifetime) with pictures and the addon file as download, sets Vietnamese and VND as defaults, enables bank transfer as the only payment method, simplifies checkout for digital goods and replaces the home page. &lt;strong&gt;Save the bank details above first.&lt;/strong&gt; Safe to run again: existing products keep their prices.</Value>
-    </LocaleResource>
-    <LocaleResource Name="Setup.AddonFile">
-        <Value>Addon file (split3d_print.zip) – optional when already uploaded</Value>
-    </LocaleResource>
-    <LocaleResource Name="Setup.Run">
-        <Value>Run setup</Value>
-    </LocaleResource>
-    <LocaleResource Name="Setup.Running">
-        <Value>Setting up… (may take a minute)</Value>
-    </LocaleResource>
-    <LocaleResource Name="Setup.Done">
-        <Value>Storefront setup completed:</Value>
-    </LocaleResource>
     <LocaleResource Name="Setup.ZipRequired">
         <Value>Please upload the addon as a .zip file.</Value>
     </LocaleResource>

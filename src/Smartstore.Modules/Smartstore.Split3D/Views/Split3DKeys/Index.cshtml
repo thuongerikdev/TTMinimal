@@ -148,7 +148,14 @@
             });
         });
 
-        // The install link is meant to be dragged into Blender; a plain click would only download the zip.
+        // Blender accepts a dropped install URL only as plain text (same as extensions.blender.org).
+        $(document).on('dragstart', '.s3d-drag', function (e) {
+            var dt = e.originalEvent.dataTransfer;
+            dt.clearData();
+            dt.setData('text/plain', $(this).attr('data-install-url'));
+            dt.effectAllowed = 'copy';
+        });
+
         $(document).on('click', '.s3d-drag', function (e) {
             e.preventDefault();
             displayNotification('@T("Plugins.Split3D.MyKeys.Install.DragTitle")', 'info');

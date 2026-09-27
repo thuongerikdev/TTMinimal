@@ -67,7 +67,7 @@ public class Split3DController : AdminController
 
     [HttpPost]
     [Permission(Permissions.Configuration.Module.Update)]
-    public async Task<IActionResult> Configure(ConfigurationModel model)
+    public async Task<IActionResult> Configure(ConfigurationModel model, [FromServices] Split3DStorefrontSetup setup)
     {
         var privateKeyJson = model.PrivateKeyJson.HasValue() ? model.PrivateKeyJson.Trim() : _settings.PrivateKeyJson;
 
@@ -124,49 +124,29 @@ public class Split3DController : AdminController
 
         NotifySuccess(T("Admin.Common.DataSuccessfullySaved"));
 
-        return RedirectToAction(nameof(Configure));
-    }
-
-    [HttpPost]
-    [Permission(Permissions.Configuration.Module.Update)]
-    public async Task<IActionResult> SetupStorefront([FromServices] Split3DStorefrontSetup setup)
-    {
-        var file = Request.Form.Files["addonfile"];
-        if (file != null && file.Length > 0 && !file.FileName.EndsWith(".zip", StringComparison.OrdinalIgnoreCase))
-        {
-            NotifyError(T("Plugins.Split3D.Setup.ZipRequired"));
-            return RedirectToAction(nameof(Configure));
-        }
-
         try
         {
-            List<string> log;
-            if (file != null && file.Length > 0)
+            if (await setup.IsSetUpAsync(HttpContext.RequestAborted))
             {
-                await using var stream = file.OpenReadStream();
-                log = await setup.RunAsync(stream, Path.GetFileName(file.FileName), HttpContext.RequestAborted);
+                // Bank details may have changed: update the payment description and pages.
+                await setup.RefreshContentAsync(HttpContext.RequestAborted);
             }
             else
             {
-                log = await setup.RunAsync(null, null, HttpContext.RequestAborted);
-            }
-
-            await Services.Cache.ClearAsync();
-
-            foreach (var line in log)
-            {
-                if (line.StartsWith("WARNING", StringComparison.Ordinal))
+                // First save on a fresh database: set up language, currency, products, checkout and pages once.
+                var log = await setup.RunAsync(null, null, HttpContext.RequestAborted);
+                foreach (var line in log.Where(x => x.StartsWith("WARNING", StringComparison.Ordinal)))
                 {
                     NotifyWarning(line);
                 }
-            }
 
-            NotifySuccess(T("Plugins.Split3D.Setup.Done") + "<br>" + string.Join("<br>", log.Where(x => !x.StartsWith("WARNING", StringComparison.Ordinal)).Select(System.Net.WebUtility.HtmlEncode)));
+                await Services.Cache.ClearAsync();
+            }
         }
         catch (Exception ex)
         {
-            Logger.Error(ex, "Split3D storefront setup failed.");
-            NotifyError(ex.Message);
+            Logger.Error(ex, "Split3D storefront update failed.");
+            NotifyWarning(ex.Message);
         }
 
         return RedirectToAction(nameof(Configure));
