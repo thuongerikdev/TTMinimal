@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="utf-8"?>
+<MessageTemplate>
+	<To>{{ Customer.FullName }} &lt;{{ Customer.Email }}&gt;</To>
+	<Subject>Xác nhận đơn hàng #{{ Order.OrderNumber }} - {{ Store.Name }}</Subject>
+	<ModelTypes>Order, Order.Customer</ModelTypes>
+	<Body><![CDATA[{% extends 'master' %}
+
+{% block 'body' %}
+<h1>
+  Xin chào {{ Customer.FullName }},
+</h1>
+<p>
+  Cảm ơn bạn đã đặt hàng tại <a href="{{ Store.Url }}">{{ Store.Name }}</a>. Chúng tôi xác nhận đã nhận được đơn hàng của bạn, thông tin chi tiết bên dưới.
+</p>
+
+<table class="w-100 brd bg-light mb-3" cellpadding="10">
+  <tbody>
+    <tr>
+      <td class="text-sm" width="25%">
+        <div class="text-muted">Ngày đặt</div>
+        <b>{{ Order.CreatedOn | Date:'d' }}</b>
+      </td>
+      <td class="text-sm" width="25%">
+        <div class="text-muted">Mã đơn hàng</div>
+        <b>#{{ Order.OrderNumber }}</b>
+      </td>
+      <td class="text-sm" width="25%">
+        <div class="text-muted">Trạng thái</div>
+        <b>{{ Order.Status }}</b>
+      </td>
+      <td class="text-sm text-right" width="25%">
+        <div class="text-muted">Tổng tiền</div>
+        <b class="text-success">{{ Order.Totals.Total }}</b>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<table class="w-100 brd mb-3">
+  <tbody>
+    <tr>
+      <td class="p-2">
+
+        <table class="order-details w-100">
+          <tbody>
+            <tr>
+              <td width="50%" valign="top">
+                <h3>Địa chỉ thanh toán</h3>
+                {% include 'address' with Order.Billing %}
+                {% if Order.PaymentMethod %}
+                  <h3 class="mt-2">Phương thức thanh toán</h3>
+                  <div class="text-sm">{{ Order.PaymentMethod }}</div>
+                {% endif %}
+              </td>
+              <td width="50%" valign="top">
+                {% if Order.Shipping %}
+                  <h3>Địa chỉ giao hàng</h3>
+                  {% include 'address' with Order.Shipping %}
+                {% endif %}
+                {% if Order.ShippingMethod %}
+                  <h3 class="mt-2">Phương thức giao hàng</h3>
+                  <div class="text-sm">{{ Order.ShippingMethod }}</div>
+                {% endif %}
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+{% include 'order' %}
+
+<p class="text-sm">
+  Nếu có thắc mắc về đơn hàng, bạn chỉ cần trả lời email này hoặc liên hệ với chúng tôi qua <a href="{{ Store.Url }}">{{ Store.Name }}</a>.
+</p>
+
+{% if Order.ConditionsOfUse.Body %}
+<hr />
+<table id="conditions-of-use">
+  <tr>
+    <td class="text-xs text-muted-all pt-3 pb-3">
+      <h3 class="mb-2">{{ Order.ConditionsOfUse.Title }}</h3>
+      {{ Order.ConditionsOfUse.Body }}
+    </td>
+  </tr>
+</table>
+{% endif %}
+
+{% if Order.Disclaimer.Body %}
+<hr />
+<table id="disclaimer">
+  <tr>
+    <td class="text-xs text-muted-all pt-3">
+      <h3 class="mb-2">{{ Order.Disclaimer.Title }}</h3>
+      {{ Order.Disclaimer.Body }}
+    </td>
+  </tr>
+</table>
+{% endif %}
+{% endblock %}]]></Body>
+</MessageTemplate>
