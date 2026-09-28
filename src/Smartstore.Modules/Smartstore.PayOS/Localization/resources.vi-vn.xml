@@ -1,0 +1,118 @@
+<Language Name="Tiếng Việt" IsDefault="false" IsRightToLeft="false">
+    <LocaleResource Name="Plugins.FriendlyName.Smartstore.PayOS" AppendRootKey="false">
+        <Value>PayOS</Value>
+    </LocaleResource>
+    <LocaleResource Name="Plugins.Description.Smartstore.PayOS" AppendRootKey="false">
+        <Value>Nhận thanh toán chuyển khoản VietQR qua PayOS và tự động xác nhận đơn hàng đã thanh toán.</Value>
+    </LocaleResource>
+
+    <LocaleResource Name="Plugins.FriendlyName.Payments.PayOS" AppendRootKey="false">
+        <Value>Chuyển khoản ngân hàng qua VietQR (PayOS)</Value>
+    </LocaleResource>
+    <LocaleResource Name="Plugins.PaymentInfo.Payments.PayOS" AppendRootKey="false">
+        <Value>Sau khi đặt hàng, bạn sẽ được chuyển sang trang PayOS. Dùng app ngân hàng quét mã VietQR để chuyển khoản, đơn hàng sẽ được xác nhận tự động ngay khi nhận được tiền.</Value>
+    </LocaleResource>
+
+    <LocaleResource Name="Plugins.Smartstore.PayOS" AppendRootKey="false">
+        <Children>
+            <LocaleResource Name="AdminInstruction">
+                <Value>
+                    <![CDATA[
+                        <p>Cách cài đặt <b>PayOS</b>:</p>
+                        <ul>
+                            <li>Đăng nhập <a href="https://my.payos.vn" target="_blank">my.payos.vn</a>, tạo kênh thanh toán và liên kết tài khoản ngân hàng.</li>
+                            <li>Copy <b>Client ID</b>, <b>API Key</b> và <b>Checksum Key</b> của kênh vào các ô bên dưới rồi bấm Lưu.</li>
+                            <li>Bấm <b>Xác nhận webhook</b> để đăng ký webhook URL với PayOS. Website phải chạy bằng tên miền <b>HTTPS</b> công khai.</li>
+                            <li>Tiền tệ khách hàng dùng phải là <b>VND</b>. Với tiền tệ khác, PayOS sẽ bị ẩn.</li>
+                            <li>Bật <i>Cho phép thanh toán lại</i> trong cài đặt thanh toán để khách có thể thanh toán sau từ trang chi tiết đơn hàng.</li>
+                        </ul>
+                    ]]>
+                </Value>
+            </LocaleResource>
+            <LocaleResource Name="ClientId">
+                <Value>Client ID</Value>
+            </LocaleResource>
+            <LocaleResource Name="ClientId.Hint">
+                <Value>Client ID của kênh thanh toán PayOS.</Value>
+            </LocaleResource>
+            <LocaleResource Name="ApiKey">
+                <Value>API Key</Value>
+            </LocaleResource>
+            <LocaleResource Name="ApiKey.Hint">
+                <Value>API Key của kênh thanh toán PayOS.</Value>
+            </LocaleResource>
+            <LocaleResource Name="ChecksumKey">
+                <Value>Checksum Key</Value>
+            </LocaleResource>
+            <LocaleResource Name="ChecksumKey.Hint">
+                <Value>Checksum Key của kênh thanh toán PayOS, dùng để ký yêu cầu và kiểm tra webhook.</Value>
+            </LocaleResource>
+            <LocaleResource Name="WebhookUrl">
+                <Value>Webhook URL</Value>
+            </LocaleResource>
+            <LocaleResource Name="WebhookUrl.Hint">
+                <Value>Địa chỉ PayOS gọi tới khi nhận được tiền chuyển khoản. Bấm "Xác nhận webhook" để đăng ký với PayOS.</Value>
+            </LocaleResource>
+            <LocaleResource Name="ConfirmWebhook">
+                <Value>Xác nhận webhook</Value>
+            </LocaleResource>
+            <LocaleResource Name="WebhookConfirmed">
+                <Value>Đã đăng ký webhook URL {0} với PayOS.</Value>
+            </LocaleResource>
+            <LocaleResource Name="WebhookRequiresHttps">
+                <Value>PayOS yêu cầu địa chỉ HTTPS công khai. Hãy đổi URL cửa hàng sang tên miền HTTPS trước (Cấu hình > Cửa hàng).</Value>
+            </LocaleResource>
+            <LocaleResource Name="DescriptionPrefix">
+                <Value>Tiền tố nội dung chuyển khoản</Value>
+            </LocaleResource>
+            <LocaleResource Name="DescriptionPrefix.Hint">
+                <Value>Chỉ gồm chữ và số, theo sau là mã đơn hàng (ví dụ DH1234). Nên để ngắn vì một số ngân hàng chỉ cho phép 9 ký tự.</Value>
+            </LocaleResource>
+            <LocaleResource Name="PaymentLinkLifetimeMinutes">
+                <Value>Thời hạn link thanh toán</Value>
+            </LocaleResource>
+            <LocaleResource Name="PaymentLinkLifetimeMinutes.Hint">
+                <Value>Số phút trước khi link thanh toán chưa trả hết hạn. 0 là không giới hạn. Khách có thể tạo link mới từ trang chi tiết đơn hàng.</Value>
+            </LocaleResource>
+            <LocaleResource Name="AdditionalFee">
+                <Value>Phí cộng thêm</Value>
+            </LocaleResource>
+            <LocaleResource Name="AdditionalFee.Hint">
+                <Value>Phí cộng thêm tính cho khách khi dùng phương thức thanh toán này.</Value>
+            </LocaleResource>
+            <LocaleResource Name="AdditionalFeePercentage">
+                <Value>Phí cộng thêm theo phần trăm</Value>
+            </LocaleResource>
+            <LocaleResource Name="AdditionalFeePercentage.Hint">
+                <Value>Tính phí cộng thêm theo phần trăm tổng đơn hàng. Nếu tắt thì dùng số tiền cố định.</Value>
+            </LocaleResource>
+            <LocaleResource Name="NotConfigured">
+                <Value>PayOS chưa được cấu hình (cần Client ID, API Key và Checksum Key).</Value>
+            </LocaleResource>
+            <LocaleResource Name="LinkCreated">
+                <Value>Đã tạo link thanh toán PayOS. Mã thanh toán: {0}, số tiền: {1} VND, nội dung chuyển khoản: {2}.</Value>
+            </LocaleResource>
+            <LocaleResource Name="LinkCreationFailed">
+                <Value>Không tạo được link thanh toán PayOS: {0}</Value>
+            </LocaleResource>
+            <LocaleResource Name="PaymentReceived">
+                <Value>Đã nhận thanh toán PayOS {0} VND (mã thanh toán {1}, mã giao dịch ngân hàng {2}, qua {3}).</Value>
+            </LocaleResource>
+            <LocaleResource Name="AmountMismatch">
+                <Value>PayOS báo đã nhận {1} VND cho mã thanh toán {0}, nhưng đơn cần {2} VND. Đơn hàng chưa được đánh dấu đã thanh toán.</Value>
+            </LocaleResource>
+            <LocaleResource Name="PaidButCancelled">
+                <Value>PayOS báo đã nhận {1} VND cho mã thanh toán {0}, nhưng đơn hàng đã bị hủy. Vui lòng hoàn tiền cho khách.</Value>
+            </LocaleResource>
+            <LocaleResource Name="PaymentProcessing">
+                <Value>Chúng tôi chưa nhận được tiền chuyển khoản của bạn. Đơn hàng sẽ được xác nhận tự động ngay khi tiền về.</Value>
+            </LocaleResource>
+            <LocaleResource Name="PaymentCancelled">
+                <Value>Bạn đã hủy thanh toán. Bạn có thể thanh toán lại bất cứ lúc nào từ trang chi tiết đơn hàng.</Value>
+            </LocaleResource>
+            <LocaleResource Name="SeeOrderEmail">
+                <Value>Cảm ơn bạn! Trạng thái thanh toán của đơn hàng sẽ được gửi qua email.</Value>
+            </LocaleResource>
+        </Children>
+    </LocaleResource>
+</Language>

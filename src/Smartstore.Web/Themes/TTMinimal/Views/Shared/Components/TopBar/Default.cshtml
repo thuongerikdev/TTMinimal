@@ -1,0 +1,83 @@
+@model TopBarModel
+
+@inject IModuleCatalog ModuleCatalog
+
+@{
+    string accountUrl = Model.IsAuthenticated ? Url.Action("Info", "Customer") : Url.RouteUrl("Login", new { returnUrl = Request.RawUrl() });
+    var studioModule = ModuleCatalog.GetModuleByName("Smartstore.Split3D");
+    var hasStudio = studioModule != null && studioModule.IsInstalled();
+}
+
+<zone name="header_menu_top"></zone>
+
+@* Studio top bar: contact details on the left, contact page and account on the right. No language/currency selector or service menu. *@
+<nav class="menubar navbar navbar-slide">
+
+    <div class="menubar-group ml-0">
+        @if (hasStudio)
+        {
+            @(await new Smartstore.Core.Widgets.ComponentWidget("StudioFooter", "Smartstore.Split3D", new { view = "ContactBar" }).InvokeAsync(ViewContext))
+        }
+    </div>
+
+    <div class="menubar-group ml-auto">
+        <zone name="header_menu_before" preview-style="max-width: 100px"></zone>
+
+        @if (hasStudio)
+        {
+            <a href="@Url.RouteUrl("TTPrintService")" class="menubar-link">In 3D theo yêu cầu</a>
+        }
+
+        @if (Model.HasContactUsPage)
+        {
+            <a asp-route="ContactUs" class="menubar-link">@T("ContactUs")</a>
+        }
+
+        @if (Model.IsCustomerImpersonated)
+        {
+            <a asp-route="Logout" class="menubar-link" title="@T("Account.ImpersonatedAs.Finish.Hint")" rel="nofollow">
+                <i class="fal fa-right-from-bracket menubar-icon"></i>
+                <span>@WorkContext.CurrentCustomer.Username</span>
+            </a>
+        }
+    </div>
+
+    <div class="menubar-group menubar-group--special" sm-suppress-if-empty>
+        <zone name="header_menu_special" preview-style="max-width: 100px"></zone>
+        <zone name="header_menu_special_after" preview-style="max-width: 100px"></zone>
+    </div>
+
+    <div id="menubar-my-account" class="menubar-group">
+        <div class="dropdown">
+            <a class="menubar-link" attr-data-toggle='(Model.IsAuthenticated, "dropdown")' aria-haspopup="true" aria-expanded="false" href="@accountUrl" rel="nofollow">
+                <i class="@(Model.IsAuthenticated ? "fas" : "fal") fa-user-circle menubar-icon"></i>
+
+                @if (Model.IsAuthenticated)
+                {
+                    <span title="@Model.CustomerEmailUsername">@Model.CustomerEmailUsername.Truncate(25, "...")</span>
+                    <i class="fal fa-angle-down menubar-caret"></i>
+                }
+                else
+                {
+                    <span>@T("Account.Login")</span>
+                }
+            </a>
+
+            @if (Model.IsAuthenticated)
+            {
+                @await Component.InvokeAsync("AccountDropdown")
+            }
+        </div>
+        <zone name="header_menu_after" preview-style="max-width: 100px"></zone>
+    </div>
+
+    <div sm-if="Model.DisplayAdminLink" class="menubar-group menubar-group--special d-none d-xl-block">
+        <a class="menubar-link" asp-area="Admin" asp-controller="Home" asp-action="Index" target="_admin" rel="nofollow">
+            <i class="fal fa-cog menubar-icon"></i>
+            <span>@T("Account.Administration")</span>
+        </a>
+    </div>
+
+</nav>
+
+<zone name="header_menu_bottom"></zone>

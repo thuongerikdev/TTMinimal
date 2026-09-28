@@ -1,0 +1,16 @@
+@model StudioContactModel
+
+<div class="tt-contactbar">
+    @if (Model.Address.HasValue())
+    {
+        <a href="@(Model.MapUrl ?? "#")" target="_blank" rel="noopener" class="d-none d-xl-inline-flex">@StudioIcons.Get("pin") @Model.Address</a>
+    }
+    @foreach (var p in Model.Phones)
+    {
+        <a href="@StudioContactModel.TelUrl(p)">@StudioIcons.Get("phone") @StudioContactModel.FormatPhone(p)</a>
+    }
+    @if (Model.FacebookUrl.HasValue())
+    {
+        <a href="@Model.FacebookUrl" target="_blank" rel="noopener">@StudioIcons.Get("facebook") Fanpage</a>
+    }
+</div>

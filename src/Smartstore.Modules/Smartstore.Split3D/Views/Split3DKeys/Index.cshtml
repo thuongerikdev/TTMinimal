@@ -81,10 +81,21 @@
 
             @switch (order.State)
             {
+                case Split3DOrderState.AwaitingPayment when order.CanPayOnline:
+                    <div class="alert alert-warning mb-0">
+                        <div class="font-weight-bold mb-2">@T("Plugins.Split3D.MyKeys.PayOnlineHint", order.OrderTotal)</div>
+                        <form method="post" asp-controller="Order" asp-action="Details" asp-route-id="@order.OrderId" asp-area="">
+                            <button type="submit" name="repost-payment" value="repost-payment" class="btn btn-success">
+                                <i class="fa fa-qrcode"></i>
+                                <span>@T("Plugins.Split3D.MyKeys.PayOnline")</span>
+                            </button>
+                        </form>
+                    </div>
+                    break;
                 case Split3DOrderState.AwaitingPayment:
                     <div class="alert alert-warning mb-0">
                         <div class="font-weight-bold mb-1">@T("Plugins.Split3D.MyKeys.PayHint")</div>
-                        @if (Model.BankAccountNumber.HasValue())
+                        @if (order.IsBankTransfer && Model.BankAccountNumber.HasValue())
                         {
                             <ul class="mb-0 pl-3">
                                 <li>@T("Plugins.Split3D.MyKeys.Amount"): <strong>@order.OrderTotal</strong></li>

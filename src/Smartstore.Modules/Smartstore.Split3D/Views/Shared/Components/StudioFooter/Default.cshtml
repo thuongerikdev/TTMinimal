@@ -1,0 +1,99 @@
+@model StudioContactModel
+
+@{
+    var printUrl = Url.RouteUrl(StudioStorefrontSetup.PrintServiceRouteName);
+    var homeUrl = Url.RouteUrl("Homepage");
+    var phone = Model.Phone1.NullEmpty() ?? Model.Phone2;
+}
+
+<link sm-target-zone="head_links" rel="stylesheet" href="@Url.Content(StudioAssets.StyleSheet)" />
+
+<footer id="footer" class="tt-footer">
+    <div class="tt-wrap">
+        <div class="tt-footer-main">
+            <div class="tt-footer-brand">
+                <a class="tt-logo" href="@homeUrl" aria-label="@Model.BrandName">
+                    <span class="tt-logo-top">T DOUBLE</span>
+                    <span class="tt-logo-main">MINIMAL</span>
+                    <span class="tt-logo-sub">@(Model.Tagline.NullEmpty() ?? "Minimal 3D Printing Studio")</span>
+                </a>
+                <p>Studio in 3D tại Hà Nội: in FDM &amp; Resin theo yêu cầu, sản phẩm in 3D tự thiết kế và addon Blender cho người làm 3D.</p>
+                <div class="tt-social">
+                    @if (Model.FacebookUrl.HasValue())
+                    {
+                        <a href="@Model.FacebookUrl" target="_blank" rel="noopener" aria-label="Facebook">@StudioIcons.Get("facebook")</a>
+                    }
+                    @if (Model.ZaloUrl.HasValue())
+                    {
+                        <a href="@Model.ZaloUrl" target="_blank" rel="noopener" aria-label="Zalo">@StudioIcons.Get("chat")</a>
+                    }
+                    @if (phone.HasValue())
+                    {
+                        <a href="@StudioContactModel.TelUrl(phone)" aria-label="Gọi điện">@StudioIcons.Get("phone")</a>
+                    }
+                </div>
+            </div>
+
+            <nav aria-label="Dịch vụ">
+                <h4>Dịch vụ</h4>
+                <ul>
+                    <li><a href="@printUrl">In 3D theo yêu cầu</a></li>
+                    <li><a href="@printUrl#tt-quote">Gửi file báo giá</a></li>
+                    <li><a href="@homeUrl#tt-products">Sản phẩm TT Minimal</a></li>
+                    <li><a href="@homeUrl#tt-addons">Addon Blender</a></li>
+                </ul>
+            </nav>
+
+            <nav aria-label="Hỗ trợ">
+                <h4>Hỗ trợ</h4>
+                <ul>
+                    <li><a href="@Url.RouteUrl("ContactUs")">Liên hệ</a></li>
+                    <li><a href="@(await Url.TopicAsync("ShippingInfo"))">Giao hàng</a></li>
+                    <li><a href="@(await Url.TopicAsync("PaymentInfo"))">Thanh toán</a></li>
+                    <li><a href="@(await Url.TopicAsync("ConditionsOfUse"))">Điều khoản sử dụng</a></li>
+                    <li><a href="@Url.Action("Info", "Customer")" rel="nofollow">Tài khoản của tôi</a></li>
+                </ul>
+            </nav>
+
+            <div>
+                <h4>Liên hệ</h4>
+                <ul class="tt-footer-contact">
+                    @if (Model.Address.HasValue())
+                    {
+                        <li>@StudioIcons.Get("pin")<a href="@(Model.MapUrl ?? "#")" target="_blank" rel="noopener">@Model.Address</a></li>
+                    }
+                    @foreach (var p in Model.Phones)
+                    {
+                        <li>@StudioIcons.Get("phone")<a href="@StudioContactModel.TelUrl(p)">@StudioContactModel.FormatPhone(p)</a></li>
+                    }
+                    @if (Model.Email.HasValue())
+                    {
+                        <li>@StudioIcons.Get("mail")<a href="mailto:@Model.Email">@Model.Email</a></li>
+                    }
+                </ul>
+            </div>
+        </div>
+
+        <div class="tt-footer-word" aria-hidden="true">MINIMAL</div>
+
+        <div class="tt-footer-bottom">
+            <span>© @DateTime.Now.Year @Model.BrandName. Minimal 3D Printing Studio.</span>
+            <span>Hà Nội, Việt Nam</span>
+            @if (ViewBag.SmartstoreHint is string hint && hint.HasValue())
+            {
+                <span class="tt-footer-hint">@Html.Raw(hint)</span>
+            }
+        </div>
+    </div>
+</footer>
+
+<div class="tt-float-contact">
+    @if (Model.ZaloUrl.HasValue())
+    {
+        <a class="is-zalo" href="@Model.ZaloUrl" target="_blank" rel="noopener" aria-label="Nhắn Zalo">Zalo</a>
+    }
+    @if (phone.HasValue())
+    {
+        <a class="is-phone" href="@StudioContactModel.TelUrl(phone)" aria-label="Gọi @StudioContactModel.FormatPhone(phone)">@StudioIcons.Get("phone")</a>
+    }
+</div>

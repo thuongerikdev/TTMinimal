@@ -1,0 +1,233 @@
+@model PrintServicePageModel
+
+@addTagHelper Smartstore.Web.TagHelpers.Public.*, Smartstore.Web.Common
+
+@{
+    // Module views default to the admin layout (Views/_ViewStart.cshtml); this is a storefront page.
+    Layout = "_Layout";
+    Assets.AppendTitleParts("In 3D theo yêu cầu – bảng giá & báo giá");
+    Assets.AppendMetaDescriptionParts($"Dịch vụ in 3D FDM, Resin theo yêu cầu tại Hà Nội của {Model.Contact.BrandName}. Bảng giá theo gram, tính giá tạm và gửi file để nhận báo giá.");
+    Assets.BodyAttributes.AppendCssClass("tt-studio-page");
+
+    var contact = Model.Contact;
+    var form = Model.Form;
+    var selectedTech = form.Technology.NullEmpty() ?? Model.Technologies.FirstOrDefault()?.Name;
+    var quoteUrl = Url.RouteUrl(StudioStorefrontSetup.PrintServiceRouteName);
+    ViewData["QuoteUrl"] = quoteUrl + "#tt-quote";
+}
+
+<script>document.documentElement.classList.add('tt-js');</script>
+<script sm-target-zone="scripts" src="@Url.Content(StudioAssets.Script)"></script>
+
+<div class="tt">
+    <section class="tt-bleed tt-page-hero">
+        <div class="tt-hero-floor" aria-hidden="true"></div>
+        <div class="tt-wrap">
+            <span class="tt-eyebrow">Dịch vụ in 3D · @contact.BrandName</span>
+            <h1>In 3D theo yêu cầu<br /><span class="tt-grad">FDM &amp; Resin</span></h1>
+            <p>Gửi file 3D để nhận báo giá cụ thể. Chúng tôi nhận thêm thiết kế 3D nhân vật, đồ vật, bối cảnh, chỉnh sửa file và render hình ảnh 3D.</p>
+            <div class="tt-hero-cta" style="margin-top:2rem">
+                <a class="tt-btn tt-btn--glow" href="#tt-quote">@StudioIcons.Get("upload") <span>Gửi file báo giá</span></a>
+                <a class="tt-btn tt-btn--ghost" href="#tt-calc"><span>Tính giá tạm</span> @StudioIcons.Get("arrow", "tt-arrow")</a>
+            </div>
+        </div>
+    </section>
+
+    @if (Model.Technologies.Count > 0)
+    {
+        <div class="tt-price-cards">
+            @for (var i = 0; i < Model.Technologies.Count; i++)
+            {
+                var tech = Model.Technologies[i];
+                <div class="tt-price-card" data-tt-reveal style="--d:@((i * 0.1).ToString("0.0", CultureInfo.InvariantCulture))s">
+                    <span class="tt-mat">@tech.Materials</span>
+                    <h3>@tech.Name</h3>
+                    <p>@tech.Description</p>
+                    <div class="tt-price-from">@PrintPriceList.FormatPrice(tech.LowestPrice)<small> /g trở lên</small></div>
+                    <table class="tt-price-table">
+                        <tbody>
+                            @foreach (var tier in tech.Tiers)
+                            {
+                                <tr><td>@tier.Label</td><td>@PrintPriceList.FormatPrice(tier.PricePerGram)/g</td></tr>
+                            }
+                        </tbody>
+                    </table>
+                    <a class="tt-btn tt-btn--outline tt-btn--sm" href="@(quoteUrl)?tech=@(Uri.EscapeDataString(tech.Name))#tt-quote"><span>Báo giá @tech.Name</span> @StudioIcons.Get("arrow", "tt-arrow")</a>
+                </div>
+            }
+        </div>
+    }
+
+    @if (Model.PrintPriceNote.HasValue())
+    {
+        <div class="tt-note" style="margin-top:1.5rem" data-tt-reveal><b>Lưu ý:</b> <span>@Model.PrintPriceNote</span></div>
+    }
+
+    <section id="tt-calc" class="tt-section">
+        <div class="tt-print-grid">
+            <div data-tt-reveal="left">
+                <span class="tt-eyebrow">Tính giá tạm</span>
+                <h2 class="tt-h2">Biết trước chi phí <span class="tt-grad-dark">trong vài giây</span></h2>
+                <p class="tt-lead">Nhập khối lượng mô hình (xem trong phần mềm slicer như Cura, PrusaSlicer, Bambu Studio, Chitubox…) và số lượng. Bậc giá áp dụng theo tổng khối lượng đơn in.</p>
+                <div class="tt-services">
+                    <div class="tt-service">
+                        <span class="tt-service-ico">@StudioIcons.Get("pencil")</span>
+                        <div><h4>Chưa có file 3D?</h4><p>Gửi ảnh, bản vẽ hoặc mô tả — chúng tôi thiết kế 3D nhân vật, đồ vật, bối cảnh.</p></div>
+                    </div>
+                    <div class="tt-service">
+                        <span class="tt-service-ico">@StudioIcons.Get("wrench")</span>
+                        <div><h4>File bị lỗi, quá khổ?</h4><p>Chúng tôi sửa lưới, chia mảnh và tạo khớp nối để in được.</p></div>
+                    </div>
+                </div>
+            </div>
+            <div data-tt-reveal="right">
+                <partial name="_StudioPriceCalc" model="Model.Technologies" />
+            </div>
+        </div>
+    </section>
+
+    <section id="tt-quote" class="tt-section" style="padding-top:0">
+        <div class="tt-quote-grid">
+            <div data-tt-reveal>
+                @if (Model.SubmittedId.HasValue)
+                {
+                    <div class="tt-success" role="status">
+                        <span class="tt-success-ico">@StudioIcons.Get("check")</span>
+                        <div>
+                            <h3>Đã nhận yêu cầu #@Model.SubmittedId</h3>
+                            <p>Cảm ơn bạn! Chúng tôi sẽ xem file và liên hệ báo giá qua số điện thoại bạn đã để lại.</p>
+                        </div>
+                    </div>
+                }
+
+                <form class="tt-form" method="post" action="@quoteUrl#tt-quote" enctype="multipart/form-data" asp-antiforgery="true" data-tt-quote>
+                    <honeypot />
+                    <h2>Gửi file để nhận báo giá</h2>
+                    <p class="tt-form-sub">Điền thông tin và đính kèm file. Các ô có dấu <em style="color:#dc2626;font-style:normal">*</em> là bắt buộc.</p>
+
+                    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                    <div class="tt-form-row">
+                        <div class="tt-field">
+                            <label asp-for="Form.Name">Họ và tên <em>*</em></label>
+                            <input asp-for="Form.Name" class="form-control" autocomplete="name" />
+                            <span asp-validation-for="Form.Name"></span>
+                        </div>
+                        <div class="tt-field">
+                            <label asp-for="Form.Phone">Số điện thoại / Zalo <em>*</em></label>
+                            <input asp-for="Form.Phone" class="form-control" type="tel" autocomplete="tel" />
+                            <span asp-validation-for="Form.Phone"></span>
+                        </div>
+                    </div>
+
+                    <div class="tt-field">
+                        <label asp-for="Form.Email">Email</label>
+                        <input asp-for="Form.Email" class="form-control" type="email" autocomplete="email" />
+                        <span asp-validation-for="Form.Email"></span>
+                    </div>
+
+                    @if (Model.Technologies.Count > 0)
+                    {
+                        <div class="tt-field">
+                            <label>Công nghệ in</label>
+                            <div class="tt-tech-pick">
+                                @foreach (var tech in Model.Technologies)
+                                {
+                                    <label>
+                                        <input type="radio" name="Form.Technology" value="@tech.Name" checked="@(tech.Name.EqualsNoCase(selectedTech))" />
+                                        <span>@tech.Name<small>@tech.Materials</small></span>
+                                    </label>
+                                }
+                                <label>
+                                    <input type="radio" name="Form.Technology" value="Cần tư vấn" checked="@("Cần tư vấn".EqualsNoCase(selectedTech))" />
+                                    <span>Chưa rõ<small>Cần tư vấn</small></span>
+                                </label>
+                            </div>
+                        </div>
+                    }
+
+                    <div class="tt-form-row">
+                        <div class="tt-field">
+                            <label asp-for="Form.Material">Màu sắc / vật liệu mong muốn</label>
+                            <input asp-for="Form.Material" class="form-control" placeholder="VD: PLA trắng, Resin xám…" />
+                        </div>
+                        <div class="tt-form-row" style="gap:.75rem">
+                            <div class="tt-field">
+                                <label asp-for="Form.Quantity">Số lượng</label>
+                                <input asp-for="Form.Quantity" class="form-control" type="number" min="1" />
+                                <span asp-validation-for="Form.Quantity"></span>
+                            </div>
+                            <div class="tt-field">
+                                <label asp-for="Form.EstimatedGrams">Khối lượng (g)</label>
+                                <input asp-for="Form.EstimatedGrams" class="form-control" type="number" min="1" placeholder="Nếu biết" />
+                                <span asp-validation-for="Form.EstimatedGrams"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="tt-field">
+                        <label>File 3D</label>
+                        <div class="tt-drop" data-max-mb="@Model.MaxFileSizeMb">
+                            <input type="file" name="modelFile" accept="@Model.AllowedExtensions" />
+                            @StudioIcons.Get("upload")
+                            <b>Kéo thả file vào đây hoặc bấm để chọn</b>
+                            <small>STL, OBJ, 3MF, STEP, ZIP, ảnh… tối đa @Model.MaxFileSizeMb MB</small>
+                            <span class="tt-file-name"></span>
+                        </div>
+                        <span class="field-validation-error">@(ViewData.ModelState["modelFile"]?.Errors.FirstOrDefault()?.ErrorMessage)</span>
+                    </div>
+
+                    <div class="tt-field">
+                        <label asp-for="Form.FileLink">Hoặc link tải file (Google Drive, Dropbox…)</label>
+                        <input asp-for="Form.FileLink" class="form-control" type="url" placeholder="https://" />
+                        <span asp-validation-for="Form.FileLink"></span>
+                    </div>
+
+                    <div class="tt-field">
+                        <label asp-for="Form.Note">Mô tả thêm</label>
+                        <textarea asp-for="Form.Note" class="form-control" rows="4" placeholder="Kích thước mong muốn, mục đích sử dụng, thời gian cần hàng, yêu cầu hoàn thiện (chà nhám, sơn, ghép phôi)…"></textarea>
+                    </div>
+
+                    <div class="tt-field">
+                        <label class="tt-check">
+                            <input asp-for="Form.NeedsDesign" type="checkbox" />
+                            <span>Tôi cần thiết kế 3D hoặc chỉnh sửa file</span>
+                        </label>
+                    </div>
+
+                    <button type="submit" class="tt-btn tt-btn--glow" style="width:100%">
+                        @StudioIcons.Get("upload") <span>Gửi yêu cầu báo giá</span>
+                    </button>
+                </form>
+            </div>
+
+            <aside class="tt-aside" data-tt-reveal="right">
+                <div class="tt-aside-card">
+                    <h3>Liên hệ nhanh</h3>
+                    <div class="tt-contact-list">
+                        @foreach (var p in contact.Phones)
+                        {
+                            <a class="tt-contact-item" href="@StudioContactModel.TelUrl(p)">@StudioIcons.Get("phone")<span><small>Hotline</small><b>@StudioContactModel.FormatPhone(p)</b></span></a>
+                        }
+                        @if (contact.ZaloUrl.HasValue())
+                        {
+                            <a class="tt-contact-item" href="@contact.ZaloUrl" target="_blank" rel="noopener">@StudioIcons.Get("chat")<span><small>Gửi file qua</small><b>Zalo</b></span></a>
+                        }
+                        @if (contact.FacebookUrl.HasValue())
+                        {
+                            <a class="tt-contact-item" href="@contact.FacebookUrl" target="_blank" rel="noopener">@StudioIcons.Get("facebook")<span><small>Nhắn tin</small><b>Facebook</b></span></a>
+                        }
+                    </div>
+                </div>
+                <div class="tt-aside-card">
+                    <h3>Bạn sẽ nhận được</h3>
+                    <ul class="tt-aside-list">
+                        <li>@StudioIcons.Get("calc")<span><b>Báo giá theo file thực tế</b>Khối lượng, vật liệu, thời gian in.</span></li>
+                        <li>@StudioIcons.Get("chat")<span><b>Tư vấn vật liệu</b>FDM hay Resin, màu sắc, cách hoàn thiện.</span></li>
+                        <li>@StudioIcons.Get("truck")<span><b>Nhận hàng linh hoạt</b>Tại xưởng ở Hà Nội hoặc giao tận nơi.</span></li>
+                    </ul>
+                </div>
+            </aside>
+        </div>
+    </section>
+</div>

@@ -1,0 +1,76 @@
+@model List<PrintTechnology>
+
+@{
+    var quoteUrl = (string)ViewData["QuoteUrl"];
+    var json = System.Text.Json.JsonSerializer.Serialize(Model.Select(x => new
+    {
+        name = x.Name,
+        tiers = x.Tiers.Select(t => new { min = t.MinGrams, price = t.PricePerGram, label = t.Label })
+    }));
+}
+
+<div class="tt-calc" data-tt-calc="@json">
+    <div class="tt-calc-tabs" role="tablist">
+        <span class="tt-calc-indicator" aria-hidden="true"></span>
+        @for (var i = 0; i < Model.Count; i++)
+        {
+            <button type="button" class="tt-calc-tab@(i == 0 ? " is-active" : "")" role="tab" aria-selected="@(i == 0 ? "true" : "false")">@Model[i].Name</button>
+        }
+    </div>
+
+    <div class="tt-calc-body">
+        @for (var i = 0; i < Model.Count; i++)
+        {
+            var tech = Model[i];
+            var max = tech.HighestPrice > 0 ? tech.HighestPrice : 1;
+
+            <div data-tt-panel hidden="@(i > 0)">
+                <div class="tt-calc-head">
+                    <div>
+                        <small>@tech.Materials</small>
+                        <h3>@tech.Name</h3>
+                    </div>
+                    <span class="tt-tier-price">từ @PrintPriceList.FormatPrice(tech.LowestPrice)<small>/g</small></span>
+                </div>
+                <p class="tt-calc-desc">@tech.Description</p>
+                <div class="tt-tiers">
+                    @foreach (var tier in tech.Tiers)
+                    {
+                        <div class="tt-tier">
+                            <span class="tt-tier-weight">@tier.Label</span>
+                            <span class="tt-tier-bar"><i data-w="@((int)Math.Round(tier.PricePerGram / max * 100))"></i></span>
+                            <span class="tt-tier-price">@PrintPriceList.FormatPrice(tier.PricePerGram)<small>/g</small></span>
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+
+        <div class="tt-calc-form">
+            <div>
+                <label for="tt-calc-grams">Khối lượng 1 mẫu (g)</label>
+                <input id="tt-calc-grams" type="number" min="1" max="100000" value="120" data-tt-grams />
+            </div>
+            <div>
+                <label for="tt-calc-qty">Số lượng</label>
+                <input id="tt-calc-qty" type="number" min="1" max="10000" value="1" data-tt-qty />
+            </div>
+            <input type="range" min="0" max="100" step="0.5" aria-label="Khối lượng" data-tt-range />
+            <div class="tt-calc-total">
+                <div>
+                    <span>Tạm tính</span>
+                    <strong data-tt-total>—</strong>
+                    <em data-tt-unit></em>
+                </div>
+            </div>
+        </div>
+
+        <div class="tt-calc-cta">
+            <a class="tt-btn tt-btn--glow" href="@quoteUrl" data-base="@quoteUrl" data-tt-cta>
+                <span>Gửi file để báo giá chính xác</span>
+                @StudioIcons.Get("arrow", "tt-arrow")
+            </a>
+            <small>Khối lượng thực tế được tính từ file của bạn. Bậc giá áp dụng theo tổng khối lượng đơn in.</small>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,21 @@
+@model FooterModel
+
+@inject Smartstore.Engine.Modularity.IModuleCatalog ModuleCatalog
+
+@using Smartstore.Web.Models.Common
+
+@{
+    // Studio footer from the Split3D module; minimal footer if the module is missing.
+    var studioModule = ModuleCatalog.GetModuleByName("Smartstore.Split3D");
+}
+
+@if (studioModule != null && studioModule.IsInstalled())
+{
+    @(await new Smartstore.Core.Widgets.ComponentWidget("StudioFooter", "Smartstore.Split3D", new { smartstoreHint = Model.SmartStoreHint }).InvokeAsync(ViewContext))
+}
+else
+{
+    <footer id="footer" class="footer-inverse">
+        <div class="container py-4 text-center small">© @DateTime.Now.Year @Model.StoreName · @Html.Raw(Model.SmartStoreHint)</div>
+    </footer>
+}

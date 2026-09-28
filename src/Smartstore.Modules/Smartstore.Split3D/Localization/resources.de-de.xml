@@ -211,6 +211,21 @@
     <LocaleResource Name="Completed.Step3">
         <Value>Sie erhalten den Schlüssel per E-Mail; er erscheint auch unter Mein Konto › Meine Lizenzschlüssel, die Addon-Datei wird unter Downloads freigeschaltet.</Value>
     </LocaleResource>
+    <LocaleResource Name="Completed.Step1Online">
+        <Value>Bezahlen Sie, indem Sie den VietQR-Code mit Ihrer Banking-App scannen:</Value>
+    </LocaleResource>
+    <LocaleResource Name="Completed.Step2Online">
+        <Value>Die Zahlung wird automatisch bestätigt, sobald die Überweisung eingeht, und Ihr Schlüssel wird sofort ausgestellt.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Completed.PaidOnline">
+        <Value>Ihre Zahlung ist eingegangen. Ihr Schlüssel wird ausgestellt und per E-Mail gesendet; er erscheint auch unter Mein Konto › Meine Lizenzschlüssel.</Value>
+    </LocaleResource>
+    <LocaleResource Name="MyKeys.PayOnline">
+        <Value>Jetzt per VietQR bezahlen</Value>
+    </LocaleResource>
+    <LocaleResource Name="MyKeys.PayOnlineHint">
+        <Value>Bezahlen Sie {0} durch Scannen des VietQR-Codes. Die Bestellung wird automatisch bestätigt.</Value>
+    </LocaleResource>
     <LocaleResource Name="MenuTitle">
         <Value>Split3D</Value>
     </LocaleResource>
@@ -816,6 +831,251 @@
     </LocaleResource>
     <LocaleResource Name="Duration.LessThanHour">
         <Value>&lt; 1 Stunde</Value>
+    </LocaleResource>
+
+    <!-- TT Minimal studio: quote requests and studio settings -->
+    <LocaleResource Name="Studio.MenuTitle">
+        <Value>TT Minimal Studio</Value>
+    </LocaleResource>
+    <LocaleResource Name="Studio.Quotes">
+        <Value>Angebotsanfragen</Value>
+    </LocaleResource>
+    <LocaleResource Name="Studio.Settings">
+        <Value>Studio-Einstellungen</Value>
+    </LocaleResource>
+    <LocaleResource Name="Studio.Group.Contact">
+        <Value>Marke &amp; Kontakt</Value>
+    </LocaleResource>
+    <LocaleResource Name="Studio.Group.Printing">
+        <Value>3D-Druckservice</Value>
+    </LocaleResource>
+    <LocaleResource Name="Studio.PriceTableInvalid">
+        <Value>Die Preisliste enthält keine gültige Zeile. Format: Technologie | Materialien | Ab Gramm | Preis pro Gramm.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Studio.LayoutStatus">
+        <Value>Shop-Layout Version {0} von {1} angewendet (Theme, Menü, gekürzte Formulare, Versand).</Value>
+    </LocaleResource>
+    <LocaleResource Name="Studio.ApplyLayout">
+        <Value>Shop-Layout erneut anwenden</Value>
+    </LocaleResource>
+    <LocaleResource Name="Studio.ApplyLayout.Confirm">
+        <Value>Setzt Theme TTMinimal, SEO-Titel, Registrierungs- und Adressfelder, Katalogoptionen, Hauptmenüeintrag und Versandarten erneut. Fortfahren?</Value>
+    </LocaleResource>
+    <LocaleResource Name="Studio.LayoutApplied">
+        <Value>Shop-Layout angewendet.</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintQuote.Title">
+        <Value>Angebotsanfrage #{0}</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintQuote.Request">
+        <Value>Anfrage</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintQuote.Processing">
+        <Value>Bearbeitung</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintQuote.NewCount">
+        <Value>Neue Anfragen</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintQuote.OpenCount">
+        <Value>Angeboten / im Druck</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintQuote.OpenPage">
+        <Value>Druckseite öffnen</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintQuote.SearchTerm">
+        <Value>Suche</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintQuote.SearchTerm.Hint">
+        <Value>Name, Telefon, E-Mail oder Notiz.</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintQuote.Status.New">
+        <Value>Neu</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintQuote.Status.Quoted">
+        <Value>Angeboten</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintQuote.Status.Printing">
+        <Value>Im Druck</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintQuote.Status.Completed">
+        <Value>Abgeschlossen</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintQuote.Status.Cancelled">
+        <Value>Storniert</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintQuote.Fields.CreatedOn">
+        <Value>Eingegangen am</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintQuote.Fields.CreatedOn.Hint">
+        <Value>Datum und Uhrzeit der Anfrage.</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintQuote.Fields.Name">
+        <Value>Kunde</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintQuote.Fields.Name.Hint">
+        <Value>Vom Kunden angegebener Name.</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintQuote.Fields.Phone">
+        <Value>Telefon</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintQuote.Fields.Phone.Hint">
+        <Value>Telefon- oder Zalo-Nummer für den Rückruf.</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintQuote.Fields.Email">
+        <Value>E-Mail</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintQuote.Fields.Email.Hint">
+        <Value>Optionale E-Mail-Adresse des Kunden.</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintQuote.Fields.Technology">
+        <Value>Technologie</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintQuote.Fields.Technology.Hint">
+        <Value>Vom Kunden gewählte Drucktechnologie.</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintQuote.Fields.Material">
+        <Value>Material / Farbe</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintQuote.Fields.Material.Hint">
+        <Value>Wünsche zu Material, Farbe und Finish.</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintQuote.Fields.Quantity">
+        <Value>Menge</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintQuote.Fields.Quantity.Hint">
+        <Value>Anzahl der Exemplare.</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintQuote.Fields.EstimatedGrams">
+        <Value>Gewicht (g)</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintQuote.Fields.EstimatedGrams.Hint">
+        <Value>Vom Kunden geschätztes Gewicht eines Exemplars.</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintQuote.Fields.EstimatedPrice">
+        <Value>Schätzung</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintQuote.Fields.EstimatedPrice.Hint">
+        <Value>Preis laut Preisliste für Gewicht × Menge. Das tatsächliche Gewicht ergibt sich aus der Datei.</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintQuote.Fields.NeedsDesign">
+        <Value>Benötigt Design</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintQuote.Fields.NeedsDesign.Hint">
+        <Value>Der Kunde benötigt zusätzlich 3D-Design oder Dateireparatur.</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintQuote.Fields.Note">
+        <Value>Notiz</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintQuote.Fields.Note.Hint">
+        <Value>Vom Kunden eingegebene Beschreibung.</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintQuote.Fields.FileLink">
+        <Value>Datei-Link</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintQuote.Fields.FileLink.Hint">
+        <Value>Link zu einer extern gehosteten Datei (Google Drive, Dropbox, ...).</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintQuote.Fields.File">
+        <Value>Modelldatei</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintQuote.Fields.File.Hint">
+        <Value>Hochgeladene Modelldatei. Gespeichert unter App_Data/Tenants/Default/PrintQuotes.</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintQuote.Fields.Status">
+        <Value>Status</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintQuote.Fields.Status.Hint">
+        <Value>Bearbeitungsstatus der Anfrage.</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintQuote.Fields.QuotedPrice">
+        <Value>Angebotspreis</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintQuote.Fields.QuotedPrice.Hint">
+        <Value>Dem Kunden genannter Preis, zur Dokumentation.</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintQuote.Fields.AdminNote">
+        <Value>Interne Notiz</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintQuote.Fields.AdminNote.Hint">
+        <Value>Nur im Adminbereich sichtbar.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Studio.Fields.BrandName">
+        <Value>Markenname</Value>
+    </LocaleResource>
+    <LocaleResource Name="Studio.Fields.BrandName.Hint">
+        <Value>Wird in Kopfzeile, Fußzeile, Seitentiteln und E-Mails angezeigt.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Studio.Fields.Tagline">
+        <Value>Slogan</Value>
+    </LocaleResource>
+    <LocaleResource Name="Studio.Fields.Tagline.Hint">
+        <Value>Kurze Zeile unter dem Logo in der Fußzeile.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Studio.Fields.Address">
+        <Value>Adresse</Value>
+    </LocaleResource>
+    <LocaleResource Name="Studio.Fields.Address.Hint">
+        <Value>Adresse der Werkstatt für Abholung, auf Startseite und in der Fußzeile.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Studio.Fields.Phone1">
+        <Value>Hotline 1</Value>
+    </LocaleResource>
+    <LocaleResource Name="Studio.Fields.Phone1.Hint">
+        <Value>Haupttelefonnummer, auch für die schwebende Anruftaste.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Studio.Fields.Phone2">
+        <Value>Hotline 2</Value>
+    </LocaleResource>
+    <LocaleResource Name="Studio.Fields.Phone2.Hint">
+        <Value>Zweite Telefonnummer. Leer = nicht angezeigt.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Studio.Fields.ZaloPhone">
+        <Value>Zalo-Nummer</Value>
+    </LocaleResource>
+    <LocaleResource Name="Studio.Fields.ZaloPhone.Hint">
+        <Value>Telefonnummer des Zalo-Kontos. Leer = keine Zalo-Taste.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Studio.Fields.FacebookUrl">
+        <Value>Facebook-Seite</Value>
+    </LocaleResource>
+    <LocaleResource Name="Studio.Fields.FacebookUrl.Hint">
+        <Value>Vollständige Adresse der Facebook-Seite.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Studio.Fields.Email">
+        <Value>Kontakt-E-Mail</Value>
+    </LocaleResource>
+    <LocaleResource Name="Studio.Fields.Email.Hint">
+        <Value>Wird in der Fußzeile angezeigt. Leer = keine E-Mail-Adresse.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Studio.Fields.MapUrl">
+        <Value>Kartenlink</Value>
+    </LocaleResource>
+    <LocaleResource Name="Studio.Fields.MapUrl.Hint">
+        <Value>Google-Maps-Link, der beim Klick auf die Adresse geöffnet wird.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Studio.Fields.PrintPriceTable">
+        <Value>Preisliste</Value>
+    </LocaleResource>
+    <LocaleResource Name="Studio.Fields.PrintPriceTable.Hint">
+        <Value>Eine Stufe pro Zeile: Technologie | Materialien | Ab Gramm | Preis pro Gramm. Die erste Stufe jeder Technologie beginnt bei 0.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Studio.Fields.PrintPriceNote">
+        <Value>Preishinweis</Value>
+    </LocaleResource>
+    <LocaleResource Name="Studio.Fields.PrintPriceNote.Hint">
+        <Value>Wird unter der Preisliste angezeigt.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Studio.Fields.QuoteNotifyEmail">
+        <Value>Benachrichtigungs-E-Mail</Value>
+    </LocaleResource>
+    <LocaleResource Name="Studio.Fields.QuoteNotifyEmail.Hint">
+        <Value>Erhält neue Angebotsanfragen. Leer = Standard-E-Mail-Konto.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Studio.Fields.QuoteMaxFileSizeMb">
+        <Value>Max. Dateigröße (MB)</Value>
+    </LocaleResource>
+    <LocaleResource Name="Studio.Fields.QuoteMaxFileSizeMb.Hint">
+        <Value>Größte Modelldatei, die Kunden hochladen können. Nginx benötigt ein mindestens so großes client_max_body_size.</Value>
     </LocaleResource>
 
 </Language>

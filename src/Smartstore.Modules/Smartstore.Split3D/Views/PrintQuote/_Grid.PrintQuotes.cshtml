@@ -1,0 +1,58 @@
+@model PrintQuoteModel
+
+<datagrid id="printquotes-grid"
+          class="h-100"
+          allow-resize="true"
+          allow-row-selection="true"
+          allow-column-reordering="true">
+    <datasource read="@Url.Action("QuoteList")" delete="@Url.Action("QuoteDelete")" />
+    <paging position="Bottom" page-index="1" show-size-chooser="true" />
+    <toolbar>
+        <toolbar-group>
+            <button datagrid-action="DataGridToolAction.ToggleSearchPanel" type="button" class="btn btn-plain btn-icon">
+                <bootstrap-icon name="funnel" />
+            </button>
+        </toolbar-group>
+        <toolbar-group class="omega"></toolbar-group>
+        <toolbar-group>
+            <button datagrid-action="DataGridToolAction.DeleteSelectedRows" type="button" class="btn btn-danger no-anims btn-flat">
+                <bootstrap-icon name="trash" />
+                <span>@T("Admin.Common.Delete.Selected")</span>
+            </button>
+        </toolbar-group>
+    </toolbar>
+    <search-panel>
+        <partial name="_Grid.PrintQuotes.Search" model="(PrintQuoteListModel)ViewBag.SearchModel" />
+    </search-panel>
+    <columns>
+        <column for="Id" width="70px" />
+        <column for="CreatedOn" width="150px" />
+        <column for="Name" hideable="false" width="220px">
+            <display-template>
+                <a :href="item.row.EditUrl" class="font-weight-medium">{{ item.value }}</a>
+                <div class="small text-muted">{{ item.row.Phone }}</div>
+            </display-template>
+        </column>
+        <column for="StatusId" width="130px">
+            <display-template>
+                <span class="badge" :class="item.row.StatusBadge">{{ item.row.StatusName }}</span>
+            </display-template>
+        </column>
+        <column for="Technology" width="140px" />
+        <column for="Quantity" width="90px" />
+        <column for="EstimatedGrams" width="110px" />
+        <column for="EstimatedPrice" sortable="false" width="220px" />
+        <column for="FileName" sortable="false" width="200px">
+            <display-template>
+                <a v-if="item.row.DownloadUrl" :href="item.row.DownloadUrl"><i class="bi bi-download mr-1"></i>{{ item.value }}</a>
+                <a v-else-if="item.row.FileLink" :href="item.row.FileLink" target="_blank" rel="noopener"><i class="bi bi-link-45deg mr-1"></i>Link</a>
+            </display-template>
+        </column>
+        <column for="Email" width="200px" visible="false" />
+        <column for="Material" width="180px" visible="false" />
+    </columns>
+    <row-commands>
+        <a datarow-action="DataRowAction.Custom" :href="item.row.EditUrl">@T("Common.Edit")</a>
+        <a datarow-action="DataRowAction.Delete">@T("Common.Delete")</a>
+    </row-commands>
+</datagrid>

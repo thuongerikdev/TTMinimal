@@ -1,5 +1,6 @@
 using System.Globalization;
 using Microsoft.AspNetCore.Mvc;
+using Smartstore.Core.Checkout.Payment;
 using Smartstore.Core.Data;
 using Smartstore.Core.Identity;
 using Smartstore.Web.Controllers;
@@ -15,6 +16,7 @@ public class Split3DKeysController : PublicController
     private readonly Split3DOrderQuery _orderQuery;
     private readonly Split3DDeviceService _deviceService;
     private readonly Split3DRepoService _repoService;
+    private readonly IPaymentService _paymentService;
     private readonly Split3DSettings _settings;
 
     public Split3DKeysController(
@@ -22,12 +24,14 @@ public class Split3DKeysController : PublicController
         Split3DOrderQuery orderQuery,
         Split3DDeviceService deviceService,
         Split3DRepoService repoService,
+        IPaymentService paymentService,
         Split3DSettings settings)
     {
         _db = db;
         _orderQuery = orderQuery;
         _deviceService = deviceService;
         _repoService = repoService;
+        _paymentService = paymentService;
         _settings = settings;
     }
 
@@ -76,12 +80,19 @@ public class Split3DKeysController : PublicController
                 OrderTotal = Split3DLicenseService.FormatPrice(x.Order.OrderTotal),
                 State = x.State,
                 ExpectedKeys = x.ExpectedKeys,
+                IsBankTransfer = x.Order.PaymentMethodSystemName.EqualsNoCase(Split3DStorefrontSetup.PrepaymentSystemName),
                 Items = x.Items.Select(i => $"{i.Quantity} × {i.Product?.Name}").ToList(),
                 Keys = x.Licenses.Select(l => ToModel(l, now, addonNames, devices[l.Id])).ToList()
             })
             .ToList(),
             OtherKeys = otherKeys.Select(x => ToModel(x, now, addonNames, devices[x.Id])).ToList()
         };
+
+        foreach (var order in orders.Where(x => x.State == Split3DOrderState.AwaitingPayment))
+        {
+            var orderModel = model.Orders.First(x => x.OrderId == order.Order.Id);
+            orderModel.CanPayOnline = !orderModel.IsBankTransfer && await _paymentService.CanRePostProcessPaymentAsync(order.Order);
+        }
 
         if (_settings.CustomerDeactivationLimit > 0)
         {

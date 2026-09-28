@@ -1,23 +1,50 @@
-@model Smartstore.Split3D.Configuration.Split3DSettings
+@model CheckoutCompletedModel
+
+@{
+    var settings = Model.Settings;
+}
 
 <div class="alert alert-info my-4">
     <div class="h5 mb-2">@T("Plugins.Split3D.Completed.Title")</div>
-    <ol class="mb-3 pl-3">
-        <li>
-            @T("Plugins.Split3D.Completed.Step1")
-            @if (Model.BankAccountNumber.HasValue())
-            {
-                <ul class="mt-1">
-                    <li>@T("Plugins.Split3D.Fields.BankName"): <strong>@Model.BankName</strong></li>
-                    <li>@T("Plugins.Split3D.Fields.BankAccountNumber"): <strong>@Model.BankAccountNumber</strong></li>
-                    <li>@T("Plugins.Split3D.Fields.BankAccountHolder"): <strong>@Model.BankAccountHolder</strong></li>
-                    <li>@T("Plugins.Split3D.MyKeys.TransferContent"): <strong>@T("Plugins.Split3D.Completed.OrderNumber")</strong></li>
-                </ul>
-            }
-        </li>
-        <li>@T("Plugins.Split3D.Completed.Step2")</li>
-        <li>@T("Plugins.Split3D.Completed.Step3")</li>
-    </ol>
+    @if (Model.IsPaid)
+    {
+        <p class="mb-3">@T("Plugins.Split3D.Completed.PaidOnline")</p>
+    }
+    else if (Model.CanPayOnline)
+    {
+        <ol class="mb-3 pl-3">
+            <li>
+                @T("Plugins.Split3D.Completed.Step1Online")
+                <form method="post" asp-controller="Order" asp-action="Details" asp-route-id="@Model.OrderId" asp-area="" class="mt-2">
+                    <button type="submit" name="repost-payment" value="repost-payment" class="btn btn-success">
+                        <i class="fa fa-qrcode"></i>
+                        <span>@T("Plugins.Split3D.MyKeys.PayOnline")</span>
+                    </button>
+                </form>
+            </li>
+            <li>@T("Plugins.Split3D.Completed.Step2Online")</li>
+            <li>@T("Plugins.Split3D.Completed.Step3")</li>
+        </ol>
+    }
+    else
+    {
+        <ol class="mb-3 pl-3">
+            <li>
+                @T("Plugins.Split3D.Completed.Step1")
+                @if (Model.IsBankTransfer && settings.BankAccountNumber.HasValue())
+                {
+                    <ul class="mt-1">
+                        <li>@T("Plugins.Split3D.Fields.BankName"): <strong>@settings.BankName</strong></li>
+                        <li>@T("Plugins.Split3D.Fields.BankAccountNumber"): <strong>@settings.BankAccountNumber</strong></li>
+                        <li>@T("Plugins.Split3D.Fields.BankAccountHolder"): <strong>@settings.BankAccountHolder</strong></li>
+                        <li>@T("Plugins.Split3D.MyKeys.TransferContent"): <strong>@T("Plugins.Split3D.Completed.OrderNumber")</strong></li>
+                    </ul>
+                }
+            </li>
+            <li>@T("Plugins.Split3D.Completed.Step2")</li>
+            <li>@T("Plugins.Split3D.Completed.Step3")</li>
+        </ol>
+    }
     <a class="btn btn-primary" href="@Url.Action("Index", "Split3DKeys", new { area = "" })">
         <i class="fa fa-key"></i>
         <span>@T("Plugins.Split3D.MyKeys.Track")</span>

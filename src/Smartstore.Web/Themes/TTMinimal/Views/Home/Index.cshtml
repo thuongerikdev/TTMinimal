@@ -1,0 +1,31 @@
+@inject Smartstore.Engine.Modularity.IModuleCatalog ModuleCatalog
+
+@{
+    Assets.BodyAttributes.AppendCssClass("home");
+    Assets.AppendTitleParts((string)ViewBag.MetaTitle);
+    Assets.AppendMetaDescriptionParts((string)ViewBag.MetaDescription);
+    Assets.AppendMetaKeywordsParts((string)ViewBag.MetaKeywords);
+
+    // The studio home page lives in the Split3D module. Without it, fall back to the standard home page.
+    var studioModule = ModuleCatalog.GetModuleByName("Smartstore.Split3D");
+    var hasStudio = studioModule != null && studioModule.IsInstalled();
+}
+
+<div class="page home-page">
+    <div class="page-body">
+        <zone name="home_page_top" />
+
+        @if (hasStudio)
+        {
+            @(await new Smartstore.Core.Widgets.ComponentWidget("StudioHome", "Smartstore.Split3D", null).InvokeAsync(ViewContext))
+        }
+        else
+        {
+            @await Component.InvokeAsync("TopicBlock", new { systemName = "HomePageText", isLead = true })
+            @await Component.InvokeAsync("HomeCategories")
+            @await Component.InvokeAsync("HomeProducts")
+        }
+
+        <zone name="home_page_bottom" />
+    </div>
+</div>

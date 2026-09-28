@@ -1,0 +1,116 @@
+@model StudioConfigurationModel
+
+@{
+    ViewBag.Title = T("Plugins.Split3D.Studio.Settings").Value;
+}
+
+<div class="section-header">
+    <div class="title">
+        <i class="bi bi-shop"></i>
+        @ViewBag.Title
+    </div>
+    <div class="options">
+        <a href="@Url.Action("List")" class="btn btn-secondary">
+            <i class="bi bi-printer"></i>
+            <span>@T("Plugins.Split3D.Studio.Quotes")</span>
+        </a>
+        <button type="submit" form="studio-settings-form" class="btn btn-warning">
+            <i class="fa fa-check"></i>
+            <span>@T("Admin.Common.Save")</span>
+        </button>
+    </div>
+</div>
+
+<div class="alert @(Model.LayoutVersion >= Model.CurrentLayoutVersion ? "alert-info" : "alert-warning") d-flex flex-wrap align-items-center">
+    <span class="mr-3">@T("Plugins.Split3D.Studio.LayoutStatus", Model.LayoutVersion, Model.CurrentLayoutVersion)</span>
+    <form asp-action="ApplyLayout" method="post" class="ml-auto" onsubmit="return confirm('@T("Plugins.Split3D.Studio.ApplyLayout.Confirm")')">
+        <button type="submit" class="btn btn-sm btn-outline-secondary">
+            <i class="bi bi-magic"></i>
+            <span>@T("Plugins.Split3D.Studio.ApplyLayout")</span>
+        </button>
+    </form>
+</div>
+
+<form asp-action="Settings" method="post" id="studio-settings-form">
+    <div asp-validation-summary="All"></div>
+
+    <div class="adminContent">
+        <div class="adminRow">
+            <div class="admin-config-group"><div class="title">@T("Plugins.Split3D.Studio.Group.Contact")</div></div>
+        </div>
+        <div class="adminRow">
+            <div class="adminTitle"><smart-label asp-for="BrandName" /></div>
+            <div class="adminData"><input asp-for="BrandName" /><span asp-validation-for="BrandName"></span></div>
+        </div>
+        <div class="adminRow">
+            <div class="adminTitle"><smart-label asp-for="Tagline" /></div>
+            <div class="adminData"><input asp-for="Tagline" /></div>
+        </div>
+        <div class="adminRow">
+            <div class="adminTitle"><smart-label asp-for="Address" /></div>
+            <div class="adminData"><input asp-for="Address" /></div>
+        </div>
+        <div class="adminRow">
+            <div class="adminTitle"><smart-label asp-for="Phone1" /></div>
+            <div class="adminData"><input asp-for="Phone1" /></div>
+        </div>
+        <div class="adminRow">
+            <div class="adminTitle"><smart-label asp-for="Phone2" /></div>
+            <div class="adminData"><input asp-for="Phone2" /></div>
+        </div>
+        <div class="adminRow">
+            <div class="adminTitle"><smart-label asp-for="ZaloPhone" /></div>
+            <div class="adminData"><input asp-for="ZaloPhone" /></div>
+        </div>
+        <div class="adminRow">
+            <div class="adminTitle"><smart-label asp-for="FacebookUrl" /></div>
+            <div class="adminData"><input asp-for="FacebookUrl" /></div>
+        </div>
+        <div class="adminRow">
+            <div class="adminTitle"><smart-label asp-for="Email" /></div>
+            <div class="adminData"><input asp-for="Email" /></div>
+        </div>
+        <div class="adminRow">
+            <div class="adminTitle"><smart-label asp-for="MapUrl" /></div>
+            <div class="adminData"><input asp-for="MapUrl" /></div>
+        </div>
+
+        <div class="adminRow">
+            <div class="admin-config-group"><div class="title">@T("Plugins.Split3D.Studio.Group.Printing")</div></div>
+        </div>
+        <div class="adminRow">
+            <div class="adminTitle"><smart-label asp-for="PrintPriceTable" /></div>
+            <div class="adminData">
+                <textarea asp-for="PrintPriceTable" rows="16" class="form-control text-monospace" spellcheck="false"></textarea>
+                <span asp-validation-for="PrintPriceTable"></span>
+                @if (Model.ParsedPrices.Count > 0)
+                {
+                    <div class="d-flex flex-wrap mt-2 small">
+                        @foreach (var tech in Model.ParsedPrices)
+                        {
+                            <div class="mr-4 mb-2">
+                                <div class="font-weight-bold">@tech.Name <span class="text-muted font-weight-normal">· @tech.Materials</span></div>
+                                @foreach (var tier in tech.Tiers)
+                                {
+                                    <div>@tier.Label: <strong>@PrintPriceList.FormatPrice(tier.PricePerGram)/g</strong></div>
+                                }
+                            </div>
+                        }
+                    </div>
+                }
+            </div>
+        </div>
+        <div class="adminRow">
+            <div class="adminTitle"><smart-label asp-for="PrintPriceNote" /></div>
+            <div class="adminData"><input asp-for="PrintPriceNote" /></div>
+        </div>
+        <div class="adminRow">
+            <div class="adminTitle"><smart-label asp-for="QuoteNotifyEmail" /></div>
+            <div class="adminData"><input asp-for="QuoteNotifyEmail" /></div>
+        </div>
+        <div class="adminRow">
+            <div class="adminTitle"><smart-label asp-for="QuoteMaxFileSizeMb" /></div>
+            <div class="adminData"><input asp-for="QuoteMaxFileSizeMb" /><span asp-validation-for="QuoteMaxFileSizeMb"></span></div>
+        </div>
+    </div>
+</form>

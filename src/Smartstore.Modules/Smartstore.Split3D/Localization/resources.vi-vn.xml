@@ -211,6 +211,21 @@
     <LocaleResource Name="Completed.Step3">
         <Value>Bạn nhận key qua email; key cũng hiển thị ở Tài khoản › Key của tôi, file addon được mở khóa ở mục Tải về.</Value>
     </LocaleResource>
+    <LocaleResource Name="Completed.Step1Online">
+        <Value>Thanh toán bằng cách dùng app ngân hàng quét mã VietQR:</Value>
+    </LocaleResource>
+    <LocaleResource Name="Completed.Step2Online">
+        <Value>Thanh toán được xác nhận tự động ngay khi tiền về, key được cấp ngay sau đó.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Completed.PaidOnline">
+        <Value>Đã nhận được thanh toán của bạn. Key đang được cấp và gửi qua email, key cũng hiển thị ở Tài khoản › Key của tôi.</Value>
+    </LocaleResource>
+    <LocaleResource Name="MyKeys.PayOnline">
+        <Value>Thanh toán ngay bằng VietQR</Value>
+    </LocaleResource>
+    <LocaleResource Name="MyKeys.PayOnlineHint">
+        <Value>Thanh toán {0} bằng cách quét mã VietQR. Đơn hàng sẽ được xác nhận tự động.</Value>
+    </LocaleResource>
     <LocaleResource Name="MenuTitle">
         <Value>Split3D</Value>
     </LocaleResource>
@@ -3480,6 +3495,251 @@
     </LocaleResource>
     <LocaleResource Name="Wishlist.YourWishlistURL" AppendRootKey="false">
         <Value>Đường dẫn chia sẻ danh sách yêu thích</Value>
+    </LocaleResource>
+
+    <!-- TT Minimal studio: quote requests and studio settings -->
+    <LocaleResource Name="Studio.MenuTitle">
+        <Value>TT Minimal Studio</Value>
+    </LocaleResource>
+    <LocaleResource Name="Studio.Quotes">
+        <Value>Yêu cầu báo giá in 3D</Value>
+    </LocaleResource>
+    <LocaleResource Name="Studio.Settings">
+        <Value>Cài đặt studio</Value>
+    </LocaleResource>
+    <LocaleResource Name="Studio.Group.Contact">
+        <Value>Thương hiệu &amp; liên hệ</Value>
+    </LocaleResource>
+    <LocaleResource Name="Studio.Group.Printing">
+        <Value>Dịch vụ in 3D</Value>
+    </LocaleResource>
+    <LocaleResource Name="Studio.PriceTableInvalid">
+        <Value>Bảng giá không có dòng hợp lệ. Định dạng: Công nghệ | Vật liệu | Từ gram | Đơn giá/gram.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Studio.LayoutStatus">
+        <Value>Đã áp dụng bố cục cửa hàng phiên bản {0}/{1} (theme, menu, rút gọn form, vận chuyển).</Value>
+    </LocaleResource>
+    <LocaleResource Name="Studio.ApplyLayout">
+        <Value>Áp dụng lại bố cục cửa hàng</Value>
+    </LocaleResource>
+    <LocaleResource Name="Studio.ApplyLayout.Confirm">
+        <Value>Đặt lại theme TTMinimal, tiêu đề SEO, các ô đăng ký và địa chỉ, tùy chọn danh mục, mục menu chính và phương thức vận chuyển. Tiếp tục?</Value>
+    </LocaleResource>
+    <LocaleResource Name="Studio.LayoutApplied">
+        <Value>Đã áp dụng bố cục cửa hàng.</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintQuote.Title">
+        <Value>Yêu cầu báo giá #{0}</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintQuote.Request">
+        <Value>Thông tin yêu cầu</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintQuote.Processing">
+        <Value>Xử lý</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintQuote.NewCount">
+        <Value>Yêu cầu mới</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintQuote.OpenCount">
+        <Value>Đã báo giá / đang in</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintQuote.OpenPage">
+        <Value>Mở trang In 3D</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintQuote.SearchTerm">
+        <Value>Tìm kiếm</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintQuote.SearchTerm.Hint">
+        <Value>Tên, điện thoại, email hoặc ghi chú.</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintQuote.Status.New">
+        <Value>Mới</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintQuote.Status.Quoted">
+        <Value>Đã báo giá</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintQuote.Status.Printing">
+        <Value>Đang in</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintQuote.Status.Completed">
+        <Value>Hoàn thành</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintQuote.Status.Cancelled">
+        <Value>Đã huỷ</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintQuote.Fields.CreatedOn">
+        <Value>Ngày gửi</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintQuote.Fields.CreatedOn.Hint">
+        <Value>Thời điểm khách gửi yêu cầu.</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintQuote.Fields.Name">
+        <Value>Khách hàng</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintQuote.Fields.Name.Hint">
+        <Value>Tên khách hàng đã nhập.</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintQuote.Fields.Phone">
+        <Value>Điện thoại</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintQuote.Fields.Phone.Hint">
+        <Value>Số điện thoại hoặc Zalo để liên hệ lại.</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintQuote.Fields.Email">
+        <Value>Email</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintQuote.Fields.Email.Hint">
+        <Value>Email của khách (không bắt buộc).</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintQuote.Fields.Technology">
+        <Value>Công nghệ</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintQuote.Fields.Technology.Hint">
+        <Value>Công nghệ in khách chọn.</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintQuote.Fields.Material">
+        <Value>Vật liệu / màu</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintQuote.Fields.Material.Hint">
+        <Value>Mong muốn về vật liệu, màu sắc, hoàn thiện.</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintQuote.Fields.Quantity">
+        <Value>Số lượng</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintQuote.Fields.Quantity.Hint">
+        <Value>Số bản cần in.</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintQuote.Fields.EstimatedGrams">
+        <Value>Khối lượng (g)</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintQuote.Fields.EstimatedGrams.Hint">
+        <Value>Khối lượng 1 bản khách ước tính.</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintQuote.Fields.EstimatedPrice">
+        <Value>Giá tạm tính</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintQuote.Fields.EstimatedPrice.Hint">
+        <Value>Giá theo bảng giá cho khối lượng × số lượng. Khối lượng thật lấy từ file.</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintQuote.Fields.NeedsDesign">
+        <Value>Cần thiết kế</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintQuote.Fields.NeedsDesign.Hint">
+        <Value>Khách cần thêm thiết kế 3D hoặc sửa file.</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintQuote.Fields.Note">
+        <Value>Mô tả</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintQuote.Fields.Note.Hint">
+        <Value>Mô tả khách đã nhập.</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintQuote.Fields.FileLink">
+        <Value>Link file</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintQuote.Fields.FileLink.Hint">
+        <Value>Link tải file ở nơi khác (Google Drive, Dropbox…).</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintQuote.Fields.File">
+        <Value>File 3D</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintQuote.Fields.File.Hint">
+        <Value>File khách tải lên, lưu trong App_Data/Tenants/Default/PrintQuotes.</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintQuote.Fields.Status">
+        <Value>Trạng thái</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintQuote.Fields.Status.Hint">
+        <Value>Trạng thái xử lý yêu cầu.</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintQuote.Fields.QuotedPrice">
+        <Value>Giá đã báo</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintQuote.Fields.QuotedPrice.Hint">
+        <Value>Giá đã báo cho khách, để lưu lại.</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintQuote.Fields.AdminNote">
+        <Value>Ghi chú nội bộ</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintQuote.Fields.AdminNote.Hint">
+        <Value>Chỉ hiển thị trong trang quản trị.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Studio.Fields.BrandName">
+        <Value>Tên thương hiệu</Value>
+    </LocaleResource>
+    <LocaleResource Name="Studio.Fields.BrandName.Hint">
+        <Value>Hiển thị ở header, footer, tiêu đề trang và email.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Studio.Fields.Tagline">
+        <Value>Khẩu hiệu</Value>
+    </LocaleResource>
+    <LocaleResource Name="Studio.Fields.Tagline.Hint">
+        <Value>Dòng ngắn dưới logo ở footer.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Studio.Fields.Address">
+        <Value>Địa chỉ</Value>
+    </LocaleResource>
+    <LocaleResource Name="Studio.Fields.Address.Hint">
+        <Value>Địa chỉ xưởng (nhận hàng tại xưởng), hiện ở trang chủ và footer.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Studio.Fields.Phone1">
+        <Value>Hotline 1</Value>
+    </LocaleResource>
+    <LocaleResource Name="Studio.Fields.Phone1.Hint">
+        <Value>Số chính, dùng cho nút gọi nổi.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Studio.Fields.Phone2">
+        <Value>Hotline 2</Value>
+    </LocaleResource>
+    <LocaleResource Name="Studio.Fields.Phone2.Hint">
+        <Value>Số thứ hai. Để trống = không hiện.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Studio.Fields.ZaloPhone">
+        <Value>Số Zalo</Value>
+    </LocaleResource>
+    <LocaleResource Name="Studio.Fields.ZaloPhone.Hint">
+        <Value>Số điện thoại tài khoản Zalo. Để trống = ẩn nút Zalo.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Studio.Fields.FacebookUrl">
+        <Value>Fanpage Facebook</Value>
+    </LocaleResource>
+    <LocaleResource Name="Studio.Fields.FacebookUrl.Hint">
+        <Value>Địa chỉ đầy đủ của fanpage.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Studio.Fields.Email">
+        <Value>Email liên hệ</Value>
+    </LocaleResource>
+    <LocaleResource Name="Studio.Fields.Email.Hint">
+        <Value>Hiện ở footer. Để trống = không hiện email.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Studio.Fields.MapUrl">
+        <Value>Link bản đồ</Value>
+    </LocaleResource>
+    <LocaleResource Name="Studio.Fields.MapUrl.Hint">
+        <Value>Link Google Maps mở khi bấm vào địa chỉ.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Studio.Fields.PrintPriceTable">
+        <Value>Bảng giá in</Value>
+    </LocaleResource>
+    <LocaleResource Name="Studio.Fields.PrintPriceTable.Hint">
+        <Value>Mỗi dòng một bậc: Công nghệ | Vật liệu | Từ gram | Đơn giá/gram. Bậc đầu của mỗi công nghệ bắt đầu từ 0.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Studio.Fields.PrintPriceNote">
+        <Value>Lưu ý bảng giá</Value>
+    </LocaleResource>
+    <LocaleResource Name="Studio.Fields.PrintPriceNote.Hint">
+        <Value>Hiện bên dưới bảng giá.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Studio.Fields.QuoteNotifyEmail">
+        <Value>Email nhận báo giá</Value>
+    </LocaleResource>
+    <LocaleResource Name="Studio.Fields.QuoteNotifyEmail.Hint">
+        <Value>Nhận thông báo yêu cầu báo giá mới. Để trống = email mặc định.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Studio.Fields.QuoteMaxFileSizeMb">
+        <Value>Dung lượng file tối đa (MB)</Value>
+    </LocaleResource>
+    <LocaleResource Name="Studio.Fields.QuoteMaxFileSizeMb.Hint">
+        <Value>File lớn nhất khách được tải lên. Nginx cần client_max_body_size lớn hơn hoặc bằng giá trị này.</Value>
     </LocaleResource>
 
 </Language>

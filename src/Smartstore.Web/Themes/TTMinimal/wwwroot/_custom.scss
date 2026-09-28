@@ -1,0 +1,287 @@
+/// <reference path="/themes/flex/references.scss" />
+
+//
+// TT Minimal: global look of the storefront (header, navigation, buttons, cards, forms).
+// Home page, printing page and footer styles live in the Split3D module (studio/studio.css).
+// --------------------------------------------------
+
+$tt-navy: #050d24;
+$tt-blue: #1d4ed8;
+$tt-blue-2: #2563eb;
+$tt-line: #dfe7fb;
+$tt-soft: #f4f7ff;
+$tt-ease: cubic-bezier(.22, 1, .36, 1);
+
+html {
+    scroll-behavior: smooth;
+}
+
+// Smooth cross-page transitions in browsers that support view transitions.
+@view-transition {
+    navigation: auto;
+}
+
+::view-transition-old(root),
+::view-transition-new(root) {
+    animation-duration: .35s;
+    animation-timing-function: $tt-ease;
+}
+
+body {
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+}
+
+::selection {
+    background: rgba($tt-blue-2, .18);
+}
+
+#content-body {
+    animation: tt-page-in .6s $tt-ease both;
+}
+
+// Opacity only: a transform would break position: fixed children while animating.
+@keyframes tt-page-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    #content-body { animation: none; }
+}
+
+// ---------- Header ----------
+
+#header {
+    position: sticky;
+    top: 0;
+    z-index: 1020;
+    background: rgba(255, 255, 255, .86);
+    backdrop-filter: saturate(180%) blur(16px);
+    -webkit-backdrop-filter: saturate(180%) blur(16px);
+    box-shadow: 0 1px 0 $tt-line;
+}
+
+.menubar-section {
+    font-size: .82rem;
+
+    .menubar {
+        min-height: 0;
+        padding-top: .45rem;
+        padding-bottom: .45rem;
+    }
+
+    .menubar-link {
+        transition: color .2s;
+
+        &:hover { color: #fff; }
+    }
+}
+
+.shopbar-section {
+    background: transparent;
+    padding-top: .6rem !important;
+    padding-bottom: .6rem !important;
+}
+
+.shopbar-button {
+    border-radius: 999px;
+    transition: background-color .25s, color .25s;
+
+    &:hover {
+        background-color: $tt-soft;
+        color: $tt-blue;
+    }
+}
+
+.megamenu-section {
+    border-top: 1px solid $tt-line;
+
+    .navbar {
+        background: transparent;
+        padding-top: 0;
+        padding-bottom: 0;
+    }
+
+    .navbar-nav {
+        padding-top: 0 !important;
+        padding-bottom: 0 !important;
+    }
+
+    .nav-link {
+        position: relative;
+        font-weight: 600;
+        transition: color .2s;
+
+        &::after {
+            content: "";
+            position: absolute;
+            left: 1rem;
+            right: 1rem;
+            bottom: .35rem;
+            height: 2px;
+            border-radius: 2px;
+            background: linear-gradient(90deg, #22d3ee, $tt-blue-2);
+            transform: scaleX(0);
+            transform-origin: left;
+            transition: transform .35s $tt-ease;
+        }
+
+        &:hover,
+        &.active {
+            color: $tt-blue;
+
+            &::after { transform: scaleX(1); }
+        }
+    }
+}
+
+// Selected/expanded category underline: Flex uses $warning (orange).
+.megamenu .nav-item.selected .nav-link:before,
+.megamenu .nav-item.expanded .nav-link:before {
+    background: linear-gradient(90deg, #22d3ee, $tt-blue-2);
+}
+
+// Word mark logo (Components/ShopLogo).
+.tt-brand {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: flex-start;
+    line-height: 1;
+    color: $tt-blue !important;
+    text-decoration: none !important;
+
+    .tt-brand-top {
+        font-size: .6rem;
+        font-weight: 800;
+        letter-spacing: .44em;
+        margin-left: .1em;
+    }
+
+    .tt-brand-main {
+        font-size: 1.75rem;
+        font-weight: 800;
+        letter-spacing: .08em;
+        // Outlined letters; currentColor would be the transparent fill itself.
+        color: transparent;
+        -webkit-text-stroke: 1.6px $tt-blue;
+        transition: color .35s;
+    }
+
+    .tt-brand-sub {
+        font-size: .55rem;
+        font-weight: 700;
+        letter-spacing: .24em;
+        text-transform: uppercase;
+        opacity: .7;
+        margin-top: .15rem;
+    }
+
+    &:hover .tt-brand-main { color: $tt-blue; }
+
+    @include media-breakpoint-down(md) {
+        .tt-brand-main { font-size: 1.35rem; }
+        .tt-brand-sub { display: none; }
+    }
+}
+
+// ---------- Buttons & inputs ----------
+
+.btn {
+    font-weight: 600;
+    transition: transform .3s $tt-ease, box-shadow .3s $tt-ease, background-color .2s, border-color .2s, color .2s;
+}
+
+.btn-primary,
+.btn-warning.btn-add-to-cart,
+.btn-add-to-cart {
+    background-image: linear-gradient(135deg, #3b82f6, $tt-blue 70%);
+    border-color: $tt-blue;
+    color: #fff;
+
+    &:hover,
+    &:focus {
+        transform: translateY(-1px);
+        box-shadow: 0 12px 26px -14px rgba($tt-blue, .9);
+        color: #fff;
+    }
+}
+
+.form-control,
+.custom-select {
+    border-color: #d6e0f5;
+
+    &:focus {
+        border-color: #3b82f6;
+        box-shadow: 0 0 0 4px rgba(59, 130, 246, .15);
+    }
+}
+
+// ---------- Catalog ----------
+
+.art {
+    border-radius: 1.1rem;
+    transition: transform .45s $tt-ease, box-shadow .45s $tt-ease;
+
+    &:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 24px 40px -28px rgba(15, 23, 42, .55);
+    }
+}
+
+.art-picture-block {
+    border-radius: 1rem;
+    overflow: hidden;
+    background: $tt-soft;
+}
+
+.art-name a {
+    font-weight: 700;
+}
+
+.art-price,
+.pd-finalprice {
+    color: $tt-blue;
+    font-weight: 800;
+}
+
+.page-title h1,
+h1.page-title {
+    font-weight: 800;
+    letter-spacing: -.02em;
+}
+
+// Product variants (color, size): pill style choices.
+.pd-attrs-container {
+    .choice-box,
+    .form-check-label {
+        border-radius: .75rem;
+    }
+}
+
+.pd-offer {
+    border-radius: 1.25rem;
+}
+
+// ---------- Account & checkout forms ----------
+
+.card {
+    border-color: $tt-line;
+}
+
+.register-page,
+.login-page {
+    .card,
+    .register-box {
+        border-radius: 1.25rem;
+    }
+}
+
+// ---------- Scroll to top ----------
+
+#scroll-top {
+    border-radius: 50%;
+    background: $tt-navy;
+    color: #fff;
+}

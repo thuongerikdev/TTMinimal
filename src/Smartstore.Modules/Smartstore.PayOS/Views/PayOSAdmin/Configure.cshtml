@@ -1,0 +1,110 @@
+@model ConfigurationModel
+
+@{
+    Layout = "_ConfigureProvider";
+}
+
+@await Component.InvokeAsync("StoreScope")
+
+<widget target-zone="admin_button_toolbar_before">
+    <button id="SaveConfigButton" type="submit" name="save" class="btn btn-warning" value="save">
+        <i class="fa fa-check"></i>
+        <span>@T("Admin.Common.Save")</span>
+    </button>
+</widget>
+
+<div class="alert alert-info alert-dismissible">
+    @Html.Raw(T("Plugins.Smartstore.PayOS.AdminInstruction"))
+    <button type="button" class="btn-close" data-dismiss="alert"></button>
+</div>
+
+<form asp-action="Configure">
+    <div asp-validation-summary="All"></div>
+    <div class="adminContent">
+        <div class="adminRow">
+            <div class="adminTitle">
+                <smart-label asp-for="ClientId" />
+            </div>
+            <div class="adminData wide">
+                <setting-editor asp-for="ClientId"></setting-editor>
+                <span asp-validation-for="ClientId"></span>
+            </div>
+        </div>
+        <div class="adminRow">
+            <div class="adminTitle">
+                <smart-label asp-for="ApiKey" />
+            </div>
+            <div class="adminData wide">
+                <setting-editor asp-for="ApiKey"></setting-editor>
+                <span asp-validation-for="ApiKey"></span>
+            </div>
+        </div>
+        <div class="adminRow">
+            <div class="adminTitle">
+                <smart-label asp-for="ChecksumKey" />
+            </div>
+            <div class="adminData wide">
+                <setting-editor asp-for="ChecksumKey"></setting-editor>
+                <span asp-validation-for="ChecksumKey"></span>
+            </div>
+        </div>
+        <div class="adminRow">
+            <div class="adminTitle">
+                <smart-label asp-for="WebhookUrl" />
+            </div>
+            <div class="adminData wide">
+                <div class="input-group">
+                    <input asp-for="WebhookUrl" readonly />
+                    <div class="input-group-append">
+                        <button type="button" class="btn btn-light btn-icon btn-clipboard" data-copy-from="#@(Html.IdFor(x => x.WebhookUrl))">
+                            <bootstrap-icon name="clipboard" />
+                        </button>
+                    </div>
+                    <span class="input-group-append">
+                        <button type="submit" id="confirmwebhook" name="confirmwebhook" value="confirmwebhook" class="btn btn-light"
+                                attr-disabled='(!Model.ClientId.HasValue() || !Model.ApiKey.HasValue() || !Model.ChecksumKey.HasValue(), "disabled")'>
+                            <i class="fa fa-plug"></i>
+                            <span>@T("Plugins.Smartstore.PayOS.ConfirmWebhook")</span>
+                        </button>
+                    </span>
+                </div>
+            </div>
+        </div>
+        <div class="adminRow">
+            <div class="adminTitle">
+                <smart-label asp-for="DescriptionPrefix" />
+            </div>
+            <div class="adminData">
+                <setting-editor asp-for="DescriptionPrefix"></setting-editor>
+                <span asp-validation-for="DescriptionPrefix"></span>
+            </div>
+        </div>
+        <div class="adminRow">
+            <div class="adminTitle">
+                <smart-label asp-for="PaymentLinkLifetimeMinutes" />
+            </div>
+            <div class="adminData">
+                <setting-editor asp-for="PaymentLinkLifetimeMinutes" sm-postfix="@T("Time.Minutes")"></setting-editor>
+                <span asp-validation-for="PaymentLinkLifetimeMinutes"></span>
+            </div>
+        </div>
+        <div class="adminRow">
+            <div class="adminTitle">
+                <smart-label asp-for="AdditionalFee" />
+            </div>
+            <div class="adminData">
+                <setting-editor asp-for="AdditionalFee"></setting-editor>
+                <span asp-validation-for="AdditionalFee"></span>
+            </div>
+        </div>
+        <div class="adminRow">
+            <div class="adminTitle">
+                <smart-label asp-for="AdditionalFeePercentage" />
+            </div>
+            <div class="adminData">
+                <setting-editor asp-for="AdditionalFeePercentage"></setting-editor>
+                <span asp-validation-for="AdditionalFeePercentage"></span>
+            </div>
+        </div>
+    </div>
+</form>

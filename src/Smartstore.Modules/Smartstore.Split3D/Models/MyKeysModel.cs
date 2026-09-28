@@ -29,6 +29,16 @@ public class MyKeysOrderModel
     public List<string> Items { get; set; } = [];
     public int ExpectedKeys { get; set; }
     public List<MyKeyModel> Keys { get; set; } = [];
+
+    /// <summary>
+    /// The order is paid by manual bank transfer (Prepayment), so the bank details are shown.
+    /// </summary>
+    public bool IsBankTransfer { get; set; }
+
+    /// <summary>
+    /// The order is awaiting an online payment (e.g. PayOS) that the customer can start from here.
+    /// </summary>
+    public bool CanPayOnline { get; set; }
 }
 
 public class MyKeyModel

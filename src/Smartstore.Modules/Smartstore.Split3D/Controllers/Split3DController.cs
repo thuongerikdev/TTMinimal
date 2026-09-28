@@ -67,7 +67,7 @@ public class Split3DController : AdminController
 
     [HttpPost]
     [Permission(Permissions.Configuration.Module.Update)]
-    public async Task<IActionResult> Configure(ConfigurationModel model, [FromServices] Split3DStorefrontSetup setup)
+    public async Task<IActionResult> Configure(ConfigurationModel model, [FromServices] Split3DStorefrontSetup setup, [FromServices] StudioStorefrontSetup studioSetup)
     {
         var privateKeyJson = model.PrivateKeyJson.HasValue() ? model.PrivateKeyJson.Trim() : _settings.PrivateKeyJson;
 
@@ -135,6 +135,7 @@ public class Split3DController : AdminController
             {
                 // First save on a fresh database: set up language, currency, products, checkout and pages once.
                 var log = await setup.RunAsync(null, null, HttpContext.RequestAborted);
+                await studioSetup.ApplyAsync(false, HttpContext.RequestAborted);
                 foreach (var line in log.Where(x => x.StartsWith("WARNING", StringComparison.Ordinal)))
                 {
                     NotifyWarning(line);

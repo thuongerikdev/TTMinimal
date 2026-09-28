@@ -1,0 +1,118 @@
+<Language Name="English" IsDefault="false" IsRightToLeft="false">
+    <LocaleResource Name="Plugins.FriendlyName.Smartstore.PayOS" AppendRootKey="false">
+        <Value>PayOS</Value>
+    </LocaleResource>
+    <LocaleResource Name="Plugins.Description.Smartstore.PayOS" AppendRootKey="false">
+        <Value>Accepts VietQR bank transfers via PayOS and marks orders as paid automatically.</Value>
+    </LocaleResource>
+
+    <LocaleResource Name="Plugins.FriendlyName.Payments.PayOS" AppendRootKey="false">
+        <Value>Bank transfer via VietQR (PayOS)</Value>
+    </LocaleResource>
+    <LocaleResource Name="Plugins.PaymentInfo.Payments.PayOS" AppendRootKey="false">
+        <Value>After placing the order you will be redirected to PayOS. Scan the VietQR code with your banking app; the order is confirmed automatically once the transfer arrives.</Value>
+    </LocaleResource>
+
+    <LocaleResource Name="Plugins.Smartstore.PayOS" AppendRootKey="false">
+        <Children>
+            <LocaleResource Name="AdminInstruction">
+                <Value>
+                    <![CDATA[
+                        <p>To set up <b>PayOS</b>:</p>
+                        <ul>
+                            <li>Sign in at <a href="https://my.payos.vn" target="_blank">my.payos.vn</a>, create a payment channel and link your bank account.</li>
+                            <li>Copy <b>Client ID</b>, <b>API Key</b> and <b>Checksum Key</b> of the channel into the fields below and save.</li>
+                            <li>Click <b>Confirm webhook</b> to register the webhook URL with PayOS. The shop must be reachable via a public <b>HTTPS</b> domain.</li>
+                            <li>The working currency of the customers must be <b>VND</b>. PayOS is hidden for other currencies.</li>
+                            <li>Enable <i>Allow re-posting payments</i> in the payment settings so customers can pay later from the order details page.</li>
+                        </ul>
+                    ]]>
+                </Value>
+            </LocaleResource>
+            <LocaleResource Name="ClientId">
+                <Value>Client ID</Value>
+            </LocaleResource>
+            <LocaleResource Name="ClientId.Hint">
+                <Value>Client ID of the PayOS payment channel.</Value>
+            </LocaleResource>
+            <LocaleResource Name="ApiKey">
+                <Value>API key</Value>
+            </LocaleResource>
+            <LocaleResource Name="ApiKey.Hint">
+                <Value>API key of the PayOS payment channel.</Value>
+            </LocaleResource>
+            <LocaleResource Name="ChecksumKey">
+                <Value>Checksum key</Value>
+            </LocaleResource>
+            <LocaleResource Name="ChecksumKey.Hint">
+                <Value>Checksum key of the PayOS payment channel. Used to sign requests and to verify webhook messages.</Value>
+            </LocaleResource>
+            <LocaleResource Name="WebhookUrl">
+                <Value>Webhook URL</Value>
+            </LocaleResource>
+            <LocaleResource Name="WebhookUrl.Hint">
+                <Value>URL that PayOS calls when a transfer has been received. Click "Confirm webhook" to register it with PayOS.</Value>
+            </LocaleResource>
+            <LocaleResource Name="ConfirmWebhook">
+                <Value>Confirm webhook</Value>
+            </LocaleResource>
+            <LocaleResource Name="WebhookConfirmed">
+                <Value>The webhook URL {0} has been registered with PayOS.</Value>
+            </LocaleResource>
+            <LocaleResource Name="WebhookRequiresHttps">
+                <Value>PayOS requires a public HTTPS URL. Set the store URL to your HTTPS domain first (Configuration > Stores).</Value>
+            </LocaleResource>
+            <LocaleResource Name="DescriptionPrefix">
+                <Value>Transfer description prefix</Value>
+            </LocaleResource>
+            <LocaleResource Name="DescriptionPrefix.Hint">
+                <Value>Letters and digits only, followed by the order ID (e.g. DH1234). Keep it short: some banks only allow 9 characters.</Value>
+            </LocaleResource>
+            <LocaleResource Name="PaymentLinkLifetimeMinutes">
+                <Value>Payment link lifetime</Value>
+            </LocaleResource>
+            <LocaleResource Name="PaymentLinkLifetimeMinutes.Hint">
+                <Value>Minutes after which an unpaid payment link expires. 0 means no expiry. The customer can create a new link from the order details page.</Value>
+            </LocaleResource>
+            <LocaleResource Name="AdditionalFee">
+                <Value>Additional fee</Value>
+            </LocaleResource>
+            <LocaleResource Name="AdditionalFee.Hint">
+                <Value>Additional fee charged to the customer for this payment method.</Value>
+            </LocaleResource>
+            <LocaleResource Name="AdditionalFeePercentage">
+                <Value>Additional fee as percentage</Value>
+            </LocaleResource>
+            <LocaleResource Name="AdditionalFeePercentage.Hint">
+                <Value>Determines whether the additional fee is a percentage of the order total. Otherwise a fixed amount is used.</Value>
+            </LocaleResource>
+            <LocaleResource Name="NotConfigured">
+                <Value>PayOS has not been configured yet (client ID, API key and checksum key are required).</Value>
+            </LocaleResource>
+            <LocaleResource Name="LinkCreated">
+                <Value>PayOS payment link created. Order code: {0}, amount: {1} VND, transfer description: {2}.</Value>
+            </LocaleResource>
+            <LocaleResource Name="LinkCreationFailed">
+                <Value>The PayOS payment link could not be created: {0}</Value>
+            </LocaleResource>
+            <LocaleResource Name="PaymentReceived">
+                <Value>PayOS payment of {0} VND received (order code {1}, bank reference {2}, via {3}).</Value>
+            </LocaleResource>
+            <LocaleResource Name="AmountMismatch">
+                <Value>PayOS reports {1} VND paid for order code {0}, but {2} VND are due. The order was not marked as paid.</Value>
+            </LocaleResource>
+            <LocaleResource Name="PaidButCancelled">
+                <Value>PayOS reports a payment of {1} VND for order code {0}, but the order has been cancelled. Please refund the customer.</Value>
+            </LocaleResource>
+            <LocaleResource Name="PaymentProcessing">
+                <Value>We have not received your transfer yet. Your order will be confirmed automatically as soon as it arrives.</Value>
+            </LocaleResource>
+            <LocaleResource Name="PaymentCancelled">
+                <Value>The payment has been cancelled. You can pay for the order at any time from the order details page.</Value>
+            </LocaleResource>
+            <LocaleResource Name="SeeOrderEmail">
+                <Value>Thank you! You will receive the payment status of your order by email.</Value>
+            </LocaleResource>
+        </Children>
+    </LocaleResource>
+</Language>

@@ -1,0 +1,12 @@
+{
+  "$schema": "../module.schema.json",
+  "Group": "Payment",
+  "SystemName": "Smartstore.PayOS",
+  "FriendlyName": "PayOS",
+  "Description": "Accepts VietQR bank transfers via PayOS and marks orders as paid automatically.",
+  "Version": "6.4.0",
+  "MinAppVersion": "6.4.0",
+  "Author": "Split3D",
+  "Order": 1,
+  "ResourceRootKey": "Plugins.Smartstore.PayOS"
+}

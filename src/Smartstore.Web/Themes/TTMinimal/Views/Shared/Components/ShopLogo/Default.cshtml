@@ -1,0 +1,8 @@
+@model ShopLogoModel
+
+@* TT Minimal word mark instead of an uploaded logo image, so it stays sharp and follows the theme color. *@
+<a asp-route="Homepage" class="brand tt-brand" title="@Model.LogoTitle" aria-label="@Model.LogoTitle">
+    <span class="tt-brand-top">T DOUBLE</span>
+    <span class="tt-brand-main">MINIMAL</span>
+    <span class="tt-brand-sub">3D Printing Studio</span>
+</a>

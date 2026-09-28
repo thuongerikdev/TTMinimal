@@ -87,6 +87,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Smartstore.Data.MySql", "sr
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Smartstore.Split3D", "src\Smartstore.Modules\Smartstore.Split3D\Smartstore.Split3D.csproj", "{D49F15BD-E075-4B2A-85FE-FE19251FB067}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Smartstore.PayOS", "src\Smartstore.Modules\Smartstore.PayOS\Smartstore.PayOS.csproj", "{CEA6E0C9-02D3-471A-92D1-6652C22DDEE0}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -286,6 +288,12 @@ Global
 		{D49F15BD-E075-4B2A-85FE-FE19251FB067}.DebugNoRazorCompile|Any CPU.Build.0 = DebugNoRazorCompile|Any CPU
 		{D49F15BD-E075-4B2A-85FE-FE19251FB067}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D49F15BD-E075-4B2A-85FE-FE19251FB067}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CEA6E0C9-02D3-471A-92D1-6652C22DDEE0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CEA6E0C9-02D3-471A-92D1-6652C22DDEE0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CEA6E0C9-02D3-471A-92D1-6652C22DDEE0}.DebugNoRazorCompile|Any CPU.ActiveCfg = DebugNoRazorCompile|Any CPU
+		{CEA6E0C9-02D3-471A-92D1-6652C22DDEE0}.DebugNoRazorCompile|Any CPU.Build.0 = DebugNoRazorCompile|Any CPU
+		{CEA6E0C9-02D3-471A-92D1-6652C22DDEE0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CEA6E0C9-02D3-471A-92D1-6652C22DDEE0}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -319,6 +327,7 @@ Global
 		{A7E56AC6-2ECF-029F-4CA1-522EAE8AE087} = {E5C1AA43-6B44-4EFA-8DE9-6070EE007CE3}
 		{86AFBE84-F22E-84F3-7D95-3BC3937D5572} = {82A38DDA-C944-4C15-AF43-86732F8ED15A}
 		{D49F15BD-E075-4B2A-85FE-FE19251FB067} = {E5C1AA43-6B44-4EFA-8DE9-6070EE007CE3}
+		{CEA6E0C9-02D3-471A-92D1-6652C22DDEE0} = {E5C1AA43-6B44-4EFA-8DE9-6070EE007CE3}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {A0A0B995-5D0B-458E-BCC0-1071B76949D1}

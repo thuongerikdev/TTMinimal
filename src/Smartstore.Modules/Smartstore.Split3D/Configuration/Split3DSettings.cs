@@ -81,12 +81,12 @@ public class Split3DSettings : ISettings
     public string HiddenAdminMenuItems { get; set; } = DefaultHiddenAdminMenuItems;
 
     public const string DefaultHiddenAdminMenuItems =
-        "product-rules, reviews, manufacturers, tags, stockreport, attributes-header, attributes, specification-attributes, checkout-attributes,\n" +
+        "product-rules, reviews, manufacturers, tags, stockreport, specification-attributes, checkout-attributes,\n" +
         "shipments, recurring-payments, return-cases, gift-cards, shopping-carts, wishlists, flopsellers,\n" +
         "customer-rules, online-customers, customer-reports, external-auth, activity-log,\n" +
         "cart-rules, affiliates, newsletter-subscribers, campaigns,\n" +
         "widgets,\n" +
-        "shipping-header, shipping-methods, shipping-providers, tax-header, tax-providers, tax-categories, list-settings, activity-types, import, export,\n" +
+        "tax-header, tax-providers, tax-categories, list-settings, activity-types, import, export,\n" +
         "rulesets, seo-names";
 
     /// <summary>

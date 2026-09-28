@@ -6,7 +6,8 @@ using Smartstore.Web.Rendering.Builders;
 namespace Smartstore.Split3D;
 
 /// <summary>
-/// Adds a top-level "Split3D" admin menu right after "Dashboard" with keys, addons and settings.
+/// Adds the top-level "TT Minimal Studio" (quote requests, studio settings) and "Split3D" (keys, addons, settings)
+/// admin menus right after "Dashboard".
 /// </summary>
 public class AdminMenu : IMenuProvider
 {
@@ -30,13 +31,27 @@ public class AdminMenu : IMenuProvider
         node.Append(CreateItem("split3d-addons", "Addons & plans", "Plugins.Split3D.Addons", "boxes", "List", "Split3DAddon"));
         node.Append(CreateItem("split3d-configure", "Settings", "Admin.Common.Configure", "gear", "Configure", "Split3D"));
 
+        var studio = new MenuItem().ToBuilder()
+            .Id("tt-studio")
+            .Text("TT Minimal Studio")
+            .ResKey("Plugins.Split3D.Studio.MenuTitle")
+            .Icon("printer", "bi")
+            .PermissionNames(Permissions.Configuration.Module.Read)
+            .AsItem();
+
+        var studioNode = new TreeNode<MenuItem>(studio, studio.Id);
+        studioNode.Append(CreateItem("tt-studio-quotes", "Quote requests", "Plugins.Split3D.Studio.Quotes", "printer", "List", "PrintQuote"));
+        studioNode.Append(CreateItem("tt-studio-settings", "Studio settings", "Plugins.Split3D.Studio.Settings", "shop", "Settings", "PrintQuote"));
+
         var dashboardNode = rootNode.SelectNodeById("dashboard");
         if (dashboardNode?.Parent != null)
         {
-            node.InsertAfter(dashboardNode);
+            studioNode.InsertAfter(dashboardNode);
+            node.InsertAfter(studioNode);
         }
         else
         {
+            rootNode.Append(studioNode);
             rootNode.Append(node);
         }
     }
