@@ -1,4 +1,4 @@
-/* TT Minimal studio storefront: scroll reveal, tilt cards, hero print animation, price estimate, file drop. No dependencies. */
+/* TT Minimal "Midnight Lab" storefront effects. No dependencies. Loaded on every storefront page. */
 (function () {
     'use strict';
 
@@ -6,91 +6,215 @@
     doc.classList.add('tt-js');
 
     var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    var canHover = window.matchMedia && window.matchMedia('(hover: hover) and (pointer: fine)').matches;
     var money = new Intl.NumberFormat('vi-VN');
 
-    function formatVnd(value) {
-        return money.format(Math.round(value)) + 'đ';
+    function vnd(value) { return money.format(Math.round(value)) + 'đ'; }
+    function weight(g) { return g >= 1000 ? money.format(Math.round(g / 10) / 100) + ' kg' : money.format(Math.round(g)) + ' g'; }
+    function each(sel, fn, root) { Array.prototype.forEach.call((root || document).querySelectorAll(sel), fn); }
+    function onReady(fn) { if (document.readyState !== 'loading') fn(); else document.addEventListener('DOMContentLoaded', fn); }
+    function clamp(v, a, b) { return Math.min(b, Math.max(a, v)); }
+
+    // ---------- First-visit loader ----------
+
+    function initLoader() {
+        if (!doc.classList.contains('tt-first')) return;
+        try { sessionStorage.setItem('tt-visited', '1'); } catch (e) { }
+        var done = function () { doc.classList.add('tt-loaded'); };
+        setTimeout(done, reduceMotion ? 0 : 1000);
+        window.addEventListener('load', function () { setTimeout(done, 300); });
     }
 
-    function formatWeight(grams) {
-        return grams >= 1000 ? money.format(Math.round(grams / 10) / 100) + ' kg' : money.format(Math.round(grams)) + ' g';
-    }
+    // ---------- Header: scrolled state, hide on scroll down, progress bar ----------
 
-    function onReady(fn) {
-        if (document.readyState !== 'loading') fn();
-        else document.addEventListener('DOMContentLoaded', fn);
-    }
+    function initScrollChrome() {
+        var header = document.getElementById('header');
+        var bar = document.querySelector('.tt-progress');
+        var lastY = window.scrollY, ticking = false;
 
-    // ---------- Reveal on scroll ----------
-
-    function initReveal() {
-        var items = document.querySelectorAll('[data-tt-reveal], .tt-steps');
-        if (!('IntersectionObserver' in window) || reduceMotion) {
-            items.forEach(function (el) { el.classList.add('is-in'); });
-            return;
+        function update() {
+            ticking = false;
+            var y = window.scrollY;
+            if (header) {
+                header.classList.toggle('is-scrolled', y > 20);
+                var searchOpen = header.querySelector('.tt-search.is-open');
+                if (!searchOpen && y > 420 && y > lastY + 4) header.classList.add('is-hidden');
+                else if (y < lastY - 4 || y <= 420) header.classList.remove('is-hidden');
+            }
+            if (bar) {
+                var max = document.documentElement.scrollHeight - window.innerHeight;
+                bar.style.transform = 'scaleX(' + (max > 0 ? y / max : 0) + ')';
+            }
+            lastY = y;
         }
 
-        var io = new IntersectionObserver(function (entries) {
-            entries.forEach(function (entry) {
-                if (entry.isIntersecting) {
-                    entry.target.classList.add('is-in');
-                    io.unobserve(entry.target);
-                }
-            });
-        }, { rootMargin: '0px 0px -8% 0px', threshold: 0.12 });
-
-        items.forEach(function (el) { io.observe(el); });
+        window.addEventListener('scroll', function () {
+            if (!ticking) { ticking = true; requestAnimationFrame(update); }
+        }, { passive: true });
+        update();
     }
 
-    // ---------- Tilt + spotlight cards ----------
+    function initSearch() {
+        each('.tt-search', function (box) {
+            var btn = box.querySelector('.tt-search-toggle');
+            var input = box.querySelector('input[type=search]');
+            if (!btn) return;
 
-    function initTilt() {
-        if (reduceMotion || !window.matchMedia('(hover: hover)').matches) return;
+            function set(open) {
+                box.classList.toggle('is-open', open);
+                btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+                if (open && input) setTimeout(function () { input.focus(); }, 60);
+            }
 
-        document.querySelectorAll('[data-tt-tilt]').forEach(function (card) {
-            var max = parseFloat(card.getAttribute('data-tt-tilt')) || 8;
-            var frame = 0;
-
-            card.addEventListener('pointermove', function (e) {
-                var rect = card.getBoundingClientRect();
-                var x = (e.clientX - rect.left) / rect.width;
-                var y = (e.clientY - rect.top) / rect.height;
-                cancelAnimationFrame(frame);
-                frame = requestAnimationFrame(function () {
-                    card.style.setProperty('--mx', (x * 100) + '%');
-                    card.style.setProperty('--my', (y * 100) + '%');
-                    card.style.transform = 'rotateX(' + ((0.5 - y) * max) + 'deg) rotateY(' + ((x - 0.5) * max) + 'deg) translateZ(0)';
-                });
-            });
-
-            card.addEventListener('pointerleave', function () {
-                cancelAnimationFrame(frame);
-                card.style.transform = '';
-            });
+            btn.addEventListener('click', function (e) { e.stopPropagation(); set(!box.classList.contains('is-open')); });
+            document.addEventListener('click', function (e) { if (!box.contains(e.target)) set(false); });
+            document.addEventListener('keydown', function (e) { if (e.key === 'Escape') set(false); });
         });
     }
 
-    // ---------- Hero: a model printed layer by layer ----------
+    // ---------- Cursor glow ----------
+
+    function initCursor() {
+        if (!canHover || reduceMotion) return;
+        var glow = document.createElement('div');
+        glow.className = 'tt-cursor';
+        glow.setAttribute('aria-hidden', 'true');
+        document.body.appendChild(glow);
+
+        var x = -600, y = -600, tx = x, ty = y;
+        window.addEventListener('pointermove', function (e) { tx = e.clientX; ty = e.clientY; }, { passive: true });
+        (function loop() {
+            x += (tx - x) * 0.12; y += (ty - y) * 0.12;
+            glow.style.transform = 'translate3d(' + x + 'px,' + y + 'px,0)';
+            requestAnimationFrame(loop);
+        })();
+    }
+
+    // ---------- Reveal & split text ----------
+
+    function splitWords(el) {
+        if (el.dataset.split) return;
+        el.dataset.split = '1';
+        var i = 0;
+        (function walk(node) {
+            Array.prototype.slice.call(node.childNodes).forEach(function (child) {
+                if (child.nodeType === 3) {
+                    var frag = document.createDocumentFragment();
+                    child.textContent.split(/(\s+)/).forEach(function (part) {
+                        if (!part) return;
+                        if (/^\s+$/.test(part)) { frag.appendChild(document.createTextNode(part)); return; }
+                        var w = document.createElement('span'); w.className = 'w';
+                        var s = document.createElement('span'); s.textContent = part; s.style.setProperty('--i', i++);
+                        w.appendChild(s); frag.appendChild(w);
+                    });
+                    node.replaceChild(frag, child);
+                } else if (child.nodeType === 1 && child.tagName !== 'BR' && !child.classList.contains('tt-rotator')) {
+                    walk(child);
+                } else if (child.nodeType === 1 && child.tagName !== 'BR') {
+                    var wrap = document.createElement('span'); wrap.className = 'w';
+                    var inner = document.createElement('span'); inner.style.setProperty('--i', i++);
+                    node.replaceChild(wrap, child); inner.appendChild(child); wrap.appendChild(inner);
+                }
+            });
+        })(el);
+    }
+
+    function initReveal() {
+        each('.tt-split', splitWords);
+        var items = document.querySelectorAll('[data-tt-reveal], .tt-split');
+        if (!('IntersectionObserver' in window) || reduceMotion) {
+            Array.prototype.forEach.call(items, function (el) { el.classList.add('is-in'); });
+            return;
+        }
+        var io = new IntersectionObserver(function (entries) {
+            entries.forEach(function (entry) {
+                if (entry.isIntersecting) { entry.target.classList.add('is-in'); io.unobserve(entry.target); }
+            });
+        }, { rootMargin: '0px 0px -8% 0px', threshold: 0.1 });
+        Array.prototype.forEach.call(items, function (el) { io.observe(el); });
+    }
+
+    // ---------- Cards: spotlight, tilt, magnetic buttons ----------
+
+    function initPointerFx() {
+        if (!canHover || reduceMotion) return;
+
+        each('.tt-card', function (card) {
+            card.addEventListener('pointermove', function (e) {
+                var r = card.getBoundingClientRect();
+                card.style.setProperty('--mx', (e.clientX - r.left) + 'px');
+                card.style.setProperty('--my', (e.clientY - r.top) + 'px');
+            });
+        });
+
+        each('[data-tt-tilt]', function (card) {
+            var max = parseFloat(card.getAttribute('data-tt-tilt')) || 6;
+            card.addEventListener('pointermove', function (e) {
+                var r = card.getBoundingClientRect();
+                var px = (e.clientX - r.left) / r.width - 0.5, py = (e.clientY - r.top) / r.height - 0.5;
+                card.style.transform = 'perspective(1000px) rotateX(' + (-py * max) + 'deg) rotateY(' + (px * max) + 'deg)';
+            });
+            card.addEventListener('pointerleave', function () { card.style.transform = ''; });
+        });
+
+        each('[data-magnetic]', function (btn) {
+            btn.addEventListener('pointermove', function (e) {
+                var r = btn.getBoundingClientRect();
+                var dx = e.clientX - (r.left + r.width / 2), dy = e.clientY - (r.top + r.height / 2);
+                btn.style.transform = 'translate(' + dx * 0.22 + 'px,' + dy * 0.3 + 'px)';
+            });
+            btn.addEventListener('pointerleave', function () { btn.style.transform = ''; });
+        });
+    }
+
+    // ---------- Word rotator ----------
+
+    function initRotator() {
+        each('.tt-rotator', function (box) {
+            var words = Array.prototype.slice.call(box.children);
+            if (!words.length) return;
+            var i = 0;
+            words[0].classList.add('is-on');
+            if (reduceMotion || words.length < 2) return;
+            setInterval(function () {
+                var cur = words[i];
+                cur.classList.remove('is-on'); cur.classList.add('is-off');
+                setTimeout(function () { cur.classList.remove('is-off'); }, 900);
+                i = (i + 1) % words.length;
+                words[i].classList.add('is-on');
+            }, 2600);
+        });
+    }
+
+    // ---------- Marquee speeds up with scroll velocity ----------
+
+    function initMarquee() {
+        var rows = document.querySelectorAll('.tt-marquee-row');
+        if (!rows.length || reduceMotion || !Element.prototype.getAnimations) return;
+        var lastY = window.scrollY, speed = 1;
+        (function loop() {
+            var y = window.scrollY, v = Math.abs(y - lastY);
+            lastY = y;
+            speed += ((1 + Math.min(v / 12, 5)) - speed) * 0.08;
+            Array.prototype.forEach.call(rows, function (row) {
+                row.getAnimations().forEach(function (a) { a.playbackRate = speed; });
+            });
+            requestAnimationFrame(loop);
+        })();
+    }
+
+    // ---------- Hero: model printed layer by layer ----------
 
     var shapes = [
-        // Twisted vase
-        function (t, a) {
-            var r = 0.5 + 0.2 * Math.sin(t * Math.PI * 1.5 + 0.6) - 0.08 * t;
-            return r * (1 + 0.08 * Math.cos(6 * a + t * 7));
-        },
-        // Round pot with lobes
-        function (t, a) {
-            var r = Math.sin(Math.PI * (0.1 + 0.8 * t)) * 0.72 + 0.12;
-            return r * (1 + 0.06 * Math.cos(5 * a));
-        },
-        // Faceted tower
-        function (t, a) {
-            var sides = 8;
-            var seg = Math.PI * 2 / sides;
+        { name: 'VASE_01.STL', fn: function (t, a) { var r = 0.5 + 0.2 * Math.sin(t * Math.PI * 1.5 + 0.6) - 0.08 * t; return r * (1 + 0.08 * Math.cos(6 * a + t * 7)); } },
+        { name: 'POT_LOBED.STL', fn: function (t, a) { var r = Math.sin(Math.PI * (0.1 + 0.8 * t)) * 0.72 + 0.12; return r * (1 + 0.06 * Math.cos(5 * a)); } },
+        { name: 'TOWER_HEX.3MF', fn: function (t, a) {
+            var sides = 8, seg = Math.PI * 2 / sides;
             var poly = Math.cos(seg / 2) / Math.cos(((a % seg) + seg) % seg - seg / 2);
             var r = t < 0.82 ? 0.42 + 0.14 * Math.pow(1 - t, 2) : 0.56 - (t > 0.9 && Math.cos(a * 4) > 0.2 ? 0.1 : 0);
             return r * poly;
-        }
+        } },
+        { name: 'TWIST_12.OBJ', fn: function (t, a) { var r = 0.34 + 0.16 * Math.cos(t * Math.PI * 2); return r * (1 + 0.16 * Math.cos(3 * (a + t * 2.4))); } }
     ];
 
     function initHero() {
@@ -98,104 +222,82 @@
         if (!canvas || !canvas.getContext) return;
 
         var ctx = canvas.getContext('2d');
-        var layers = 44;
-        var points = 90;
-        var width = 0, height = 0, dpr = 1;
-        var shapeIndex = 0;
-        var cycleStart = performance.now();
-        var printTime = 5600, holdTime = 2200, fadeTime = 900;
-        var rotation = 0, targetTiltX = 0.38, tiltX = 0.38, mouseX = 0;
-        var running = true, visible = true;
+        var hudLayer = document.querySelector('[data-hud-layer]');
+        var hudFile = document.querySelector('[data-hud-file]');
+        var hudPct = document.querySelector('[data-hud-pct]');
+        var hudBar = document.querySelector('[data-hud-bar]');
+        var layers = 46, points = 96;
+        var width = 0, height = 0;
+        var shapeIndex = 0, cycleStart = performance.now();
+        var printTime = 6000, holdTime = 2000, fadeTime = 900;
+        var rotation = 0, tiltX = 0.4, targetTilt = 0.4, mouseX = 0;
+        var visible = true;
 
         function resize() {
             var rect = canvas.getBoundingClientRect();
-            dpr = Math.min(window.devicePixelRatio || 1, 2);
-            width = rect.width;
-            height = rect.height;
-            canvas.width = Math.round(width * dpr);
-            canvas.height = Math.round(height * dpr);
+            var dpr = Math.min(window.devicePixelRatio || 1, 2);
+            width = rect.width; height = rect.height;
+            canvas.width = Math.round(width * dpr); canvas.height = Math.round(height * dpr);
             ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
         }
 
-        function project(x, y, z) {
-            // Rotate around Y, then tilt around X, then perspective.
-            var cos = Math.cos(rotation), sin = Math.sin(rotation);
-            var rx = x * cos - z * sin;
-            var rz = x * sin + z * cos;
+        function project(x, y, z, rot) {
+            var c = Math.cos(rot), s = Math.sin(rot);
+            var rx = x * c - z * s, rz = x * s + z * c;
             var ct = Math.cos(tiltX), st = Math.sin(tiltX);
-            var ry = y * ct - rz * st;
-            var rz2 = y * st + rz * ct;
-            var dist = 3.4;
-            var scale = Math.min(width, height) * 1.2 / (dist - rz2);
-            return { x: width / 2 + rx * scale, y: height * 0.42 - ry * scale, z: rz2 };
+            var ry = y * ct - rz * st, rz2 = y * st + rz * ct;
+            var scale = Math.min(width, height) * 1.18 / (3.4 - rz2);
+            return { x: width / 2 + rx * scale, y: height * 0.43 - ry * scale, z: rz2 };
         }
 
-        function drawPlate(alpha) {
-            var size = 1.05, lines = 8, y = -0.98;
+        function plate(rot) {
+            var size = 1.05, n = 10, y = -0.98;
             ctx.lineWidth = 1;
-            for (var i = 0; i <= lines; i++) {
-                var v = -size + (2 * size * i) / lines;
-                var a1 = project(v, y, -size), a2 = project(v, y, size);
-                var b1 = project(-size, y, v), b2 = project(size, y, v);
-                var edge = i === 0 || i === lines;
-                ctx.strokeStyle = 'rgba(96,165,250,' + (alpha * (edge ? 0.55 : 0.18)) + ')';
-                ctx.beginPath();
-                ctx.moveTo(a1.x, a1.y); ctx.lineTo(a2.x, a2.y);
-                ctx.moveTo(b1.x, b1.y); ctx.lineTo(b2.x, b2.y);
-                ctx.stroke();
+            for (var i = 0; i <= n; i++) {
+                var v = -size + (2 * size * i) / n;
+                var a1 = project(v, y, -size, rot), a2 = project(v, y, size, rot);
+                var b1 = project(-size, y, v, rot), b2 = project(size, y, v, rot);
+                var edge = i === 0 || i === n;
+                ctx.strokeStyle = 'rgba(91,140,255,' + (edge ? 0.55 : 0.14) + ')';
+                ctx.beginPath(); ctx.moveTo(a1.x, a1.y); ctx.lineTo(a2.x, a2.y); ctx.moveTo(b1.x, b1.y); ctx.lineTo(b2.x, b2.y); ctx.stroke();
             }
         }
 
-        function layerPoints(shape, t) {
-            var y = -0.95 + t * 1.8;
-            var list = [];
+        function ring(fn, t, rot) {
+            var y = -0.95 + t * 1.8, list = [];
             for (var j = 0; j <= points; j++) {
-                var a = (j / points) * Math.PI * 2;
-                var r = shape(t, a);
-                list.push(project(Math.cos(a) * r, y, Math.sin(a) * r));
+                var a = (j / points) * Math.PI * 2, r = fn(t, a);
+                list.push(project(Math.cos(a) * r, y, Math.sin(a) * r, rot));
             }
             return list;
         }
 
         function render(now) {
-            if (!running) return;
             requestAnimationFrame(render);
-            if (!visible) return;
+            if (!visible || !width) return;
 
-            var elapsed = now - cycleStart;
-            var total = printTime + holdTime + fadeTime;
-            if (elapsed > total) {
-                shapeIndex = (shapeIndex + 1) % shapes.length;
-                cycleStart = now;
-                elapsed = 0;
-            }
+            var elapsed = now - cycleStart, total = printTime + holdTime + fadeTime;
+            if (elapsed > total) { shapeIndex = (shapeIndex + 1) % shapes.length; cycleStart = now; elapsed = 0; }
 
             var progress = reduceMotion ? 1 : Math.min(elapsed / printTime, 1);
-            var fade = elapsed > printTime + holdTime ? 1 - (elapsed - printTime - holdTime) / fadeTime : 1;
-            fade = Math.max(0, Math.min(1, fade));
+            var fade = clamp(elapsed > printTime + holdTime ? 1 - (elapsed - printTime - holdTime) / fadeTime : 1, 0, 1);
 
-            rotation += reduceMotion ? 0 : 0.0045;
-            tiltX += (targetTiltX - tiltX) * 0.05;
-            var baseRotation = rotation;
-            rotation = baseRotation + mouseX * 0.5;
+            if (!reduceMotion) rotation += 0.0042;
+            tiltX += (targetTilt - tiltX) * 0.05;
+            var rot = rotation + mouseX * 0.6;
 
             ctx.clearRect(0, 0, width, height);
-            drawPlate(1);
+            plate(rot);
 
-            var shape = shapes[shapeIndex];
-            var shown = progress * layers;
-            var done = Math.floor(shown);
-            var current = null;
+            var fn = shapes[shapeIndex].fn;
+            var shown = progress * layers, done = Math.floor(shown), tip = null;
 
             for (var i = 0; i <= Math.min(done, layers - 1); i++) {
-                var t = i / (layers - 1);
-                var pts = layerPoints(shape, t);
+                var t = i / (layers - 1), pts = ring(fn, t, rot);
                 var isTop = i === done && progress < 1;
-                var hue = 196 + t * 34;
-                var partial = isTop ? shown - done : 1;
-                var count = Math.max(2, Math.round(points * partial));
+                var count = Math.max(2, Math.round(points * (isTop ? shown - done : 1)));
+                var hue = 190 + t * 60;
 
-                // Back half dim, front half bright: gives depth without sorting.
                 for (var pass = 0; pass < 2; pass++) {
                     ctx.beginPath();
                     var drawing = false;
@@ -205,222 +307,346 @@
                         if ((pass === 1) === front) {
                             if (!drawing) { ctx.moveTo(p.x, p.y); drawing = true; }
                             ctx.lineTo(q.x, q.y);
-                        } else {
-                            drawing = false;
-                        }
+                        } else { drawing = false; }
                     }
-                    var alpha = (pass === 1 ? 0.9 : 0.28) * fade;
-                    ctx.strokeStyle = isTop ? 'rgba(224,242,254,' + fade + ')' : 'hsla(' + hue + ',95%,' + (pass === 1 ? 66 : 55) + '%,' + alpha + ')';
-                    ctx.lineWidth = isTop ? 2.2 : (pass === 1 ? 1.35 : 1);
+                    ctx.strokeStyle = isTop ? 'rgba(236,246,255,' + fade + ')' : 'hsla(' + hue + ',95%,' + (pass ? 66 : 52) + '%,' + ((pass ? 0.92 : 0.26) * fade) + ')';
+                    ctx.lineWidth = isTop ? 2.4 : (pass ? 1.4 : 1);
                     ctx.stroke();
                 }
-
-                if (isTop) current = pts[count - 1];
+                if (isTop) tip = pts[count - 1];
             }
 
-            // Vertical ribs for a wireframe feel.
             if (done > 1) {
                 ctx.lineWidth = 0.7;
-                for (var k = 0; k < points; k += 15) {
+                for (var k = 0; k < points; k += 16) {
                     ctx.beginPath();
                     for (var m = 0; m <= Math.min(done, layers - 1); m++) {
-                        var tt = m / (layers - 1);
-                        var a = (k / points) * Math.PI * 2;
-                        var r = shape(tt, a);
-                        var pp = project(Math.cos(a) * r, -0.95 + tt * 1.8, Math.sin(a) * r);
+                        var tt = m / (layers - 1), a = (k / points) * Math.PI * 2, r = fn(tt, a);
+                        var pp = project(Math.cos(a) * r, -0.95 + tt * 1.8, Math.sin(a) * r, rot);
                         if (m === 0) ctx.moveTo(pp.x, pp.y); else ctx.lineTo(pp.x, pp.y);
                     }
-                    ctx.strokeStyle = 'rgba(147,197,253,' + (0.22 * fade) + ')';
+                    ctx.strokeStyle = 'rgba(160,190,255,' + (0.2 * fade) + ')';
                     ctx.stroke();
                 }
             }
 
-            // Nozzle: glowing tip following the current layer.
-            if (current && fade > 0) {
-                var glow = ctx.createRadialGradient(current.x, current.y, 0, current.x, current.y, 26);
-                glow.addColorStop(0, 'rgba(255,255,255,0.95)');
-                glow.addColorStop(0.25, 'rgba(34,211,238,0.6)');
-                glow.addColorStop(1, 'rgba(34,211,238,0)');
-                ctx.fillStyle = glow;
-                ctx.beginPath();
-                ctx.arc(current.x, current.y, 26, 0, Math.PI * 2);
-                ctx.fill();
-
-                ctx.strokeStyle = 'rgba(191,219,254,0.55)';
-                ctx.lineWidth = 1;
-                ctx.beginPath();
-                ctx.moveTo(current.x, current.y - 8);
-                ctx.lineTo(current.x, current.y - 60);
-                ctx.stroke();
-                ctx.fillStyle = 'rgba(191,219,254,0.85)';
-                ctx.fillRect(current.x - 9, current.y - 72, 18, 12);
+            if (tip && fade > 0) {
+                var g = ctx.createRadialGradient(tip.x, tip.y, 0, tip.x, tip.y, 30);
+                g.addColorStop(0, 'rgba(255,255,255,.95)'); g.addColorStop(0.25, 'rgba(62,224,255,.6)'); g.addColorStop(1, 'rgba(62,224,255,0)');
+                ctx.fillStyle = g; ctx.beginPath(); ctx.arc(tip.x, tip.y, 30, 0, Math.PI * 2); ctx.fill();
+                ctx.strokeStyle = 'rgba(191,219,254,.5)'; ctx.lineWidth = 1;
+                ctx.beginPath(); ctx.moveTo(tip.x, tip.y - 8); ctx.lineTo(tip.x, tip.y - 64); ctx.stroke();
+                ctx.fillStyle = 'rgba(191,219,254,.85)'; ctx.fillRect(tip.x - 10, tip.y - 76, 20, 12);
             }
 
-            rotation = baseRotation;
+            var layer = Math.min(done + 1, layers), pct = Math.round(progress * 100);
+            if (hudLayer) hudLayer.textContent = (layer < 10 ? '0' : '') + layer + ' / ' + layers;
+            if (hudFile) hudFile.textContent = shapes[shapeIndex].name;
+            if (hudPct) hudPct.textContent = pct + '%';
+            if (hudBar) hudBar.style.width = pct + '%';
         }
 
         resize();
         window.addEventListener('resize', resize);
-
         if (!reduceMotion) {
             window.addEventListener('pointermove', function (e) {
-                mouseX = (e.clientX / window.innerWidth - 0.5);
-                targetTiltX = 0.38 + (e.clientY / window.innerHeight - 0.5) * 0.25;
+                mouseX = e.clientX / window.innerWidth - 0.5;
+                targetTilt = 0.4 + (e.clientY / window.innerHeight - 0.5) * 0.25;
             }, { passive: true });
         }
-
         if ('IntersectionObserver' in window) {
-            new IntersectionObserver(function (entries) {
-                visible = entries[0].isIntersecting;
-            }).observe(canvas);
+            new IntersectionObserver(function (entries) { visible = entries[0].isIntersecting; }).observe(canvas);
         }
-
-        document.addEventListener('visibilitychange', function () {
-            visible = !document.hidden;
-        });
-
+        document.addEventListener('visibilitychange', function () { visible = !document.hidden; });
         requestAnimationFrame(render);
     }
 
-    // ---------- Price estimate ----------
+    // ---------- Pinned horizontal process ----------
 
-    function initCalc() {
-        var root = document.querySelector('[data-tt-calc]');
-        if (!root) return;
-
-        var techs;
-        try { techs = JSON.parse(root.getAttribute('data-tt-calc')); } catch (e) { return; }
-        if (!techs || !techs.length) return;
-
-        var tabs = root.querySelectorAll('.tt-calc-tab');
-        var panels = root.querySelectorAll('[data-tt-panel]');
-        var indicator = root.querySelector('.tt-calc-indicator');
-        var grams = root.querySelector('[data-tt-grams]');
-        var qty = root.querySelector('[data-tt-qty]');
-        var range = root.querySelector('[data-tt-range]');
-        var totalEl = root.querySelector('[data-tt-total]');
-        var unitEl = root.querySelector('[data-tt-unit]');
-        var cta = root.querySelector('[data-tt-cta]');
-        var active = 0;
-
-        function moveIndicator() {
-            var tab = tabs[active];
-            if (!tab || !indicator) return;
-            indicator.style.width = tab.offsetWidth + 'px';
-            indicator.style.transform = 'translateX(' + (tab.offsetLeft - tabs[0].offsetLeft) + 'px)';
-        }
-
-        function sliderToGrams(v) { return Math.round(5 * Math.pow(1000, v / 100)); }
-        function gramsToSlider(g) { return Math.max(0, Math.min(100, Math.log(Math.max(g, 5) / 5) / Math.log(1000) * 100)); }
+    function initProcess() {
+        var section = document.querySelector('.tt-process');
+        if (!section) return;
+        var track = section.querySelector('.tt-process-track');
+        var bar = section.querySelector('.tt-process-bar i');
+        var desktop = window.matchMedia('(min-width: 992px)');
+        var distance = 0;
 
         function update() {
-            var tech = techs[active];
-            var g = Math.max(parseInt(grams.value, 10) || 0, 0);
-            var q = Math.max(parseInt(qty.value, 10) || 1, 1);
-            var totalGrams = g * q;
-            var tierIndex = 0;
-            tech.tiers.forEach(function (tier, i) { if (totalGrams >= tier.min) tierIndex = i; });
-            var tier = tech.tiers[tierIndex];
-
-            panels.forEach(function (panel, i) {
-                panel.hidden = i !== active;
-                panel.querySelectorAll('.tt-tier').forEach(function (row, j) {
-                    row.classList.toggle('is-active', i === active && j === tierIndex);
-                });
-            });
-
-            totalEl.textContent = totalGrams > 0 ? formatVnd(totalGrams * tier.price) : '—';
-            unitEl.textContent = formatVnd(tier.price) + '/g · ' + tier.label + ' · tổng ' + formatWeight(totalGrams);
-            if (cta) cta.href = cta.getAttribute('data-base') + '?tech=' + encodeURIComponent(tech.name);
+            if (!distance) return;
+            var r = section.getBoundingClientRect();
+            var p = clamp(-r.top / (section.offsetHeight - window.innerHeight), 0, 1);
+            track.style.transform = 'translate3d(' + (-p * distance) + 'px,0,0)';
+            if (bar) bar.style.width = (p * 100) + '%';
         }
 
-        tabs.forEach(function (tab, i) {
-            tab.addEventListener('click', function () {
-                active = i;
-                tabs.forEach(function (t, j) {
-                    t.classList.toggle('is-active', j === i);
-                    t.setAttribute('aria-selected', j === i ? 'true' : 'false');
-                });
-                moveIndicator();
-                update();
-            });
-        });
-
-        grams.addEventListener('input', function () {
-            range.value = gramsToSlider(parseInt(grams.value, 10) || 0);
+        function layout() {
+            if (!desktop.matches || reduceMotion) { section.style.height = ''; track.style.transform = ''; distance = 0; return; }
+            distance = Math.max(0, track.scrollWidth - window.innerWidth);
+            section.style.height = (window.innerHeight + distance) + 'px';
             update();
-        });
-        qty.addEventListener('input', update);
-        range.addEventListener('input', function () {
-            grams.value = sliderToGrams(parseFloat(range.value));
-            update();
-        });
-
-        window.addEventListener('resize', moveIndicator);
-        range.value = gramsToSlider(parseInt(grams.value, 10) || 0);
-        moveIndicator();
-        update();
-
-        // Animate the tier bars once visible.
-        var bars = root.querySelectorAll('.tt-tier-bar i');
-        var show = function () { bars.forEach(function (bar) { bar.style.width = bar.getAttribute('data-w') + '%'; }); };
-        if ('IntersectionObserver' in window) {
-            var io = new IntersectionObserver(function (entries) {
-                if (entries[0].isIntersecting) { show(); io.disconnect(); }
-            });
-            io.observe(root);
-        } else {
-            show();
         }
+
+        window.addEventListener('scroll', function () { requestAnimationFrame(update); }, { passive: true });
+        window.addEventListener('resize', layout);
+        window.addEventListener('load', layout);
+        layout();
     }
 
-    // ---------- File drop zone ----------
+    // ---------- Price calculators ----------
 
-    function initDrop() {
-        document.querySelectorAll('.tt-drop').forEach(function (zone) {
-            var input = zone.querySelector('input[type=file]');
-            var nameEl = zone.querySelector('.tt-file-name');
-            if (!input) return;
+    function tierFor(tech, grams) {
+        var idx = 0;
+        tech.tiers.forEach(function (t, i) { if (grams >= t.min) idx = i; });
+        return idx;
+    }
 
-            ['dragenter', 'dragover'].forEach(function (type) {
-                zone.addEventListener(type, function () { zone.classList.add('is-over'); });
+    function countTo(el, value) {
+        if (!el) return;
+        var from = parseFloat(el.dataset.v || '0');
+        el.dataset.v = value;
+        if (reduceMotion || from === value) { el.textContent = value > 0 ? vnd(value) : '—'; return; }
+        var start = performance.now(), dur = 500;
+        (function step(now) {
+            var k = Math.min((now - start) / dur, 1), e = 1 - Math.pow(1 - k, 3);
+            var v = from + (value - from) * e;
+            el.textContent = value > 0 || k < 1 ? vnd(v) : '—';
+            if (k < 1) requestAnimationFrame(step);
+        })(start);
+    }
+
+    function sliderToGrams(v) { return Math.round(5 * Math.pow(1000, v / 100)); }
+    function gramsToSlider(g) { return clamp(Math.log(Math.max(g, 5) / 5) / Math.log(1000) * 100, 0, 100); }
+    function paintRange(range) { range.style.setProperty('--p', range.value + '%'); }
+    function readInt(input, def) { var n = parseInt(String(input.value).replace(/\D/g, ''), 10); return isNaN(n) ? def : n; }
+
+    function initConfigurator() {
+        each('[data-tt-config]', function (root) {
+            var techs;
+            try { techs = JSON.parse(root.getAttribute('data-tt-config')); } catch (e) { return; }
+            if (!techs || !techs.length) return;
+
+            var buttons = root.querySelectorAll('[data-tech]');
+            var chart = root.querySelector('[data-tt-chart]');
+            var labels = root.querySelector('[data-tt-labels]');
+            var nameEl = root.querySelector('[data-tt-techname]');
+            var grams = root.querySelector('[data-tt-grams]');
+            var qty = root.querySelector('[data-tt-qty]');
+            var range = root.querySelector('[data-tt-range]');
+            var total = root.querySelector('[data-tt-total]');
+            var unit = root.querySelector('[data-tt-unit]');
+            var cta = root.querySelector('[data-tt-cta]');
+            var active = 0;
+
+            function drawChart() {
+                var tech = techs[active], max = Math.max.apply(null, tech.tiers.map(function (t) { return t.price; }));
+                chart.innerHTML = ''; labels.innerHTML = '';
+                tech.tiers.forEach(function (t) {
+                    var col = document.createElement('div'); col.className = 'tt-bar';
+                    col.innerHTML = '<b>' + money.format(t.price) + 'đ</b><i style="--h:0%"></i>';
+                    chart.appendChild(col);
+                    var lab = document.createElement('span'); lab.textContent = t.label; labels.appendChild(lab);
+                    requestAnimationFrame(function () { requestAnimationFrame(function () { col.querySelector('i').style.setProperty('--h', Math.max(12, t.price / max * 100) + '%'); }); });
+                });
+                if (nameEl) nameEl.textContent = tech.name;
+            }
+
+            function update() {
+                var tech = techs[active];
+                var g = readInt(grams, 0), q = Math.max(readInt(qty, 1), 1), sum = g * q;
+                var idx = tierFor(tech, sum), tier = tech.tiers[idx];
+                each('.tt-bar', function (b, i) { b.classList.toggle('is-active', i === idx); }, chart);
+                countTo(total, sum * tier.price);
+                if (unit) unit.textContent = money.format(tier.price) + 'đ/g · ' + tier.label + ' · tổng ' + weight(sum);
+                if (cta) cta.href = cta.getAttribute('data-base') + '?tech=' + encodeURIComponent(tech.name) + '#tt-quote';
+            }
+
+            Array.prototype.forEach.call(buttons, function (btn) {
+                btn.addEventListener('click', function () {
+                    active = parseInt(btn.getAttribute('data-tech'), 10) || 0;
+                    Array.prototype.forEach.call(buttons, function (b) { b.classList.toggle('is-active', b === btn); b.setAttribute('aria-pressed', b === btn ? 'true' : 'false'); });
+                    drawChart(); update();
+                });
             });
-            ['dragleave', 'drop'].forEach(function (type) {
-                zone.addEventListener(type, function () { zone.classList.remove('is-over'); });
+
+            [grams, qty].forEach(function (input) {
+                input.addEventListener('input', function () {
+                    input.value = String(input.value).replace(/\D/g, '').slice(0, 6);
+                    if (input === grams) { range.value = gramsToSlider(readInt(grams, 0)); paintRange(range); }
+                    update();
+                });
             });
 
-            input.addEventListener('change', function () {
-                var file = input.files && input.files[0];
-                if (!nameEl) return;
-                if (!file) { nameEl.textContent = ''; return; }
+            each('[data-step]', function (btn) {
+                btn.addEventListener('click', function () {
+                    var input = root.querySelector(btn.getAttribute('data-target'));
+                    var step = parseInt(btn.getAttribute('data-step'), 10);
+                    var cur = readInt(input, 0);
+                    if (input === grams) step *= cur >= 1000 ? 100 : cur >= 100 ? 10 : 1;
+                    input.value = Math.max(1, cur + step);
+                    input.dispatchEvent(new Event('input'));
+                });
+            }, root);
 
-                var max = parseInt(zone.getAttribute('data-max-mb'), 10) || 100;
-                var size = file.size / 1024 / 1024;
-                nameEl.textContent = file.name + ' · ' + (size < 1 ? Math.max(1, Math.round(size * 1024)) + ' KB' : size.toFixed(1) + ' MB');
-                nameEl.style.color = size > max ? '#dc2626' : '';
-                if (size > max) {
-                    nameEl.textContent += ' — vượt quá ' + max + ' MB, hãy gửi link tải';
+            range.addEventListener('input', function () { grams.value = sliderToGrams(parseFloat(range.value)); paintRange(range); update(); });
+
+            range.value = gramsToSlider(readInt(grams, 0)); paintRange(range);
+            drawChart(); update();
+        });
+
+        each('[data-tt-mini]', function (root) {
+            var techs;
+            try { techs = JSON.parse(root.getAttribute('data-tt-mini')); } catch (e) { return; }
+            if (!techs || !techs.length) return;
+            var chips = root.querySelectorAll('[data-tech]');
+            var range = root.querySelector('[data-tt-range]');
+            var total = root.querySelector('[data-tt-total]');
+            var unit = root.querySelector('[data-tt-unit]');
+            var active = 0;
+
+            function update() {
+                var g = sliderToGrams(parseFloat(range.value)), tech = techs[active], tier = tech.tiers[tierFor(tech, g)];
+                paintRange(range);
+                countTo(total, g * tier.price);
+                unit.textContent = weight(g) + ' · ' + money.format(tier.price) + 'đ/g';
+            }
+
+            Array.prototype.forEach.call(chips, function (chip) {
+                chip.addEventListener('click', function (e) {
+                    e.preventDefault(); e.stopPropagation();
+                    active = parseInt(chip.getAttribute('data-tech'), 10) || 0;
+                    Array.prototype.forEach.call(chips, function (c) { c.classList.toggle('is-active', c === chip); });
+                    update();
+                });
+            });
+            range.addEventListener('input', update);
+            update();
+        });
+    }
+
+    // ---------- Terminal typing (addon bento card) ----------
+
+    function initTerminal() {
+        each('[data-tt-term]', function (el) {
+            var lines;
+            try { lines = JSON.parse(el.getAttribute('data-tt-term')); } catch (e) { return; }
+            var fmt = function (s) { return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/\[ok\]/g, '<span class="ok">✔</span>'); };
+            if (reduceMotion) { el.innerHTML = lines.map(fmt).join('\n'); return; }
+            var started = false;
+            function run() {
+                if (started) return; started = true;
+                var li = 0, ci = 0, out = '';
+                (function type() {
+                    if (li >= lines.length) {
+                        el.innerHTML = out + '<span class="caret"></span>';
+                        setTimeout(function () { out = ''; li = 0; ci = 0; type(); }, 3500);
+                        return;
+                    }
+                    var line = lines[li];
+                    if (ci <= line.length) {
+                        el.innerHTML = out + fmt(line.slice(0, ci)) + '<span class="caret"></span>';
+                        ci++; setTimeout(type, 22);
+                    } else {
+                        out += fmt(line) + '\n'; li++; ci = 0; setTimeout(type, 260);
+                    }
+                })();
+            }
+            if ('IntersectionObserver' in window) {
+                var io = new IntersectionObserver(function (en) { if (en[0].isIntersecting) { run(); io.disconnect(); } });
+                io.observe(el);
+            } else { run(); }
+        });
+    }
+
+    // ---------- FAQ smooth accordion ----------
+
+    function initFaq() {
+        each('.tt-faq details', function (d) {
+            var summary = d.querySelector('summary'), body = d.querySelector('.tt-faq-a');
+            if (!summary || !body || reduceMotion) return;
+            summary.addEventListener('click', function (e) {
+                e.preventDefault();
+                if (d.open) {
+                    body.style.height = body.scrollHeight + 'px';
+                    requestAnimationFrame(function () { requestAnimationFrame(function () { body.style.height = '0px'; }); });
+                    setTimeout(function () { d.open = false; body.style.height = ''; }, 500);
+                } else {
+                    d.open = true;
+                    var h = body.scrollHeight; body.style.height = '0px';
+                    requestAnimationFrame(function () { requestAnimationFrame(function () { body.style.height = h + 'px'; }); });
+                    setTimeout(function () { body.style.height = ''; }, 520);
                 }
             });
         });
+    }
 
-        // Prevent double submits of the quote form while the file uploads.
-        document.querySelectorAll('form[data-tt-quote]').forEach(function (form) {
+    // ---------- Shop filter ----------
+
+    function initFilter() {
+        each('[data-tt-filter]', function (bar) {
+            var grid = document.querySelector(bar.getAttribute('data-tt-filter'));
+            if (!grid) return;
+            var chips = bar.querySelectorAll('[data-cat]');
+            Array.prototype.forEach.call(chips, function (chip) {
+                chip.addEventListener('click', function () {
+                    var cat = chip.getAttribute('data-cat');
+                    Array.prototype.forEach.call(chips, function (c) { c.classList.toggle('is-active', c === chip); });
+                    each('[data-cat]', function (card) {
+                        card.classList.toggle('is-hidden', cat !== 'all' && card.getAttribute('data-cat') !== cat);
+                    }, grid);
+                });
+            });
+        });
+    }
+
+    // ---------- Quote form ----------
+
+    function initQuote() {
+        each('.tt-dropzone', function (zone) {
+            var input = zone.querySelector('input[type=file]'), nameEl = zone.querySelector('.tt-file-name');
+            if (!input) return;
+            ['dragenter', 'dragover'].forEach(function (t) { zone.addEventListener(t, function () { zone.classList.add('is-over'); }); });
+            ['dragleave', 'drop'].forEach(function (t) { zone.addEventListener(t, function () { zone.classList.remove('is-over'); }); });
+            input.addEventListener('change', function () {
+                var f = input.files && input.files[0];
+                if (!nameEl) return;
+                if (!f) { nameEl.textContent = ''; return; }
+                var max = parseInt(zone.getAttribute('data-max-mb'), 10) || 100, mb = f.size / 1048576;
+                nameEl.textContent = f.name + ' · ' + (mb < 1 ? Math.max(1, Math.round(mb * 1024)) + ' KB' : mb.toFixed(1) + ' MB');
+                nameEl.style.color = mb > max ? '#ff6b85' : '';
+                if (mb > max) nameEl.textContent += ' — vượt quá ' + max + ' MB, hãy gửi link tải';
+            });
+        });
+
+        each('input[data-numeric]', function (input) {
+            input.addEventListener('input', function () { input.value = String(input.value).replace(/\D/g, '').slice(0, 7); });
+        });
+
+        each('form[data-tt-quote]', function (form) {
             form.addEventListener('submit', function () {
                 var btn = form.querySelector('button[type=submit]');
                 if (btn && (!window.jQuery || !jQuery(form).valid || jQuery(form).valid())) {
                     btn.disabled = true;
-                    btn.querySelector('span').textContent = 'Đang gửi…';
+                    var s = btn.querySelector('span'); if (s) s.textContent = 'Đang gửi…';
                 }
             });
         });
     }
 
     onReady(function () {
+        initLoader();
+        initScrollChrome();
+        initSearch();
+        initCursor();
         initReveal();
-        initTilt();
+        initPointerFx();
+        initRotator();
+        initMarquee();
         initHero();
-        initCalc();
-        initDrop();
+        initProcess();
+        initConfigurator();
+        initTerminal();
+        initFaq();
+        initFilter();
+        initQuote();
     });
 })();

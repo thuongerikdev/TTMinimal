@@ -1,0 +1,41 @@
+@model StudioNavModel
+
+<ul class="tt-nav">
+    @foreach (var item in Model.Items)
+    {
+        var hasChildren = item.Children.Count > 0;
+        <li class="tt-nav-item@(hasChildren ? " has-drop" : "")@(item.IsActive ? " is-active" : "")">
+            <a class="tt-nav-link" href="@item.Url" aria-current="@(item.IsActive ? "page" : null)">
+                <span>@item.Text</span>
+                @if (hasChildren)
+                {
+                    <i class="fa fa-angle-down" aria-hidden="true"></i>
+                }
+            </a>
+            @if (hasChildren)
+            {
+                <div class="tt-drop">
+                    <div class="tt-drop-grid">
+                        @foreach (var child in item.Children)
+                        {
+                            <a class="tt-drop-card" href="@child.Url">
+                                <span class="tt-drop-media">
+                                    @if (child.ImageUrl.HasValue())
+                                    {
+                                        <img src="@child.ImageUrl" alt="" loading="lazy" />
+                                    }
+                                    else
+                                    {
+                                        @StudioIcons.Get("cube")
+                                    }
+                                </span>
+                                <span class="tt-drop-text">@child.Text</span>
+                                @StudioIcons.Get("arrow", "tt-drop-arrow")
+                            </a>
+                        }
+                    </div>
+                </div>
+            }
+        </li>
+    }
+</ul>

@@ -67,6 +67,7 @@ public class StudioCategoryCard
 {
     public string Name { get; set; }
     public string Url { get; set; }
+    public int Id { get; set; }
     public string ImageUrl { get; set; }
     public int ProductCount { get; set; }
 }
@@ -80,6 +81,7 @@ public class StudioProductCard
     public string OldPrice { get; set; }
     public bool PriceFrom { get; set; }
     public string CategoryName { get; set; }
+    public int CategoryId { get; set; }
     public bool HasVariants { get; set; }
 }
 
@@ -139,4 +141,18 @@ public class PrintQuoteFormModel
 
     [StringLength(1000), Url(ErrorMessage = "Link file không hợp lệ.")]
     public string FileLink { get; set; }
+}
+
+public class StudioNavModel
+{
+    public List<StudioNavItem> Items { get; } = [];
+}
+
+public class StudioNavItem
+{
+    public string Text { get; set; }
+    public string Url { get; set; }
+    public string ImageUrl { get; set; }
+    public bool IsActive { get; set; }
+    public List<StudioNavItem> Children { get; } = [];
 }

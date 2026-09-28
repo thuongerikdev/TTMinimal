@@ -7,10 +7,11 @@
 }
 
 <link sm-target-zone="head_links" rel="stylesheet" href="@Url.Content(StudioAssets.StyleSheet)" />
+<script sm-target-zone="scripts" src="@Url.Content(StudioAssets.Script)"></script>
 
 <footer id="footer" class="tt-footer">
     <div class="tt-wrap">
-        <div class="tt-footer-main">
+        <div class="tt-footer-top">
             <div class="tt-footer-brand">
                 <a class="tt-logo" href="@homeUrl" aria-label="@Model.BrandName">
                     <span class="tt-logo-top">T DOUBLE</span>
@@ -77,8 +78,7 @@
         <div class="tt-footer-word" aria-hidden="true">MINIMAL</div>
 
         <div class="tt-footer-bottom">
-            <span>© @DateTime.Now.Year @Model.BrandName. Minimal 3D Printing Studio.</span>
-            <span>Hà Nội, Việt Nam</span>
+            <span>© @DateTime.Now.Year @Model.BrandName · Minimal 3D Printing Studio · Hà Nội</span>
             @if (ViewBag.SmartstoreHint is string hint && hint.HasValue())
             {
                 <span class="tt-footer-hint">@Html.Raw(hint)</span>
@@ -87,7 +87,7 @@
     </div>
 </footer>
 
-<div class="tt-float-contact">
+<div class="tt-float">
     @if (Model.ZaloUrl.HasValue())
     {
         <a class="is-zalo" href="@Model.ZaloUrl" target="_blank" rel="noopener" aria-label="Nhắn Zalo">Zalo</a>

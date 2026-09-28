@@ -9,68 +9,67 @@
     }));
 }
 
-<div class="tt-calc" data-tt-calc="@json">
-    <div class="tt-calc-tabs" role="tablist">
-        <span class="tt-calc-indicator" aria-hidden="true"></span>
-        @for (var i = 0; i < Model.Count; i++)
-        {
-            <button type="button" class="tt-calc-tab@(i == 0 ? " is-active" : "")" role="tab" aria-selected="@(i == 0 ? "true" : "false")">@Model[i].Name</button>
-        }
-    </div>
-
-    <div class="tt-calc-body">
+@* Price configurator. Inputs are text fields on purpose: Smartstore wraps every input[type=number] into its own stepper widget. *@
+<div class="tt-config" data-tt-config="@json">
+    <div class="tt-techs" role="group" aria-label="Công nghệ in">
         @for (var i = 0; i < Model.Count; i++)
         {
             var tech = Model[i];
-            var max = tech.HighestPrice > 0 ? tech.HighestPrice : 1;
-
-            <div data-tt-panel hidden="@(i > 0)">
-                <div class="tt-calc-head">
-                    <div>
-                        <small>@tech.Materials</small>
-                        <h3>@tech.Name</h3>
-                    </div>
-                    <span class="tt-tier-price">từ @PrintPriceList.FormatPrice(tech.LowestPrice)<small>/g</small></span>
-                </div>
-                <p class="tt-calc-desc">@tech.Description</p>
-                <div class="tt-tiers">
-                    @foreach (var tier in tech.Tiers)
-                    {
-                        <div class="tt-tier">
-                            <span class="tt-tier-weight">@tier.Label</span>
-                            <span class="tt-tier-bar"><i data-w="@((int)Math.Round(tier.PricePerGram / max * 100))"></i></span>
-                            <span class="tt-tier-price">@PrintPriceList.FormatPrice(tier.PricePerGram)<small>/g</small></span>
-                        </div>
-                    }
-                </div>
-            </div>
+            <button type="button" class="tt-tech tt-card@(i == 0 ? " is-active" : "")" data-tech="@i" aria-pressed="@(i == 0 ? "true" : "false")" data-tt-reveal style="--d:@((i * 0.08).ToString("0.00", CultureInfo.InvariantCulture))s">
+                <span class="tt-tech-name">@tech.Name</span>
+                <span class="tt-tech-mat">@tech.Materials</span>
+                <span class="tt-tech-price">@PrintPriceList.FormatPrice(tech.LowestPrice)<small>/gram trở lên</small></span>
+                <span class="tt-tech-desc">@tech.Description</span>
+            </button>
         }
+    </div>
 
-        <div class="tt-calc-form">
-            <div>
-                <label for="tt-calc-grams">Khối lượng 1 mẫu (g)</label>
-                <input id="tt-calc-grams" type="number" min="1" max="100000" value="120" data-tt-grams />
+    <div class="tt-panel tt-card is-active" data-tt-reveal="right">
+        <div class="tt-panel-head">
+            <h3>Bậc giá · <span data-tt-techname>@Model.FirstOrDefault()?.Name</span></h3>
+            <span>đơn giá / gram theo tổng khối lượng</span>
+        </div>
+
+        <div class="tt-chart" data-tt-chart aria-hidden="true"></div>
+        <div class="tt-bar-labels" data-tt-labels aria-hidden="true"></div>
+
+        <div class="tt-fields">
+            <div class="tt-num">
+                <label for="tt-grams">Khối lượng 1 mẫu</label>
+                <div class="tt-num-box">
+                    <button type="button" data-step="-1" data-target="#tt-grams" aria-label="Giảm">−</button>
+                    <input id="tt-grams" type="text" inputmode="numeric" autocomplete="off" value="120" data-tt-grams />
+                    <em>g</em>
+                    <button type="button" data-step="1" data-target="#tt-grams" aria-label="Tăng">+</button>
+                </div>
             </div>
-            <div>
-                <label for="tt-calc-qty">Số lượng</label>
-                <input id="tt-calc-qty" type="number" min="1" max="10000" value="1" data-tt-qty />
-            </div>
-            <input type="range" min="0" max="100" step="0.5" aria-label="Khối lượng" data-tt-range />
-            <div class="tt-calc-total">
-                <div>
-                    <span>Tạm tính</span>
-                    <strong data-tt-total>—</strong>
-                    <em data-tt-unit></em>
+            <div class="tt-num">
+                <label for="tt-qty">Số lượng</label>
+                <div class="tt-num-box">
+                    <button type="button" data-step="-1" data-target="#tt-qty" aria-label="Giảm">−</button>
+                    <input id="tt-qty" type="text" inputmode="numeric" autocomplete="off" value="1" data-tt-qty />
+                    <em>cái</em>
+                    <button type="button" data-step="1" data-target="#tt-qty" aria-label="Tăng">+</button>
                 </div>
             </div>
         </div>
+        <input class="tt-range" type="range" min="0" max="100" step="0.5" aria-label="Kéo để chọn khối lượng" data-tt-range />
 
-        <div class="tt-calc-cta">
-            <a class="tt-btn tt-btn--glow" href="@quoteUrl" data-base="@quoteUrl" data-tt-cta>
-                <span>Gửi file để báo giá chính xác</span>
+        <div class="tt-total">
+            <div>
+                <small>Tạm tính</small>
+                <strong data-tt-total>—</strong>
+                <em data-tt-unit></em>
+            </div>
+            <a class="tt-btn" href="@quoteUrl" data-base="@quoteUrl" data-tt-cta data-magnetic>
+                <span>Gửi file báo giá</span>
                 @StudioIcons.Get("arrow", "tt-arrow")
             </a>
-            <small>Khối lượng thực tế được tính từ file của bạn. Bậc giá áp dụng theo tổng khối lượng đơn in.</small>
         </div>
+
+        @if (ViewData["PriceNote"] is string note && note.HasValue())
+        {
+            <p class="tt-note-line">@StudioIcons.Get("spark")<span>@note Khối lượng thật được tính từ file của bạn.</span></p>
+        }
     </div>
 </div>

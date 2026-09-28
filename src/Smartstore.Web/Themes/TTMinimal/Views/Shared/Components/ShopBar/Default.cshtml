@@ -1,0 +1,46 @@
+@model ShopBarModel
+
+@inject IModuleCatalog ModuleCatalog
+
+@{
+    var studioModule = ModuleCatalog.GetModuleByName("Smartstore.Split3D");
+    var hasStudio = studioModule != null && studioModule.IsInstalled();
+}
+
+@* TT Minimal header row. ShopBar.Tools keeps Flex's cart / wishlist / offcanvas behaviour. *@
+<div class="shopbar tt-shopbar">
+    <div class="shopbar-col shop-logo">
+        @await Component.InvokeAsync("ShopLogo")
+    </div>
+
+    @if (hasStudio)
+    {
+        <nav class="tt-mainnav d-none d-lg-flex" aria-label="@T("Aria.Label.MainNavigation")">
+            @(await new Smartstore.Core.Widgets.ComponentWidget("StudioNav", "Smartstore.Split3D", null).InvokeAsync(ViewContext))
+        </nav>
+    }
+
+    <div class="tt-shopbar-end">
+        <div class="tt-search" id="tt-search">
+            <button type="button" class="tt-icon-btn tt-search-toggle" aria-expanded="false" aria-controls="tt-search-panel" aria-label="@T("Search")">
+                <i class="fa fa-magnifying-glass" aria-hidden="true"></i>
+            </button>
+            <div class="tt-search-panel" id="tt-search-panel">
+                <zone name="searchbox" replace-content="true">
+                    @await Component.InvokeAsync("SearchBox")
+                </zone>
+            </div>
+        </div>
+
+        @if (Model.DisplayAdminLink)
+        {
+            <a class="tt-icon-btn d-none d-lg-inline-flex" asp-area="Admin" asp-controller="Home" asp-action="Index" target="_admin" rel="nofollow" title="@T("Account.Administration")" aria-label="@T("Account.Administration")">
+                <i class="fa fa-gear" aria-hidden="true"></i>
+            </a>
+        }
+
+        <div class="shopbar-col-group shopbar-col-group-tools">
+            <partial name="ShopBar.Tools" model="Model" />
+        </div>
+    </div>
+</div>

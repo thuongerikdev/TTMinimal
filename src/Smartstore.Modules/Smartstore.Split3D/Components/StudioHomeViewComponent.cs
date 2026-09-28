@@ -85,6 +85,7 @@ public class StudioHomeViewComponent : SmartViewComponent
         {
             model.Categories.Add(new StudioCategoryCard
             {
+                Id = category.Id,
                 Name = category.GetLocalized(x => x.Name),
                 Url = Url.RouteUrl("Category", new { SeName = await category.GetActiveSlugAsync() }),
                 ImageUrl = category.MediaFileId > 0 ? await _mediaService.GetUrlAsync(category.MediaFileId, ThumbnailSize, null, false) : null,
@@ -136,14 +137,14 @@ public class StudioHomeViewComponent : SmartViewComponent
             .Select(x => x.ProductId)
             .Distinct()
             .ToListAsync();
-        var categoryNames = (await _db.ProductCategories
+        var productCategories = (await _db.ProductCategories
             .AsNoTracking()
             .Where(x => productIds.Contains(x.ProductId))
             .OrderBy(x => x.DisplayOrder)
-            .Select(x => new { x.ProductId, x.Category.Name })
+            .Select(x => new { x.ProductId, x.CategoryId, x.Category.Name })
             .ToListAsync())
             .DistinctBy(x => x.ProductId)
-            .ToDictionary(x => x.ProductId, x => x.Name);
+            .ToDictionary(x => x.ProductId);
 
         var options = _priceCalculationService.CreateDefaultOptions(true);
         var cards = new List<StudioProductCard>();
@@ -161,7 +162,8 @@ public class StudioHomeViewComponent : SmartViewComponent
                 Price = product.CallForPrice ? T("Products.CallForPrice") : price.FinalPrice.ToString(),
                 OldPrice = !product.CallForPrice && regular.HasValue && regular.Value > price.FinalPrice ? regular.Value.ToString() : null,
                 PriceFrom = price.HasPriceRange,
-                CategoryName = categoryNames.Get(product.Id),
+                CategoryName = productCategories.Get(product.Id)?.Name,
+                CategoryId = productCategories.Get(product.Id)?.CategoryId ?? 0,
                 HasVariants = variantProductIds.Contains(product.Id)
             });
         }
