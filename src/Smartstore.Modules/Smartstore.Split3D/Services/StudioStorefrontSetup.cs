@@ -19,7 +19,7 @@ namespace Smartstore.Split3D.Services;
 /// </summary>
 public class StudioStorefrontSetup
 {
-    public const int CurrentVersion = 1;
+    public const int CurrentVersion = 2;
     public const string ThemeName = "TTMinimal";
     public const string PrintServiceRouteName = "TTPrintService";
 
@@ -63,27 +63,33 @@ public class StudioStorefrontSetup
             return false;
         }
 
-        await ApplyThemeAndSeoAsync(cancelToken);
+        var themeApplied = await ApplyThemeAndSeoAsync(cancelToken);
         await ApplyFormsAsync();
         await ApplyCatalogAsync();
         await ApplyMainMenuAsync(cancelToken);
         await ApplyShippingAsync(cancelToken);
         await ApplyAdminMenuAsync();
 
-        _studioSettings.LayoutVersion = CurrentVersion;
-        await _services.SettingFactory.SaveSettingsAsync(_studioSettings);
+        // Without the theme files the layout is incomplete: leave the version unset so the next start tries again.
+        if (themeApplied)
+        {
+            _studioSettings.LayoutVersion = CurrentVersion;
+            await _services.SettingFactory.SaveSettingsAsync(_studioSettings);
+        }
+
         await _services.Cache.ClearAsync();
 
-        Logger.Info($"TT Minimal storefront layout {CurrentVersion} applied.");
+        Logger.Info($"TT Minimal storefront layout {CurrentVersion} applied{(themeApplied ? string.Empty : " without theme")}.");
 
         return true;
     }
 
-    private async Task ApplyThemeAndSeoAsync(CancellationToken cancelToken)
+    private async Task<bool> ApplyThemeAndSeoAsync(CancellationToken cancelToken)
     {
         var brand = _studioSettings.BrandName.NullEmpty() ?? "TT Minimal";
+        var hasTheme = _themeRegistry.ContainsTheme(ThemeName);
 
-        if (_themeRegistry.ContainsTheme(ThemeName))
+        if (hasTheme)
         {
             // Theme settings are often stored per store (theme configuration in the admin area saves them that way).
             var storeIds = await _db.Settings
@@ -134,6 +140,8 @@ public class StudioStorefrontSetup
         socialSettings.InstagramLink = RemovePlaceholder(socialSettings.InstagramLink);
         socialSettings.TikTokLink = RemovePlaceholder(socialSettings.TikTokLink);
         await _services.SettingFactory.SaveSettingsAsync(socialSettings);
+
+        return hasTheme;
 
         static string RemovePlaceholder(string link) => link == "#" ? string.Empty : link;
     }

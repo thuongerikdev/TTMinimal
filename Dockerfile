@@ -31,6 +31,11 @@ RUN --mount=type=cache,id=nuget,target=/root/.nuget/packages \
 	--no-self-contained \
 	--no-restore
 
+# Custom themes: copy explicitly and fail the build if the storefront theme is missing,
+# instead of silently falling back to Flex at runtime.
+RUN cp -r /app/src/Smartstore.Web/Themes/TTMinimal /app/release/publish/Themes/ && \
+    test -f /app/release/publish/Themes/TTMinimal/theme.config
+
 # Build Docker image
 FROM mcr.microsoft.com/dotnet/aspnet:10.0
 EXPOSE 80
