@@ -62,6 +62,7 @@ src/Smartstore.Web/Themes/*
 !src/Smartstore.Web/Themes/Flex/
 !src/Smartstore.Web/Themes/FlexBlue/
 !src/Smartstore.Web/Themes/FlexBlack/
+!src/Smartstore.Web/Themes/TTMinimal/
 
 # Local runtime state (must not leak into the image)
 src/Smartstore.Web/App_Data/Tenants
