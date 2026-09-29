@@ -22,18 +22,15 @@
 <div class="tt">
     <section class="tt-bleed tt-page-hero">
         <div class="tt-wrap">
-            <div class="tt-masthead" data-tt-reveal><span>Dịch vụ in 3D theo yêu cầu</span><span class="d-none d-md-inline">FDM · Resin · Thiết kế · Render</span><span>@contact.BrandName · Hà Nội</span></div>
-            <h1 class="tt-hero-title tt-split">
-                <span>In 3D theo yêu cầu,</span>
-                <span><em class="tt-serif tt-underlined">FDM &amp; Resin.<svg class="tt-scribble" viewBox="0 0 300 24" preserveAspectRatio="none" aria-hidden="true"><path d="M4 16 C 48 6, 96 20, 148 11 S 238 5, 296 13"/></svg></em></span>
-            </h1>
-            <p class="tt-hero-lead" data-tt-reveal style="--d:.3s">
+            <div class="tt-tag tt-tilt" data-tt-reveal>DỊCH VỤ IN 3D · @contact.BrandName.ToUpperInvariant() · HÀ NỘI</div>
+            <h1 class="tt-split">IN 3D THEO YÊU CẦU.<br /><em>FDM &amp; RESIN.</em></h1>
+            <p data-tt-reveal style="--d:.25s">
                 Gửi file 3D để nhận báo giá cụ thể@(lowest > 0 ? $" — giá chỉ từ {PrintPriceList.FormatPrice(lowest)}/gram" : "").
-                Nhận thêm <b>thiết kế 3D</b> nhân vật, đồ vật, bối cảnh, <b>chỉnh sửa file</b> và <b>render</b> hình ảnh 3D.
+                Nhận thêm thiết kế 3D nhân vật, đồ vật, bối cảnh, chỉnh sửa file và render hình ảnh 3D.
             </p>
-            <div class="tt-actions" data-tt-reveal style="--d:.45s">
-                <a class="tt-btn" href="#tt-quote">@StudioIcons.Get("upload") <span>Gửi file báo giá</span></a>
-                <a class="tt-btn tt-btn--line" href="#tt-calc"><span>Tính giá tạm</span> @StudioIcons.Get("arrow", "tt-arrow")</a>
+            <div class="tt-actions" data-tt-reveal style="--d:.35s">
+                <a class="tt-button tt-button--dark" href="#tt-quote">Gửi file báo giá</a>
+                <a class="tt-textlink" href="#tt-calc">Tính giá tạm</a>
             </div>
         </div>
     </section>
@@ -57,7 +54,7 @@
                                     <li><span>@tier.Label</span><b>@PrintPriceList.FormatPrice(tier.PricePerGram)/g</b></li>
                                 }
                             </ul>
-                            <a class="tt-btn tt-btn--line tt-btn--sm" href="@(quoteUrl)?tech=@(Uri.EscapeDataString(tech.Name))#tt-quote"><span>Báo giá @tech.Name</span> @StudioIcons.Get("arrow", "tt-arrow")</a>
+                            <a class="tt-button" href="@(quoteUrl)?tech=@(Uri.EscapeDataString(tech.Name))#tt-quote">Báo giá @tech.Name →</a>
                         </div>
                     }
                 </div>
@@ -66,10 +63,10 @@
 
         <section id="tt-calc" class="tt-bleed tt-section" style="padding-top:0">
             <div class="tt-wrap">
-                <div class="tt-head">
+                <div class="tt-section-heading">
                     <div>
-                        <span class="tt-num">(01)</span>
-                        <h2 class="tt-h2 tt-split">Biết trước chi phí <em class="tt-serif">trong vài giây</em></h2>
+                        <div class="tt-kicker">TÍNH GIÁ TẠM</div>
+                        <h2 class="tt-split">BIẾT TRƯỚC CHI PHÍ <mark>TRONG VÀI GIÂY.</mark></h2>
                     </div>
                     <p class="tt-lead" data-tt-reveal>Khối lượng xem trong phần mềm slicer (Cura, PrusaSlicer, Bambu Studio, Chitubox…). Bậc giá áp dụng theo tổng khối lượng đơn in.</p>
                 </div>
@@ -189,7 +186,7 @@
                         </div>
                     </fieldset>
 
-                    <button type="submit" class="tt-btn tt-btn--block">
+                    <button type="submit" class="tt-button tt-button--dark tt-button--block">
                         @StudioIcons.Get("upload") <span>Gửi yêu cầu báo giá</span>
                     </button>
                 </form>

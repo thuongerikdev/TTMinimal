@@ -40,8 +40,9 @@
 
         <zone name="header_before"></zone>
 
-        @* TT Minimal: one floating header row (logo, studio navigation, search, account, cart). No top bar, no mega menu. *@
+        @* TT Minimal: ink top strip + one header row (logo, studio navigation, search, account, cart). No Flex top bar or mega menu. *@
         <header id="header" class="tt-header" zone-name="header" replace-content="true">
+            <div class="tt-topbar" aria-hidden="true">THIẾT KẾ 3D <span>✦</span> IN THEO YÊU CẦU <span>✦</span> MADE WITH A LITTLE FUN</div>
             <div class="shopbar-section">
                 <div class="container shopbar-container">
                     @await Component.InvokeAsync("ShopBar")

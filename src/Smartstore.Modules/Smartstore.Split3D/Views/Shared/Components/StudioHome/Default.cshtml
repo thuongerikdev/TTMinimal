@@ -3,445 +3,279 @@
 @{
     var contact = Model.Contact;
     var techs = Model.Technologies;
-    var fdm = techs.FirstOrDefault(x => x.Name.Contains("FDM", StringComparison.OrdinalIgnoreCase));
-    var resinPrices = techs.Where(x => x.Name.Contains("Resin", StringComparison.OrdinalIgnoreCase)).Select(x => x.LowestPrice).ToList();
     var lowest = techs.Count > 0 ? techs.Min(x => x.LowestPrice) : 0;
     var phone = contact.Phone1.NullEmpty() ?? contact.Phone2;
-    var split3D = Model.Addons.FirstOrDefault(x => x.Name.Contains("Split3D", StringComparison.OrdinalIgnoreCase));
-    var addonFrom = Model.Addons.Count > 0 ? Model.Addons[0].PriceFrom : null;
-    var ticker = new[] { "In 3D theo yêu cầu", "FDM", "Resin", "Thiết kế 3D", "Sửa file", "Render", "Addon Blender", "Hà Nội" };
+    var split3D = Model.Addons.FirstOrDefault(x => x.Name.Contains("Split3D", StringComparison.OrdinalIgnoreCase)) ?? Model.Addons.FirstOrDefault();
+    var toys = Url.Content("~/Modules/Smartstore.Split3D/studio/studio-toys.webp");
+    var toysCut = Url.Content("~/Modules/Smartstore.Split3D/studio/studio-toys-cut.webp");
+    var cardColors = new[] { "mint", "yellow", "lilac", "pink" };
     string Delay(int i, double step = .08) => (i * step).ToString("0.00", CultureInfo.InvariantCulture) + "s";
 
     ViewData["QuoteUrl"] = Model.PrintServiceUrl;
     ViewData["PriceNote"] = Model.PrintPriceNote;
 }
 
-@* Hand-drawn marks reused below. *@
-@functions {
-    private static Microsoft.AspNetCore.Html.IHtmlContent Scribble(string cls = "tt-scribble")
-        => new Microsoft.AspNetCore.Html.HtmlString($"<svg class=\"{cls}\" viewBox=\"0 0 300 24\" preserveAspectRatio=\"none\" aria-hidden=\"true\"><path d=\"M4 16 C 48 6, 96 20, 148 11 S 238 5, 296 13\"/></svg>");
-}
-
 <div class="tt">
 
     @* ================= HERO ================= *@
     <section class="tt-bleed tt-hero">
-        <div class="tt-wrap">
-            <div class="tt-masthead" data-tt-reveal>
-                <span>Minimal 3D Printing Studio</span>
-                <span class="d-none d-md-inline">Xưởng in 3D · Thiết kế · Addon Blender</span>
-                <span>Hà Nội, Việt Nam</span>
-            </div>
-
-            <div class="tt-hero-grid">
-                <div class="tt-hero-copy">
-                    <h1 class="tt-hero-title tt-split">
-                        <span>Biến ý tưởng</span>
-                        <span>thành <span class="tt-rotator"><span>mô hình</span><span>figure</span><span>linh kiện</span><span>quà tặng</span><span>nguyên mẫu</span></span></span>
-                        <span><em class="tt-serif tt-underlined">in 3D thật.@Scribble()</em></span>
-                    </h1>
-                    <p class="tt-hero-lead" data-tt-reveal style="--d:.3s">
-                        Chúng tôi là một xưởng nhỏ ở Hà Nội: nhận <b>in FDM &amp; Resin</b> theo yêu cầu,
-                        tự thiết kế <b>sản phẩm in 3D</b> và viết <b>addon Blender</b> cho người làm 3D.
-                    </p>
-                    <div class="tt-actions" data-tt-reveal style="--d:.45s">
-                        <a class="tt-btn" href="@Model.PrintServiceUrl#tt-quote">
-                            <span>Gửi file báo giá</span>
-                            @StudioIcons.Get("arrow", "tt-arrow")
-                        </a>
-                        <a class="tt-btn tt-btn--line" href="#tt-pricing"><span>Xem bảng giá</span></a>
-                    </div>
+        <div class="tt-wrap tt-hero-grid">
+            <div class="tt-hero-copy">
+                <div class="tt-tag tt-tilt" data-tt-reveal>XƯỞNG NHỎ. Ý TƯỞNG TO.</div>
+                <h1 class="tt-split">Ý TƯỞNG<br />CỦA BẠN.<br /><em>IN THÀNH THẬT.</em></h1>
+                <p data-tt-reveal style="--d:.25s">Từ một file 3D đến món đồ cầm trên tay.<br />Thêm chút sáng tạo. Thêm nhiều cá tính.</p>
+                <div class="tt-actions" data-tt-reveal style="--d:.35s">
+                    <a class="tt-button tt-button--dark" href="@Model.PrintServiceUrl#tt-quote">Gửi file báo giá</a>
+                    <a class="tt-textlink" href="#tt-services">Khám phá studio</a>
                 </div>
-
-                <figure class="tt-plate" data-tt-reveal="zoom" style="--d:.15s">
-                    <canvas id="tt-hero-canvas" role="img" aria-label="Mô hình 3D đang được in từng lớp"></canvas>
-                    <span class="tt-reg tt-reg--tl" aria-hidden="true"></span>
-                    <span class="tt-reg tt-reg--tr" aria-hidden="true"></span>
-                    <span class="tt-reg tt-reg--bl" aria-hidden="true"></span>
-                    <span class="tt-reg tt-reg--br" aria-hidden="true"></span>
-                    <figcaption class="tt-plate-cap" aria-hidden="true">
-                        <span>Fig. 01 — <b data-hud-file>VASE_01.STL</b></span>
-                        <span>Layer <b data-hud-layer>01 / 46</b></span>
-                    </figcaption>
-                    <div class="tt-plate-bar" aria-hidden="true"><i data-hud-bar></i><b data-hud-pct>0%</b></div>
-
-                    <svg class="tt-stamp" viewBox="0 0 120 120" aria-hidden="true">
-                        <defs><path id="tt-stamp-circle" d="M60 60 m-44 0 a44 44 0 1 1 88 0 a44 44 0 1 1 -88 0" /></defs>
-                        <circle cx="60" cy="60" r="56" />
-                        <text><textPath href="#tt-stamp-circle">IN TẠI HÀ NỘI · TT MINIMAL · IN 3D ·</textPath></text>
-                        <path class="tt-stamp-star" d="M60 44 L64 56 L76 60 L64 64 L60 76 L56 64 L44 60 L56 56 Z" />
-                    </svg>
-                </figure>
+                <div class="tt-hero-foot" data-tt-reveal style="--d:.45s">FDM &amp; Resin <span>✦</span> Thiết kế &amp; hoàn thiện@(lowest > 0 ? " ✦ từ " + PrintPriceList.FormatPrice(lowest) + "/g" : "")</div>
             </div>
 
-            <dl class="tt-facts">
-                @if (fdm != null)
-                {
-                    <div data-tt-reveal><dt>In FDM từ</dt><dd>@PrintPriceList.FormatPrice(fdm.LowestPrice)<small>/g</small></dd></div>
-                }
-                @if (resinPrices.Count > 0)
-                {
-                    <div data-tt-reveal style="--d:.08s"><dt>In Resin từ</dt><dd>@PrintPriceList.FormatPrice(resinPrices.Min())<small>/g</small></dd></div>
-                }
-                <div data-tt-reveal style="--d:.16s"><dt>Công nghệ</dt><dd>@techs.Count<small> loại</small></dd></div>
-                <div data-tt-reveal style="--d:.24s"><dt>Nhận hàng</dt><dd>Tại xưởng<small> / giao tận nơi</small></dd></div>
-            </dl>
+            @* 3D card: tilts with the pointer, toys, label and sticker sit at different depths. *@
+            <div class="tt-art-stage" data-tt-reveal="zoom" style="--d:.15s">
+                <div class="tt-art3d" data-tt-3d>
+                    <div class="tt-art3d-card">
+                        <img class="tt-art3d-toys" src="@toysCut" alt="Khủng long mint, robot hồng và bình vàng in 3D" width="900" height="900" />
+                        <span class="tt-art3d-shine" aria-hidden="true"></span>
+                    </div>
+                    <div class="tt-art-label">CUTE THINGS, REAL THINGS.</div>
+                    <div class="tt-art-sticker">ĐƯỢC LÀM<br />THEO Ý BẠN ♡</div>
+                </div>
+            </div>
         </div>
     </section>
 
-    @* ================= TICKER ================= *@
-    <div class="tt-bleed tt-tape" aria-hidden="true">
+    <div class="tt-bleed tt-ribbon" aria-hidden="true">
         <div class="tt-marquee-row">
-            @for (var n = 0; n < 3; n++) { foreach (var w in ticker) { <span>@w</span> } }
+            @for (var n = 0; n < 4; n++)
+            {
+                <span>PRINT YOUR IDEAS. <b>✦</b> MAKE IT YOURS. <b>✦</b> A LITTLE DIFFERENT. <b>✦</b> A LOT OF FUN. <b>✦</b></span>
+            }
         </div>
     </div>
 
     @* ================= SERVICES ================= *@
-    <section id="tt-services" class="tt-bleed tt-section">
-        <div class="tt-wrap">
-            <header class="tt-head">
-                <span class="tt-num">(01)</span>
-                <h2 class="tt-h2 tt-split">Ba việc chúng tôi <em class="tt-serif">làm mỗi ngày</em></h2>
-                <p class="tt-lead" data-tt-reveal>Bạn có file cần in, cần một món đồ in 3D đẹp, hay cần công cụ để tự làm — xưởng đều có thể giúp.</p>
-            </header>
-
-            <ol class="tt-index">
-                <li data-tt-reveal>
-                    <a href="@Model.PrintServiceUrl">
-                        <span class="tt-index-no">01</span>
-                        <span class="tt-index-title">In 3D theo yêu cầu</span>
-                        <span class="tt-index-desc">
-                            Gửi file, nhận báo giá theo khối lượng in. FDM cho đồ lớn &amp; linh kiện bền, Resin cho figure và chi tiết sắc nét.
-                            <span class="tt-tags"><i>FDM</i><i>Resin</i>@if (lowest > 0) { <i>từ @PrintPriceList.FormatPrice(lowest)/g</i> }</span>
-                        </span>
-                        <span class="tt-index-go">@StudioIcons.Get("arrow")</span>
-                    </a>
-                </li>
-                <li data-tt-reveal style="--d:.08s">
-                    <a href="#tt-products">
-                        <span class="tt-index-no">02</span>
-                        <span class="tt-index-title">Sản phẩm của xưởng</span>
-                        <span class="tt-index-desc">
-                            Những món đồ in 3D do chính studio thiết kế, có nhiều màu sắc và kích cỡ, hoàn thiện bằng tay trước khi giao.
-                            <span class="tt-tags"><i>Thiết kế riêng</i><i>Nhiều màu &amp; size</i></span>
-                        </span>
-                        <span class="tt-index-go">@StudioIcons.Get("arrow")</span>
-                    </a>
-                </li>
-                <li data-tt-reveal style="--d:.16s">
-                    <a href="#tt-addons">
-                        <span class="tt-index-no">03</span>
-                        <span class="tt-index-title">Addon Blender</span>
-                        <span class="tt-index-desc">
-                            Công cụ chúng tôi dùng hằng ngày để chuẩn bị file in: cắt mô hình lớn, tạo khớp nối. Key gửi tự động, cập nhật ngay trong Blender.
-                            <span class="tt-tags"><i>Split3D Print</i>@if (addonFrom != null) { <i>từ @addonFrom</i> }</span>
-                        </span>
-                        <span class="tt-index-go">@StudioIcons.Get("arrow")</span>
-                    </a>
-                </li>
-            </ol>
-
-            <div class="tt-extras" data-tt-reveal>
-                <span class="tt-extras-label">Kèm theo</span>
-                <span>@StudioIcons.Get("pencil") Thiết kế 3D nhân vật, đồ vật, bối cảnh</span>
-                <span>@StudioIcons.Get("wrench") Sửa lỗi file, chia mảnh, thêm khớp</span>
-                <span>@StudioIcons.Get("image") Render hình ảnh để duyệt mẫu</span>
+    <section class="tt-wrap tt-section" id="tt-services">
+        <div class="tt-section-heading">
+            <div>
+                <div class="tt-kicker">CHỌN MỘT ĐIỀU HAY HO</div>
+                <h2 class="tt-split">BẠN CẦN GÌ <mark>HÔM NAY?</mark></h2>
             </div>
+            <p data-tt-reveal>Một studio. Ba cách để sáng tạo.</p>
         </div>
-    </section>
-
-    @* ================= PROCESS (PINNED) ================= *@
-    <section id="tt-process" class="tt-bleed tt-process">
-        <div class="tt-process-pin">
-            <div class="tt-process-head">
-                <span class="tt-num">(02)</span>
-                <h2 class="tt-h2 tt-split">Từ file đến tay bạn, <em class="tt-serif">bốn bước</em></h2>
-            </div>
-            <div class="tt-process-track">
-                <article class="tt-step">
-                    <header><span>Bước 01 / 04</span>@StudioIcons.Get("upload")</header>
-                    <h3>Gửi file</h3>
-                    <p>Tải file STL, OBJ, 3MF, STEP… lên trang báo giá, hoặc gửi qua Zalo, Facebook. Chưa có file? Gửi ảnh hoặc vài dòng mô tả.</p>
-                </article>
-                <article class="tt-step">
-                    <header><span>Bước 02 / 04</span>@StudioIcons.Get("calc")</header>
-                    <h3>Nhận báo giá</h3>
-                    <p>Xưởng xem file, tư vấn công nghệ và vật liệu, báo giá theo khối lượng in thực tế.</p>
-                </article>
-                <article class="tt-step">
-                    <header><span>Bước 03 / 04</span>@StudioIcons.Get("layers")</header>
-                    <h3>In &amp; hoàn thiện</h3>
-                    <p>In từng lớp, gỡ support, chà nhám, ghép phôi theo yêu cầu của bạn.</p>
-                </article>
-                <article class="tt-step">
-                    <header><span>Bước 04 / 04</span>@StudioIcons.Get("truck")</header>
-                    <h3>Nhận hàng</h3>
-                    <p>Ghé xưởng ở Hà Nội để nhận, hoặc chúng tôi gửi tận nơi.</p>
-                </article>
-            </div>
-            <div class="tt-process-bar" aria-hidden="true"><i></i></div>
+        <div class="tt-cards">
+            <article class="tt-cardpop tt-mint" data-tt-reveal data-tt-tilt="5">
+                <div class="tt-card-top"><span class="tt-number">01</span><span class="tt-pill">FDM / RESIN</span></div>
+                <h3>CÓ FILE?<br />CÓ ĐỒ THẬT.</h3>
+                <p>In mô hình, figure, linh kiện và quà tặng theo yêu cầu của bạn@(lowest > 0 ? ", giá từ " + PrintPriceList.FormatPrice(lowest) + "/gram" : "").</p>
+                <a class="tt-button" href="@Model.PrintServiceUrl">Khám phá dịch vụ in</a>
+            </article>
+            <article class="tt-cardpop tt-yellow" data-tt-reveal data-tt-tilt="5" style="--d:.08s">
+                <div class="tt-card-top"><span class="tt-number">02</span><span class="tt-pill">MADE BY TT</span></div>
+                <h3>ĐỒ NHỎ.<br />GU RẤT RIÊNG.</h3>
+                <p>Những món đồ in 3D do studio thiết kế, dành cho góc nhỏ của bạn.</p>
+                <a class="tt-button" href="#tt-products">Xem bộ sưu tập</a>
+            </article>
+            <article class="tt-cardpop tt-lilac" data-tt-reveal data-tt-tilt="5" style="--d:.16s">
+                <div class="tt-card-top"><span class="tt-number">03</span><span class="tt-pill">BLENDER ADDON</span></div>
+                <h3>ÍT THAO TÁC.<br />NHIỀU SÁNG TẠO.</h3>
+                <p>Công cụ giúp chia mô hình và chuẩn bị file in ngay trong Blender.</p>
+                <a class="tt-button" href="#tt-addons">Khám phá @(split3D?.Name ?? "Split3D")</a>
+            </article>
         </div>
     </section>
 
     @* ================= PRICING ================= *@
     @if (techs.Count > 0)
     {
-        <section id="tt-pricing" class="tt-bleed tt-section tt-section--paper2">
+        <section class="tt-bleed tt-pricing" id="tt-pricing">
             <div class="tt-wrap">
-                <header class="tt-head">
-                    <span class="tt-num">(03)</span>
-                    <h2 class="tt-h2 tt-split">Giá tính đến <em class="tt-serif tt-circled">từng gram<svg viewBox="0 0 200 70" preserveAspectRatio="none" aria-hidden="true"><path d="M20 38 C 18 12, 170 6, 186 30 C 198 52, 60 66, 22 50 C 8 44, 20 26, 44 20" /></svg></em></h2>
-                    <p class="tt-lead" data-tt-reveal>Chọn công nghệ, nhập khối lượng và số lượng để xem giá tạm tính. In càng nhiều, đơn giá mỗi gram càng giảm.</p>
-                </header>
+                <div class="tt-section-heading">
+                    <div>
+                        <div class="tt-kicker">BẢNG GIÁ IN 3D</div>
+                        <h2 class="tt-split">TÍNH GIÁ <mark>TRONG 5 GIÂY.</mark></h2>
+                    </div>
+                    <p data-tt-reveal>Chọn công nghệ, nhập khối lượng và số lượng. In càng nhiều, đơn giá mỗi gram càng giảm.</p>
+                </div>
                 <partial name="_StudioPriceCalc" model="techs" />
             </div>
         </section>
     }
 
-    @* ================= SHOP ================= *@
-    <section id="tt-products" class="tt-bleed tt-section">
-        <div class="tt-wrap">
-            <header class="tt-head">
-                <span class="tt-num">(04)</span>
-                <h2 class="tt-h2 tt-split">Đồ do xưởng <em class="tt-serif">tự thiết kế</em></h2>
-                <p class="tt-lead" data-tt-reveal>Mỗi sản phẩm có nhiều lựa chọn màu sắc và kích cỡ. In theo đơn, kiểm tra từng chiếc trước khi giao.</p>
-            </header>
-
-            @if (Model.Products.Count > 0)
-            {
-                @if (Model.Categories.Count > 1)
-                {
-                    <div class="tt-chips tt-filter" data-tt-filter="#tt-product-grid" data-tt-reveal>
-                        <button type="button" class="tt-chip is-active" data-cat="all">Tất cả</button>
-                        @foreach (var cat in Model.Categories)
-                        {
-                            <button type="button" class="tt-chip" data-cat="@cat.Id">@cat.Name</button>
-                        }
+    @* ================= COLLECTION ================= *@
+    <section class="tt-bleed tt-collection" id="tt-products">
+        @if (Model.Products.Count > 0)
+        {
+            <div class="tt-wrap">
+                <div class="tt-section-heading">
+                    <div>
+                        <div class="tt-kicker">BỘ SƯU TẬP CỦA STUDIO</div>
+                        <h2 class="tt-split">NHỎ XINH.<br /><mark>CÁ TÍNH LỚN.</mark></h2>
                     </div>
-                }
+                    @if (Model.Categories.Count > 1)
+                    {
+                        <div class="tt-chips" data-tt-filter="#tt-product-grid">
+                            <button type="button" class="tt-chip is-active" data-cat="all">Tất cả</button>
+                            @foreach (var cat in Model.Categories)
+                            {
+                                <button type="button" class="tt-chip" data-cat="@cat.Id">@cat.Name</button>
+                            }
+                        </div>
+                    }
+                </div>
                 <div class="tt-products" id="tt-product-grid">
                     @for (var i = 0; i < Model.Products.Count; i++)
                     {
                         var p = Model.Products[i];
-                        <a class="tt-product" href="@p.Url" data-cat="@p.CategoryId" data-tt-reveal style="--d:@Delay(i % 4)">
+                        <a class="tt-product tt-@(cardColors[i % cardColors.Length])" href="@p.Url" data-cat="@p.CategoryId" data-tt-reveal style="--d:@Delay(i % 4)">
                             <div class="tt-product-media">
+                                <span class="tt-noimg">✦</span>
                                 @if (p.ImageUrl.HasValue())
                                 {
                                     <img src="@p.ImageUrl" alt="@p.Name" loading="lazy" onerror="this.remove()" />
                                 }
-                                <span class="tt-noimg">@StudioIcons.Get("cube")</span>
                                 @if (p.HasVariants)
                                 {
-                                    <span class="tt-badge">Nhiều màu &amp; size</span>
+                                    <span class="tt-badge">NHIỀU MÀU &amp; SIZE</span>
                                 }
                             </div>
-                            <div class="tt-product-body">
-                                <span class="tt-product-cat">@((i + 1).ToString("00")) · @(p.CategoryName ?? "TT Minimal")</span>
-                                <span class="tt-product-name">@p.Name</span>
-                                <span class="tt-product-price">
-                                    @(p.PriceFrom ? "Từ " : "")@p.Price
-                                    @if (p.OldPrice.HasValue())
-                                    {
-                                        <del>@p.OldPrice</del>
-                                    }
-                                </span>
-                            </div>
+                            <span class="tt-product-cat">@(p.CategoryName ?? "MADE BY TT")</span>
+                            <span class="tt-product-name">@p.Name</span>
+                            <span class="tt-product-price">
+                                @(p.PriceFrom ? "Từ " : "")@p.Price
+                                @if (p.OldPrice.HasValue())
+                                {
+                                    <del>@p.OldPrice</del>
+                                }
+                            </span>
                         </a>
                     }
                 </div>
                 @if (Model.Categories.Count > 0)
                 {
-                    <div class="tt-actions" style="margin-top:2.5rem" data-tt-reveal>
+                    <div class="tt-actions" style="margin-top:2.5rem">
                         @foreach (var cat in Model.Categories.Take(3))
                         {
-                            <a class="tt-btn tt-btn--line tt-btn--sm" href="@cat.Url"><span>@cat.Name</span> @StudioIcons.Get("arrow", "tt-arrow")</a>
+                            <a class="tt-button" href="@cat.Url">@cat.Name →</a>
                         }
                     </div>
                 }
-            }
-            else
-            {
-                <div class="tt-soon" data-tt-reveal>
-                    <div class="tt-soon-copy">
-                        <span class="tt-note">Đang chuẩn bị</span>
-                        <h3>Bộ sưu tập đầu tiên <em class="tt-serif">đang trên bàn in.</em></h3>
-                        <p>Những sản phẩm đầu tiên của xưởng sắp lên kệ. Theo dõi fanpage để không bỏ lỡ — hoặc đặt in theo ý bạn ngay hôm nay.</p>
-                        <div class="tt-actions">
-                            @if (contact.FacebookUrl.HasValue())
-                            {
-                                <a class="tt-btn tt-btn--sm" href="@contact.FacebookUrl" target="_blank" rel="noopener"><span>Theo dõi fanpage</span> @StudioIcons.Get("arrow", "tt-arrow")</a>
-                            }
-                            <a class="tt-btn tt-btn--line tt-btn--sm" href="@Model.PrintServiceUrl"><span>Đặt in theo yêu cầu</span></a>
-                        </div>
-                    </div>
-                    <div class="tt-sketches" aria-hidden="true">
-                        <figure><svg viewBox="0 0 120 150"><path d="M40 20 h40 l6 20 c10 20 14 45 8 70 c-4 18 -16 26 -34 26 s-30 -8 -34 -26 c-6 -25 -2 -50 8 -70 z" /><path d="M36 40 h48" /><path d="M30 100 c20 8 40 8 60 0" /></svg><figcaption>Bình hoa · đang in</figcaption></figure>
-                        <figure><svg viewBox="0 0 120 150"><path d="M30 120 v-50 l30 -30 l30 30 v50 z" /><path d="M30 70 h60" /><path d="M52 120 v-26 h16 v26" /><circle cx="60" cy="56" r="5" /></svg><figcaption>Đèn ngủ · phác thảo</figcaption></figure>
-                        <figure><svg viewBox="0 0 120 150"><rect x="26" y="40" width="68" height="80" rx="10" /><path d="M26 64 h68" /><path d="M44 40 v-12 h32 v12" /><path d="M48 88 h24" /></svg><figcaption>Hộp đựng · mẫu thử</figcaption></figure>
-                    </div>
+            </div>
+        }
+        else
+        {
+            <div class="tt-wrap tt-collection-grid">
+                <div class="tt-collection-art" data-tt-reveal data-tt-tilt="6">
+                    <img src="@toys" alt="Phong cách sản phẩm của studio" width="900" height="900" loading="lazy" />
+                    <span class="tt-tag">MỘT CHÚT CẢM HỨNG ✦</span>
                 </div>
-            }
-        </div>
-    </section>
-
-    @* ================= ADDONS ================= *@
-    @if (Model.Addons.Count > 0)
-    {
-        <section id="tt-addons" class="tt-bleed tt-section tt-section--paper2">
-            <div class="tt-wrap tt-addon-grid">
                 <div>
-                    <span class="tt-num">(05)</span>
-                    <h2 class="tt-h2 tt-split">Công cụ của xưởng, <em class="tt-serif">giờ là của bạn</em></h2>
-                    <p class="tt-lead" style="margin-top:1.2rem" data-tt-reveal>Chúng tôi viết addon Blender để chuẩn bị file in nhanh hơn. Mua một lần, nhận key qua email và cập nhật ngay trong Blender.</p>
-                    <div class="tt-addon-list">
-                        @for (var i = 0; i < Model.Addons.Count; i++)
+                    <div class="tt-kicker">BỘ SƯU TẬP ĐẦU TIÊN</div>
+                    <h2 class="tt-split">NHỎ XINH.<br /><mark>CÁ TÍNH LỚN.</mark></h2>
+                    <p data-tt-reveal>Những thiết kế đầu tiên đang được hoàn thiện.<br />Trong lúc chờ, hãy cùng tạo một món đồ của riêng bạn.</p>
+                    <div class="tt-actions" data-tt-reveal>
+                        <a class="tt-button tt-button--dark" href="@Model.PrintServiceUrl#tt-quote">Đặt in theo ý bạn</a>
+                        @if (contact.FacebookUrl.HasValue())
                         {
-                            var addon = Model.Addons[i];
-                            <a class="tt-addon" href="@addon.Url" data-tt-reveal style="--d:@Delay(i, .1)">
-                                <span class="tt-addon-ph">
-                                    @if (addon.ImageUrl.HasValue())
-                                    {
-                                        <img src="@addon.ImageUrl" alt="" loading="lazy" onerror="this.remove()" />
-                                    }
-                                    @StudioIcons.Get("puzzle")
-                                </span>
-                                <div>
-                                    <h3>@addon.Name @if (addon.Version.HasValue()) { <small>v@(addon.Version)</small> }</h3>
-                                    <p>@addon.Description</p>
-                                </div>
-                                <div class="tt-addon-price">Từ @addon.PriceFrom<small>@addon.PlanCount gói thời hạn</small></div>
-                            </a>
+                            <a class="tt-textlink" href="@contact.FacebookUrl" target="_blank" rel="noopener">Theo dõi fanpage</a>
                         }
                     </div>
-                    @if (Model.AddonCategoryUrl.HasValue())
-                    {
-                        <a class="tt-btn" href="@Model.AddonCategoryUrl" data-tt-reveal><span>Xem các gói &amp; bảng giá</span> @StudioIcons.Get("arrow", "tt-arrow")</a>
-                    }
+                    <div class="tt-micro">Hình minh họa ý tưởng · Bộ sưu tập sắp ra mắt</div>
                 </div>
+            </div>
+        }
+    </section>
 
-                <div data-tt-reveal="right">
-                    <div class="tt-window" aria-hidden="true">
-                        <div class="tt-window-bar"><i></i><i></i><i></i><span>Blender — @(split3D?.Name ?? Model.Addons[0].Name)</span></div>
-                        <div class="tt-window-body">
-                            <div class="tt-viewport">
-                                <svg viewBox="0 0 400 300" fill="none" stroke-linejoin="round">
-                                    <g stroke="rgba(255,255,255,.08)">
-                                        <path d="M40 250 L200 290 L360 250 L200 210 Z" />
-                                        <path d="M80 240 L200 270 L320 240" /><path d="M120 230 L200 250 L280 230" />
-                                    </g>
-                                    <g class="tt-part-top" stroke="#8fa6ff" stroke-width="1.5" fill="rgba(143,166,255,.1)">
-                                        <path d="M200 50 L290 95 L200 140 L110 95 Z" />
-                                        <path d="M110 95 L110 140 L200 185 L200 140 Z" fill="rgba(143,166,255,.05)" />
-                                        <path d="M290 95 L290 140 L200 185 L200 140 Z" fill="rgba(143,166,255,.14)" />
-                                    </g>
-                                    <g stroke="#8fa6ff" stroke-width="1.5" fill="rgba(143,166,255,.12)">
-                                        <path d="M110 150 L200 195 L290 150 L290 200 L200 245 L110 200 Z" />
-                                        <path d="M200 195 L200 245" />
-                                        <circle cx="160" cy="176" r="6" fill="#ffd84d" stroke="none" />
-                                        <circle cx="240" cy="176" r="6" fill="#ffd84d" stroke="none" />
-                                    </g>
-                                    <g class="tt-cut">
-                                        <path d="M70 146 L330 146" stroke="#ffd84d" stroke-width="1.5" stroke-dasharray="6 6" />
-                                        <text x="334" y="150" fill="#ffd84d" font-size="11" font-family="monospace">CUT</text>
-                                    </g>
-                                </svg>
-                            </div>
-                            <div class="tt-sidepanel">
-                                <h5>@(split3D?.Name ?? "Addon")</h5>
-                                <div class="tt-opt">Cắt vòng 360° <span class="tt-toggle"></span></div>
-                                <div class="tt-opt">Khớp nối <em>Chốt tròn</em></div>
-                                <div class="tt-opt">Dung sai <em>Tùy chỉnh</em></div>
-                                <div class="tt-opt">Kiểm tra bàn in <span class="tt-toggle"></span></div>
-                                <div class="tt-opt">Ngôn ngữ <em>VI / EN</em></div>
-                                <div class="tt-fake-btn">Cắt &amp; tạo khớp</div>
-                            </div>
-                        </div>
+    @* ================= ADDON ================= *@
+    @if (split3D != null)
+    {
+        <section class="tt-wrap tt-section" id="tt-addons">
+            <div class="tt-addon">
+                <div class="tt-addon-graphic" data-tt-reveal data-tt-tilt="6">
+                    <span class="tt-pill">BLENDER TOOLKIT</span>
+                    <div class="tt-split-title">SPLIT<span>3D</span><small>CẮT GỌN. RÁP CHUẨN.</small></div>
+                    <div class="tt-addon-tags"><span>Cắt mô hình</span><span>Tạo khớp</span><span>Chuẩn bị in</span>@if (split3D.Version.HasValue()) { <span>v@(split3D.Version)</span> }</div>
+                </div>
+                <div class="tt-addon-copy">
+                    <div class="tt-kicker">CÔNG CỤ TỪ CHÍNH STUDIO</div>
+                    <h2 class="tt-split">MÔ HÌNH LỚN?<br /><mark>CHUYỆN NHỎ.</mark></h2>
+                    <p data-tt-reveal>@split3D.Name giúp chia mô hình thành các phần vừa bàn in và tạo khớp để lắp ráp.</p>
+                    <ul data-tt-reveal>
+                        <li>Chia mô hình ngay trong Blender</li>
+                        <li>Tạo khớp nối giữa các phần</li>
+                        <li>Key gửi tự động, cập nhật ngay trong Blender</li>
+                        <li>Giao diện Tiếng Việt / English</li>
+                    </ul>
+                    <div class="tt-actions" data-tt-reveal>
+                        <a class="tt-button tt-button--dark" href="@(Model.AddonCategoryUrl ?? split3D.Url)">Xem tính năng &amp; gói mua</a>
+                        <span class="tt-price-note">Từ <b>@split3D.PriceFrom</b> · @split3D.PlanCount gói</span>
                     </div>
                 </div>
             </div>
         </section>
     }
 
-    @* ================= WHY ================= *@
-    <section class="tt-bleed tt-section">
+    @* ================= PROCESS ================= *@
+    <section class="tt-bleed tt-process-pop">
         <div class="tt-wrap">
-            <header class="tt-head">
-                <span class="tt-num">(06)</span>
-                <h2 class="tt-h2 tt-split">Làm việc với người, <em class="tt-serif">không phải cỗ máy</em></h2>
-            </header>
-            <div class="tt-why">
-                <div data-tt-reveal><span class="tt-why-no">i.</span><b>Bảng giá công khai</b><p>Đơn giá theo gram cho từng công nghệ. Bạn tự tính được chi phí trước khi liên hệ.</p></div>
-                <div data-tt-reveal style="--d:.08s"><span class="tt-why-no">ii.</span><b>Tư vấn theo file thật</b><p>Chúng tôi mở file của bạn ra xem rồi mới tư vấn vật liệu, cách in, cách hoàn thiện.</p></div>
-                <div data-tt-reveal style="--d:.16s"><span class="tt-why-no">iii.</span><b>Từ ý tưởng đến file</b><p>Không có file 3D? Xưởng nhận thiết kế, sửa file và render hình ảnh.</p></div>
-                <div data-tt-reveal style="--d:.24s"><span class="tt-why-no">iv.</span><b>Xưởng ở Hà Nội</b><p>Ghé nhận hàng trực tiếp tại xưởng, hoặc chúng tôi gửi tận nơi.</p></div>
+            <div class="tt-kicker">KHÔNG CẦN PHỨC TẠP</div>
+            <h2 class="tt-split">BẠN NGHĨ. <mark>CHÚNG TÔI IN.</mark></h2>
+            <div class="tt-steps">
+                <article data-tt-reveal><span>01</span><h3>Gửi ý tưởng</h3><p>File 3D, ảnh tham khảo hoặc một mô tả ngắn.</p></article>
+                <article data-tt-reveal style="--d:.08s"><span>02</span><h3>Chốt phương án</h3><p>Tư vấn vật liệu, kiểm tra file và báo giá.</p></article>
+                <article data-tt-reveal style="--d:.16s"><span>03</span><h3>In &amp; hoàn thiện</h3><p>Tạo hình và xử lý theo yêu cầu đã thống nhất.</p></article>
+                <article data-tt-reveal style="--d:.24s"><span>04</span><h3>Nhận món đồ</h3><p>Nhận tại xưởng hoặc giao hàng toàn quốc.</p></article>
             </div>
         </div>
     </section>
 
     @* ================= FAQ ================= *@
-    <section class="tt-bleed tt-section tt-section--paper2">
-        <div class="tt-wrap tt-faq-grid">
-            <div>
-                <span class="tt-num">(07)</span>
-                <h2 class="tt-h2 tt-split">Hay được <em class="tt-serif">hỏi</em></h2>
-                <p class="tt-lead" style="margin:1.2rem 0 2rem" data-tt-reveal>Chưa thấy câu trả lời? Gọi hoặc nhắn Zalo, xưởng trả lời ngay khi rảnh tay.</p>
-                @if (phone.HasValue())
-                {
-                    <a class="tt-btn tt-btn--line" href="@StudioContactModel.TelUrl(phone)" data-tt-reveal>@StudioIcons.Get("phone") <span>@StudioContactModel.FormatPhone(phone)</span></a>
-                }
-            </div>
-            <div class="tt-faq" data-tt-reveal="right">
-                <details open>
-                    <summary>Tôi cần gửi file định dạng gì? <i></i></summary>
-                    <div class="tt-faq-a"><p>STL, OBJ, 3MF, STEP… hoặc nén thành .zip. Chưa có file 3D thì gửi ảnh, bản vẽ hay mô tả — xưởng có nhận thiết kế.</p></div>
-                </details>
-                <details>
-                    <summary>Giá in được tính như thế nào? <i></i></summary>
-                    <div class="tt-faq-a"><p>Khối lượng in thực tế (gram) × đơn giá của công nghệ theo bậc tổng khối lượng: đơn càng nặng, đơn giá mỗi gram càng thấp. @Model.PrintPriceNote</p></div>
-                </details>
-                <details>
-                    <summary>Nên chọn FDM hay Resin? <i></i></summary>
-                    <div class="tt-faq-a"><p>FDM (PLA, PETG, ABS) bền, giá tốt, hợp đồ lớn và linh kiện. Resin cho bề mặt mịn, chi tiết sắc nét, hợp figure và mô hình nhỏ. Chưa chắc thì cứ gửi file để được tư vấn.</p></div>
-                </details>
-                <details>
-                    <summary>Tôi nhận hàng bằng cách nào? <i></i></summary>
-                    <div class="tt-faq-a"><p>Nhận tại xưởng (@contact.Address) hoặc chọn giao hàng tận nơi khi đặt hàng.</p></div>
-                </details>
-                <details>
-                    <summary>Mua addon Blender thì nhận key thế nào? <i></i></summary>
-                    <div class="tt-faq-a"><p>Khi thanh toán được xác nhận, key được gửi qua email và hiện trong mục Key của tôi; file cài đặt tải trong tài khoản.</p></div>
-                </details>
-            </div>
+    <section class="tt-wrap tt-section tt-faq-pop">
+        <h2 class="tt-split">MỘT CHÚT <mark>HỎI ĐÁP.</mark></h2>
+        <div class="tt-faq">
+            <details open>
+                <summary>Chưa có file 3D thì có đặt in được không? <i></i></summary>
+                <div class="tt-faq-a"><p>Được. Bạn gửi ảnh, bản vẽ hoặc mô tả ý tưởng để studio tư vấn thiết kế và báo giá.</p></div>
+            </details>
+            <details>
+                <summary>Nên chọn FDM hay Resin? <i></i></summary>
+                <div class="tt-faq-a"><p>FDM phù hợp mô hình lớn, đồ gia dụng và chi tiết kỹ thuật. Resin phù hợp mô hình nhỏ, figure và những chi tiết cần độ sắc nét cao. Studio sẽ tư vấn dựa trên file thực tế.</p></div>
+            </details>
+            <details>
+                <summary>Giá in được tính như thế nào? <i></i></summary>
+                <div class="tt-faq-a"><p>Khối lượng in (gram) × đơn giá của công nghệ theo bậc tổng khối lượng. @Model.PrintPriceNote Gửi file để nhận báo giá cụ thể.</p></div>
+            </details>
+            <details>
+                <summary>Tôi nhận hàng bằng cách nào? <i></i></summary>
+                <div class="tt-faq-a"><p>Nhận tại xưởng (@contact.Address) hoặc chọn giao hàng tận nơi khi đặt hàng.</p></div>
+            </details>
+            <details>
+                <summary>Mua addon Blender thì nhận key thế nào? <i></i></summary>
+                <div class="tt-faq-a"><p>Khi thanh toán được xác nhận, key được gửi qua email và hiện trong mục Key của tôi; file cài đặt tải trong tài khoản.</p></div>
+            </details>
         </div>
     </section>
 
-    @* ================= CTA ================= *@
-    <section class="tt-bleed tt-cta">
+    @* ================= CONTACT ================= *@
+    <section class="tt-bleed tt-contact" id="tt-contact">
         <div class="tt-wrap">
-            <p class="tt-cta-kicker" data-tt-reveal>Bắt đầu một dự án</p>
-            <h2 class="tt-split">Có file rồi? <em class="tt-serif">In thôi.</em></h2>
-            <div class="tt-cta-row" data-tt-reveal>
-                <p>Gửi file để nhận báo giá, hoặc gọi trực tiếp để được tư vấn vật liệu và cách hoàn thiện.</p>
-                <div class="tt-actions">
-                    <a class="tt-btn tt-btn--paper" href="@Model.PrintServiceUrl#tt-quote"><span>Gửi file báo giá</span> @StudioIcons.Get("arrow", "tt-arrow")</a>
-                    @if (contact.ZaloUrl.HasValue())
-                    {
-                        <a class="tt-btn tt-btn--line-light" href="@contact.ZaloUrl" target="_blank" rel="noopener"><span>Nhắn Zalo</span></a>
-                    }
-                </div>
+            <span class="tt-tag tt-tilt" data-tt-reveal>Ý TƯỞNG NÀO CŨNG CÓ THỂ BẮT ĐẦU BẰNG MỘT TIN NHẮN</span>
+            <h2 class="tt-split">LÀM MỘT ĐIỀU<br /><em>THẬT HAY HO.</em></h2>
+            <div class="tt-actions" data-tt-reveal>
+                @if (contact.ZaloUrl.HasValue())
+                {
+                    <a class="tt-button tt-button--dark" href="@contact.ZaloUrl" target="_blank" rel="noopener">Nhắn Zalo cho studio</a>
+                }
+                <a class="tt-button" href="@Model.PrintServiceUrl#tt-quote">Gửi file báo giá</a>
             </div>
-            <div class="tt-contacts" data-tt-reveal>
+            <div class="tt-contact-line" data-tt-reveal>
                 @foreach (var p in contact.Phones)
                 {
-                    <a href="@StudioContactModel.TelUrl(p)">@StudioIcons.Get("phone") @StudioContactModel.FormatPhone(p)</a>
-                }
-                @if (contact.FacebookUrl.HasValue())
-                {
-                    <a href="@contact.FacebookUrl" target="_blank" rel="noopener">@StudioIcons.Get("facebook") Fanpage</a>
+                    <a href="@StudioContactModel.TelUrl(p)">@StudioContactModel.FormatPhone(p)</a>
                 }
                 @if (contact.Address.HasValue())
                 {
-                    <a href="@(contact.MapUrl ?? "#")" target="_blank" rel="noopener">@StudioIcons.Get("pin") @contact.Address</a>
+                    <a href="@(contact.MapUrl ?? "#")" target="_blank" rel="noopener">@contact.Address</a>
                 }
             </div>
         </div>

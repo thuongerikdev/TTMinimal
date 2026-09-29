@@ -1,69 +1,58 @@
 /// <reference path="/themes/flex/references.scss" />
 
 //
-// TT Minimal "Workshop": global look of the storefront — paper, cobalt ink, technical-drawing lines.
+// TT Minimal "Pop Studio": global look of the storefront — cream, candy colors, ink outlines, hard shadows.
 // Studio pages (home, In 3D, navigation, footer) are styled in the Split3D module (studio/studio.css).
 // --------------------------------------------------
 
-$tt-paper: #f3f1ea;
-$tt-paper-2: #ebe7dc;
-$tt-card: #fbfaf6;
-$tt-ink: #151619;
-$tt-ink-2: #3a3b40;
-$tt-muted: #6f6c66;
-$tt-line: #dcd7ca;
-$tt-rule: #151619;
-$tt-blue: #1f3fd0;
-$tt-blue-deep: #142a8f;
-$tt-display: "Bricolage Grotesque", "Be Vietnam Pro", sans-serif;
-$tt-mono: "JetBrains Mono", ui-monospace, Consolas, monospace;
+$tt-ink: #20201f;
+$tt-cream: #fffbed;
+$tt-cream-2: #fff7e0;
+$tt-pink: #ff67bc;
+$tt-mint: #80e5cb;
+$tt-yellow: #ffe348;
+$tt-lilac: #c9a6f7;
 $tt-ease: cubic-bezier(.22, 1, .36, 1);
 
 html {
     scroll-behavior: smooth;
-    background: $tt-paper;
+    background: $tt-cream;
 }
 
 @view-transition {
     navigation: auto;
 }
 
-::view-transition-old(root),
-::view-transition-new(root) {
-    animation-duration: .35s;
-    animation-timing-function: $tt-ease;
-}
-
 body {
-    background: $tt-paper;
+    background: $tt-cream;
     color: $tt-ink;
     -webkit-font-smoothing: antialiased;
-    text-rendering: optimizeLegibility;
 }
 
 ::selection {
-    background: $tt-blue;
-    color: #fff;
+    background: $tt-yellow;
+    color: $tt-ink;
 }
 
-h1, h2, h3, .h1, .h2, .h3 { letter-spacing: -.025em; }
-h4, h5, h6, .h4, .h5, .h6 { font-family: "Be Vietnam Pro", sans-serif; font-weight: 700; }
+h1, h2, h3, .h1, .h2, .h3 { font-weight: 900; letter-spacing: -.03em; }
 
-// ---------- Header: paper bar with an ink rule ----------
+a:focus-visible, button:focus-visible, summary:focus-visible {
+    outline: 3px solid #284be5;
+    outline-offset: 4px;
+}
+
+// ---------- Header: ink top bar + cream row ----------
 
 .tt-header {
-    position: fixed;
+    position: sticky;
     top: 0;
-    left: 0;
-    right: 0;
     z-index: 1040;
-    background: rgba($tt-paper, .94) !important;
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-    border-bottom: 1px solid $tt-rule;
+    background: $tt-cream !important;
+    border-bottom: 2px solid $tt-ink;
     box-shadow: none !important;
-    transition: transform .45s $tt-ease;
+    transition: transform .4s $tt-ease;
 
+    // Sticky header: height stays constant (no layout jump); it only slides away while scrolling down.
     &.is-hidden { transform: translateY(-101%); }
 
     .shopbar-section {
@@ -72,34 +61,44 @@ h4, h5, h6, .h4, .h5, .h6 { font-family: "Be Vietnam Pro", sans-serif; font-weig
     }
 
     .shopbar-container {
-        max-width: 1320px;
+        max-width: 1240px;
         padding: 0 1.5rem;
     }
 }
 
-body:not(.home):not(.tt-studio-page) #content-wrapper {
-    padding-top: 104px;
+.tt-topbar {
+    background: $tt-ink;
+    color: $tt-cream;
+    text-align: center;
+    padding: .45rem 1rem;
+    font-size: .72rem;
+    font-weight: 700;
+    letter-spacing: .09em;
+    white-space: nowrap;
+    overflow: hidden;
+
+    span { margin: 0 1.4rem; color: $tt-yellow; }
 }
 
 .tt-shopbar {
     display: flex;
-    align-items: stretch;
+    align-items: center;
     gap: 1.5rem;
-    min-height: 72px;
+    min-height: 84px;
     padding: 0;
 
-    .shop-logo { flex: none; display: flex; align-items: center; padding: 0; }
-    .tt-mainnav { flex: 1; justify-content: center; align-items: stretch; }
+    .shop-logo { flex: none; padding: 0; }
+    .tt-mainnav { flex: 1; justify-content: center; }
 }
 
 .tt-shopbar-end {
     display: flex;
     align-items: center;
-    gap: .15rem;
+    gap: .2rem;
     margin-left: auto;
 
     .shopbar-col-group-tools { display: flex; }
-    .shopbar-tools { display: flex; align-items: center; gap: .15rem; padding: 0; }
+    .shopbar-tools { display: flex; align-items: center; gap: .2rem; padding: 0; }
     .shopbar-tool { padding: 0; }
 
     .shopbar-button {
@@ -108,12 +107,13 @@ body:not(.home):not(.tt-studio-page) #content-wrapper {
         width: 42px;
         height: 42px;
         padding: 0;
-        border-radius: 50%;
+        border: 2px solid transparent;
+        border-radius: 11px;
         color: $tt-ink !important;
         background: transparent;
-        transition: background .2s, color .2s;
+        transition: background .15s, border-color .15s;
 
-        &:hover, &:focus-visible { background: $tt-paper-2; color: $tt-blue !important; }
+        &:hover, &:focus-visible { background: #fff; border-color: $tt-ink; }
     }
 
     .shopbar-button-icon { position: relative; margin: 0; font-size: 1.15rem; line-height: 1; }
@@ -121,19 +121,19 @@ body:not(.home):not(.tt-studio-page) #content-wrapper {
 
     .badge-counter {
         position: absolute;
-        top: -7px;
-        right: -9px;
-        min-width: 18px;
-        height: 18px;
+        top: -8px;
+        right: -10px;
+        min-width: 19px;
+        height: 19px;
         padding: 0 5px;
-        font-size: .65rem;
-        line-height: 18px;
-        background: $tt-blue !important;
-        color: #fff !important;
-        box-shadow: 0 0 0 2px $tt-paper;
+        font-size: .66rem;
+        font-weight: 800;
+        line-height: 15px;
+        background: $tt-pink !important;
+        color: $tt-ink !important;
+        border: 2px solid $tt-ink;
     }
 
-    // Account link on desktop too (Flex shows it only on mobile).
     #shopbar-user.d-lg-none { display: block !important; }
 }
 
@@ -143,16 +143,36 @@ body:not(.home):not(.tt-studio-page) #content-wrapper {
     width: 42px;
     height: 42px;
     padding: 0;
-    border: 0;
-    border-radius: 50%;
+    border: 2px solid transparent;
+    border-radius: 11px;
     color: $tt-ink !important;
     background: transparent;
     font-size: 1rem;
     cursor: pointer;
     text-decoration: none !important;
-    transition: background .2s, color .2s;
+    transition: background .15s, border-color .15s;
 
-    &:hover, &:focus-visible { background: $tt-paper-2; color: $tt-blue !important; }
+    &:hover, &:focus-visible { background: #fff; border-color: $tt-ink; }
+}
+
+.tt-talk {
+    display: inline-flex;
+    align-items: center;
+    margin-left: .6rem;
+    padding: .55rem 1rem;
+    min-height: 42px;
+    border: 2px solid $tt-ink;
+    border-radius: 11px;
+    background: $tt-mint;
+    box-shadow: 3px 3px 0 $tt-ink;
+    color: $tt-ink !important;
+    font-size: .85rem;
+    font-weight: 800;
+    white-space: nowrap;
+    text-decoration: none !important;
+    transition: transform .15s, box-shadow .15s;
+
+    &:hover { transform: translate(2px, 2px); box-shadow: 1px 1px 0 $tt-ink; }
 }
 
 .tt-search {
@@ -160,17 +180,18 @@ body:not(.home):not(.tt-studio-page) #content-wrapper {
 
     .tt-search-panel {
         position: absolute;
-        top: calc(100% + 15px);
+        top: calc(100% + 18px);
         right: -4rem;
-        width: min(540px, 92vw);
+        width: min(520px, 92vw);
         padding: .6rem;
-        background: $tt-card;
-        border: 1px solid $tt-rule;
-        box-shadow: 6px 6px 0 $tt-rule;
+        background: $tt-cream;
+        border: 2px solid $tt-ink;
+        border-radius: 16px;
+        box-shadow: 6px 6px 0 $tt-ink;
         opacity: 0;
         visibility: hidden;
         transform: translateY(6px);
-        transition: all .3s $tt-ease;
+        transition: all .25s $tt-ease;
     }
 
     &.is-open .tt-search-panel { opacity: 1; visibility: visible; transform: none; }
@@ -179,30 +200,29 @@ body:not(.home):not(.tt-studio-page) #content-wrapper {
 
     .instasearch-term {
         height: 50px;
-        border-radius: 0 !important;
+        border-radius: 11px !important;
         padding-left: 3rem !important;
         background: #fff !important;
-        border: 1px solid $tt-line !important;
+        border: 2px solid $tt-ink !important;
         box-shadow: none !important;
         font-size: 1rem;
-
-        &:focus { border-color: $tt-blue !important; }
+        font-weight: 600;
     }
 }
 
 @include media-breakpoint-down(md) {
-    .tt-shopbar { min-height: 62px; gap: .5rem; }
+    .tt-shopbar { min-height: 64px; gap: .4rem; }
     .tt-header .shopbar-container { padding: 0 .75rem; }
+    .tt-talk { display: none; }
+    .tt-topbar { font-size: .62rem; letter-spacing: .02em; span { margin: 0 .6rem; } }
 
     .tt-search .tt-search-panel {
         position: fixed;
-        top: 70px;
+        top: 100px;
         left: .6rem;
         right: .6rem;
         width: auto;
     }
-
-    body:not(.home):not(.tt-studio-page) #content-wrapper { padding-top: 88px; }
 }
 
 // Word mark logo (Components/ShopLogo).
@@ -214,38 +234,27 @@ body:not(.home):not(.tt-studio-page) #content-wrapper {
     justify-content: center;
     height: auto !important;
     white-space: nowrap;
-    line-height: 1;
-    color: $tt-blue !important;
+    line-height: 1.1;
+    color: $tt-ink !important;
     text-decoration: none !important;
 
-    .tt-brand-top {
-        font-family: $tt-mono;
-        font-size: .55rem;
-        font-weight: 500;
-        letter-spacing: .38em;
-        margin-left: .08em;
-        color: $tt-ink;
-    }
-
     .tt-brand-main {
-        font-family: $tt-display;
-        font-size: 1.55rem;
-        font-weight: 800;
-        letter-spacing: -.01em;
-        color: $tt-blue;
+        font-size: 1.9rem;
+        font-weight: 900;
+        letter-spacing: -.06em;
+
+        sup { font-size: .45em; top: -.9em; margin-left: .15em; letter-spacing: 0; }
     }
 
     .tt-brand-sub {
-        font-family: $tt-mono;
-        font-size: .5rem;
+        font-size: .54rem;
+        font-weight: 700;
         letter-spacing: .2em;
-        text-transform: uppercase;
-        color: $tt-muted;
-        margin-top: .15rem;
+        margin-top: .3rem;
     }
 
     @include media-breakpoint-down(md) {
-        .tt-brand-main { font-size: 1.25rem; }
+        .tt-brand-main { font-size: 1.5rem; }
         .tt-brand-sub { display: none; }
     }
 }
@@ -253,132 +262,140 @@ body:not(.home):not(.tt-studio-page) #content-wrapper {
 // ---------- Buttons ----------
 
 .btn {
-    font-weight: 600;
-    border-radius: 999px;
-    transition: transform .25s $tt-ease, box-shadow .25s $tt-ease, background-color .2s, border-color .2s, color .2s;
+    font-weight: 800;
+    border-radius: 11px;
+    border-width: 2px;
+    transition: transform .15s, box-shadow .15s, background-color .15s;
 }
 
 .btn-primary,
 .btn-add-to-cart,
 .btn-warning.btn-add-to-cart {
-    background: $tt-blue !important;
-    border-color: $tt-blue !important;
-    color: #fff !important;
+    background: $tt-pink !important;
+    border-color: $tt-ink !important;
+    color: $tt-ink !important;
+    box-shadow: 4px 4px 0 $tt-ink;
 
     &:hover, &:focus {
-        background: $tt-blue-deep !important;
-        border-color: $tt-blue-deep !important;
-        transform: translate(-2px, -2px);
-        box-shadow: 3px 3px 0 $tt-rule;
+        transform: translate(2px, 2px);
+        box-shadow: 2px 2px 0 $tt-ink;
     }
 }
 
 .btn-secondary,
 .btn-light,
 .btn-outline-secondary {
-    background: transparent !important;
-    border-color: $tt-rule !important;
+    background: #fff !important;
+    border-color: $tt-ink !important;
     color: $tt-ink !important;
+    box-shadow: 3px 3px 0 $tt-ink;
 
-    &:hover { background: $tt-ink !important; color: #fff !important; }
+    &:hover { transform: translate(1px, 1px); box-shadow: 2px 2px 0 $tt-ink; }
 }
 
 // ---------- Surfaces ----------
 
-.card, .modal-content, .dropdown-menu, .popover, .list-group-item {
-    background-color: $tt-card;
-    border-color: $tt-line;
+.card {
+    border: 2px solid $tt-ink;
+    border-radius: 16px;
+    box-shadow: 5px 5px 0 $tt-ink;
 }
 
-.card { border-radius: 1rem; }
-.card-header, .card-footer { background-color: $tt-paper-2; border-color: $tt-line; }
-.bg-white { background-color: $tt-card !important; }
+.card-header, .card-footer { background-color: $tt-cream-2; border-color: $tt-ink; }
+.dropdown-menu { border: 2px solid $tt-ink; border-radius: 14px; box-shadow: 5px 5px 0 $tt-ink; }
+.modal-content { border-radius: 18px; box-shadow: 8px 8px 0 $tt-ink; }
 
 .form-control, .custom-select, select.form-control {
-    background-color: #fffefb;
-    border-color: #cfc9bb;
+    border: 2px solid $tt-ink;
+    border-radius: 11px;
+    background-color: #fff;
 
-    &:focus { border-color: $tt-blue; box-shadow: 0 0 0 3px rgba($tt-blue, .15); }
+    &:focus { border-color: $tt-ink; box-shadow: 3px 3px 0 $tt-pink; }
 }
 
 // ---------- Page titles & breadcrumb ----------
 
 .page-title h1, h1.page-title, .page-title {
-    font-family: $tt-display;
-    font-weight: 800;
-    letter-spacing: -.035em;
+    font-weight: 900;
+    letter-spacing: -.04em;
 }
 
 .breadcrumb {
     padding: 0;
-    margin-bottom: 1.5rem;
-    font-family: $tt-mono;
-    font-size: .75rem;
-    text-transform: uppercase;
-    letter-spacing: .06em;
+    margin: 1.5rem 0;
+    font-size: .8rem;
+    font-weight: 700;
 
-    a { color: $tt-muted; }
-    a:hover { color: $tt-blue; }
+    a { color: $tt-ink; opacity: .7; }
+    a:hover { opacity: 1; }
 }
 
 // ---------- Catalog ----------
 
 .art {
-    border-radius: 0;
-    background: transparent !important;
-    transition: transform .35s $tt-ease;
+    padding: .7rem !important;
+    border: 2px solid $tt-ink;
+    border-radius: 18px;
+    background: #fff !important;
+    box-shadow: 5px 5px 0 $tt-ink;
+    transition: transform .2s $tt-ease, box-shadow .2s;
 
-    &:hover { transform: translateY(-3px); }
+    &:hover { transform: translateY(-4px); box-shadow: 6px 9px 0 $tt-ink; }
 }
 
 .art-picture-block {
-    border-radius: .9rem;
+    border-radius: 12px;
     overflow: hidden;
-    background: $tt-paper-2;
-    border: 1px solid $tt-line;
+    background: $tt-cream-2;
 }
 
-.art-name a { color: $tt-ink; font-weight: 700; }
-.art-name a:hover { color: $tt-blue; }
-.art-price, .pd-finalprice, .price-value { color: $tt-ink; font-family: $tt-display; font-weight: 700; }
+.art-name a { color: $tt-ink; font-weight: 800; }
+.art-price, .pd-finalprice, .price-value { color: $tt-ink; font-weight: 900; }
 
 .list-group-item.active,
 .list-group-item.selected,
 .list-group-item-action.active,
 .nav-list .active > a {
-    background: $tt-blue !important;
-    border-color: $tt-blue !important;
-    color: #fff !important;
+    background: $tt-yellow !important;
+    border-color: $tt-ink !important;
+    color: $tt-ink !important;
+    font-weight: 800;
 }
 
-.pd-name { font-family: $tt-display; font-weight: 800; letter-spacing: -.035em; }
+.pd-name { font-weight: 900; letter-spacing: -.04em; }
 
 .pd-offer-actions {
-    background: $tt-card !important;
-    border: 1px solid $tt-line;
-    border-radius: 1rem;
+    background: #fff !important;
+    border: 2px solid $tt-ink;
+    border-radius: 18px;
+    box-shadow: 6px 6px 0 $tt-ink;
 }
 
-.pagination .page-link { border-radius: .5rem; margin: 0 .15rem; }
+.choice-box.active, .choice-item.selected .form-check-label {
+    border-color: $tt-ink !important;
+    box-shadow: 3px 3px 0 $tt-ink;
+}
 
 // ---------- Account, cart, checkout ----------
 
 .register-page .card, .login-page .card, .register-box, .login-box {
-    border-radius: 1rem;
-    background-color: $tt-card !important;
+    background-color: #fff !important;
 }
 
 .megamenu .nav-item.selected .nav-link:before,
 .megamenu .nav-item.expanded .nav-link:before {
-    background: $tt-blue;
+    background: $tt-pink;
 }
 
 #scroll-top {
-    border-radius: 50%;
-    background: $tt-ink;
-    color: #fff;
+    border-radius: 12px;
+    background: $tt-yellow;
+    color: $tt-ink;
+    border: 2px solid $tt-ink;
+    box-shadow: 3px 3px 0 $tt-ink;
 }
 
 @media (prefers-reduced-motion: reduce) {
     html { scroll-behavior: auto; }
+    .tt-header { transition: none; }
 }

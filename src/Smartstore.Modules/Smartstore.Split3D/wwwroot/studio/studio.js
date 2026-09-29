@@ -130,6 +130,48 @@
         });
     }
 
+    // ---------- 3D illustration card ----------
+
+    function init3D() {
+        each('[data-tt-3d]', function (card) {
+            var stage = card.parentElement;
+            var hovering = false, start = performance.now();
+
+            function set(rx, ry, mx, my) {
+                card.style.setProperty('--rx', rx.toFixed(2) + 'deg');
+                card.style.setProperty('--ry', ry.toFixed(2) + 'deg');
+                card.style.setProperty('--mx', mx + '%');
+                card.style.setProperty('--my', my + '%');
+            }
+
+            if (reduceMotion) return;
+
+            if (canHover) {
+                stage.addEventListener('pointermove', function (e) {
+                    var r = stage.getBoundingClientRect();
+                    var px = (e.clientX - r.left) / r.width - 0.5, py = (e.clientY - r.top) / r.height - 0.5;
+                    hovering = true;
+                    card.classList.add('is-live');
+                    card.classList.remove('is-idle');
+                    set(-py * 18, px * 22, Math.round((px + 0.5) * 100), Math.round((py + 0.5) * 100));
+                });
+                stage.addEventListener('pointerleave', function () {
+                    hovering = false;
+                    card.classList.remove('is-live');
+                    start = performance.now();
+                });
+            }
+
+            // Gentle idle sway so the depth is visible without a mouse (phones, tablets).
+            (function idle(now) {
+                requestAnimationFrame(idle);
+                if (hovering) return;
+                var t = (now - start) / 1000;
+                set(Math.sin(t * 0.9) * 5, Math.sin(t * 0.6) * 9, 50 + Math.sin(t * 0.6) * 25, 40);
+            })(start);
+        });
+    }
+
     // ---------- Word rotator ----------
 
     function initRotator() {
@@ -600,6 +642,7 @@
         initReveal();
         initPointerFx();
         initRotator();
+        init3D();
         initMarquee();
         initHero();
         initProcess();

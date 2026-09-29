@@ -1,32 +1,34 @@
 //
-// TT Minimal "Workshop": Bootstrap / Flex variable overrides (paper surfaces, ink borders).
+// TT Minimal "Pop Studio": Bootstrap / Flex variable overrides (white surfaces, ink outlines).
 // Imported before Flex's _variables.scss, whose values are !default, so these win.
 // --------------------------------------------------
 
-$tt-paper-light:    #fbfaf6;
-$tt-field:          #fffefb;
-$tt-line:           #dcd7ca;
+$tt-ink: #20201f;
 
-$border-color:                  $tt-line;
-$hr-border-color:               $tt-line;
+$border-color:                  #e4d9bc;
+$hr-border-color:               #e4d9bc;
 
-$input-bg:                      $tt-field;
-$input-border-color:            #cfc9bb;
-$input-placeholder-color:       #a29d91;
-$input-focus-border-color:      #1f3fd0;
-$input-disabled-bg:             #ece8de;
-$input-group-addon-bg:          #ece8de;
-$custom-select-bg:              $tt-field;
-$custom-select-border-color:    #cfc9bb;
+$input-bg:                      #ffffff;
+$input-border-color:            $tt-ink;
+$input-border-width:            2px;
+$input-placeholder-color:       #9d9582;
+$input-focus-border-color:      $tt-ink;
+$input-disabled-bg:             #f5ecd2;
+$input-group-addon-bg:          #fff7e0;
+$custom-select-bg:              #ffffff;
+$custom-select-border-color:    $tt-ink;
 
-$modal-content-bg:              $tt-paper-light;
-$popover-bg:                    $tt-paper-light;
-$list-group-bg:                 $tt-paper-light;
-$list-group-border-color:       $tt-line;
-$pagination-bg:                 $tt-paper-light;
-$pagination-border-color:       $tt-line;
-$nav-tabs-link-active-bg:       $tt-paper-light;
-$table-head-bg:                 #ece8de;
+$modal-content-bg:              #fffbed;
+$modal-content-border-color:    $tt-ink;
+$modal-content-border-width:    2px;
+$popover-bg:                    #ffffff;
+$list-group-bg:                 #ffffff;
+$list-group-border-color:       #e4d9bc;
+$pagination-bg:                 #ffffff;
+$pagination-border-color:       $tt-ink;
+$pagination-active-bg:          #ff67bc;
+$nav-tabs-link-active-bg:       #ffffff;
+$table-head-bg:                 #fff7e0;
 
-$costep-bg:                     $tt-paper-light;
-$costep-active-bg:              #ffffff;
+$costep-bg:                     #ffffff;
+$costep-active-bg:              #ffe348;
