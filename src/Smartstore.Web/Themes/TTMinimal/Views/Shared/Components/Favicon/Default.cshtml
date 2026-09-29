@@ -12,3 +12,7 @@
 <link rel="shortcut icon" href="@Url.Content(root + "favicon.ico" + v)" />
 <link rel="apple-touch-icon" sizes="180x180" href="@Url.Content(root + "apple-touch-icon.png" + v)" />
 <meta name="theme-color" content="#ff67bc" />
+@* Declare dark support so browsers with forced/auto dark mode (Chrome, Samsung Internet) leave the page alone instead
+   of inverting it. The page paints its own (light) colors in both schemes, see _custom.scss. *@
+<meta name="color-scheme" content="light dark" />
+<meta name="supported-color-schemes" content="light dark" />

@@ -17,6 +17,11 @@
     --ease: cubic-bezier(.22, 1, .36, 1);
 }
 
+/* Same palette in dark mode: the page supports prefers-color-scheme itself, so browsers do not auto-invert it. */
+@media (prefers-color-scheme: dark) {
+    .tt, .tt-footer { background-color: var(--cream); color: var(--ink); }
+}
+
 /* ---------- Page frame ---------- */
 
 body.home #content,

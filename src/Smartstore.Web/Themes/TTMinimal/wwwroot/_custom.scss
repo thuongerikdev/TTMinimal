@@ -14,9 +14,25 @@ $tt-yellow: #ffe348;
 $tt-lilac: #c9a6f7;
 $tt-ease: cubic-bezier(.22, 1, .36, 1);
 
+// Browser auto/forced dark mode (Chrome "auto dark", Samsung Internet "dark mode for web pages") inverts light pages
+// unless the page supports dark itself. We declare "light dark" and handle prefers-color-scheme: dark below by keeping
+// the same cream/candy palette, so dark-mode users see the real design instead of inverted colors.
 html {
     scroll-behavior: smooth;
     background: $tt-cream;
+    color-scheme: light dark;
+}
+
+// Native form controls, scrollbars and pickers stay light to match the page.
+input, select, textarea, button, .form-control, .custom-select, dialog {
+    color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+    html, body {
+        background: $tt-cream;
+        color: $tt-ink;
+    }
 }
 
 @view-transition {
@@ -211,7 +227,13 @@ a:focus-visible, button:focus-visible, summary:focus-visible {
 }
 
 @include media-breakpoint-down(md) {
-    .tt-shopbar { min-height: 64px; gap: .4rem; }
+    // Keep logo and tools on one row on phones (Flex's .shopbar wraps by default).
+    .tt-shopbar { min-height: 60px; gap: .25rem; flex-wrap: nowrap !important; }
+    .tt-shopbar .shop-logo { flex: 0 1 auto !important; width: auto !important; min-width: 0; margin: 0 !important; }
+    .tt-shopbar-end { gap: 0; flex: none; }
+    .tt-shopbar-end .shopbar-tools { gap: 0; }
+    .tt-shopbar-end .shopbar-button, .tt-icon-btn { width: 38px; height: 38px; }
+    #shopbar-wishlist { display: none !important; }
     .tt-header .shopbar-container { padding: 0 .75rem; }
     .tt-talk { display: none; }
     .tt-topbar { font-size: .62rem; letter-spacing: .02em; span { margin: 0 .6rem; } }
@@ -254,7 +276,7 @@ a:focus-visible, button:focus-visible, summary:focus-visible {
     }
 
     @include media-breakpoint-down(md) {
-        .tt-brand-main { font-size: 1.5rem; }
+        .tt-brand-main { font-size: 1.4rem; }
         .tt-brand-sub { display: none; }
     }
 }
