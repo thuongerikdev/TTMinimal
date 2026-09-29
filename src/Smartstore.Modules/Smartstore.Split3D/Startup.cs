@@ -29,6 +29,9 @@ internal class Startup : StarterBase
                 .ForController("Checkout")
                 .ForAction("Completed")
                 .WhenNonAjax();
+
+            o.Filters.AddEndpointFilter<AdminStyleFilter, SmartController>()
+                .WhenNonAjaxGet();
         });
     }
 
