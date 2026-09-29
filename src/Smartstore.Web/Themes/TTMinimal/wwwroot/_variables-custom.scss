@@ -1,71 +1,32 @@
 //
-// TT Minimal: Bootstrap / Flex variable overrides for the dark theme.
+// TT Minimal "Workshop": Bootstrap / Flex variable overrides (paper surfaces, ink borders).
 // Imported before Flex's _variables.scss, whose values are !default, so these win.
 // --------------------------------------------------
 
-$tt-surface:        #0b1026;
-$tt-surface-2:      #0e1430;
-$tt-field:          #090e22;
-$tt-line:           #1f2850;
-$tt-text:           #dfe5fb;
-$tt-muted:          #8a94bd;
+$tt-paper-light:    #fbfaf6;
+$tt-field:          #fffefb;
+$tt-line:           #dcd7ca;
 
 $border-color:                  $tt-line;
 $hr-border-color:               $tt-line;
 
 $input-bg:                      $tt-field;
-$input-color:                   #eef1ff;
-$input-border-color:            #232d58;
-$input-placeholder-color:       #5d6894;
-$input-focus-bg:                #0b122c;
-$input-focus-color:             #ffffff;
-$input-focus-border-color:      #2f6bff;
-$input-disabled-bg:             #0e1430;
-$input-group-addon-bg:          #111836;
-$input-group-addon-color:       $tt-muted;
+$input-border-color:            #cfc9bb;
+$input-placeholder-color:       #a29d91;
+$input-focus-border-color:      #1f3fd0;
+$input-disabled-bg:             #ece8de;
+$input-group-addon-bg:          #ece8de;
 $custom-select-bg:              $tt-field;
-$custom-select-color:           #eef1ff;
-$custom-select-border-color:    #232d58;
-$custom-control-indicator-bg:   $tt-field;
-$custom-control-indicator-border-color: #2b365f;
-$form-check-input-bg:           $tt-field;
-$form-check-input-border:       1px solid #2b365f;
+$custom-select-border-color:    #cfc9bb;
 
-$modal-content-bg:              $tt-surface;
-$modal-content-border-color:    $tt-line;
-$modal-header-border-color:     $tt-line;
-$modal-footer-border-color:     $tt-line;
-$popover-bg:                    $tt-surface;
-$popover-border-color:          $tt-line;
-$tooltip-bg:                    #eef1ff;
-$tooltip-color:                 #05070f;
-$toast-background-color:        rgba(11, 16, 38, .95);
-$toast-header-background-color: $tt-surface-2;
-
-$list-group-bg:                 $tt-surface;
+$modal-content-bg:              $tt-paper-light;
+$popover-bg:                    $tt-paper-light;
+$list-group-bg:                 $tt-paper-light;
 $list-group-border-color:       $tt-line;
-$list-group-hover-bg:           #121935;
-$list-group-action-color:       $tt-text;
-$list-group-action-hover-color: #ffffff;
-$list-group-action-active-bg:   #161e40;
-
-$pagination-bg:                 $tt-surface;
-$pagination-color:              $tt-text;
+$pagination-bg:                 $tt-paper-light;
 $pagination-border-color:       $tt-line;
-$pagination-hover-bg:           #161e40;
-$pagination-hover-color:        #ffffff;
-$pagination-disabled-bg:        $tt-surface;
+$nav-tabs-link-active-bg:       $tt-paper-light;
+$table-head-bg:                 #ece8de;
 
-$nav-tabs-border-color:         $tt-line;
-$nav-tabs-link-active-bg:       $tt-surface;
-$nav-tabs-link-active-border-color: $tt-line $tt-line $tt-surface;
-$nav-tabs-link-hover-border-color: $tt-line;
-
-$table-color:                   $tt-text;
-$table-head-bg:                 $tt-surface-2;
-$table-head-color:              #eef1ff;
-$breadcrumb-active-color:       $tt-muted;
-$close-color:                   #ffffff;
-
-$costep-bg:                     $tt-surface;
-$costep-active-bg:              $tt-surface-2;
+$costep-bg:                     $tt-paper-light;
+$costep-active-bg:              #ffffff;

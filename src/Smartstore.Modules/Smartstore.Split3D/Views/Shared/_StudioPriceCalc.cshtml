@@ -15,7 +15,7 @@
         @for (var i = 0; i < Model.Count; i++)
         {
             var tech = Model[i];
-            <button type="button" class="tt-tech tt-card@(i == 0 ? " is-active" : "")" data-tech="@i" aria-pressed="@(i == 0 ? "true" : "false")" data-tt-reveal style="--d:@((i * 0.08).ToString("0.00", CultureInfo.InvariantCulture))s">
+            <button type="button" class="tt-tech@(i == 0 ? " is-active" : "")" data-tech="@i" aria-pressed="@(i == 0 ? "true" : "false")" data-tt-reveal style="--d:@((i * 0.08).ToString("0.00", CultureInfo.InvariantCulture))s">
                 <span class="tt-tech-name">@tech.Name</span>
                 <span class="tt-tech-mat">@tech.Materials</span>
                 <span class="tt-tech-price">@PrintPriceList.FormatPrice(tech.LowestPrice)<small>/gram trở lên</small></span>
@@ -24,7 +24,7 @@
         }
     </div>
 
-    <div class="tt-panel tt-card is-active" data-tt-reveal="right">
+    <div class="tt-panel" data-tt-reveal="right">
         <div class="tt-panel-head">
             <h3>Bậc giá · <span data-tt-techname>@Model.FirstOrDefault()?.Name</span></h3>
             <span>đơn giá / gram theo tổng khối lượng</span>
@@ -61,7 +61,7 @@
                 <strong data-tt-total>—</strong>
                 <em data-tt-unit></em>
             </div>
-            <a class="tt-btn" href="@quoteUrl" data-base="@quoteUrl" data-tt-cta data-magnetic>
+            <a class="tt-btn" href="@quoteUrl" data-base="@quoteUrl" data-tt-cta>
                 <span>Gửi file báo giá</span>
                 @StudioIcons.Get("arrow", "tt-arrow")
             </a>

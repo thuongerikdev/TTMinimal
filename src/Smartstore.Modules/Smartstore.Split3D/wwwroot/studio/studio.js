@@ -1,4 +1,4 @@
-/* TT Minimal "Midnight Lab" storefront effects. No dependencies. Loaded on every storefront page. */
+/* TT Minimal "Workshop" storefront behaviour. No dependencies. Loaded on every storefront page. */
 (function () {
     'use strict';
 
@@ -14,16 +14,6 @@
     function each(sel, fn, root) { Array.prototype.forEach.call((root || document).querySelectorAll(sel), fn); }
     function onReady(fn) { if (document.readyState !== 'loading') fn(); else document.addEventListener('DOMContentLoaded', fn); }
     function clamp(v, a, b) { return Math.min(b, Math.max(a, v)); }
-
-    // ---------- First-visit loader ----------
-
-    function initLoader() {
-        if (!doc.classList.contains('tt-first')) return;
-        try { sessionStorage.setItem('tt-visited', '1'); } catch (e) { }
-        var done = function () { doc.classList.add('tt-loaded'); };
-        setTimeout(done, reduceMotion ? 0 : 1000);
-        window.addEventListener('load', function () { setTimeout(done, 300); });
-    }
 
     // ---------- Header: scrolled state, hide on scroll down, progress bar ----------
 
@@ -72,24 +62,6 @@
         });
     }
 
-    // ---------- Cursor glow ----------
-
-    function initCursor() {
-        if (!canHover || reduceMotion) return;
-        var glow = document.createElement('div');
-        glow.className = 'tt-cursor';
-        glow.setAttribute('aria-hidden', 'true');
-        document.body.appendChild(glow);
-
-        var x = -600, y = -600, tx = x, ty = y;
-        window.addEventListener('pointermove', function (e) { tx = e.clientX; ty = e.clientY; }, { passive: true });
-        (function loop() {
-            x += (tx - x) * 0.12; y += (ty - y) * 0.12;
-            glow.style.transform = 'translate3d(' + x + 'px,' + y + 'px,0)';
-            requestAnimationFrame(loop);
-        })();
-    }
-
     // ---------- Reveal & split text ----------
 
     function splitWords(el) {
@@ -134,7 +106,7 @@
         Array.prototype.forEach.call(items, function (el) { io.observe(el); });
     }
 
-    // ---------- Cards: spotlight, tilt, magnetic buttons ----------
+    // ---------- Cards: spotlight, tilt ----------
 
     function initPointerFx() {
         if (!canHover || reduceMotion) return;
@@ -155,15 +127,6 @@
                 card.style.transform = 'perspective(1000px) rotateX(' + (-py * max) + 'deg) rotateY(' + (px * max) + 'deg)';
             });
             card.addEventListener('pointerleave', function () { card.style.transform = ''; });
-        });
-
-        each('[data-magnetic]', function (btn) {
-            btn.addEventListener('pointermove', function (e) {
-                var r = btn.getBoundingClientRect();
-                var dx = e.clientX - (r.left + r.width / 2), dy = e.clientY - (r.top + r.height / 2);
-                btn.style.transform = 'translate(' + dx * 0.22 + 'px,' + dy * 0.3 + 'px)';
-            });
-            btn.addEventListener('pointerleave', function () { btn.style.transform = ''; });
         });
     }
 
@@ -246,8 +209,8 @@
             var rx = x * c - z * s, rz = x * s + z * c;
             var ct = Math.cos(tiltX), st = Math.sin(tiltX);
             var ry = y * ct - rz * st, rz2 = y * st + rz * ct;
-            var scale = Math.min(width, height) * 1.18 / (3.4 - rz2);
-            return { x: width / 2 + rx * scale, y: height * 0.43 - ry * scale, z: rz2 };
+            var scale = Math.min(width, height) * 1.25 / (3.4 - rz2);
+            return { x: width / 2 + rx * scale, y: height * 0.46 - ry * scale, z: rz2 };
         }
 
         function plate(rot) {
@@ -258,7 +221,7 @@
                 var a1 = project(v, y, -size, rot), a2 = project(v, y, size, rot);
                 var b1 = project(-size, y, v, rot), b2 = project(size, y, v, rot);
                 var edge = i === 0 || i === n;
-                ctx.strokeStyle = 'rgba(91,140,255,' + (edge ? 0.55 : 0.14) + ')';
+                ctx.strokeStyle = 'rgba(255,255,255,' + (edge ? 0.6 : 0.16) + ')';
                 ctx.beginPath(); ctx.moveTo(a1.x, a1.y); ctx.lineTo(a2.x, a2.y); ctx.moveTo(b1.x, b1.y); ctx.lineTo(b2.x, b2.y); ctx.stroke();
             }
         }
@@ -296,7 +259,6 @@
                 var t = i / (layers - 1), pts = ring(fn, t, rot);
                 var isTop = i === done && progress < 1;
                 var count = Math.max(2, Math.round(points * (isTop ? shown - done : 1)));
-                var hue = 190 + t * 60;
 
                 for (var pass = 0; pass < 2; pass++) {
                     ctx.beginPath();
@@ -309,8 +271,8 @@
                             ctx.lineTo(q.x, q.y);
                         } else { drawing = false; }
                     }
-                    ctx.strokeStyle = isTop ? 'rgba(236,246,255,' + fade + ')' : 'hsla(' + hue + ',95%,' + (pass ? 66 : 52) + '%,' + ((pass ? 0.92 : 0.26) * fade) + ')';
-                    ctx.lineWidth = isTop ? 2.4 : (pass ? 1.4 : 1);
+                    ctx.strokeStyle = isTop ? 'rgba(255,216,77,' + fade + ')' : 'rgba(255,255,255,' + ((pass ? 0.9 : 0.22) * fade) + ')';
+                    ctx.lineWidth = isTop ? 2.2 : (pass ? 1.2 : 0.9);
                     ctx.stroke();
                 }
                 if (isTop) tip = pts[count - 1];
@@ -325,25 +287,25 @@
                         var pp = project(Math.cos(a) * r, -0.95 + tt * 1.8, Math.sin(a) * r, rot);
                         if (m === 0) ctx.moveTo(pp.x, pp.y); else ctx.lineTo(pp.x, pp.y);
                     }
-                    ctx.strokeStyle = 'rgba(160,190,255,' + (0.2 * fade) + ')';
+                    ctx.strokeStyle = 'rgba(255,255,255,' + (0.28 * fade) + ')';
                     ctx.stroke();
                 }
             }
 
             if (tip && fade > 0) {
                 var g = ctx.createRadialGradient(tip.x, tip.y, 0, tip.x, tip.y, 30);
-                g.addColorStop(0, 'rgba(255,255,255,.95)'); g.addColorStop(0.25, 'rgba(62,224,255,.6)'); g.addColorStop(1, 'rgba(62,224,255,0)');
-                ctx.fillStyle = g; ctx.beginPath(); ctx.arc(tip.x, tip.y, 30, 0, Math.PI * 2); ctx.fill();
-                ctx.strokeStyle = 'rgba(191,219,254,.5)'; ctx.lineWidth = 1;
+                g.addColorStop(0, 'rgba(255,216,77,1)'); g.addColorStop(0.3, 'rgba(255,216,77,.45)'); g.addColorStop(1, 'rgba(255,216,77,0)');
+                ctx.fillStyle = g; ctx.beginPath(); ctx.arc(tip.x, tip.y, 22, 0, Math.PI * 2); ctx.fill();
+                ctx.strokeStyle = 'rgba(255,255,255,.7)'; ctx.lineWidth = 1;
                 ctx.beginPath(); ctx.moveTo(tip.x, tip.y - 8); ctx.lineTo(tip.x, tip.y - 64); ctx.stroke();
-                ctx.fillStyle = 'rgba(191,219,254,.85)'; ctx.fillRect(tip.x - 10, tip.y - 76, 20, 12);
+                ctx.fillStyle = '#ffffff'; ctx.fillRect(tip.x - 10, tip.y - 76, 20, 12);
             }
 
             var layer = Math.min(done + 1, layers), pct = Math.round(progress * 100);
             if (hudLayer) hudLayer.textContent = (layer < 10 ? '0' : '') + layer + ' / ' + layers;
             if (hudFile) hudFile.textContent = shapes[shapeIndex].name;
             if (hudPct) hudPct.textContent = pct + '%';
-            if (hudBar) hudBar.style.width = pct + '%';
+            if (hudBar) hudBar.style.setProperty('--w', pct + '%');
         }
 
         resize();
@@ -633,10 +595,8 @@
     }
 
     onReady(function () {
-        initLoader();
         initScrollChrome();
         initSearch();
-        initCursor();
         initReveal();
         initPointerFx();
         initRotator();
