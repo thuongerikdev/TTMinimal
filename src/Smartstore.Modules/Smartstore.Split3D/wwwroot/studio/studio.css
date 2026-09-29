@@ -219,6 +219,7 @@ body.home .home-page .page-body { margin: 0; }
 
 .tt-process { position: relative; }
 .tt-process-pin { position: sticky; top: 0; height: 100svh; display: flex; flex-direction: column; justify-content: center; overflow: hidden; }
+.tt-process-head .tt-h2 { max-width: none; }
 .tt-process-head { width: 100%; max-width: 1320px; margin: 0 auto 2.5rem; padding: 0 1.5rem; }
 .tt-process-track { display: flex; gap: 1.2rem; padding: 0 max(1.5rem, calc(50vw - 636px)); will-change: transform; }
 .tt-step { flex: 0 0 min(540px, 80vw); min-height: 380px; padding: 2.4rem; display: flex; flex-direction: column; }

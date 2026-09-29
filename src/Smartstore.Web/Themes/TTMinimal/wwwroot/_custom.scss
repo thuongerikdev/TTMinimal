@@ -266,10 +266,14 @@ body:not(.home):not(.tt-studio-page) #content-wrapper {
 }
 
 // Word mark logo (Components/ShopLogo).
-.tt-brand {
-    display: inline-flex;
-    flex-direction: column;
-    align-items: flex-start;
+.tt-brand,
+.shop-logo .tt-brand {
+    display: inline-flex !important;
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    justify-content: center;
+    height: auto !important;
+    white-space: nowrap;
     line-height: 1;
     color: #fff !important;
     text-decoration: none !important;
@@ -458,6 +462,17 @@ h1.page-title,
 .art-description, .art-brand { color: $tt-muted; }
 
 .facet-group, .facet-toggle, .facet-body { border-color: $tt-line !important; }
+
+.list-group-item.active,
+.list-group-item.selected,
+.list-group-item-action.active,
+.nav-list .active > a {
+    background: rgba($tt-blue, .18) !important;
+    border-color: rgba($tt-blue, .45) !important;
+    color: #fff !important;
+}
+
+.list-group-item-action:hover { background: rgba(255, 255, 255, .05); color: #fff; }
 
 .pd-offer, .pd-offer-actions, .pd-info, .pd-attrs-container {
     border-radius: 1.25rem;

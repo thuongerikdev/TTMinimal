@@ -22,7 +22,7 @@
                                 <span class="tt-drop-media">
                                     @if (child.ImageUrl.HasValue())
                                     {
-                                        <img src="@child.ImageUrl" alt="" loading="lazy" />
+                                        <img src="@child.ImageUrl" alt="" loading="lazy" onerror="this.remove()" />
                                     }
                                     else
                                     {

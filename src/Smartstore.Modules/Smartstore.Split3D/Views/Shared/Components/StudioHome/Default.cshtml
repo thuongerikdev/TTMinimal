@@ -144,7 +144,7 @@
                             <span>
                                 @if (i < collage.Count)
                                 {
-                                    <img src="@collage[i]" alt="" loading="lazy" />
+                                    <img src="@collage[i]" alt="" loading="lazy" onerror="this.remove()" />
                                 }
                                 else
                                 {
@@ -261,7 +261,7 @@
                             <div class="tt-product-media">
                                 @if (p.ImageUrl.HasValue())
                                 {
-                                    <img src="@p.ImageUrl" alt="@p.Name" loading="lazy" />
+                                    <img src="@p.ImageUrl" alt="@p.Name" loading="lazy" onerror="this.remove()" />
                                 }
                                 else
                                 {
@@ -341,7 +341,7 @@
                             <a class="tt-card tt-addon" href="@addon.Url" data-tt-reveal style="--d:@Delay(i, .1)">
                                 @if (addon.ImageUrl.HasValue())
                                 {
-                                    <img src="@addon.ImageUrl" alt="@addon.Name" loading="lazy" />
+                                    <img src="@addon.ImageUrl" alt="@addon.Name" loading="lazy" onerror="this.remove()" />
                                 }
                                 else
                                 {
