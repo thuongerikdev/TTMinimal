@@ -477,10 +477,10 @@
 
             // Weighing state
             var meter = root.querySelector('[data-tt-meter]');
-            var fileInput = meter.querySelector('[data-tt-file]');
-            var drop = meter.querySelector('[data-tt-drop]');
+            var fileInput = root.querySelector('[data-tt-file]');
+            var drop = root.querySelector('[data-tt-drop]');
             var body = meter.querySelector('[data-tt-meter-body]');
-            var errorEl = meter.querySelector('[data-tt-meter-error]');
+            var errorEl = root.querySelector('[data-tt-meter-error]');
             var dims = meter.querySelectorAll('[data-axis]');
             var lock = meter.querySelector('[data-tt-lock]');
             var unitSel = meter.querySelector('[data-tt-unitsel]');

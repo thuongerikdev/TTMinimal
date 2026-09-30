@@ -190,15 +190,15 @@ body.home .home-page .page-body { margin: 0; }
 .tt-note-line svg { color: var(--pink); margin-top: 2px; }
 
 /* Model weighing: drop a file, get X·Y·Z and grams. */
-.tt-meter { margin-top: 22px; }
-.tt-meter-drop { position: relative; display: flex; align-items: center; gap: 14px; margin: 0; padding: 14px 16px; border: 2px dashed var(--ink); border-radius: 14px; background: var(--cream-2); cursor: pointer; transition: background .2s; }
+.tt-meter { margin: 0; }
+.tt-meter-drop { position: relative; display: flex; align-items: center; gap: 14px; margin: 0; padding: 16px 18px; border: 2px dashed var(--ink); border-radius: 16px; background: var(--cream-2); cursor: pointer; transition: background .2s; }
 .tt-meter-drop:hover, .tt-meter-drop.is-over { background: var(--yellow); }
 .tt-meter-drop.is-busy { background: var(--mint); cursor: progress; }
 .tt-meter-drop input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
 .tt-meter-drop svg { flex: none; width: 30px; height: 30px; }
 .tt-meter-drop b { display: block; font-size: 15px; font-weight: 900; }
 .tt-meter-drop small { display: block; font-size: 12px; font-weight: 600; opacity: .7; line-height: 1.4; }
-.tt-meter-body { padding: 14px; border: 2px solid var(--ink); border-radius: 14px; background: #fff; }
+.tt-meter-body { margin-top: 22px; padding: 14px; border: 2px solid var(--ink); border-radius: 14px; background: #fff; }
 .tt-meter-body[hidden] { display: none; }
 
 /* Big 3D preview of the dropped model, under the technology cards. */

@@ -214,9 +214,52 @@
         });
     }
 
-    // ---------- Preview: flat-shaded orthographic render, drag to rotate ----------
+    // ---------- Preview: WebGL (every triangle, depth buffer), Canvas 2D fallback; drag to rotate ----------
 
-    var MAX_PREVIEW_TRIS = 60000;
+    var MAX_GL_TRIS = 4000000;     // above this, every n-th triangle is drawn (GPU memory)
+    var MAX_2D_TRIS = 60000;       // Canvas 2D fallback only
+    var LIGHT = (function () { var l = [-0.45, 0.7, -0.55], n = Math.hypot(l[0], l[1], l[2]); return [l[0] / n, l[1] / n, l[2] / n]; })();
+
+    var VS = 'attribute vec3 aPos; attribute vec3 aNor;' +
+        'uniform mat3 uRot; uniform vec3 uCenter; uniform vec3 uScale; varying vec3 vN;' +
+        'void main() { vec3 p = uRot * (aPos - uCenter); vN = uRot * aNor; gl_Position = vec4(p * uScale, 1.0); }';
+
+    // Two-sided flat lighting: key light plus a soft fill from below, so no face turns black.
+    var FS = 'precision mediump float; uniform vec3 uColor; uniform vec3 uLight; varying vec3 vN;' +
+        'void main() { vec3 n = normalize(vN); float key = abs(dot(n, uLight)); float fill = 0.5 + 0.5 * n.y * sign(dot(n, uLight) + 0.0001);' +
+        ' float s = 0.34 + 0.56 * key + 0.1 * fill; gl_FragColor = vec4(uColor * s, 1.0); }';
+
+    function createGL(canvas) {
+        var gl = null;
+        try { gl = canvas.getContext('webgl', { antialias: true, alpha: true, premultipliedAlpha: true }) || canvas.getContext('experimental-webgl'); } catch (e) { gl = null; }
+        if (!gl) return null;
+
+        function shader(type, src) {
+            var s = gl.createShader(type);
+            gl.shaderSource(s, src); gl.compileShader(s);
+            return gl.getShaderParameter(s, gl.COMPILE_STATUS) ? s : null;
+        }
+        var vs = shader(gl.VERTEX_SHADER, VS), fs = shader(gl.FRAGMENT_SHADER, FS);
+        if (!vs || !fs) return null;
+        var prog = gl.createProgram();
+        gl.attachShader(prog, vs); gl.attachShader(prog, fs); gl.linkProgram(prog);
+        if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) return null;
+        gl.useProgram(prog);
+
+        return {
+            gl: gl,
+            aPos: gl.getAttribLocation(prog, 'aPos'),
+            aNor: gl.getAttribLocation(prog, 'aNor'),
+            uRot: gl.getUniformLocation(prog, 'uRot'),
+            uCenter: gl.getUniformLocation(prog, 'uCenter'),
+            uScale: gl.getUniformLocation(prog, 'uScale'),
+            uColor: gl.getUniformLocation(prog, 'uColor'),
+            uLight: gl.getUniformLocation(prog, 'uLight'),
+            pos: gl.createBuffer(),
+            nor: gl.createBuffer(),
+            count: 0
+        };
+    }
 
     function View(canvas) {
         this.canvas = canvas;
@@ -226,6 +269,7 @@
         this.zoom = 1;
         this.mesh = null;
         this.spinning = false;
+        this.gl = createGL(canvas);
         var self = this, drag = null;
 
         canvas.addEventListener('pointerdown', function (e) {
@@ -236,31 +280,55 @@
         canvas.addEventListener('wheel', function (e) {
             e.preventDefault();
             self.stopSpin();
-            self.zoom = Math.max(0.4, Math.min(6, self.zoom * Math.exp(-e.deltaY * 0.0015)));
+            self.zoom = Math.max(0.4, Math.min(8, self.zoom * Math.exp(-e.deltaY * 0.0015)));
             self.request();
         }, { passive: false });
         if ('ResizeObserver' in window) new ResizeObserver(function () { self.request(); }).observe(canvas);
         canvas.addEventListener('pointermove', function (e) {
             if (!drag) return;
-            self.yaw = drag.yaw + (e.clientX - drag.x) * 0.012;
-            self.pitch = Math.max(-1.5, Math.min(1.5, drag.pitch + (e.clientY - drag.y) * 0.012));
+            self.yaw = drag.yaw + (e.clientX - drag.x) * 0.01;
+            self.pitch = Math.max(-1.5, Math.min(1.5, drag.pitch + (e.clientY - drag.y) * 0.01));
             self.request();
         });
         ['pointerup', 'pointercancel'].forEach(function (t) { canvas.addEventListener(t, function () { drag = null; }); });
     }
 
     View.prototype.set = function (mesh) {
-        // Preview a subset of large meshes; the measurements always use every triangle.
-        var n = mesh.count, step = Math.max(1, Math.ceil(n / MAX_PREVIEW_TRIS)), m = Math.ceil(n / step);
-        var src = mesh.tris, pts = new Float32Array(m * 9), c = mesh.center, r = 0;
+        var n = mesh.count, src = mesh.tris, c = mesh.center, r = 0;
+        var step = Math.max(1, Math.ceil(n / (this.gl ? MAX_GL_TRIS : MAX_2D_TRIS))), m = Math.ceil(n / step);
+
+        var pts = step === 1 && this.gl ? src : new Float32Array(m * 9);
         for (var i = 0, j = 0; i < n; i += step, j++) {
             for (var k = 0; k < 9; k += 3) {
-                var x = src[i * 9 + k] - c[0], y = src[i * 9 + k + 1] - c[1], z = src[i * 9 + k + 2] - c[2];
-                pts[j * 9 + k] = x; pts[j * 9 + k + 1] = y; pts[j * 9 + k + 2] = z;
-                r = Math.max(r, x * x + y * y + z * z);
+                var x = src[i * 9 + k], y = src[i * 9 + k + 1], z = src[i * 9 + k + 2];
+                if (pts !== src) { pts[j * 9 + k] = x; pts[j * 9 + k + 1] = y; pts[j * 9 + k + 2] = z; }
+                x -= c[0]; y -= c[1]; z -= c[2];
+                var d = x * x + y * y + z * z;
+                if (d > r) r = d;
             }
         }
-        this.mesh = { pts: pts, n: m, radius: Math.sqrt(r) || 1, order: new Uint32Array(m), depth: new Float32Array(m) };
+        this.mesh = { pts: pts, n: m, center: c, radius: Math.sqrt(r) || 1 };
+
+        if (this.gl) {
+            // Flat shading: every vertex of a triangle gets the face normal.
+            var nor = new Float32Array(m * 9);
+            for (i = 0; i < m; i++) {
+                var o = i * 9;
+                var ux = pts[o + 3] - pts[o], uy = pts[o + 4] - pts[o + 1], uz = pts[o + 5] - pts[o + 2];
+                var vx = pts[o + 6] - pts[o], vy = pts[o + 7] - pts[o + 1], vz = pts[o + 8] - pts[o + 2];
+                var nx = uy * vz - uz * vy, ny = uz * vx - ux * vz, nz = ux * vy - uy * vx;
+                var len = Math.sqrt(nx * nx + ny * ny + nz * nz) || 1;
+                nx /= len; ny /= len; nz /= len;
+                for (k = 0; k < 9; k += 3) { nor[o + k] = nx; nor[o + k + 1] = ny; nor[o + k + 2] = nz; }
+            }
+            var g = this.gl, gl = g.gl;
+            gl.bindBuffer(gl.ARRAY_BUFFER, g.pos); gl.bufferData(gl.ARRAY_BUFFER, pts, gl.STATIC_DRAW);
+            gl.bindBuffer(gl.ARRAY_BUFFER, g.nor); gl.bufferData(gl.ARRAY_BUFFER, nor, gl.STATIC_DRAW);
+            g.count = m * 3;
+        } else {
+            this.mesh.order = new Uint32Array(m);
+            this.mesh.depth = new Float32Array(m);
+        }
         this.reset();
     };
 
@@ -270,10 +338,10 @@
         this.startSpin();
     };
 
-    // Slow turntable until the visitor grabs the model. Skipped for heavy meshes and reduced motion.
+    // Slow turntable until the visitor grabs the model. Canvas 2D fallback spins only small meshes.
     View.prototype.startSpin = function () {
         var self = this, last = 0;
-        if (this.spinning || !this.mesh || this.mesh.n > 25000) return;
+        if (this.spinning || !this.mesh || (!this.gl && this.mesh.n > 20000)) return;
         if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
         this.spinning = true;
         (function tick(now) {
@@ -298,41 +366,76 @@
         var dpr = Math.min(window.devicePixelRatio || 1, 2), w = cv.clientWidth, h = cv.clientHeight;
         if (!w || !h || !mesh) return;
         if (cv.width !== Math.round(w * dpr) || cv.height !== Math.round(h * dpr)) { cv.width = Math.round(w * dpr); cv.height = Math.round(h * dpr); }
-        var ctx = cv.getContext('2d');
+        if (this.gl) this.drawGL(w, h); else this.draw2D(w, h, dpr);
+    };
+
+    // Z up (as in slicers): rotate around Z by yaw, tilt around X by pitch, look along +Y.
+    // Rows map a model vector to (screen x, screen up, depth away from the viewer).
+    View.prototype.rotation = function () {
+        var cy = Math.cos(this.yaw), sy = Math.sin(this.yaw), cp = Math.cos(this.pitch), sp = Math.sin(this.pitch);
+        return [[cy, -sy, 0], [sp * sy, sp * cy, cp], [cp * sy, cp * cy, -sp]];
+    };
+
+    View.prototype.drawGL = function (w, h) {
+        var g = this.gl, gl = g.gl, R = this.rotation(), c = this.mesh.center, col = this.color;
+        var s = 0.88 * this.zoom / this.mesh.radius;
+
+        gl.viewport(0, 0, this.canvas.width, this.canvas.height);
+        gl.clearColor(0, 0, 0, 0);
+        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+        gl.enable(gl.DEPTH_TEST);
+
+        // GLSL matrices are column-major.
+        gl.uniformMatrix3fv(g.uRot, false, [R[0][0], R[1][0], R[2][0], R[0][1], R[1][1], R[2][1], R[0][2], R[1][2], R[2][2]]);
+        gl.uniform3f(g.uCenter, c[0], c[1], c[2]);
+        gl.uniform3f(g.uScale, s * Math.min(1, h / w), s * Math.min(1, w / h), 0.95 / this.mesh.radius);
+        gl.uniform3f(g.uColor, col[0] / 255, col[1] / 255, col[2] / 255);
+        gl.uniform3f(g.uLight, LIGHT[0], LIGHT[1], LIGHT[2]);
+
+        gl.bindBuffer(gl.ARRAY_BUFFER, g.pos);
+        gl.enableVertexAttribArray(g.aPos);
+        gl.vertexAttribPointer(g.aPos, 3, gl.FLOAT, false, 0, 0);
+        gl.bindBuffer(gl.ARRAY_BUFFER, g.nor);
+        gl.enableVertexAttribArray(g.aNor);
+        gl.vertexAttribPointer(g.aNor, 3, gl.FLOAT, false, 0, 0);
+        gl.drawArrays(gl.TRIANGLES, 0, g.count);
+    };
+
+    // Fallback without WebGL: painter's algorithm on a subset of the triangles.
+    View.prototype.draw2D = function (w, h, dpr) {
+        var mesh = this.mesh, ctx = this.canvas.getContext('2d'), R = this.rotation(), c = mesh.center;
         ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
         ctx.clearRect(0, 0, w, h);
 
-        var cy = Math.cos(this.yaw), sy = Math.sin(this.yaw), cp = Math.cos(this.pitch), sp = Math.sin(this.pitch);
         var scale = Math.min(w, h) * 0.44 * this.zoom / mesh.radius, ox = w / 2, oy = h / 2;
         var pts = mesh.pts, n = mesh.n, P = new Float32Array(n * 9);
-
-        // Z up (as in slicers): rotate around Z by yaw, tilt around X by pitch; view along +Y.
         for (var i = 0; i < n * 3; i++) {
-            var x = pts[i * 3], y = pts[i * 3 + 1], z = pts[i * 3 + 2];
-            var x1 = x * cy - y * sy, y1 = x * sy + y * cy;
-            P[i * 3] = x1; P[i * 3 + 1] = y1 * cp - z * sp; P[i * 3 + 2] = y1 * sp + z * cp;
+            var x = pts[i * 3] - c[0], y = pts[i * 3 + 1] - c[1], z = pts[i * 3 + 2] - c[2];
+            P[i * 3] = R[0][0] * x + R[0][1] * y;
+            P[i * 3 + 1] = R[1][0] * x + R[1][1] * y + R[1][2] * z;
+            P[i * 3 + 2] = R[2][0] * x + R[2][1] * y + R[2][2] * z;
         }
         for (i = 0; i < n; i++) {
             mesh.order[i] = i;
-            mesh.depth[i] = P[i * 9 + 1] + P[i * 9 + 4] + P[i * 9 + 7];
+            mesh.depth[i] = P[i * 9 + 2] + P[i * 9 + 5] + P[i * 9 + 8];
         }
         var depth = mesh.depth;
         var order = Array.prototype.slice.call(mesh.order).sort(function (a, b) { return depth[b] - depth[a]; });
 
-        var col = this.color, lx = -0.45, ly = -0.55, lz = 0.7;
+        var col = this.color;
         for (var q = 0; q < n; q++) {
             var o = order[q] * 9;
             var ux = P[o + 3] - P[o], uy = P[o + 4] - P[o + 1], uz = P[o + 5] - P[o + 2];
             var vx = P[o + 6] - P[o], vy = P[o + 7] - P[o + 1], vz = P[o + 8] - P[o + 2];
             var nx = uy * vz - uz * vy, ny = uz * vx - ux * vz, nz = ux * vy - uy * vx;
             var len = Math.sqrt(nx * nx + ny * ny + nz * nz) || 1;
-            var shade = 0.42 + 0.58 * Math.abs((nx * lx + ny * ly + nz * lz) / len);
+            var shade = 0.42 + 0.58 * Math.abs((nx * LIGHT[0] + ny * LIGHT[1] + nz * LIGHT[2]) / len);
             ctx.fillStyle = 'rgb(' + Math.round(col[0] * shade) + ',' + Math.round(col[1] * shade) + ',' + Math.round(col[2] * shade) + ')';
             ctx.strokeStyle = ctx.fillStyle;
             ctx.beginPath();
-            ctx.moveTo(ox + P[o] * scale, oy - P[o + 2] * scale);
-            ctx.lineTo(ox + P[o + 3] * scale, oy - P[o + 5] * scale);
-            ctx.lineTo(ox + P[o + 6] * scale, oy - P[o + 8] * scale);
+            ctx.moveTo(ox + P[o] * scale, oy - P[o + 1] * scale);
+            ctx.lineTo(ox + P[o + 3] * scale, oy - P[o + 4] * scale);
+            ctx.lineTo(ox + P[o + 6] * scale, oy - P[o + 7] * scale);
             ctx.closePath();
             ctx.fill();
             ctx.stroke(); // hides hairline gaps between triangles

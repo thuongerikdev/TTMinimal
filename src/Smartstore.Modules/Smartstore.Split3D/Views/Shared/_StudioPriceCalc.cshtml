@@ -40,7 +40,19 @@
             </div>
         }
 
-        @* 3D preview of the dropped model, shown under the technology cards. *@
+        @* Drop zone and 3D preview of the dropped model, under the technology cards. *@
+        <div class="tt-meter-dropwrap">
+            <label class="tt-meter-drop" data-tt-drop>
+                <input type="file" accept=".stl,.obj,.3mf" data-tt-file aria-label="Chọn file 3D để tự cân" />
+                @StudioIcons.Get("upload")
+                <span>
+                    <b>Thả file STL · OBJ · 3MF để tự cân</b>
+                    <small>Tự đo kích thước X·Y·Z và tính số gram theo loại nhựa. File chỉ đọc trên máy bạn, chưa gửi đi.</small>
+                </span>
+            </label>
+            <p class="tt-meter-error" data-tt-meter-error hidden></p>
+        </div>
+
         <div class="tt-viewer" data-tt-viewer hidden>
             <div class="tt-viewer-head">
                 <span class="tt-viewer-tag">Xem trước 3D</span>
@@ -67,15 +79,6 @@
         <div class="tt-bar-labels" data-tt-labels aria-hidden="true"></div>
 
         <div class="tt-meter" data-tt-meter>
-            <label class="tt-meter-drop" data-tt-drop>
-                <input type="file" accept=".stl,.obj,.3mf" data-tt-file aria-label="Chọn file 3D để tự cân" />
-                @StudioIcons.Get("upload")
-                <span>
-                    <b>Thả file STL · OBJ · 3MF để tự cân</b>
-                    <small>Tự đo kích thước X·Y·Z và tính số gram theo loại nhựa. File chỉ đọc trên máy bạn, chưa gửi đi.</small>
-                </span>
-            </label>
-
             <div class="tt-meter-body" data-tt-meter-body hidden>
                 <div class="tt-meter-info">
                     <div class="tt-meter-file">
@@ -107,7 +110,6 @@
                     <div class="tt-meter-stats" data-tt-stats></div>
                 </div>
             </div>
-            <p class="tt-meter-error" data-tt-meter-error hidden></p>
         </div>
 
         <div class="tt-fields">
