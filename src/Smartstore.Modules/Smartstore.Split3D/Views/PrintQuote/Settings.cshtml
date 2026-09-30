@@ -88,13 +88,16 @@
                     <div class="d-flex flex-wrap mt-2 small">
                         @foreach (var tech in Model.ParsedPrices)
                         {
-                            <div class="mr-4 mb-2">
-                                <div class="font-weight-bold">@tech.Name <span class="text-muted font-weight-normal">· @tech.Materials</span></div>
-                                @foreach (var tier in tech.Tiers)
-                                {
-                                    <div>@tier.Label: <strong>@PrintPriceList.FormatPrice(tier.PricePerGram)/g</strong></div>
-                                }
-                            </div>
+                            foreach (var material in tech.Materials)
+                            {
+                                <div class="mr-4 mb-2">
+                                    <div class="font-weight-bold">@tech.Name · @material.Name <span class="text-muted font-weight-normal">· @material.Density.ToString("0.##", CultureInfo.InvariantCulture) g/cm³</span></div>
+                                    @foreach (var tier in material.Tiers)
+                                    {
+                                        <div>@tier.Label: <strong>@PrintPriceList.FormatPrice(tier.PricePerGram)/g</strong></div>
+                                    }
+                                </div>
+                            }
                         }
                     </div>
                 }

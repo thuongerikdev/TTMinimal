@@ -43,17 +43,28 @@
                     @for (var i = 0; i < Model.Technologies.Count; i++)
                     {
                         var tech = Model.Technologies[i];
+                        // Materials with identical tiers share one list.
+                        var groups = tech.Materials
+                            .GroupBy(m => string.Join(";", m.Tiers.Select(t => $"{t.MinGrams}:{t.PricePerGram}")))
+                            .ToList();
                         <div class="tt-tiercard" data-tt-reveal style="--d:@Delay(i)">
-                            <span class="tt-mat">@tech.Materials</span>
+                            <span class="tt-mat">@tech.MaterialNames</span>
                             <h3>@tech.Name</h3>
                             <p>@tech.Description</p>
                             <div class="tt-from">@PrintPriceList.FormatPrice(tech.LowestPrice)<small> /gram trở lên</small></div>
-                            <ul class="tt-tierlist">
-                                @foreach (var tier in tech.Tiers)
+                            @foreach (var group in groups)
+                            {
+                                if (groups.Count > 1)
                                 {
-                                    <li><span>@tier.Label</span><b>@PrintPriceList.FormatPrice(tier.PricePerGram)/g</b></li>
+                                    <div class="tt-tiergroup">@string.Join(" · ", group.Select(m => m.Name))</div>
                                 }
-                            </ul>
+                                <ul class="tt-tierlist">
+                                    @foreach (var tier in group.First().Tiers)
+                                    {
+                                        <li><span>@tier.Label</span><b>@PrintPriceList.FormatPrice(tier.PricePerGram)/g</b></li>
+                                    }
+                                </ul>
+                            }
                             <a class="tt-button" href="@(quoteUrl)?tech=@(Uri.EscapeDataString(tech.Name))#tt-quote">Báo giá @tech.Name →</a>
                         </div>
                     }
@@ -68,7 +79,7 @@
                         <div class="tt-kicker">TÍNH GIÁ TẠM</div>
                         <h2 class="tt-split">BIẾT TRƯỚC CHI PHÍ <mark>TRONG VÀI GIÂY.</mark></h2>
                     </div>
-                    <p class="tt-lead" data-tt-reveal>Khối lượng xem trong phần mềm slicer (Cura, PrusaSlicer, Bambu Studio, Chitubox…). Bậc giá áp dụng theo tổng khối lượng đơn in.</p>
+                    <p class="tt-lead" data-tt-reveal>Chọn kiểu in và loại nhựa, thả file STL/OBJ/3MF để tự đo kích thước và cân số gram — hoặc nhập khối lượng từ slicer (Cura, Bambu Studio, Chitubox…). Bậc giá áp dụng theo tổng khối lượng đơn in.</p>
                 </div>
                 <partial name="_StudioPriceCalc" model="Model.Technologies" />
             </div>
@@ -91,6 +102,7 @@
 
                 <form class="tt-form" method="post" action="@quoteUrl#tt-quote" enctype="multipart/form-data" asp-antiforgery="true" data-tt-quote>
                     <honeypot />
+                    <input type="hidden" asp-for="Form.Measurement" />
                     <h2>Gửi file để nhận báo giá</h2>
                     <p class="tt-form-sub">Điền thông tin, đính kèm file — studio sẽ liên hệ lại. Ô có dấu <em style="color:#ff6b85;font-style:normal">*</em> là bắt buộc.</p>
 
@@ -128,7 +140,7 @@
                                     {
                                         <label>
                                             <input type="radio" name="Form.Technology" value="@tech.Name" checked="@(tech.Name.EqualsNoCase(selectedTech))" />
-                                            <span>@tech.Name<small>@tech.Materials</small></span>
+                                            <span>@tech.Name<small>@tech.MaterialNames</small></span>
                                         </label>
                                     }
                                     <label>
@@ -141,7 +153,13 @@
                         <div class="tt-row-3">
                             <div class="tt-field">
                                 <label asp-for="Form.Material">Màu sắc / vật liệu</label>
-                                <input asp-for="Form.Material" class="tt-input" placeholder="VD: PLA trắng, Resin xám…" />
+                                <input asp-for="Form.Material" class="tt-input" list="tt-materials" placeholder="VD: PLA trắng, Resin xám…" />
+                                <datalist id="tt-materials">
+                                    @foreach (var material in Model.Technologies.SelectMany(x => x.Materials).Select(x => x.Name).Distinct())
+                                    {
+                                        <option value="@material"></option>
+                                    }
+                                </datalist>
                             </div>
                             <div class="tt-field">
                                 <label asp-for="Form.Quantity">Số lượng</label>

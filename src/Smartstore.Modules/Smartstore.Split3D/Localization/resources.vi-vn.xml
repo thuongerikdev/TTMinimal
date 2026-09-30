@@ -3721,7 +3721,7 @@
         <Value>Bảng giá in</Value>
     </LocaleResource>
     <LocaleResource Name="Studio.Fields.PrintPriceTable.Hint">
-        <Value>Mỗi dòng một bậc: Công nghệ | Vật liệu | Từ gram | Đơn giá/gram. Bậc đầu của mỗi công nghệ bắt đầu từ 0.</Value>
+        <Value>Mỗi dòng một bậc: Kiểu in | Vật liệu | Từ gram | Đơn giá/gram. Nhiều loại nhựa cùng giá thì cách nhau dấu phẩy, có thể ghi tỉ trọng g/cm³ trong ngoặc để cân file tự động, VD: "FDM | PLA (1.24), PETG (1.27) | 0 | 1500". Bậc đầu của mỗi loại nhựa bắt đầu từ 0.</Value>
     </LocaleResource>
     <LocaleResource Name="Studio.Fields.PrintPriceNote">
         <Value>Lưu ý bảng giá</Value>

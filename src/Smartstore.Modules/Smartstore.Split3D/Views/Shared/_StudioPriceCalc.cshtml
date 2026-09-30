@@ -5,37 +5,114 @@
     var json = System.Text.Json.JsonSerializer.Serialize(Model.Select(x => new
     {
         name = x.Name,
-        tiers = x.Tiers.Select(t => new { min = t.MinGrams, price = t.PricePerGram, label = t.Label })
+        resin = x.IsResin,
+        mats = x.Materials.Select(m => new
+        {
+            name = m.Name,
+            density = m.Density,
+            tiers = m.Tiers.Select(t => new { min = t.MinGrams, price = t.PricePerGram, label = t.Label })
+        })
     }));
+    string Delay(int i) => (i * 0.08).ToString("0.00", CultureInfo.InvariantCulture) + "s";
 }
 
 @* Price configurator. Inputs are text fields on purpose: Smartstore wraps every input[type=number] into its own stepper widget. *@
-<div class="tt-config" data-tt-config="@json">
-    <div class="tt-techs" role="group" aria-label="Công nghệ in">
+<div class="tt-config" data-tt-config="@json" data-tt-mesh-src="@Url.Content(StudioAssets.MeshScript)">
+    <div class="tt-techs" role="group" aria-label="Kiểu in và loại nhựa">
         @for (var i = 0; i < Model.Count; i++)
         {
             var tech = Model[i];
-            <button type="button" class="tt-tech@(i == 0 ? " is-active" : "")" data-tech="@i" aria-pressed="@(i == 0 ? "true" : "false")" data-tt-reveal style="--d:@((i * 0.08).ToString("0.00", CultureInfo.InvariantCulture))s">
-                <span class="tt-tech-name">@tech.Name</span>
-                <span class="tt-tech-mat">@tech.Materials</span>
-                <span class="tt-tech-price">@PrintPriceList.FormatPrice(tech.LowestPrice)<small>/gram trở lên</small></span>
-                <span class="tt-tech-desc">@tech.Description</span>
-            </button>
+            <div class="tt-tech@(i == 0 ? " is-active" : "")" data-tech="@i" data-tt-reveal style="--d:@Delay(i);--n:@Math.Max(tech.Materials.Count, 1)">
+                <button type="button" class="tt-tech-head" data-mat="0">
+                    <span class="tt-tech-name">@tech.Name</span>
+                    <small>@tech.Materials.Count loại @(tech.IsResin ? "resin" : "nhựa")</small>
+                </button>
+                @for (var j = 0; j < tech.Materials.Count; j++)
+                {
+                    var mat = tech.Materials[j];
+                    <button type="button" class="tt-tech-mat@(i == 0 && j == 0 ? " is-active" : "")" data-mat="@j" aria-pressed="@(i == 0 && j == 0 ? "true" : "false")">
+                        <span>@mat.Name</span>
+                        <b>@PrintPriceList.FormatPrice(mat.LowestPrice)</b>
+                        <small>/gram trở lên</small>
+                    </button>
+                }
+                <div class="tt-tech-desc">@tech.Description</div>
+            </div>
         }
+
+        @* 3D preview of the dropped model, shown under the technology cards. *@
+        <div class="tt-viewer" data-tt-viewer hidden>
+            <div class="tt-viewer-head">
+                <span class="tt-viewer-tag">Xem trước 3D</span>
+                <b data-tt-vname></b>
+            </div>
+            <div class="tt-viewer-stage">
+                <canvas data-tt-view aria-label="Mô hình 3D, kéo để xoay, cuộn để phóng to"></canvas>
+                <span class="tt-viewer-size" data-tt-vsize></span>
+            </div>
+            <div class="tt-viewer-foot">
+                <span>Kéo để xoay · cuộn để phóng to</span>
+                <button type="button" class="tt-textlink" data-tt-vreset>Góc nhìn ban đầu</button>
+            </div>
+        </div>
     </div>
 
     <div class="tt-panel" data-tt-reveal="right">
         <div class="tt-panel-head">
-            <h3>Bậc giá · <span data-tt-techname>@Model.FirstOrDefault()?.Name</span></h3>
+            <h3>Bậc giá · <span data-tt-techname>@Model.FirstOrDefault()?.Name @Model.FirstOrDefault()?.Materials.FirstOrDefault()?.Name</span></h3>
             <span>đơn giá / gram theo tổng khối lượng</span>
         </div>
 
         <div class="tt-chart" data-tt-chart aria-hidden="true"></div>
         <div class="tt-bar-labels" data-tt-labels aria-hidden="true"></div>
 
+        <div class="tt-meter" data-tt-meter>
+            <label class="tt-meter-drop" data-tt-drop>
+                <input type="file" accept=".stl,.obj,.3mf" data-tt-file aria-label="Chọn file 3D để tự cân" />
+                @StudioIcons.Get("upload")
+                <span>
+                    <b>Thả file STL · OBJ · 3MF để tự cân</b>
+                    <small>Tự đo kích thước X·Y·Z và tính số gram theo loại nhựa. File chỉ đọc trên máy bạn, chưa gửi đi.</small>
+                </span>
+            </label>
+
+            <div class="tt-meter-body" data-tt-meter-body hidden>
+                <div class="tt-meter-info">
+                    <div class="tt-meter-file">
+                        <b data-tt-fname></b>
+                        <button type="button" class="tt-textlink" data-tt-change>Đổi file</button>
+                    </div>
+                    <div class="tt-dims">
+                        <label><span>X</span><input type="text" inputmode="decimal" autocomplete="off" data-axis="0" aria-label="Kích thước X (mm)" /></label>
+                        <label><span>Y</span><input type="text" inputmode="decimal" autocomplete="off" data-axis="1" aria-label="Kích thước Y (mm)" /></label>
+                        <label><span>Z</span><input type="text" inputmode="decimal" autocomplete="off" data-axis="2" aria-label="Kích thước Z (mm)" /></label>
+                        <em>mm</em>
+                    </div>
+                    <div class="tt-meter-opts">
+                        <label class="tt-check tt-check--sm"><input type="checkbox" data-tt-lock checked /><span>Giữ tỉ lệ</span></label>
+                        <label class="tt-select">
+                            <span>Đơn vị file</span>
+                            <select class="noskin" data-tt-unitsel>
+                                <option value="1">mm</option>
+                                <option value="10">cm</option>
+                                <option value="25.4">inch</option>
+                                <option value="1000">m</option>
+                            </select>
+                        </label>
+                        <label class="tt-select">
+                            <span data-tt-filllabel>Độ đặc</span>
+                            <select class="noskin" data-tt-fill></select>
+                        </label>
+                    </div>
+                    <div class="tt-meter-stats" data-tt-stats></div>
+                </div>
+            </div>
+            <p class="tt-meter-error" data-tt-meter-error hidden></p>
+        </div>
+
         <div class="tt-fields">
             <div class="tt-num">
-                <label for="tt-grams">Khối lượng 1 mẫu</label>
+                <label for="tt-grams">Khối lượng 1 mẫu <span class="tt-auto" data-tt-auto hidden>tự cân</span></label>
                 <div class="tt-num-box">
                     <button type="button" data-step="-1" data-target="#tt-grams" aria-label="Giảm">−</button>
                     <input id="tt-grams" type="text" inputmode="numeric" autocomplete="off" value="120" data-tt-grams />
@@ -69,7 +146,7 @@
 
         @if (ViewData["PriceNote"] is string note && note.HasValue())
         {
-            <p class="tt-note-line">@StudioIcons.Get("spark")<span>@note Khối lượng thật được tính từ file của bạn.</span></p>
+            <p class="tt-note-line">@StudioIcons.Get("spark")<span>@note Khối lượng tự cân là ước tính, chưa gồm support; studio sẽ chốt theo file slice thực tế.</span></p>
         }
     </div>
 </div>

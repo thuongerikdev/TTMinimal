@@ -164,7 +164,7 @@ public class PrintQuoteController : AdminController
             FacebookUrl = _settings.FacebookUrl,
             Email = _settings.Email,
             MapUrl = _settings.MapUrl,
-            PrintPriceTable = _settings.PrintPriceTable,
+            PrintPriceTable = PrintPriceList.Normalize(_settings.PrintPriceTable),
             PrintPriceNote = _settings.PrintPriceNote,
             QuoteNotifyEmail = _settings.QuoteNotifyEmail,
             QuoteMaxFileSizeMb = _settings.QuoteMaxFileSizeMb,
@@ -225,11 +225,11 @@ public class PrintQuoteController : AdminController
         var status = x.Status;
         string estimate = null;
 
-        var tech = technologies.FirstOrDefault(t => t.Name.EqualsNoCase(x.Technology));
-        if (tech != null && x.EstimatedGrams > 0)
+        var material = technologies.FirstOrDefault(t => t.Name.EqualsNoCase(x.Technology))?.FindMaterial(x.Material);
+        if (material != null && x.EstimatedGrams > 0)
         {
             var grams = x.EstimatedGrams.Value * Math.Max(x.Quantity, 1);
-            var tier = tech.GetTier(grams);
+            var tier = material.GetTier(grams);
             if (tier != null)
             {
                 estimate = $"{PrintPriceList.FormatPrice(grams * tier.PricePerGram)} ({PrintPriceList.FormatPrice(tier.PricePerGram)}/g × {grams:N0} g)";

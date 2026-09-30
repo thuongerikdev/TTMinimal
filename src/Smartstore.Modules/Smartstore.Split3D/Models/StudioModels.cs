@@ -136,6 +136,12 @@ public class PrintQuoteFormModel
 
     public bool NeedsDesign { get; set; }
 
+    /// <summary>
+    /// Model size and weight measured in the browser from the uploaded file, e.g. "120 × 80 × 45 mm · 96 cm³".
+    /// </summary>
+    [StringLength(300)]
+    public string Measurement { get; set; }
+
     [StringLength(4000)]
     public string Note { get; set; }
 

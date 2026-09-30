@@ -31,9 +31,15 @@ public class PrintServiceController : PublicController
     }
 
     [HttpGet("", Name = StudioStorefrontSetup.PrintServiceRouteName)]
-    public IActionResult Index(int? sent, string tech)
+    public IActionResult Index(int? sent, string tech, string mat, int? g, int? q)
     {
-        var model = PrepareModel(new PrintQuoteFormModel { Technology = tech });
+        var model = PrepareModel(new PrintQuoteFormModel
+        {
+            Technology = tech,
+            Material = mat,
+            EstimatedGrams = g > 0 ? g : null,
+            Quantity = q > 0 ? q.Value : 1
+        });
         model.SubmittedId = sent;
 
         return View(model);
@@ -74,7 +80,11 @@ public class PrintServiceController : PublicController
             Quantity = Math.Max(form.Quantity, 1),
             EstimatedGrams = form.EstimatedGrams,
             NeedsDesign = form.NeedsDesign,
-            Note = form.Note?.Trim().NullEmpty(),
+            Note = string.Join("\n", new[]
+                {
+                    form.Measurement?.Trim().NullEmpty() is string measurement ? "Đo từ file: " + measurement : null,
+                    form.Note?.Trim().NullEmpty()
+                }.Where(x => x != null)).NullEmpty(),
             FileLink = form.FileLink?.Trim().NullEmpty(),
             IpAddress = _webHelper.ClientInfo.IpAddress?.ToString()
         };

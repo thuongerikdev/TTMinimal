@@ -53,6 +53,27 @@ public class StudioSettings : ISettings
     public int LayoutVersion { get; set; }
 
     public const string DefaultPrintPriceTable =
+        "# Kiểu in | Vật liệu (cách nhau dấu phẩy, tỉ trọng g/cm³ trong ngoặc) | Từ gram | Giá/gram\n" +
+        "FDM | PLA (1.24), PETG (1.27), ABS (1.05) | 0 | 1500\n" +
+        "FDM | PLA (1.24), PETG (1.27), ABS (1.05) | 1000 | 1200\n" +
+        "FDM | PLA (1.24), PETG (1.27), ABS (1.05) | 2000 | 1000\n" +
+        "FDM | PLA (1.24), PETG (1.27), ABS (1.05) | 4000 | 800\n" +
+        "Resin | Standard (1.15) | 0 | 4000\n" +
+        "Resin | Standard (1.15) | 50 | 3500\n" +
+        "Resin | Standard (1.15) | 500 | 3200\n" +
+        "Resin | Standard (1.15) | 1000 | 3000\n" +
+        "Resin | Standard (1.15) | 2000 | 2800\n" +
+        "Resin | Like ABS (1.12) | 0 | 4600\n" +
+        "Resin | Like ABS (1.12) | 50 | 4000\n" +
+        "Resin | Like ABS (1.12) | 500 | 3600\n" +
+        "Resin | Like ABS (1.12) | 1000 | 3400\n" +
+        "Resin | Like ABS (1.12) | 2000 | 3200";
+
+    /// <summary>
+    /// The default price list before materials were grouped by technology (one technology per resin type).
+    /// Replaced by <see cref="DefaultPrintPriceTable"/> when the storefront layout is upgraded.
+    /// </summary>
+    internal const string LegacyPrintPriceTable =
         "FDM | PLA, PETG, ABS | 0 | 1500\n" +
         "FDM | PLA, PETG, ABS | 1000 | 1200\n" +
         "FDM | PLA, PETG, ABS | 2000 | 1000\n" +

@@ -423,13 +423,46 @@
     function paintRange(range) { range.style.setProperty('--p', range.value + '%'); }
     function readInt(input, def) { var n = parseInt(String(input.value).replace(/\D/g, ''), 10); return isNaN(n) ? def : n; }
 
+    // Model weighing. The reader (studio-mesh.js) is only downloaded when a file is dropped.
+    var FDM_FILLS = [[10, '10%'], [15, '15%'], [20, '20% (chuẩn)'], [30, '30%'], [50, '50%'], [100, '100% (đặc)']];
+    var RESIN_FILLS = [[100, 'Đặc'], [0, 'Rỗng, vỏ 2 mm']];
+    var FDM_WALL_MM = 1.2, RESIN_WALL_MM = 2;
+    var MESH_EXT = /\.(stl|obj|3mf)$/i;
+
+    function loadMesh(src) {
+        if (window.TTMesh) return Promise.resolve(window.TTMesh);
+        if (!loadMesh.p) {
+            loadMesh.p = new Promise(function (resolve, reject) {
+                var s = document.createElement('script');
+                s.src = src; s.async = true;
+                s.onload = function () { if (window.TTMesh) resolve(window.TTMesh); else reject(new Error('Không tải được bộ đọc file.')); };
+                s.onerror = function () { loadMesh.p = null; reject(new Error('Không tải được bộ đọc file, hãy thử lại.')); };
+                document.head.appendChild(s);
+            });
+        }
+        return loadMesh.p;
+    }
+
+    // Slicer-like estimate: walls (surface × wall thickness) are solid, the inside is filled by the infill ratio.
+    function estimate(mesh, scale, tech, mat, fill) {
+        var s3 = scale[0] * scale[1] * scale[2];
+        var vol = mesh.volume * s3, area = mesh.area * Math.pow(s3, 2 / 3);
+        var shell = Math.min(vol, area * (tech.resin ? RESIN_WALL_MM : FDM_WALL_MM));
+        var solid = tech.resin ? (fill >= 100 ? vol : shell) : shell + (vol - shell) * fill / 100;
+        return { volume: vol, grams: solid * mat.density / 1000 };
+    }
+
+    function fmtNum(v, digits) { return new Intl.NumberFormat('vi-VN', { maximumFractionDigits: digits }).format(v); }
+    function readFloat(input) { var n = parseFloat(String(input.value).replace(',', '.')); return isNaN(n) ? 0 : n; }
+
     function initConfigurator() {
         each('[data-tt-config]', function (root) {
             var techs;
             try { techs = JSON.parse(root.getAttribute('data-tt-config')); } catch (e) { return; }
-            if (!techs || !techs.length) return;
+            techs = (techs || []).filter(function (t) { return t.mats && t.mats.length; });
+            if (!techs.length) return;
 
-            var buttons = root.querySelectorAll('[data-tech]');
+            var cards = root.querySelectorAll('.tt-tech[data-tech]');
             var chart = root.querySelector('[data-tt-chart]');
             var labels = root.querySelector('[data-tt-labels]');
             var nameEl = root.querySelector('[data-tt-techname]');
@@ -439,43 +472,87 @@
             var total = root.querySelector('[data-tt-total]');
             var unit = root.querySelector('[data-tt-unit]');
             var cta = root.querySelector('[data-tt-cta]');
-            var active = 0;
+            var autoTag = root.querySelector('[data-tt-auto]');
+            var active = 0, activeMat = 0;
+
+            // Weighing state
+            var meter = root.querySelector('[data-tt-meter]');
+            var fileInput = meter.querySelector('[data-tt-file]');
+            var drop = meter.querySelector('[data-tt-drop]');
+            var body = meter.querySelector('[data-tt-meter-body]');
+            var errorEl = meter.querySelector('[data-tt-meter-error]');
+            var dims = meter.querySelectorAll('[data-axis]');
+            var lock = meter.querySelector('[data-tt-lock]');
+            var unitSel = meter.querySelector('[data-tt-unitsel]');
+            var fillSel = meter.querySelector('[data-tt-fill]');
+            var stats = meter.querySelector('[data-tt-stats]');
+            var viewer = root.querySelector('[data-tt-viewer]');
+            var view = null, mesh = null, file = null, auto = false, measurement = '';
+            var scale = [1, 1, 1], fills = { fdm: 20, resin: 100 };
+
+            function tech() { return techs[active]; }
+            function mat() { return tech().mats[activeMat] || tech().mats[0]; }
+            function kind() { return tech().resin ? 'resin' : 'fdm'; }
+            // Size in mm of the model as stored in the file (before the customer's scale).
+            function baseSize(a) { return mesh.size[a] * (parseFloat(unitSel.value) || 1); }
 
             function drawChart() {
-                var tech = techs[active], max = Math.max.apply(null, tech.tiers.map(function (t) { return t.price; }));
+                var tiers = mat().tiers, max = Math.max.apply(null, tiers.map(function (t) { return t.price; }));
                 chart.innerHTML = ''; labels.innerHTML = '';
-                tech.tiers.forEach(function (t) {
+                tiers.forEach(function (t) {
                     var col = document.createElement('div'); col.className = 'tt-bar';
                     col.innerHTML = '<b>' + money.format(t.price) + 'đ</b><i style="--h:0%"></i>';
                     chart.appendChild(col);
                     var lab = document.createElement('span'); lab.textContent = t.label; labels.appendChild(lab);
                     requestAnimationFrame(function () { requestAnimationFrame(function () { col.querySelector('i').style.setProperty('--h', Math.max(12, t.price / max * 100) + '%'); }); });
                 });
-                if (nameEl) nameEl.textContent = tech.name;
+                if (nameEl) nameEl.textContent = tech().name + ' · ' + mat().name;
             }
 
             function update() {
-                var tech = techs[active];
                 var g = readInt(grams, 0), q = Math.max(readInt(qty, 1), 1), sum = g * q;
-                var idx = tierFor(tech, sum), tier = tech.tiers[idx];
+                var tiers = mat().tiers, idx = tierFor({ tiers: tiers }, sum), tier = tiers[idx];
                 each('.tt-bar', function (b, i) { b.classList.toggle('is-active', i === idx); }, chart);
                 countTo(total, sum * tier.price);
                 if (unit) unit.textContent = money.format(tier.price) + 'đ/g · ' + tier.label + ' · tổng ' + weight(sum);
-                if (cta) cta.href = cta.getAttribute('data-base') + '?tech=' + encodeURIComponent(tech.name) + '#tt-quote';
+                if (cta) {
+                    cta.href = cta.getAttribute('data-base') + '?tech=' + encodeURIComponent(tech().name) + '&mat=' + encodeURIComponent(mat().name)
+                        + (g > 0 ? '&g=' + g : '') + '&q=' + q + '#tt-quote';
+                }
             }
 
-            Array.prototype.forEach.call(buttons, function (btn) {
-                btn.addEventListener('click', function () {
-                    active = parseInt(btn.getAttribute('data-tech'), 10) || 0;
-                    Array.prototype.forEach.call(buttons, function (b) { b.classList.toggle('is-active', b === btn); b.setAttribute('aria-pressed', b === btn ? 'true' : 'false'); });
-                    drawChart(); update();
+            function select(ti, mi) {
+                var kindBefore = kind();
+                active = ti; activeMat = mi;
+                Array.prototype.forEach.call(cards, function (card, i) {
+                    card.classList.toggle('is-active', i === ti);
+                    each('.tt-tech-mat', function (b) {
+                        var on = i === ti && parseInt(b.getAttribute('data-mat'), 10) === mi;
+                        b.classList.toggle('is-active', on); b.setAttribute('aria-pressed', on ? 'true' : 'false');
+                    }, card);
                 });
+                if (mesh && kindBefore !== kind()) { fillOptions(); paintView(); }
+                drawChart();
+                if (mesh && auto) weigh(); else update();
+            }
+
+            Array.prototype.forEach.call(cards, function (card) {
+                var ti = parseInt(card.getAttribute('data-tech'), 10) || 0;
+                each('button[data-mat]', function (btn) {
+                    btn.addEventListener('click', function () {
+                        var mi = btn.classList.contains('tt-tech-head') && ti === active ? activeMat : parseInt(btn.getAttribute('data-mat'), 10) || 0;
+                        select(ti, mi);
+                    });
+                }, card);
             });
 
             [grams, qty].forEach(function (input) {
-                input.addEventListener('input', function () {
+                input.addEventListener('input', function (e) {
                     input.value = String(input.value).replace(/\D/g, '').slice(0, 6);
-                    if (input === grams) { range.value = gramsToSlider(readInt(grams, 0)); paintRange(range); }
+                    if (input === grams) {
+                        range.value = gramsToSlider(readInt(grams, 0)); paintRange(range);
+                        if (e.isTrusted) setAuto(false);
+                    }
                     update();
                 });
             });
@@ -485,13 +562,185 @@
                     var input = root.querySelector(btn.getAttribute('data-target'));
                     var step = parseInt(btn.getAttribute('data-step'), 10);
                     var cur = readInt(input, 0);
-                    if (input === grams) step *= cur >= 1000 ? 100 : cur >= 100 ? 10 : 1;
+                    if (input === grams) { step *= cur >= 1000 ? 100 : cur >= 100 ? 10 : 1; setAuto(false); }
                     input.value = Math.max(1, cur + step);
                     input.dispatchEvent(new Event('input'));
                 });
             }, root);
 
-            range.addEventListener('input', function () { grams.value = sliderToGrams(parseFloat(range.value)); paintRange(range); update(); });
+            range.addEventListener('input', function () { grams.value = sliderToGrams(parseFloat(range.value)); paintRange(range); setAuto(false); update(); });
+
+            // ----- weighing -----
+
+            function setAuto(on) { auto = on; if (autoTag) autoTag.hidden = !on; }
+
+            function showError(msg) { errorEl.textContent = msg || ''; errorEl.hidden = !msg; }
+
+            function fillOptions() {
+                var list = tech().resin ? RESIN_FILLS : FDM_FILLS, cur = fills[kind()];
+                fillSel.innerHTML = list.map(function (o) { return '<option value="' + o[0] + '"' + (o[0] === cur ? ' selected' : '') + '>' + o[1] + '</option>'; }).join('');
+                meter.querySelector('[data-tt-filllabel]').textContent = tech().resin ? 'Kiểu in' : 'Độ đặc (infill)';
+            }
+
+            // Preview in the card color of the technology: mint for FDM, lilac for resin.
+            function paintView() {
+                if (!view) return;
+                view.color = tech().resin ? [201, 166, 247] : [128, 229, 203];
+                view.request();
+            }
+
+            function writeDims(except) {
+                Array.prototype.forEach.call(dims, function (input, a) {
+                    if (a !== except) input.value = fmtNum(baseSize(a) * scale[a], 1);
+                });
+            }
+
+            function weigh() {
+                var s = [0, 1, 2].map(function (a) { return scale[a] * (parseFloat(unitSel.value) || 1); });
+                var r = estimate(mesh, s, tech(), mat(), fills[kind()]);
+                var g = Math.max(1, Math.round(r.grams));
+                var size = [0, 1, 2].map(function (a) { return fmtNum(baseSize(a) * scale[a], 1); }).join(' × ') + ' mm';
+                var pct = Math.round(scale[0] * 100), uniform = Math.abs(scale[0] - scale[1]) < 1e-6 && Math.abs(scale[1] - scale[2]) < 1e-6;
+                var fillText = fillSel.options[fillSel.selectedIndex] ? fillSel.options[fillSel.selectedIndex].text : '';
+
+                var chips = [
+                    '<span>Thể tích ' + fmtNum(r.volume / 1000, 1) + ' cm³</span>',
+                    '<span>' + (uniform ? 'Tỉ lệ ' + pct + '%' : 'Tỉ lệ tự do') + '</span>',
+                    '<span class="is-key">≈ ' + fmtNum(g, 0) + ' g ' + mat().name + '</span>'
+                ];
+                var maxDim = Math.max.apply(null, [0, 1, 2].map(function (a) { return baseSize(a) * scale[a]; }));
+                if (maxDim < 3) chips.push('<span class="is-warn">Mô hình rất nhỏ — file có thể dùng đơn vị cm/m, hãy chọn lại đơn vị.</span>');
+                if (maxDim > 1000) chips.push('<span class="is-warn">Mô hình lớn hơn 1 m — cần cắt ghép, studio sẽ tư vấn.</span>');
+                stats.innerHTML = chips.join('');
+                viewer.querySelector('[data-tt-vsize]').textContent = size;
+
+                measurement = size + ' · ' + fmtNum(r.volume / 1000, 1) + ' cm³ · ' + tech().name + ' ' + mat().name + ' ' + fillText
+                    + ' ≈ ' + fmtNum(g, 0) + ' g/cái' + (file ? ' (' + file.name + ')' : '');
+
+                grams.value = g;
+                range.value = gramsToSlider(g); paintRange(range);
+                setAuto(true);
+                update();
+            }
+
+            function analyze(f) {
+                if (!f) return Promise.resolve(false);
+                if (!MESH_EXT.test(f.name)) {
+                    showError('Tự cân hỗ trợ STL, OBJ, 3MF. File này vẫn gửi báo giá được bình thường.');
+                    return Promise.resolve(false);
+                }
+                showError('');
+                drop.classList.add('is-busy');
+                drop.querySelector('b').textContent = 'Đang cân ' + f.name + '…';
+                return loadMesh(root.getAttribute('data-tt-mesh-src')).then(function (M) {
+                    return M.read(f).then(function (m) {
+                        mesh = m; file = f; scale = [1, 1, 1];
+                        unitSel.value = '1';
+                        body.hidden = false;
+                        meter.querySelector('[data-tt-fname]').textContent = f.name;
+                        fillOptions(); writeDims(-1);
+                        // Unhide first: the canvas needs its layout size before the first draw.
+                        viewer.hidden = false;
+                        viewer.querySelector('[data-tt-vname]').textContent = f.name;
+                        if (!view) view = new M.View(viewer.querySelector('[data-tt-view]'));
+                        view.set(m);
+                        paintView();
+                        weigh();
+                        return true;
+                    });
+                }).catch(function (err) {
+                    showError(err && err.message ? err.message : 'Không đọc được file này.');
+                    return false;
+                }).then(function (ok) {
+                    drop.classList.remove('is-busy');
+                    drop.querySelector('b').textContent = mesh ? 'Thả file khác để cân lại' : 'Thả file STL · OBJ · 3MF để tự cân';
+                    return ok;
+                });
+            }
+
+            fileInput.addEventListener('change', function () { analyze(fileInput.files && fileInput.files[0]); });
+            ['dragenter', 'dragover'].forEach(function (t) { drop.addEventListener(t, function () { drop.classList.add('is-over'); }); });
+            ['dragleave', 'drop'].forEach(function (t) { drop.addEventListener(t, function () { drop.classList.remove('is-over'); }); });
+            meter.querySelector('[data-tt-change]').addEventListener('click', function () { fileInput.click(); });
+            viewer.querySelector('[data-tt-vreset]').addEventListener('click', function () { if (view) view.reset(); });
+
+            Array.prototype.forEach.call(dims, function (input, a) {
+                input.addEventListener('input', function () {
+                    input.value = String(input.value).replace(/[^\d.,]/g, '').slice(0, 8);
+                    var v = readFloat(input), base = baseSize(a);
+                    if (!mesh || v <= 0 || base <= 0) return;
+                    if (lock.checked) {
+                        var k = v / base;
+                        scale = [k, k, k];
+                        writeDims(a);
+                    } else {
+                        scale[a] = v / base;
+                    }
+                    weigh();
+                });
+                input.addEventListener('blur', function () { if (mesh) writeDims(-1); });
+            });
+
+            lock.addEventListener('change', function () {
+                if (lock.checked && mesh) { scale = [scale[0], scale[0], scale[0]]; writeDims(-1); weigh(); }
+            });
+            unitSel.addEventListener('change', function () { if (mesh) { scale = [1, 1, 1]; writeDims(-1); weigh(); } });
+            fillSel.addEventListener('change', function () { fills[kind()] = parseInt(fillSel.value, 10); if (mesh) weigh(); });
+
+            // ----- hand over to the quote form on the same page -----
+
+            function fillQuote(form, withFile) {
+                var t = tech(), m = mat();
+                each('input[name="Form.Technology"]', function (r) { r.checked = r.value.toLowerCase() === t.name.toLowerCase(); }, form);
+                var matInput = form.querySelector('[name="Form.Material"]');
+                if (matInput && (!matInput.value || matInput.getAttribute('data-auto') === matInput.value)) {
+                    matInput.value = m.name; matInput.setAttribute('data-auto', m.name);
+                }
+                var q = form.querySelector('[name="Form.Quantity"]'); if (q) q.value = Math.max(readInt(qty, 1), 1);
+                var g = form.querySelector('[name="Form.EstimatedGrams"]'); if (g && readInt(grams, 0) > 0) g.value = readInt(grams, 0);
+                var hidden = form.querySelector('[name="Form.Measurement"]'); if (hidden) hidden.value = mesh ? measurement : '';
+
+                var input = form.querySelector('input[type=file][name=modelFile]');
+                if (withFile && file && input && (!input.files || input.files[0] !== file)) {
+                    try {
+                        var dt = new DataTransfer(); dt.items.add(file);
+                        input.files = dt.files;
+                        input.dispatchEvent(new Event('change'));
+                    } catch (e) { /* old browsers: the customer attaches the file again */ }
+                }
+            }
+
+            var quoteForm = document.querySelector('form[data-tt-quote]');
+            if (cta && quoteForm) {
+                cta.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    fillQuote(quoteForm, true);
+                    var target = document.getElementById('tt-quote') || quoteForm;
+                    target.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'start' });
+                });
+
+                // A model picked in the quote form is weighed with the technology chosen there.
+                var formFile = quoteForm.querySelector('input[type=file][name=modelFile]');
+                if (formFile) {
+                    formFile.addEventListener('change', function () {
+                        var f = formFile.files && formFile.files[0];
+                        if (!f || f === file || !MESH_EXT.test(f.name)) return;
+                        var checked = quoteForm.querySelector('input[name="Form.Technology"]:checked');
+                        techs.forEach(function (t, i) { if (checked && t.name.toLowerCase() === checked.value.toLowerCase() && i !== active) select(i, 0); });
+                        analyze(f).then(function (ok) { if (ok) fillQuote(quoteForm, false); });
+                    });
+                }
+            }
+
+            // Preselect technology/material from the URL (?tech=Resin&mat=Standard).
+            var params = new URLSearchParams(location.search), pt = (params.get('tech') || '').toLowerCase(), pm = (params.get('mat') || '').toLowerCase();
+            techs.forEach(function (t, i) {
+                if (t.name.toLowerCase() !== pt) return;
+                var mi = 0;
+                t.mats.forEach(function (m, j) { if (m.name.toLowerCase() === pm) mi = j; });
+                active = i; activeMat = mi;
+            });
+            if (active || activeMat) select(active, activeMat);
 
             range.value = gramsToSlider(readInt(grams, 0)); paintRange(range);
             drawChart(); update();

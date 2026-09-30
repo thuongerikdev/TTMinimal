@@ -32,6 +32,8 @@ public class AdminStyleFilter : IResultFilter
             "<link rel=\"stylesheet\" href=\"https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800;900&display=swap\" />" +
             $"<link rel=\"stylesheet\" href=\"{url.Content(StudioAssets.AdminStyleSheet)}\" />" +
             $"<link rel=\"icon\" type=\"image/svg+xml\" href=\"{url.Content(StudioAssets.Favicon)}\" />" +
+            $"<link rel=\"icon\" type=\"image/png\" sizes=\"32x32\" href=\"{url.Content(StudioAssets.FaviconPng)}\" />" +
+            $"<link rel=\"apple-touch-icon\" href=\"{url.Content(StudioAssets.AppleTouchIcon)}\" />" +
             "<meta name=\"color-scheme\" content=\"light dark\" />" +
             "<meta name=\"theme-color\" content=\"#20201f\" />";
 
