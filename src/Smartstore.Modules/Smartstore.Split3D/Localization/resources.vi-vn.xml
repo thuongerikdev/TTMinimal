@@ -3735,6 +3735,18 @@
     <LocaleResource Name="Studio.Fields.QuoteNotifyEmail.Hint">
         <Value>Nhận thông báo yêu cầu báo giá mới. Để trống = email mặc định.</Value>
     </LocaleResource>
+    <LocaleResource Name="Studio.Fields.FdmWeightFactor">
+        <Value>Hiệu chỉnh cân file FDM</Value>
+    </LocaleResource>
+    <LocaleResource Name="Studio.Fields.FdmWeightFactor.Hint">
+        <Value>Số gram tự cân từ file FDM được nhân với % này. So số gram web báo với slicer / cân thật: web 130 g, thật 100 g → nhập khoảng 77.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Studio.Fields.ResinWeightFactor">
+        <Value>Hiệu chỉnh cân file Resin</Value>
+    </LocaleResource>
+    <LocaleResource Name="Studio.Fields.ResinWeightFactor.Hint">
+        <Value>Số gram tự cân từ file Resin được nhân với % này (bù support, resin thừa). Web 80 g, thật 100 g → nhập khoảng 125.</Value>
+    </LocaleResource>
     <LocaleResource Name="Studio.Fields.QuoteMaxFileSizeMb">
         <Value>Dung lượng file tối đa (MB)</Value>
     </LocaleResource>

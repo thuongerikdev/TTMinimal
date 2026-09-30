@@ -1,4 +1,5 @@
 @model List<PrintTechnology>
+@inject Smartstore.Split3D.Configuration.StudioSettings StudioSettings
 
 @{
     var quoteUrl = (string)ViewData["QuoteUrl"];
@@ -6,6 +7,8 @@
     {
         name = x.Name,
         resin = x.IsResin,
+        // Calibration of the weight estimated from an uploaded model (1 = as computed).
+        factor = Math.Max(10, x.IsResin ? StudioSettings.ResinWeightFactor : StudioSettings.FdmWeightFactor) / 100d,
         mats = x.Materials.Select(m => new
         {
             name = m.Name,

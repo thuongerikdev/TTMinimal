@@ -1071,6 +1071,18 @@
     <LocaleResource Name="Studio.Fields.QuoteNotifyEmail.Hint">
         <Value>Receives new quote requests. Empty = the default email account.</Value>
     </LocaleResource>
+    <LocaleResource Name="Studio.Fields.FdmWeightFactor">
+        <Value>FDM weight calibration</Value>
+    </LocaleResource>
+    <LocaleResource Name="Studio.Fields.FdmWeightFactor.Hint">
+        <Value>Percentage applied to the weight estimated from an uploaded FDM model. Compare the web estimate with the sliced weight: web 130 g, sliced 100 g → about 77.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Studio.Fields.ResinWeightFactor">
+        <Value>Resin weight calibration</Value>
+    </LocaleResource>
+    <LocaleResource Name="Studio.Fields.ResinWeightFactor.Hint">
+        <Value>Percentage applied to the weight estimated from an uploaded resin model (covers supports and excess resin). Web 80 g, real 100 g → about 125.</Value>
+    </LocaleResource>
     <LocaleResource Name="Studio.Fields.QuoteMaxFileSizeMb">
         <Value>Max. file size (MB)</Value>
     </LocaleResource>

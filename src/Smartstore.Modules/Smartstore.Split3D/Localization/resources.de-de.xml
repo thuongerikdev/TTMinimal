@@ -1071,6 +1071,18 @@
     <LocaleResource Name="Studio.Fields.QuoteNotifyEmail.Hint">
         <Value>Erhält neue Angebotsanfragen. Leer = Standard-E-Mail-Konto.</Value>
     </LocaleResource>
+    <LocaleResource Name="Studio.Fields.FdmWeightFactor">
+        <Value>Gewichtskalibrierung FDM</Value>
+    </LocaleResource>
+    <LocaleResource Name="Studio.Fields.FdmWeightFactor.Hint">
+        <Value>Prozentwert, mit dem das aus einem FDM-Modell geschätzte Gewicht multipliziert wird. Web 130 g, Slicer 100 g → etwa 77.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Studio.Fields.ResinWeightFactor">
+        <Value>Gewichtskalibrierung Resin</Value>
+    </LocaleResource>
+    <LocaleResource Name="Studio.Fields.ResinWeightFactor.Hint">
+        <Value>Prozentwert, mit dem das aus einem Resin-Modell geschätzte Gewicht multipliziert wird (Stützen, überschüssiges Harz). Web 80 g, real 100 g → etwa 125.</Value>
+    </LocaleResource>
     <LocaleResource Name="Studio.Fields.QuoteMaxFileSizeMb">
         <Value>Max. Dateigröße (MB)</Value>
     </LocaleResource>

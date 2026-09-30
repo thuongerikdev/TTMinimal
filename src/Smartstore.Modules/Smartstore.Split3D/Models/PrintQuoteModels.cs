@@ -112,6 +112,14 @@ public class StudioConfigurationModel : ModelBase
     [LocalizedDisplay("*PrintPriceNote")]
     public string PrintPriceNote { get; set; }
 
+    [LocalizedDisplay("*FdmWeightFactor")]
+    [Range(10, 500)]
+    public int FdmWeightFactor { get; set; }
+
+    [LocalizedDisplay("*ResinWeightFactor")]
+    [Range(10, 500)]
+    public int ResinWeightFactor { get; set; }
+
     [LocalizedDisplay("*QuoteNotifyEmail")]
     public string QuoteNotifyEmail { get; set; }
 

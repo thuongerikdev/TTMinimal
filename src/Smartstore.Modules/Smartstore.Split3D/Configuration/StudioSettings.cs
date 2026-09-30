@@ -38,6 +38,18 @@ public class StudioSettings : ISettings
     public string PrintPriceNote { get; set; } = "Đơn giá chưa bao gồm xử lý phôi in (chà nhám, sơn) và ghép phôi.";
 
     /// <summary>
+    /// Calibration of the weight estimated from an uploaded FDM model, in percent of the computed value.
+    /// Below 100 when the estimate is higher than the sliced / real weight.
+    /// </summary>
+    public int FdmWeightFactor { get; set; } = 77;
+
+    /// <summary>
+    /// Calibration of the weight estimated from an uploaded resin model, in percent of the computed value.
+    /// Above 100 covers supports and resin the plain model volume does not include.
+    /// </summary>
+    public int ResinWeightFactor { get; set; } = 125;
+
+    /// <summary>
     /// Receives new quote requests. Empty = the store's default email account.
     /// </summary>
     public string QuoteNotifyEmail { get; set; }

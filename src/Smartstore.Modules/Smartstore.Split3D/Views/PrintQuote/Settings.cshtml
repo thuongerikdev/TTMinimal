@@ -108,6 +108,14 @@
             <div class="adminData"><input asp-for="PrintPriceNote" /></div>
         </div>
         <div class="adminRow">
+            <div class="adminTitle"><smart-label asp-for="FdmWeightFactor" /></div>
+            <div class="adminData"><input asp-for="FdmWeightFactor" sm-postfix="%" /><span asp-validation-for="FdmWeightFactor"></span></div>
+        </div>
+        <div class="adminRow">
+            <div class="adminTitle"><smart-label asp-for="ResinWeightFactor" /></div>
+            <div class="adminData"><input asp-for="ResinWeightFactor" sm-postfix="%" /><span asp-validation-for="ResinWeightFactor"></span></div>
+        </div>
+        <div class="adminRow">
             <div class="adminTitle"><smart-label asp-for="QuoteNotifyEmail" /></div>
             <div class="adminData"><input asp-for="QuoteNotifyEmail" /></div>
         </div>

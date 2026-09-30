@@ -444,12 +444,13 @@
     }
 
     // Slicer-like estimate: walls (surface × wall thickness) are solid, the inside is filled by the infill ratio.
+    // tech.factor calibrates the result against real weights (Admin → Studio settings).
     function estimate(mesh, scale, tech, mat, fill) {
         var s3 = scale[0] * scale[1] * scale[2];
         var vol = mesh.volume * s3, area = mesh.area * Math.pow(s3, 2 / 3);
         var shell = Math.min(vol, area * (tech.resin ? RESIN_WALL_MM : FDM_WALL_MM));
         var solid = tech.resin ? (fill >= 100 ? vol : shell) : shell + (vol - shell) * fill / 100;
-        return { volume: vol, grams: solid * mat.density / 1000 };
+        return { volume: vol, grams: solid * mat.density / 1000 * (tech.factor || 1) };
     }
 
     function flash(el) {

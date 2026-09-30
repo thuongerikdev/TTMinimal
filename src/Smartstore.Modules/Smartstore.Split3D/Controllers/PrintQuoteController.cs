@@ -168,6 +168,8 @@ public class PrintQuoteController : AdminController
             PrintPriceNote = _settings.PrintPriceNote,
             QuoteNotifyEmail = _settings.QuoteNotifyEmail,
             QuoteMaxFileSizeMb = _settings.QuoteMaxFileSizeMb,
+            FdmWeightFactor = _settings.FdmWeightFactor,
+            ResinWeightFactor = _settings.ResinWeightFactor,
             LayoutVersion = _settings.LayoutVersion,
             CurrentLayoutVersion = StudioStorefrontSetup.CurrentVersion,
             ParsedPrices = PrintPriceList.Parse(_settings.PrintPriceTable)
@@ -203,6 +205,8 @@ public class PrintQuoteController : AdminController
         _settings.PrintPriceNote = model.PrintPriceNote?.Trim();
         _settings.QuoteNotifyEmail = model.QuoteNotifyEmail?.Trim();
         _settings.QuoteMaxFileSizeMb = model.QuoteMaxFileSizeMb;
+        _settings.FdmWeightFactor = model.FdmWeightFactor;
+        _settings.ResinWeightFactor = model.ResinWeightFactor;
 
         await Services.SettingFactory.SaveSettingsAsync(_settings);
         NotifySuccess(T("Admin.Common.DataSuccessfullySaved"));
