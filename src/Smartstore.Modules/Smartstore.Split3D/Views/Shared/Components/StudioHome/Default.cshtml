@@ -28,6 +28,10 @@
                     <a class="tt-button tt-button--dark" href="@Model.PrintServiceUrl#tt-quote">Gửi file báo giá</a>
                     <a class="tt-textlink" href="#tt-services">Khám phá studio</a>
                 </div>
+                @if (techs.Count > 0)
+                {
+                    <partial name="_StudioHeroDrop" />
+                }
                 <div class="tt-hero-foot" data-tt-reveal style="--d:.45s">FDM &amp; Resin <span>✦</span> Thiết kế &amp; hoàn thiện@(lowest > 0 ? " ✦ từ " + PrintPriceList.FormatPrice(lowest) + "/g" : "")</div>
             </div>
 

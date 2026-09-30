@@ -452,6 +452,89 @@
         return { volume: vol, grams: solid * mat.density / 1000 };
     }
 
+    function flash(el) {
+        if (!el) return;
+        el.classList.remove('is-flash');
+        void el.offsetWidth; // restart the animation
+        el.classList.add('is-flash');
+        setTimeout(function () { el.classList.remove('is-flash'); }, 1600);
+    }
+
+    // ---------- "Drop a 3D file" entry points: hero drop zone, floating button, page-wide drop ----------
+
+    function initDropEntry() {
+        var calc = document.querySelector('[data-tt-config]');
+        var fab = document.querySelector('[data-tt-dropfab]');
+        var canWeigh = !!(calc && calc.ttAnalyze);
+
+        function weigh(file) {
+            if (!file || !canWeigh) return;
+            calc.ttFocus();
+            calc.ttAnalyze(file);
+        }
+
+        each('[data-tt-herodrop]', function (zone) {
+            var input = zone.querySelector('input[type=file]');
+            if (!canWeigh) {
+                // No calculator on this page: the zone becomes a link to it.
+                input.remove();
+                zone.addEventListener('click', function () { if (fab) location.href = fab.href; });
+                return;
+            }
+            ['dragenter', 'dragover'].forEach(function (t) { zone.addEventListener(t, function () { zone.classList.add('is-over'); }); });
+            ['dragleave', 'drop'].forEach(function (t) { zone.addEventListener(t, function () { zone.classList.remove('is-over'); }); });
+            input.addEventListener('change', function () { weigh(input.files && input.files[0]); input.value = ''; });
+        });
+
+        if (fab) {
+            if (canWeigh) {
+                fab.addEventListener('click', function (e) { e.preventDefault(); calc.ttFocus(); });
+            }
+            // Hidden while another drop zone is on screen; slides in shortly after the page opens.
+            var visible = new Set();
+            function toggleFab() { fab.classList.toggle('is-shown', visible.size === 0); }
+            if ('IntersectionObserver' in window) {
+                var io = new IntersectionObserver(function (entries) {
+                    entries.forEach(function (en) { if (en.isIntersecting) visible.add(en.target); else visible.delete(en.target); });
+                    toggleFab();
+                }, { threshold: 0.25 });
+                each('[data-tt-herodrop], .tt-meter-dropwrap', function (el) { io.observe(el); });
+            }
+            setTimeout(toggleFab, 900);
+        }
+
+        if (!canWeigh) return;
+
+        // Flash the calculator's drop zone the first time it scrolls into view.
+        var wrap = calc.querySelector('.tt-meter-dropwrap');
+        if (wrap && 'IntersectionObserver' in window) {
+            var seen = new IntersectionObserver(function (entries) {
+                if (entries[0].isIntersecting) { flash(wrap); seen.disconnect(); }
+            }, { threshold: 0.6 });
+            seen.observe(wrap);
+        }
+
+        // Page-wide drop: dragging a file anywhere over the page shows a full-screen target.
+        var overlay = document.createElement('div'), depth = 0;
+        overlay.className = 'tt-dropover';
+        overlay.innerHTML = '<div><span class="tt-dropover-icon"></span><b>Thả file vào đây</b><small>Tự đo kích thước, xem 3D và tính giá ngay</small></div>';
+        overlay.querySelector('.tt-dropover-icon').innerHTML = (calc.querySelector('.tt-meter-icon') || {}).innerHTML || '';
+        document.body.appendChild(overlay);
+
+        function hasFiles(e) { return e.dataTransfer && Array.prototype.indexOf.call(e.dataTransfer.types || [], 'Files') >= 0; }
+        window.addEventListener('dragenter', function (e) { if (!hasFiles(e)) return; depth++; overlay.classList.add('is-on'); });
+        window.addEventListener('dragleave', function (e) { if (!hasFiles(e)) return; depth = Math.max(0, depth - 1); if (!depth) overlay.classList.remove('is-on'); });
+        window.addEventListener('dragover', function (e) { if (hasFiles(e)) e.preventDefault(); });
+        window.addEventListener('drop', function (e) {
+            if (!hasFiles(e)) return;
+            depth = 0; overlay.classList.remove('is-on');
+            // The overlay ignores the pointer: drops on a real file field (quote form, drop zones) keep their normal behaviour.
+            if (e.target.closest && e.target.closest('.tt-dropzone, [data-tt-drop], [data-tt-herodrop]')) return;
+            e.preventDefault();
+            weigh(e.dataTransfer.files && e.dataTransfer.files[0]);
+        });
+    }
+
     function fmtNum(v, digits) { return new Intl.NumberFormat('vi-VN', { maximumFractionDigits: digits }).format(v); }
     function readFloat(input) { var n = parseFloat(String(input.value).replace(',', '.')); return isNaN(n) ? 0 : n; }
 
@@ -653,10 +736,19 @@
                     return false;
                 }).then(function (ok) {
                     drop.classList.remove('is-busy');
-                    drop.querySelector('b').textContent = mesh ? 'Thả file khác để cân lại' : 'Thả file STL · OBJ · 3MF để tự cân';
+                    drop.querySelector('b').textContent = mesh ? 'Thả file khác để cân lại' : 'Thả file 3D vào đây để tính giá';
+                    drop.classList.toggle('is-loaded', !!mesh);
+                    drop.parentNode.classList.toggle('is-loaded', !!mesh);
                     return ok;
                 });
             }
+
+            // Entry points elsewhere on the page (hero drop zone, floating button, page-wide drop) use these.
+            root.ttAnalyze = analyze;
+            root.ttFocus = function () {
+                root.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'start' });
+                flash(drop.parentNode);
+            };
 
             fileInput.addEventListener('change', function () { analyze(fileInput.files && fileInput.files[0]); });
             ['dragenter', 'dragover'].forEach(function (t) { drop.addEventListener(t, function () { drop.classList.add('is-over'); }); });
@@ -896,6 +988,7 @@
         initHero();
         initProcess();
         initConfigurator();
+        initDropEntry();
         initTerminal();
         initFaq();
         initFilter();

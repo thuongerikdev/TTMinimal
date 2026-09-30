@@ -44,11 +44,13 @@
         <div class="tt-meter-dropwrap">
             <label class="tt-meter-drop" data-tt-drop>
                 <input type="file" accept=".stl,.obj,.3mf" data-tt-file aria-label="Chọn file 3D để tự cân" />
-                @StudioIcons.Get("upload")
-                <span>
-                    <b>Thả file STL · OBJ · 3MF để tự cân</b>
-                    <small>Tự đo kích thước X·Y·Z và tính số gram theo loại nhựa. File chỉ đọc trên máy bạn, chưa gửi đi.</small>
+                <span class="tt-meter-sticker" aria-hidden="true">Miễn phí<br />5 giây</span>
+                <span class="tt-meter-icon">@StudioIcons.Get("upload")</span>
+                <span class="tt-meter-text">
+                    <b>Thả file 3D vào đây để tính giá</b>
+                    <small>STL · OBJ · 3MF — tự đo kích thước X·Y·Z, xem mô hình 3D và tính số gram theo loại nhựa. File chỉ đọc trên máy bạn, chưa gửi đi.</small>
                 </span>
+                <span class="tt-meter-pick">Chọn file từ máy</span>
             </label>
             <p class="tt-meter-error" data-tt-meter-error hidden></p>
         </div>

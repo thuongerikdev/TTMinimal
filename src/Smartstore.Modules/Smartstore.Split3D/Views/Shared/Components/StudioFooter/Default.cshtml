@@ -75,6 +75,12 @@
     </div>
 </footer>
 
+@* Always-visible call to action: weigh a 3D file. Scrolls to the calculator when the page has one. *@
+<a class="tt-dropfab" href="@printUrl#tt-calc" data-tt-dropfab>
+    <span class="tt-dropfab-icon">@StudioIcons.Get("upload")</span>
+    <span><b>Thả file 3D</b><small>báo giá trong 5 giây</small></span>
+</a>
+
 <div class="tt-float">
     @if (Model.ZaloUrl.HasValue())
     {

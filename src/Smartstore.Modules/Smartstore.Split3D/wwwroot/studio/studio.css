@@ -191,13 +191,28 @@ body.home .home-page .page-body { margin: 0; }
 
 /* Model weighing: drop a file, get X·Y·Z and grams. */
 .tt-meter { margin: 0; }
-.tt-meter-drop { position: relative; display: flex; align-items: center; gap: 14px; margin: 0; padding: 16px 18px; border: 2px dashed var(--ink); border-radius: 16px; background: var(--cream-2); cursor: pointer; transition: background .2s; }
-.tt-meter-drop:hover, .tt-meter-drop.is-over { background: var(--yellow); }
+/* Drop zone: big pink call to action until a model is loaded, then a compact row. */
+.tt-meter-drop { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; margin: 0; min-height: 230px; padding: 30px 22px 26px; text-align: center; color: var(--ink); background: var(--pink); border: 3px solid var(--ink); border-radius: 18px; box-shadow: 7px 7px 0 var(--ink); cursor: pointer; transition: transform .15s, box-shadow .15s, background .2s; }
+.tt-meter-drop::before { content: ""; position: absolute; inset: 9px; border: 2px dashed rgba(32, 32, 31, .55); border-radius: 12px; pointer-events: none; }
+.tt-meter-drop:hover, .tt-meter-drop.is-over { background: var(--yellow); transform: translate(-2px, -2px); box-shadow: 9px 9px 0 var(--ink); }
+.tt-meter-drop.is-over { transform: scale(1.02); }
 .tt-meter-drop.is-busy { background: var(--mint); cursor: progress; }
-.tt-meter-drop input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
-.tt-meter-drop svg { flex: none; width: 30px; height: 30px; }
-.tt-meter-drop b { display: block; font-size: 15px; font-weight: 900; }
-.tt-meter-drop small { display: block; font-size: 12px; font-weight: 600; opacity: .7; line-height: 1.4; }
+.tt-meter-drop:focus-within { outline: 3px solid var(--blue); outline-offset: 3px; }
+.tt-meter-drop input { position: absolute; inset: 0; z-index: 2; opacity: 0; cursor: pointer; }
+.tt-meter-icon { display: grid; place-items: center; width: 64px; height: 64px; border-radius: 50%; background: var(--cream); border: 2.5px solid var(--ink); box-shadow: 3px 3px 0 var(--ink); animation: tt-bob 1.8s ease-in-out infinite; }
+.tt-meter-icon svg { width: 32px; height: 32px; }
+.tt-meter-text b { display: block; font-size: clamp(20px, 2.1vw, 25px); font-weight: 900; letter-spacing: -.6px; line-height: 1.15; }
+.tt-meter-text small { display: block; max-width: 34em; margin: 8px auto 0; font-size: 13px; font-weight: 600; line-height: 1.5; }
+.tt-meter-pick { display: inline-block; margin-top: 4px; padding: 11px 20px; font-size: 15px; font-weight: 800; color: var(--cream); background: var(--ink); border-radius: 11px; box-shadow: 3px 3px 0 var(--cream), 3px 3px 0 2px var(--ink); }
+.tt-meter-sticker { position: absolute; top: -16px; right: 16px; padding: 9px 11px; font-size: 11px; font-weight: 900; line-height: 1.15; text-transform: uppercase; text-align: center; background: var(--yellow); border: 2px solid var(--ink); border-radius: 50%; box-shadow: 2px 2px 0 var(--ink); transform: rotate(10deg); }
+@keyframes tt-bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
+/* After a model is loaded */
+.tt-meter-drop.is-loaded { flex-direction: row; min-height: 0; padding: 14px 18px; gap: 14px; text-align: left; background: var(--cream-2); border-width: 2px; box-shadow: 4px 4px 0 var(--ink); }
+.tt-meter-drop.is-loaded::before, .tt-meter-drop.is-loaded .tt-meter-sticker, .tt-meter-drop.is-loaded .tt-meter-pick { display: none; }
+.tt-meter-drop.is-loaded .tt-meter-icon { width: 42px; height: 42px; flex: none; animation: none; box-shadow: none; }
+.tt-meter-drop.is-loaded .tt-meter-icon svg { width: 22px; height: 22px; }
+.tt-meter-drop.is-loaded .tt-meter-text b { font-size: 16px; letter-spacing: 0; }
+.tt-meter-drop.is-loaded .tt-meter-text small { margin: 2px 0 0; font-size: 12px; opacity: .7; }
 .tt-meter-body { margin-top: 22px; padding: 14px; border: 2px solid var(--ink); border-radius: 14px; background: #fff; }
 .tt-meter-body[hidden] { display: none; }
 
@@ -425,6 +440,57 @@ textarea.tt-input { resize: vertical; min-height: 110px; }
 
 /* ---------- Responsive ---------- */
 
+/* ---------- "Drop a 3D file": impossible to miss ---------- */
+
+/* Calculator drop zone: moving caution-tape frame, a "start here" tag and a nudge every few seconds. */
+.tt-meter-dropwrap { position: relative; }
+.tt-meter-dropwrap:not(.is-loaded) { padding: 10px; border-radius: 28px; background: repeating-linear-gradient(-45deg, var(--ink) 0 12px, var(--yellow) 12px 24px); background-size: 33.94px 33.94px; animation: tt-tape 1.2s linear infinite, tt-nudge 6s ease-in-out 2.5s infinite; }
+.tt-meter-dropwrap:not(.is-loaded)::after { content: "Bắt đầu từ đây ↓"; position: absolute; top: -15px; left: 22px; z-index: 3; padding: 4px 12px; font-size: 12px; font-weight: 900; letter-spacing: .6px; text-transform: uppercase; color: var(--yellow); background: var(--ink); border-radius: 30px; transform: rotate(-3deg); pointer-events: none; }
+.tt-meter-dropwrap:not(.is-loaded) .tt-meter-drop { box-shadow: none; }
+.tt-meter-dropwrap.is-flash:not(.is-loaded) { animation: tt-tape 1.2s linear infinite, tt-shake .8s ease-in-out; }
+.tt-meter-dropwrap.is-flash.is-loaded .tt-meter-drop { animation: tt-shake .8s ease-in-out; }
+
+/* Hero drop zone */
+.tt-herodrop-wrap { max-width: 600px; margin: 30px 0 0; padding: 9px; border-radius: 28px; background: repeating-linear-gradient(-45deg, var(--ink) 0 12px, var(--yellow) 12px 24px); background-size: 33.94px 33.94px; box-shadow: 8px 8px 0 var(--ink); animation: tt-tape 1.2s linear infinite, tt-nudge 6s ease-in-out 3.5s infinite; }
+.tt-herodrop { position: relative; display: flex; align-items: center; gap: 16px; padding: 18px; color: var(--ink); background: var(--cream); border: 3px solid var(--ink); border-radius: 20px; cursor: pointer; overflow: hidden; transition: transform .15s, box-shadow .15s, background .2s; }
+.tt-herodrop::after { content: ""; position: absolute; top: 0; bottom: 0; left: -40%; width: 30%; background: linear-gradient(100deg, transparent, rgba(255, 255, 255, .75), transparent); transform: skewX(-20deg); animation: tt-sweep 3.2s ease-in-out 1s infinite; pointer-events: none; }
+.tt-herodrop:hover, .tt-herodrop.is-over { background: var(--mint); }
+.tt-herodrop:focus-within { outline: 3px solid var(--blue); outline-offset: 3px; }
+.tt-herodrop input { position: absolute; inset: 0; z-index: 2; opacity: 0; cursor: pointer; }
+.tt-herodrop-badge { position: absolute; top: 0; right: 0; padding: 3px 12px 4px 14px; font-size: 10.5px; font-weight: 900; letter-spacing: .8px; text-transform: uppercase; color: var(--cream); background: var(--ink); border-bottom-left-radius: 12px; }
+.tt-herodrop-icon { flex: none; display: grid; place-items: center; width: 58px; height: 58px; border-radius: 50%; background: var(--pink); border: 2.5px solid var(--ink); box-shadow: 3px 3px 0 var(--ink); animation: tt-bob 1.8s ease-in-out infinite; }
+.tt-herodrop-icon svg { width: 28px !important; height: 28px !important; }
+.tt-herodrop-text { flex: 1; min-width: 0; }
+.tt-herodrop-text b { display: block; font-size: clamp(17px, 1.7vw, 21px); font-weight: 900; letter-spacing: -.4px; line-height: 1.2; }
+.tt-herodrop-text small { display: block; margin-top: 4px; font-size: 12.5px; font-weight: 600; line-height: 1.4; opacity: .8; }
+.tt-herodrop-go { flex: none; padding: 11px 16px; font-size: 14px; font-weight: 900; white-space: nowrap; color: var(--cream); background: var(--ink); border-radius: 11px; }
+
+/* Floating button on every page */
+.tt-dropfab { position: fixed; left: 18px; bottom: 22px; z-index: 1031; display: flex; align-items: center; gap: 10px; padding: 9px 18px 9px 9px; color: var(--ink) !important; text-decoration: none !important; font-family: "Be Vietnam Pro", Arial, sans-serif; background: var(--pink); border: 3px solid var(--ink); border-radius: 18px; box-shadow: 5px 5px 0 var(--ink); transform: translateY(160%); transition: transform .45s var(--ease), box-shadow .15s; }
+.tt-dropfab.is-shown { transform: none; animation: tt-nudge 5s ease-in-out 1.5s infinite; }
+.tt-dropfab:hover { box-shadow: 2px 2px 0 var(--ink); }
+.tt-dropfab::before { content: ""; position: absolute; inset: -3px; border: 3px solid var(--ink); border-radius: 18px; animation: tt-ping 2.2s ease-out infinite; pointer-events: none; }
+.tt-dropfab-icon { display: grid; place-items: center; width: 42px; height: 42px; border-radius: 50%; background: var(--yellow); border: 2px solid var(--ink); animation: tt-bob 1.8s ease-in-out infinite; }
+.tt-dropfab-icon svg { width: 22px; height: 22px; }
+.tt-dropfab b { display: block; font-size: 16px; font-weight: 900; line-height: 1.1; }
+.tt-dropfab small { display: block; font-size: 11.5px; font-weight: 700; }
+
+/* Full-page drop target while a file is dragged over the page */
+.tt-dropover { position: fixed; inset: 0; z-index: 2000; display: grid; place-items: center; padding: 18px; background: rgba(255, 251, 237, .82); opacity: 0; visibility: hidden; pointer-events: none; transition: opacity .2s, visibility .2s; font-family: "Be Vietnam Pro", Arial, sans-serif; color: var(--ink); }
+.tt-dropover::before { content: ""; position: absolute; inset: 14px; border-radius: 26px; border: 12px solid transparent; background: repeating-linear-gradient(-45deg, var(--ink) 0 12px, var(--yellow) 12px 24px) border-box; background-size: 33.94px 33.94px; -webkit-mask: linear-gradient(#000 0 0) padding-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor; mask-composite: exclude; animation: tt-tape 1.2s linear infinite; }
+.tt-dropover.is-on { opacity: 1; visibility: visible; }
+.tt-dropover > div { display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 36px 44px; text-align: center; background: var(--pink); border: 3px solid var(--ink); border-radius: 24px; box-shadow: 10px 10px 0 var(--ink); transform: rotate(-2deg); }
+.tt-dropover-icon { display: grid; place-items: center; width: 76px; height: 76px; border-radius: 50%; background: var(--cream); border: 3px solid var(--ink); animation: tt-bob 1s ease-in-out infinite; }
+.tt-dropover-icon svg { width: 38px; height: 38px; }
+.tt-dropover b { font-size: clamp(28px, 4vw, 46px); font-weight: 900; letter-spacing: -1.5px; line-height: 1; }
+.tt-dropover small { font-size: 15px; font-weight: 700; }
+
+@keyframes tt-tape { to { background-position: 33.94px 0; } }
+@keyframes tt-nudge { 0%, 86%, 100% { transform: none; } 89% { transform: rotate(-1.6deg) scale(1.02); } 92% { transform: rotate(1.6deg) scale(1.02); } 95% { transform: rotate(-.8deg); } }
+@keyframes tt-shake { 0%, 100% { transform: none; } 15% { transform: translateX(-8px) rotate(-1deg); } 30% { transform: translateX(7px) rotate(1deg); } 45% { transform: translateX(-5px); } 60% { transform: translateX(4px); } 75% { transform: translateX(-2px); } }
+@keyframes tt-sweep { 0%, 55% { left: -40%; } 100% { left: 130%; } }
+@keyframes tt-ping { 0% { opacity: .7; transform: scale(1); } 80%, 100% { opacity: 0; transform: scale(1.18, 1.45); } }
+
 /* Grid children may shrink below their content width (long price labels, big titles). */
 .tt-hero-grid > *, .tt-config > *, .tt-techs > *, .tt-addon > *, .tt-collection-grid > *, .tt-faq-pop > *, .tt-quote > *, .tt-cards > * { min-width: 0; }
 
@@ -480,6 +546,10 @@ textarea.tt-input { resize: vertical; min-height: 110px; }
     .tt-form { padding: 20px; }
     .tt-float { right: 12px; bottom: 72px; }
     .tt-float a { width: 44px; height: 44px; }
+    .tt-dropfab { left: 12px; bottom: 14px; padding: 7px 14px 7px 7px; }
+    .tt-dropfab-icon { width: 36px; height: 36px; }
+    .tt-herodrop { flex-wrap: wrap; padding-top: 32px; }
+    .tt-herodrop-go { width: 100%; text-align: center; }
 }
 
 @media (max-width: 420px) {
@@ -497,7 +567,7 @@ textarea.tt-input { resize: vertical; min-height: 110px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-    .tt *, .tt *::before, .tt *::after, .tt-float * { animation: none !important; transition: none !important; }
+    .tt *, .tt *::before, .tt *::after, .tt-float *, .tt-dropfab, .tt-dropfab *, .tt-dropfab::before, .tt-dropover, .tt-dropover * , .tt-dropover::before { animation: none !important; transition: none !important; }
     .tt-js [data-tt-reveal] { opacity: 1; translate: 0 0; }
     .tt-split .w > span { transform: none; }
 }

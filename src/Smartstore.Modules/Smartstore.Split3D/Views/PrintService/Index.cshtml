@@ -30,8 +30,12 @@
             </p>
             <div class="tt-actions" data-tt-reveal style="--d:.35s">
                 <a class="tt-button tt-button--dark" href="#tt-quote">Gửi file báo giá</a>
-                <a class="tt-textlink" href="#tt-calc">Tính giá tạm</a>
+                <a class="tt-textlink" href="#tt-calc">Thả file 3D, tính giá ngay →</a>
             </div>
+            @if (Model.Technologies.Count > 0)
+            {
+                <partial name="_StudioHeroDrop" />
+            }
         </div>
     </section>
 
