@@ -963,6 +963,46 @@
             });
         });
 
+        // Tools page: the device chips filter the packages; the first visible package gets selected.
+        // The picture follows the selected package.
+        each('[data-tt-tool]', function (tool) {
+            var img = tool.querySelector('[data-tt-tool-img]');
+            tool.addEventListener('change', function (e) {
+                var src = e.target.getAttribute && e.target.getAttribute('data-img');
+                if (img && src) img.src = src;
+            });
+            var chips = tool.querySelectorAll('.tt-tool-devices [data-devices]');
+            Array.prototype.forEach.call(chips, function (chip) {
+                chip.addEventListener('click', function () {
+                    var d = chip.getAttribute('data-devices'), first = null;
+                    Array.prototype.forEach.call(chips, function (c) { c.classList.toggle('is-active', c === chip); });
+                    each('.tt-package', function (p) {
+                        var show = p.getAttribute('data-devices') === d;
+                        p.hidden = !show;
+                        if (show && !first) first = p;
+                    }, tool);
+                    var checked = tool.querySelector('.tt-package:not([hidden]) input:checked');
+                    if (!checked && first) {
+                        var radio = first.querySelector('input');
+                        radio.checked = true;
+                        radio.dispatchEvent(new Event('change', { bubbles: true }));
+                    }
+                });
+            });
+        });
+
+        // Design page: a category card picks the category in the form below instead of reloading the page.
+        each('[data-tt-design-cat]', function (card) {
+            card.addEventListener('click', function (e) {
+                var radio = document.querySelector('input[name="Form.Category"][value="' + card.getAttribute('data-tt-design-cat') + '"]');
+                if (!radio) return;
+                e.preventDefault();
+                radio.checked = true;
+                var target = document.getElementById('tt-design-form');
+                if (target) target.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'start' });
+            });
+        });
+
         each('input[data-numeric]', function (input) {
             input.addEventListener('input', function () { input.value = String(input.value).replace(/\D/g, '').slice(0, 7); });
         });

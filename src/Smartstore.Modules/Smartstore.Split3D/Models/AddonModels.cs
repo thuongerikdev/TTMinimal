@@ -18,6 +18,9 @@ public class AddonModel : EntityModelBase
     [LocalizedDisplay("*Active")]
     public bool Active { get; set; } = true;
 
+    [LocalizedDisplay("*ManagedLicensing")]
+    public bool ManagedLicensing { get; set; } = true;
+
     [LocalizedDisplay("*DisplayOrder")]
     public int DisplayOrder { get; set; }
 
@@ -36,6 +39,7 @@ public class AddonProductModel
     public bool Published { get; set; }
     public string KeyType { get; set; }
     public int? Days { get; set; }
+    public int? MaxDevices { get; set; }
     public string DownloadVersions { get; set; }
     public string EditUrl { get; set; }
 }
@@ -51,6 +55,11 @@ public class CreatePlanProductsModel
     public decimal OneYearPrice { get; set; }
     public bool Lifetime { get; set; }
     public decimal LifetimePrice { get; set; }
+
+    /// <summary>
+    /// Devices per key for all packages created in this run, e.g. 5 for "Gói 5 máy". Empty = default.
+    /// </summary>
+    public int? MaxDevices { get; set; }
 }
 
 public class MapProductModel
@@ -59,4 +68,5 @@ public class MapProductModel
     public int ProductId { get; set; }
     public string KeyType { get; set; }
     public int? Days { get; set; }
+    public int? MaxDevices { get; set; }
 }

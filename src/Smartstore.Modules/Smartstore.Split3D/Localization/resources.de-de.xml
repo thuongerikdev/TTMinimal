@@ -1090,4 +1090,29 @@
         <Value>Größte Modelldatei, die Kunden hochladen können. Nginx benötigt ein mindestens so großes client_max_body_size.</Value>
     </LocaleResource>
 
+    <LocaleResource Name="Addon.ManagedLicensing">
+        <Value>Marktplatz-Lizenzierung</Value>
+    </LocaleResource>
+    <LocaleResource Name="Addon.ManagedLicensing.Hint">
+        <Value>Das hochgeladene Add-on enthält nur Funktionen: der Shop fügt Schlüsselaktivierung (Schlüsseldatei, Online-Prüfung, Gerätelimit), Update-Button und Verschleierung hinzu. Für Add-ons mit eigener Lizenzierung (Split3D Print) ausschalten.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Fields.ObfuscateAddons">
+        <Value>Marktplatz-Add-ons verschleiern</Value>
+    </LocaleResource>
+    <LocaleResource Name="Fields.ObfuscateAddons.Hint">
+        <Value>PyArmor auf jedes hochgeladene Marktplatz-Add-on anwenden.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Fields.PyArmorPython">
+        <Value>Python für PyArmor</Value>
+    </LocaleResource>
+    <LocaleResource Name="Fields.PyArmorPython.Hint">
+        <Value>Python mit installiertem PyArmor. Die Version muss zu Blenders Python passen: Blender 4.2–4.5 = 3.11, Blender 5.x = 3.13.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Fields.PyArmorPlatforms">
+        <Value>PyArmor-Plattformen</Value>
+    </LocaleResource>
+    <LocaleResource Name="Fields.PyArmorPlatforms.Hint">
+        <Value>Zielplattformen, durch Kommas getrennt, z. B. windows.x86_64, linux.x86_64, darwin.x86_64, darwin.aarch64.</Value>
+    </LocaleResource>
+
 </Language>

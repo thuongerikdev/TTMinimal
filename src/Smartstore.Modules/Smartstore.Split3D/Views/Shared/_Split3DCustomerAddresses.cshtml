@@ -1,0 +1,61 @@
+@model CustomerAddressListModel
+
+@* Rendered inside the customer info form (zone customer_info_bottom): no nested forms, actions are links or JS posts. *@
+<fieldset class="tt-account-addresses mt-4">
+    <legend><span>@T("Account.CustomerAddresses")</span></legend>
+
+    @if (Model.Addresses.Count == 0)
+    {
+        <p class="text-muted">@T("Account.CustomerAddresses.NoAddresses")</p>
+    }
+    else
+    {
+        <ul class="row card-grid g-3 row-cols-1 row-cols-lg-2 list-unstyled mb-3">
+            @foreach (var address in Model.Addresses)
+            {
+                var editUrl = Url.Action("AddressEdit", "Customer", new { id = address.Id, area = "" });
+                <li class="col">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <div class="card-title h6 mb-1">
+                                <a href="@editUrl" rel="nofollow">@address.Name</a>
+                                @if (address.IsDefault)
+                                {
+                                    <span class="badge badge-success ml-1">@T("Address.IsDefaultAddress")</span>
+                                }
+                            </div>
+                            @if (address.Phone.HasValue())
+                            {
+                                <div class="small mb-1">@T("Address.Fields.PhoneNumber"): @address.Phone</div>
+                            }
+                            <div class="small">@Html.Raw(address.FormattedAddress)</div>
+                        </div>
+                        <div class="card-footer d-flex p-2">
+                            <a href="@editUrl" class="btn btn-light btn-flat btn-sm" rel="nofollow">
+                                <i class="far fa-edit" aria-hidden="true"></i> <span>@T("Common.Edit")</span>
+                            </a>
+                            <button type="button" class="btn btn-light btn-flat btn-sm ml-1 tt-address-delete"
+                                    data-url="@Url.Action("AddressDelete", "Customer", new { id = address.Id, area = "" })">
+                                <i class="far fa-trash-can" aria-hidden="true"></i> <span>@T("Common.Delete")</span>
+                            </button>
+                        </div>
+                    </div>
+                </li>
+            }
+        </ul>
+    }
+
+    <a href="@Url.Action("AddressAdd", "Customer", new { area = "" })" class="btn btn-secondary" rel="nofollow">
+        <i class="fa fa-plus" aria-hidden="true"></i> <span>@T("Common.AddNew")</span>
+    </a>
+</fieldset>
+
+<script sm-target-zone="scripts" data-origin="split3d-account-addresses">
+    $(function () {
+        $('.tt-account-addresses .tt-address-delete').on('click', function (e) {
+            e.preventDefault();
+            $(this).postData({ ask: @T("Admin.Common.AskToProceed").JsValue });
+            return false;
+        });
+    });
+</script>

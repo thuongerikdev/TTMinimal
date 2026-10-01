@@ -36,12 +36,17 @@ public class Split3DIssueRequest
     public int OrderId { get; set; }
     public int OrderItemId { get; set; }
     public int CustomerId { get; set; }
+
+    /// <summary>
+    /// Devices the key may activate. <c>null</c> uses the default from the settings.
+    /// </summary>
+    public int? MaxDevices { get; set; }
 }
 
 /// <summary>
 /// What a catalog product grants: an addon and a plan.
 /// </summary>
-public sealed record Split3DProductPlan(Split3DAddon Addon, string KeyType, int? Days);
+public sealed record Split3DProductPlan(Split3DAddon Addon, string KeyType, int? Days, int? MaxDevices = null);
 
 public class Split3DImportResult
 {
@@ -158,7 +163,8 @@ public class Split3DLicenseService
             Notes = request.Notes?.Trim(),
             OrderId = request.OrderId,
             OrderItemId = request.OrderItemId,
-            CustomerId = request.CustomerId
+            CustomerId = request.CustomerId,
+            MaxDevices = request.MaxDevices is > 0 ? request.MaxDevices : null
         };
 
         _db.Split3DLicenses().Add(license);
@@ -229,7 +235,8 @@ public class Split3DLicenseService
                     Notes = $"Order #{order.GetOrderNumber()}",
                     OrderId = order.Id,
                     OrderItemId = item.Id,
-                    CustomerId = order.CustomerId
+                    CustomerId = order.CustomerId,
+                    MaxDevices = plan.MaxDevices
                 }, signer));
             }
         }
@@ -415,7 +422,7 @@ public class Split3DLicenseService
         foreach (var row in rows)
         {
             // One addon per product for now; the first mapping wins.
-            result.TryAdd(row.m.ProductId, new Split3DProductPlan(row.a, row.m.KeyType, row.m.Days));
+            result.TryAdd(row.m.ProductId, new Split3DProductPlan(row.a, row.m.KeyType, row.m.Days, row.m.MaxDevices));
         }
 
         return result;

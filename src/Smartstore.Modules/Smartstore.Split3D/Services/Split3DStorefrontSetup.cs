@@ -88,7 +88,7 @@ public class Split3DStorefrontSetup
     public async Task<bool> IsSetUpAsync(CancellationToken cancelToken = default)
     {
         return await _db.Languages.AnyAsync(x => x.LanguageCulture == VietnameseCulture, cancelToken)
-            && await _db.Categories.AnyAsync(x => x.Name == Split3DStorefrontContent.CategoryName && !x.Deleted, cancelToken);
+            && await _db.Categories.AnyAsync(x => Split3DStorefrontContent.CategoryNames.Contains(x.Name) && !x.Deleted, cancelToken);
     }
 
     /// <summary>
@@ -285,7 +285,7 @@ public class Split3DStorefrontSetup
 
     private async Task<Category> SetupCategoryAsync(List<string> log, CancellationToken cancelToken)
     {
-        var category = await _db.Categories.FirstOrDefaultAsync(x => x.Name == Split3DStorefrontContent.CategoryName && !x.Deleted, cancelToken);
+        var category = await _db.Categories.FirstOrDefaultAsync(x => Split3DStorefrontContent.CategoryNames.Contains(x.Name) && !x.Deleted, cancelToken);
         if (category == null)
         {
             var template = await _db.CategoryTemplates.FirstOrDefaultAsync(x => x.ViewPath == "CategoryTemplate.ProductsInGridOrLines", cancelToken)
@@ -476,6 +476,7 @@ public class Split3DStorefrontSetup
             mapping.AddonId = addon.Id;
             mapping.KeyType = spec.Plan;
             mapping.Days = spec.Plan == Split3DPlans.Custom ? spec.Days : null;
+            mapping.MaxDevices = spec.MaxDevices;
 
             await _db.SaveChangesAsync(cancelToken);
 
@@ -522,6 +523,48 @@ public class Split3DStorefrontSetup
             : "WARNING: the addon file has no blender_manifest.toml (legacy add-on): it cannot be updated from inside Blender.");
 
         return (bytes, package);
+    }
+
+    /// <summary>
+    /// Prepares an uploaded addon zip for <paramref name="addon"/>: marketplace add-ons
+    /// (<see cref="Split3DAddon.ManagedLicensing"/>) first get the shop's licensing and obfuscation
+    /// (<see cref="MarketplacePackager"/>), then <see cref="PrepareAddonFile(byte[], List{string})"/> runs.
+    /// </summary>
+    /// <exception cref="ArgumentException">The zip or its manifest is invalid.</exception>
+    /// <exception cref="InvalidOperationException">Licensing keys are missing or obfuscation failed.</exception>
+    public async Task<(byte[] Bytes, Split3DPackageInfo Package)> PrepareAddonFileAsync(
+        Split3DAddon addon,
+        byte[] addonBytes,
+        List<string> log,
+        CancellationToken cancelToken = default)
+    {
+        Guard.NotNull(addon);
+        Guard.NotNull(addonBytes);
+
+        if (!addon.ManagedLicensing)
+        {
+            return PrepareAddonFile(addonBytes, log);
+        }
+
+        var publicKey = _settings.PublicKeyJson.NullEmpty()
+            ?? throw new InvalidOperationException("Public key (public_key.json) is not configured in the Split3D settings.");
+
+        var packaged = await MarketplacePackager.PackageAsync(addonBytes, new MarketplacePackager.Options
+        {
+            ProductCode = addon.ProductCode,
+            AddonName = addon.Name,
+            ServerUrl = GetActivationServerUrl(),
+            PublicKeyJson = publicKey,
+            PyArmorPython = _settings.ObfuscateAddons ? _settings.PyArmorPython.NullEmpty() : null,
+            PyArmorPlatforms = _settings.PyArmorPlatforms
+        }, log, cancelToken);
+
+        var package = Split3DAddonPackage.Read(packaged)
+            ?? throw new ArgumentException("blender_manifest.toml not found in the packaged add-on.");
+
+        log.Add($"Addon file: Blender extension \"{package.Id}\" {package.Version} (installs over older versions, updates from the shop repository).");
+
+        return (packaged, package);
     }
 
     /// <summary>

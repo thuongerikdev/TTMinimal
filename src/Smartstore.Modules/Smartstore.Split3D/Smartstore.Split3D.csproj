@@ -4,4 +4,10 @@
         <OutputPath>..\..\Smartstore.Web\Modules\Smartstore.Split3D</OutputPath>
         <OutDir>$(OutputPath)</OutDir>
     </PropertyGroup>
+
+    <ItemGroup>
+        <!-- Licensing module injected into marketplace add-ons (Services/MarketplacePackager). -->
+        <EmbeddedResource Include="Marketplace\_ttlicense.py" LogicalName="Smartstore.Split3D.Marketplace._ttlicense.py" />
+        <None Remove="Marketplace\_ttlicense.py" />
+    </ItemGroup>
 </Project>

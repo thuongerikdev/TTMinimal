@@ -45,6 +45,11 @@
             <i class="far fa-copy"></i>
             <span>@T("Plugins.Split3D.CopyKey")</span>
         </button>
+        @* Marketplace add-ons activate by dropping this file into Blender's 3D viewport. *@
+        <a href="@Url.Action("KeyFile", "Split3DKeys", new { id = key.Id, area = "" })" class="btn btn-secondary btn-sm mt-2" download>
+            <i class="far fa-file-arrow-down"></i>
+            <span>Tải file key (.ttkey)</span>
+        </a>
 
         @if (key.InstallUrl != null)
         {

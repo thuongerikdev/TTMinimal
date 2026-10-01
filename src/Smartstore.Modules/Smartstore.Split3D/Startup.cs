@@ -30,6 +30,26 @@ internal class Startup : StarterBase
                 .ForAction("Completed")
                 .WhenNonAjax();
 
+            o.Filters.AddEndpointFilter<CustomerInfoAddressesFilter, SmartController>()
+                .ForController("Customer")
+                .ForAction("Info")
+                .WhenNonAjax();
+
+            o.Filters.AddEndpointFilter<CustomerAddressesRedirectFilter, SmartController>()
+                .ForController("Customer")
+                .ForAction("Addresses")
+                .WhenNonAjaxGet();
+
+            o.Filters.AddEndpointFilter<ToolPackageRedirectFilter, SmartController>()
+                .ForController("Product")
+                .ForAction("ProductDetails")
+                .WhenNonAjaxGet();
+
+            o.Filters.AddEndpointFilter<ToolPackageRedirectFilter, SmartController>()
+                .ForController("Catalog")
+                .ForAction("Category")
+                .WhenNonAjaxGet();
+
             o.Filters.AddEndpointFilter<AdminStyleFilter, SmartController>()
                 .WhenNonAjaxGet();
         });

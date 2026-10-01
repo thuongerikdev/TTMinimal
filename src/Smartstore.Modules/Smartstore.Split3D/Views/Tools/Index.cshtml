@@ -1,0 +1,101 @@
+@model ToolsPageModel
+
+@addTagHelper Smartstore.Web.TagHelpers.Public.*, Smartstore.Web.Common
+
+@{
+    // Module views default to the admin layout (Views/_ViewStart.cshtml); this is a storefront page.
+    Layout = "_Layout";
+    Assets.AppendTitleParts("Công cụ 3D – addon Blender cho người làm in 3D");
+    Assets.AppendMetaDescriptionParts("Công cụ 3D (addon Blender) cho người làm in 3D: chọn gói theo thời hạn và số máy, mua ngay, nhận key và bản cập nhật tự động.");
+    Assets.BodyAttributes.AppendCssClass("tt-studio-page");
+    var buyUrl = Url.Action("Buy", "Tools");
+}
+
+<div class="tt">
+    <section class="tt-bleed tt-page-hero tt-page-hero--mint">
+        <div class="tt-wrap">
+            <div class="tt-tag tt-tilt" data-tt-reveal>CÔNG CỤ 3D · ADDON BLENDER</div>
+            <h1 class="tt-split">LÀM 3D NHANH HƠN.<br /><em>IN 3D DỄ HƠN.</em></h1>
+            <p data-tt-reveal style="--d:.25s">
+                Chọn gói theo thời hạn và số máy, bấm <b>Mua ngay</b> — key và link tải gửi tự động ngay khi thanh toán xong.
+                Bản cập nhật tải thẳng trong Blender.
+            </p>
+        </div>
+    </section>
+
+    <section class="tt-bleed tt-section">
+        <div class="tt-wrap">
+            @if (Model.Tools.Count == 0)
+            {
+                <p class="tt-lead">Công cụ đang được cập nhật, bạn quay lại sau nhé.</p>
+            }
+
+            @foreach (var tool in Model.Tools)
+            {
+                var selected = tool.Packages.FirstOrDefault(x => x.ProductId == Model.SelectedProductId)
+                    ?? tool.Packages.FirstOrDefault(x => x.IsLifetime && x.Devices == tool.DeviceOptions[0])
+                    ?? tool.Packages[0];
+
+                <article class="tt-tool" data-tt-tool data-tt-reveal>
+                    <div class="tt-tool-media">
+                        @if ((selected.ImageUrl ?? tool.Packages.FirstOrDefault(x => x.ImageUrl.HasValue())?.ImageUrl) is string image)
+                        {
+                            <img src="@image" alt="@tool.Name" data-tt-tool-img />
+                        }
+                        else
+                        {
+                            <span class="tt-noimg">@StudioIcons.Get("cube")</span>
+                        }
+                    </div>
+
+                    <div class="tt-tool-body">
+                        <div class="tt-tool-head">
+                            <h2>@tool.Name</h2>
+                            @if (tool.Version.HasValue())
+                            {
+                                <span class="tt-pill">v@(tool.Version)</span>
+                            }
+                        </div>
+                        @if (tool.Description.HasValue())
+                        {
+                            <div class="tt-tool-desc">@Html.Raw(tool.Description)</div>
+                        }
+
+                        <form method="post" action="@buyUrl" class="tt-tool-buy" asp-antiforgery="true">
+                            @if (tool.DeviceOptions.Count > 1)
+                            {
+                                <div class="tt-tool-label">Số máy</div>
+                                <div class="tt-chips tt-tool-devices" role="group" aria-label="Số máy">
+                                    @foreach (var d in tool.DeviceOptions)
+                                    {
+                                        <button type="button" class="tt-chip@(d == selected.Devices ? " is-active" : "")" data-devices="@d">@d máy</button>
+                                    }
+                                </div>
+                            }
+
+                            <div class="tt-tool-label">Chọn gói</div>
+                            <div class="tt-tool-packages">
+                                @foreach (var p in tool.Packages)
+                                {
+                                    <label class="tt-package" data-devices="@p.Devices" hidden="@(tool.DeviceOptions.Count > 1 && p.Devices != selected.Devices)">
+                                        <input type="radio" name="productId" value="@p.ProductId" checked="@(p.ProductId == selected.ProductId)" data-img="@p.ImageUrl" />
+                                        <span>
+                                            <b>@p.Duration</b>
+                                            <small>@p.Devices máy</small>
+                                            <strong>@p.Price</strong>
+                                        </span>
+                                    </label>
+                                }
+                            </div>
+
+                            <button type="submit" class="tt-button tt-button--dark tt-tool-cta">
+                                @StudioIcons.Get("bag") <span>Mua ngay</span>
+                            </button>
+                            <p class="tt-tool-note">@StudioIcons.Get("check") Mỗi gói là 1 key · thanh toán xong nhận key qua email và trang <em>Key của tôi</em>.</p>
+                        </form>
+                    </div>
+                </article>
+            }
+        </div>
+    </section>
+</div>

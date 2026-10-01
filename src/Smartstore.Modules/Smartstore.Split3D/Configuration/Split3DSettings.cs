@@ -33,6 +33,22 @@ public class Split3DSettings : ISettings
     public int DefaultMaxDevices { get; set; } = 1;
 
     /// <summary>
+    /// Obfuscate marketplace add-ons with PyArmor on upload (see <see cref="Services.MarketplacePackager"/>).
+    /// </summary>
+    public bool ObfuscateAddons { get; set; }
+
+    /// <summary>
+    /// Python executable with PyArmor installed. Its version must match Blender's Python
+    /// (Blender 4.2–4.5: 3.11, Blender 5.x: 3.13), e.g. "C:\Python313\python.exe" or "/usr/bin/python3.13".
+    /// </summary>
+    public string PyArmorPython { get; set; }
+
+    /// <summary>
+    /// PyArmor target platforms, comma separated.
+    /// </summary>
+    public string PyArmorPlatforms { get; set; } = "windows.x86_64, linux.x86_64, darwin.x86_64, darwin.aarch64";
+
+    /// <summary>
     /// Days the addon keeps working offline after its last successful online check.
     /// </summary>
     public int LeaseDays { get; set; } = 7;

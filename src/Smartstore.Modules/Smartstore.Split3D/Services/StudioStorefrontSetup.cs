@@ -19,9 +19,11 @@ namespace Smartstore.Split3D.Services;
 /// </summary>
 public class StudioStorefrontSetup
 {
-    public const int CurrentVersion = 2;
+    public const int CurrentVersion = 3;
     public const string ThemeName = "TTMinimal";
     public const string PrintServiceRouteName = "TTPrintService";
+    public const string DesignServiceRouteName = "TTDesignService";
+    public const string ToolsRouteName = "TTTools";
 
     // Admin menu items the studio needs: product attributes for variants (color, size) and shipping methods.
     private static readonly string[] _requiredAdminMenuItems =
@@ -32,19 +34,22 @@ public class StudioStorefrontSetup
     private readonly IThemeRegistry _themeRegistry;
     private readonly StudioSettings _studioSettings;
     private readonly Split3DSettings _split3DSettings;
+    private readonly IUrlService _urlService;
 
     public StudioStorefrontSetup(
         SmartDbContext db,
         ICommonServices services,
         IThemeRegistry themeRegistry,
         StudioSettings studioSettings,
-        Split3DSettings split3DSettings)
+        Split3DSettings split3DSettings,
+        IUrlService urlService)
     {
         _db = db;
         _services = services;
         _themeRegistry = themeRegistry;
         _studioSettings = studioSettings;
         _split3DSettings = split3DSettings;
+        _urlService = urlService;
     }
 
     public ILogger Logger { get; set; } = NullLogger.Instance;
@@ -66,6 +71,8 @@ public class StudioStorefrontSetup
         var themeApplied = await ApplyThemeAndSeoAsync(cancelToken);
         await ApplyFormsAsync();
         await ApplyCatalogAsync();
+        await ApplyToolsCategoryAsync(cancelToken);
+        await StudioCustomProducts.ApplyAsync(_db, _urlService, cancelToken);
         await ApplyMainMenuAsync(cancelToken);
         await ApplyShippingAsync(cancelToken);
         await ApplyAdminMenuAsync();
@@ -204,6 +211,23 @@ public class StudioStorefrontSetup
         catalogSettings.ShowBestsellersOnHomepage = false;
         catalogSettings.ShowPopularProductTagsOnHomepage = false;
         await _services.SettingFactory.SaveSettingsAsync(catalogSettings);
+    }
+
+    /// <summary>
+    /// Renames the addon category "Addon Blender" to "Công cụ 3D" (version 3). The URL slug stays the same.
+    /// </summary>
+    private async Task ApplyToolsCategoryAsync(CancellationToken cancelToken)
+    {
+        var categories = await _db.Categories
+            .Where(x => Split3DStorefrontContent.CategoryNames.Contains(x.Name) && x.Name != Split3DStorefrontContent.CategoryName && !x.Deleted)
+            .ToListAsync(cancelToken);
+
+        foreach (var category in categories)
+        {
+            category.Name = Split3DStorefrontContent.CategoryName;
+        }
+
+        await _db.SaveChangesAsync(cancelToken);
     }
 
     private async Task ApplyMainMenuAsync(CancellationToken cancelToken)

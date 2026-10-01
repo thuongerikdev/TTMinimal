@@ -247,18 +247,45 @@ a:focus-visible, button:focus-visible, summary:focus-visible {
     }
 }
 
-// Word mark logo (Components/ShopLogo).
+// Logo box + word mark (Components/ShopLogo).
 .tt-brand,
 .shop-logo .tt-brand {
     display: inline-flex !important;
-    flex-direction: column !important;
-    align-items: flex-start !important;
-    justify-content: center;
+    flex-direction: row !important;
+    align-items: center !important;
+    gap: .7rem;
+    justify-content: flex-start;
     height: auto !important;
     white-space: nowrap;
     line-height: 1.1;
     color: $tt-ink !important;
     text-decoration: none !important;
+
+    .tt-brand-logo {
+        flex: none;
+        display: grid;
+        place-items: center;
+        width: 3.1rem;
+        height: 3.1rem;
+        overflow: hidden;
+        background: $tt-pink;
+        border: 2px solid $tt-ink;
+        border-radius: 12px;
+        box-shadow: 3px 3px 0 $tt-ink;
+        transition: transform .15s;
+
+        > span { font-size: 1.35rem; font-weight: 900; letter-spacing: -.08em; line-height: 1; }
+
+        img { width: 100%; height: 100%; object-fit: contain; background: #fff; }
+    }
+
+    &:hover .tt-brand-logo { transform: rotate(-6deg); }
+
+    .tt-brand-text {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+    }
 
     .tt-brand-main {
         font-size: 1.9rem;
@@ -278,6 +305,7 @@ a:focus-visible, button:focus-visible, summary:focus-visible {
     @include media-breakpoint-down(md) {
         .tt-brand-main { font-size: 1.4rem; }
         .tt-brand-sub { display: none; }
+        .tt-brand-logo { width: 2.4rem; height: 2.4rem; border-radius: 10px; }
     }
 }
 
@@ -415,6 +443,40 @@ a:focus-visible, button:focus-visible, summary:focus-visible {
     color: $tt-ink;
     border: 2px solid $tt-ink;
     box-shadow: 3px 3px 0 $tt-ink;
+}
+
+// ---------- Off-canvas cart footer ----------
+// The footer background is cream (theme.config), but Flex paints its text and buttons white for a dark footer.
+
+.offcanvas-cart-footer {
+    border-top: 2px solid $tt-ink;
+}
+
+.offcanvas-cart-footer-row {
+    color: $tt-ink;
+
+    .sub-total-caption { font-weight: 800; letter-spacing: 1px; }
+    .sub-total { font-weight: 900; }
+
+    .btn-action {
+        color: $tt-ink !important;
+        background: #fff !important;
+        border: 2px solid $tt-ink !important;
+        box-shadow: 3px 3px 0 $tt-ink;
+        white-space: nowrap;
+
+        &:hover, &:focus { transform: translate(1px, 1px); box-shadow: 2px 2px 0 $tt-ink; }
+    }
+
+    // Checkout: the main action
+    .btn-clear.btn-action {
+        background: $tt-pink !important;
+    }
+}
+
+.offcanvas-cart-external-checkout {
+    .heading-center:before { background: rgba($tt-ink, .25) !important; }
+    .heading-title { color: $tt-ink; }
 }
 
 @media (prefers-reduced-motion: reduce) {

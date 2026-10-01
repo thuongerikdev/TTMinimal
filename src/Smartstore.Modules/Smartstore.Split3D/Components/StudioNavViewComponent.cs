@@ -9,7 +9,7 @@ using Smartstore.Web.Components;
 namespace Smartstore.Split3D.Components;
 
 /// <summary>
-/// Main navigation of the studio header: printing service, shop (top-level categories), addons, contact.
+/// Main navigation of the studio header: printing service, shop (top-level categories), 3D tools, design service.
 /// Invoked by the TTMinimal theme's ShopBar view.
 /// </summary>
 public class StudioNavViewComponent : SmartViewComponent
@@ -36,7 +36,7 @@ public class StudioNavViewComponent : SmartViewComponent
             .Where(x => x.ParentId == null || x.ParentId == 0)
             .ToListAsync();
 
-        var addonCategory = categories.FirstOrDefault(x => x.Name == Split3DStorefrontContent.CategoryName);
+        var addonCategory = categories.FirstOrDefault(x => Split3DStorefrontContent.CategoryNames.Contains(x.Name));
         var model = new StudioNavModel();
 
         model.Items.Add(new StudioNavItem
@@ -64,15 +64,20 @@ public class StudioNavViewComponent : SmartViewComponent
 
         if (addonCategory != null)
         {
-            var url = Url.RouteUrl("Category", new { SeName = await addonCategory.GetActiveSlugAsync() });
-            model.Items.Add(new StudioNavItem { Text = "Addon Blender", Url = url, IsActive = path.EqualsNoCase(url) });
+            var categoryUrl = Url.RouteUrl("Category", new { SeName = await addonCategory.GetActiveSlugAsync() });
+            model.Items.Add(new StudioNavItem
+            {
+                Text = "Công cụ 3D",
+                Url = Url.RouteUrl(StudioStorefrontSetup.ToolsRouteName),
+                IsActive = path.StartsWith("/cong-cu-3d", StringComparison.OrdinalIgnoreCase) || path.EqualsNoCase(categoryUrl)
+            });
         }
 
         model.Items.Add(new StudioNavItem
         {
-            Text = "Liên hệ",
-            Url = Url.RouteUrl("ContactUs"),
-            IsActive = path.StartsWith("/contactus", StringComparison.OrdinalIgnoreCase)
+            Text = "Thiết kế",
+            Url = Url.RouteUrl(StudioStorefrontSetup.DesignServiceRouteName),
+            IsActive = path.StartsWith("/thiet-ke", StringComparison.OrdinalIgnoreCase)
         });
 
         return View(model);

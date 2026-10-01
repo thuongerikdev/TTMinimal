@@ -3754,4 +3754,29 @@
         <Value>File lớn nhất khách được tải lên. Nginx cần client_max_body_size lớn hơn hoặc bằng giá trị này.</Value>
     </LocaleResource>
 
+    <LocaleResource Name="Addon.ManagedLicensing">
+        <Value>Sàn quản lý bản quyền</Value>
+    </LocaleResource>
+    <LocaleResource Name="Addon.ManagedLicensing.Hint">
+        <Value>Addon tải lên chỉ cần có tính năng: shop tự gắn phần nhập key (kéo file key, kiểm tra online, giới hạn số máy), nút cập nhật và mã hoá. Tắt cho addon tự có phần bản quyền (Split3D Print).</Value>
+    </LocaleResource>
+    <LocaleResource Name="Fields.ObfuscateAddons">
+        <Value>Mã hoá addon của sàn</Value>
+    </LocaleResource>
+    <LocaleResource Name="Fields.ObfuscateAddons.Hint">
+        <Value>Tự chạy PyArmor cho mọi addon của sàn khi tải lên.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Fields.PyArmorPython">
+        <Value>Python dùng cho PyArmor</Value>
+    </LocaleResource>
+    <LocaleResource Name="Fields.PyArmorPython.Hint">
+        <Value>Đường dẫn python đã cài PyArmor (pip install pyarmor). Phiên bản phải trùng Python của Blender: Blender 4.2–4.5 = 3.11, Blender 5.x = 3.13.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Fields.PyArmorPlatforms">
+        <Value>Nền tảng PyArmor</Value>
+    </LocaleResource>
+    <LocaleResource Name="Fields.PyArmorPlatforms.Hint">
+        <Value>Các hệ điều hành đích, cách nhau dấu phẩy, VD: windows.x86_64, linux.x86_64, darwin.x86_64, darwin.aarch64.</Value>
+    </LocaleResource>
+
 </Language>

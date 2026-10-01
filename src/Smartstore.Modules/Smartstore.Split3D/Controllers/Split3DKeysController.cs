@@ -191,6 +191,39 @@ public class Split3DKeysController : PublicController
         return RedirectToAction(nameof(Index));
     }
 
+    /// <summary>
+    /// Downloads one of the customer's keys as a .ttkey file: dropped into Blender's 3D viewport,
+    /// a marketplace add-on activates itself (see Marketplace/_ttlicense.py).
+    /// </summary>
+    public async Task<IActionResult> KeyFile(int id)
+    {
+        var customer = Services.WorkContext.CurrentCustomer;
+        if (!customer.IsRegistered())
+        {
+            return ChallengeOrForbid();
+        }
+
+        var ownLicenseIds = await GetOwnLicenseIdsAsync(customer);
+        var license = ownLicenseIds.Contains(id) ? await _db.Split3DLicenses().FindByIdAsync(id, false) : null;
+        if (license == null)
+        {
+            return NotFound();
+        }
+
+        var addon = await _db.Split3DAddons().FindByIdAsync(license.AddonId, false);
+        var json = System.Text.Json.JsonSerializer.Serialize(new Dictionary<string, object>
+        {
+            ["format"] = "ttminimal-key",
+            ["v"] = 1,
+            ["product"] = addon?.ProductCode,
+            ["addon"] = addon?.Name,
+            ["token"] = license.Token
+        }, new System.Text.Json.JsonSerializerOptions { WriteIndented = true });
+
+        var slug = System.Text.RegularExpressions.Regex.Replace((addon?.ProductCode ?? "addon").ToLowerInvariant(), "[^a-z0-9]+", "-").Trim('-');
+        return File(System.Text.Encoding.UTF8.GetBytes(json), "application/json", $"{slug}-key-{license.Id}.ttkey");
+    }
+
     private async Task<List<int>> GetOwnLicenseIdsAsync(Customer customer)
     {
         var email = customer.Email?.ToLowerInvariant();

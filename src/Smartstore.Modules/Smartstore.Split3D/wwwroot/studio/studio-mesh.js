@@ -272,6 +272,12 @@
         this.gl = createGL(canvas);
         var self = this, drag = null;
 
+        // Axis gizmo (X red, Y green, Z blue) in the bottom-left corner, on its own canvas above the model.
+        this.axes = document.createElement('canvas');
+        this.axes.className = 'tt-axes';
+        this.axes.setAttribute('aria-hidden', 'true');
+        if (canvas.parentNode) canvas.parentNode.appendChild(this.axes);
+
         canvas.addEventListener('pointerdown', function (e) {
             self.stopSpin();
             drag = { x: e.clientX, y: e.clientY, yaw: self.yaw, pitch: self.pitch };
@@ -367,6 +373,50 @@
         if (!w || !h || !mesh) return;
         if (cv.width !== Math.round(w * dpr) || cv.height !== Math.round(h * dpr)) { cv.width = Math.round(w * dpr); cv.height = Math.round(h * dpr); }
         if (this.gl) this.drawGL(w, h); else this.draw2D(w, h, dpr);
+        this.drawAxes(dpr);
+    };
+
+    var AXES = [['X', [1, 0, 0], '#e5484d'], ['Y', [0, 1, 0], '#2b9a4a'], ['Z', [0, 0, 1], '#2f6fe0']];
+
+    View.prototype.drawAxes = function (dpr) {
+        var cv = this.axes, size = 92, R = this.rotation(), c = size / 2, len = 30;
+        if (cv.width !== size * dpr) { cv.width = cv.height = size * dpr; }
+        var ctx = cv.getContext('2d');
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        ctx.clearRect(0, 0, size, size);
+
+        // Far axes first, so the axis pointing at the viewer is drawn on top.
+        var axes = AXES.map(function (a) {
+            var v = a[1];
+            return {
+                name: a[0], color: a[2],
+                x: R[0][0] * v[0] + R[0][1] * v[1] + R[0][2] * v[2],
+                y: R[1][0] * v[0] + R[1][1] * v[1] + R[1][2] * v[2],
+                depth: R[2][0] * v[0] + R[2][1] * v[1] + R[2][2] * v[2]
+            };
+        }).sort(function (a, b) { return b.depth - a.depth; });
+
+        ctx.lineCap = 'round';
+        ctx.font = '900 12px "Be Vietnam Pro", Arial, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        axes.forEach(function (a) {
+            var ex = c + a.x * len, ey = c - a.y * len;
+            ctx.globalAlpha = a.depth > 0.35 ? 0.45 : 1; // axes pointing away fade a little
+            ctx.strokeStyle = '#20201f'; ctx.lineWidth = 6;
+            ctx.beginPath(); ctx.moveTo(c, c); ctx.lineTo(ex, ey); ctx.stroke();
+            ctx.strokeStyle = a.color; ctx.lineWidth = 3;
+            ctx.beginPath(); ctx.moveTo(c, c); ctx.lineTo(ex, ey); ctx.stroke();
+            var lx = c + a.x * (len + 10), ly = c - a.y * (len + 10);
+            ctx.fillStyle = a.color;
+            ctx.beginPath(); ctx.arc(lx, ly, 8, 0, Math.PI * 2); ctx.fill();
+            ctx.strokeStyle = '#20201f'; ctx.lineWidth = 1.5; ctx.stroke();
+            ctx.fillStyle = '#fff';
+            ctx.fillText(a.name, lx, ly + 0.5);
+        });
+        ctx.globalAlpha = 1;
+        ctx.fillStyle = '#20201f';
+        ctx.beginPath(); ctx.arc(c, c, 3, 0, Math.PI * 2); ctx.fill();
     };
 
     // Z up (as in slicers): rotate around Z by yaw, tilt around X by pitch, look along +Y.

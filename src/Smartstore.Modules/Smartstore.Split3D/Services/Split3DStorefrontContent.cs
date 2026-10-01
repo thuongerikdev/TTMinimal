@@ -29,6 +29,11 @@ public sealed class Split3DPlanProductSpec
     public byte[] ImageBytes { get; init; }
     public string ImageFileName { get; init; }
     public bool ShowOnHomePage { get; init; }
+
+    /// <summary>
+    /// Devices a key bought with this package may activate. <c>null</c> uses the default from the settings.
+    /// </summary>
+    public int? MaxDevices { get; init; }
 }
 
 /// <summary>
@@ -38,7 +43,12 @@ public sealed class Split3DPlanProductSpec
 public static class Split3DStorefrontContent
 {
     public const string StoreName = "Split3D Store";
-    public const string CategoryName = "Addon Blender";
+    public const string CategoryName = "Công cụ 3D";
+
+    /// <summary>
+    /// The tools category under its current and earlier names ("Addon Blender" before 2026-10-02).
+    /// </summary>
+    public static readonly string[] CategoryNames = [CategoryName, "Addon Blender"];
     public const string CategorySlug = "addon-blender";
     public const string AddonVersion = "3.0.121";
 

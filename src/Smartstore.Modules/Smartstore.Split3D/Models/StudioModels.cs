@@ -83,6 +83,11 @@ public class StudioProductCard
     public string CategoryName { get; set; }
     public int CategoryId { get; set; }
     public bool HasVariants { get; set; }
+
+    /// <summary>
+    /// The customer types text (name, characters) before ordering, see <see cref="Services.StudioCustomProducts"/>.
+    /// </summary>
+    public bool IsCustom { get; set; }
 }
 
 public class StudioAddonCard
@@ -161,4 +166,61 @@ public class StudioNavItem
     public string ImageUrl { get; set; }
     public bool IsActive { get; set; }
     public List<StudioNavItem> Children { get; } = [];
+}
+
+/// <summary>
+/// The customer's addresses, listed on the customer info page.
+/// </summary>
+public class CustomerAddressListModel
+{
+    public List<CustomerAddressItem> Addresses { get; } = [];
+}
+
+public class CustomerAddressItem
+{
+    public int Id { get; set; }
+    public string Name { get; set; }
+    public string Phone { get; set; }
+    public string FormattedAddress { get; set; }
+    public bool IsDefault { get; set; }
+}
+
+public class ToolsPageModel
+{
+    public List<ToolCardModel> Tools { get; } = [];
+
+    /// <summary>
+    /// Package preselected from the URL (?goi=productId), e.g. when coming from a package product page.
+    /// </summary>
+    public int? SelectedProductId { get; set; }
+}
+
+public class ToolCardModel
+{
+    public int AddonId { get; set; }
+    public string Name { get; set; }
+    public string Version { get; set; }
+    public string Description { get; set; }
+    public List<ToolPackageModel> Packages { get; set; } = [];
+    public List<int> DeviceOptions { get; set; } = [];
+}
+
+/// <summary>
+/// A purchasable package of a tool: one product mapped to the addon (duration × devices).
+/// </summary>
+public class ToolPackageModel
+{
+    public int ProductId { get; set; }
+    public string Name { get; set; }
+    public string Duration { get; set; }
+    public int Devices { get; set; }
+    public string Price { get; set; }
+    public decimal PriceValue { get; set; }
+    public bool IsLifetime { get; set; }
+    public int DisplayOrder { get; set; }
+
+    /// <summary>
+    /// Picture of the package product, shown when the package is selected.
+    /// </summary>
+    public string ImageUrl { get; set; }
 }

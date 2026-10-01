@@ -37,6 +37,15 @@ public class ConfigurationModel : ModelBase
     [LocalizedDisplay("*LifetimeProductId")]
     public int LifetimeProductId { get; set; }
 
+    [LocalizedDisplay("*ObfuscateAddons")]
+    public bool ObfuscateAddons { get; set; }
+
+    [LocalizedDisplay("*PyArmorPython")]
+    public string PyArmorPython { get; set; }
+
+    [LocalizedDisplay("*PyArmorPlatforms")]
+    public string PyArmorPlatforms { get; set; }
+
     [LocalizedDisplay("*DefaultMaxDevices")]
     [Range(1, 100)]
     public int DefaultMaxDevices { get; set; }

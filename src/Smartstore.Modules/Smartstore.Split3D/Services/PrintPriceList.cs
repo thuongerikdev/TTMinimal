@@ -128,7 +128,7 @@ public static partial class PrintPriceList
     private static partial Regex MaterialRegex();
 
     /// <summary>
-    /// Returns the effective price table: the default one for an empty or unchanged legacy table.
+    /// Returns the effective price table: the default one for an empty table or an unchanged copy of an older default.
     /// </summary>
     public static string Normalize(string? table)
     {
@@ -137,7 +137,8 @@ public static partial class PrintPriceList
             return StudioSettings.DefaultPrintPriceTable;
         }
 
-        return table!.Replace("\r", string.Empty).Trim() == StudioSettings.LegacyPrintPriceTable
+        var normalized = table!.Replace("\r", string.Empty).Trim();
+        return normalized == StudioSettings.LegacyPrintPriceTable || normalized == StudioSettings.PreviousDefaultPrintPriceTable
             ? StudioSettings.DefaultPrintPriceTable
             : table;
     }

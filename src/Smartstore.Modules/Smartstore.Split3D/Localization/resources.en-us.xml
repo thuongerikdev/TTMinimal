@@ -1090,4 +1090,29 @@
         <Value>Largest model file customers can upload. Nginx needs a client_max_body_size at least this large.</Value>
     </LocaleResource>
 
+    <LocaleResource Name="Addon.ManagedLicensing">
+        <Value>Marketplace licensing</Value>
+    </LocaleResource>
+    <LocaleResource Name="Addon.ManagedLicensing.Hint">
+        <Value>The uploaded add-on contains features only: the shop adds key activation (key file drop, online check, device limit), the update button and obfuscation. Turn off for add-ons that ship their own licensing (Split3D Print).</Value>
+    </LocaleResource>
+    <LocaleResource Name="Fields.ObfuscateAddons">
+        <Value>Obfuscate marketplace add-ons</Value>
+    </LocaleResource>
+    <LocaleResource Name="Fields.ObfuscateAddons.Hint">
+        <Value>Run PyArmor on every uploaded marketplace add-on.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Fields.PyArmorPython">
+        <Value>Python for PyArmor</Value>
+    </LocaleResource>
+    <LocaleResource Name="Fields.PyArmorPython.Hint">
+        <Value>Python executable with PyArmor installed (pip install pyarmor). Its version must match Blender's Python: Blender 4.2–4.5 = 3.11, Blender 5.x = 3.13.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Fields.PyArmorPlatforms">
+        <Value>PyArmor platforms</Value>
+    </LocaleResource>
+    <LocaleResource Name="Fields.PyArmorPlatforms.Hint">
+        <Value>Target platforms, comma separated, e.g. windows.x86_64, linux.x86_64, darwin.x86_64, darwin.aarch64.</Value>
+    </LocaleResource>
+
 </Language>

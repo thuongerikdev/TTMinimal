@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Smartstore.Core.Catalog.Attributes;
 using Smartstore.Core.Catalog.Categories;
 using Smartstore.Core.Catalog.Pricing;
 using Smartstore.Core.Catalog.Products;
@@ -51,7 +52,7 @@ public class StudioHomeViewComponent : SmartViewComponent
 
         var addonCategory = await _db.Categories
             .AsNoTracking()
-            .FirstOrDefaultAsync(x => x.Name == Split3DStorefrontContent.CategoryName && !x.Deleted);
+            .FirstOrDefaultAsync(x => Split3DStorefrontContent.CategoryNames.Contains(x.Name) && !x.Deleted);
         var addonProductIds = await _db.Split3DAddonProducts()
             .Select(x => x.ProductId)
             .Distinct()
@@ -63,7 +64,8 @@ public class StudioHomeViewComponent : SmartViewComponent
             Technologies = PrintPriceList.Parse(_settings.PrintPriceTable),
             PrintPriceNote = _settings.PrintPriceNote,
             PrintServiceUrl = Url.RouteUrl(StudioStorefrontSetup.PrintServiceRouteName),
-            AddonCategoryUrl = addonCategory != null ? Url.RouteUrl("Category", new { SeName = await addonCategory.GetActiveSlugAsync() }) : null
+            // The tools page lists every tool with its packages; the category page stays reachable by URL.
+            AddonCategoryUrl = Url.RouteUrl(StudioStorefrontSetup.ToolsRouteName)
         };
 
         // Own product categories: every published top-level category except the addon category.
@@ -132,6 +134,12 @@ public class StudioHomeViewComponent : SmartViewComponent
         }
 
         var productIds = products.Select(x => x.Id).ToArray();
+        var textControlTypes = new[] { (int)AttributeControlType.TextBox, (int)AttributeControlType.MultilineTextbox, (int)AttributeControlType.FileUpload };
+        var customProductIds = await _db.ProductVariantAttributes
+            .Where(x => productIds.Contains(x.ProductId) && textControlTypes.Contains(x.AttributeControlTypeId))
+            .Select(x => x.ProductId)
+            .Distinct()
+            .ToListAsync();
         var variantProductIds = await _db.ProductVariantAttributes
             .Where(x => productIds.Contains(x.ProductId))
             .Select(x => x.ProductId)
@@ -164,7 +172,8 @@ public class StudioHomeViewComponent : SmartViewComponent
                 PriceFrom = price.HasPriceRange,
                 CategoryName = productCategories.Get(product.Id)?.Name,
                 CategoryId = productCategories.Get(product.Id)?.CategoryId ?? 0,
-                HasVariants = variantProductIds.Contains(product.Id)
+                HasVariants = variantProductIds.Contains(product.Id),
+                IsCustom = customProductIds.Contains(product.Id)
             });
         }
 

@@ -74,6 +74,7 @@ public partial class Split3DAddonController : AdminController
             Version = addon.Version,
             Description = addon.Description,
             Active = addon.Active,
+            ManagedLicensing = addon.ManagedLicensing,
             DisplayOrder = addon.DisplayOrder
         };
 
@@ -136,6 +137,7 @@ public partial class Split3DAddonController : AdminController
         addon.Version = model.Version;
         addon.Description = model.Description;
         addon.Active = model.Active;
+        addon.ManagedLicensing = model.ManagedLicensing;
         addon.DisplayOrder = model.DisplayOrder;
 
         await _db.SaveChangesAsync();
@@ -172,11 +174,18 @@ public partial class Split3DAddonController : AdminController
             var (imageBytes, imageName) = await ReadUploadAsync(Request.Form.Files["imagefile"], ".png", ".jpg", ".jpeg", ".webp");
 
             var skuPrefix = Regex.Replace(addon.ProductCode.ToUpperInvariant(), "[^A-Z0-9]+", "-").Trim('-');
+
+            // Packages for several devices get their own products: "…-LT-5PC", "Gói vĩnh viễn · 5 máy".
+            var devices = model.MaxDevices is > 1 and <= 100 ? model.MaxDevices : null;
+            var deviceSku = devices.HasValue ? $"-{devices}PC" : string.Empty;
+            var deviceLabel = devices.HasValue ? $" · {devices} máy" : string.Empty;
+
             var specs = selected.Select(x => new Split3DPlanProductSpec
             {
                 Plan = x.Plan,
-                Sku = $"{skuPrefix}-{x.Suffix}",
-                Name = $"{addon.Name} – {x.Label}",
+                MaxDevices = devices,
+                Sku = $"{skuPrefix}-{x.Suffix}{deviceSku}",
+                Name = $"{addon.Name} – {x.Label}{deviceLabel}",
                 Slug = null,
                 Price = Math.Max(0, decimal.Round(x.Price, 0)),
                 ShortDescription = FirstParagraph(addon.Description) ?? addon.Name,
@@ -191,7 +200,7 @@ public partial class Split3DAddonController : AdminController
 
             if (zipBytes != null)
             {
-                (zipBytes, var package) = _setup.PrepareAddonFile(zipBytes, log);
+                (zipBytes, var package) = await _setup.PrepareAddonFileAsync(addon, zipBytes, log);
                 if (package != null)
                 {
                     addon.Version = package.Version;
@@ -240,7 +249,7 @@ public partial class Split3DAddonController : AdminController
             }
 
             var log = new List<string>();
-            (zipBytes, var package) = _setup.PrepareAddonFile(zipBytes, log);
+            (zipBytes, var package) = await _setup.PrepareAddonFileAsync(addon, zipBytes, log);
 
             // An extension package carries its own version; a different typed version would mislabel the download.
             if (package != null && version != null && version != package.Version)
@@ -266,7 +275,7 @@ public partial class Split3DAddonController : AdminController
             NotifySuccess(T("Plugins.Split3D.Addon.VersionUploaded", version, count) + "<br>"
                 + string.Join("<br>", log.Select(System.Net.WebUtility.HtmlEncode)));
         }
-        catch (ArgumentException ex)
+        catch (Exception ex) when (ex is ArgumentException or InvalidOperationException)
         {
             NotifyError(ex.Message);
         }
@@ -301,6 +310,7 @@ public partial class Split3DAddonController : AdminController
         mapping.AddonId = addon.Id;
         mapping.KeyType = model.KeyType;
         mapping.Days = model.KeyType == Split3DPlans.Custom ? model.Days : null;
+        mapping.MaxDevices = model.MaxDevices is > 0 and <= 100 ? model.MaxDevices : null;
         await _db.SaveChangesAsync();
 
         NotifySuccess(T("Admin.Common.DataSuccessfullySaved"));
@@ -350,6 +360,7 @@ public partial class Split3DAddonController : AdminController
                         Published = p?.Published == true && !p.Deleted,
                         KeyType = m.KeyType,
                         Days = m.Days,
+                        MaxDevices = m.MaxDevices,
                         DownloadVersions = string.Join(", ", downloads.Where(d => d.EntityId == m.ProductId).Select(d => d.FileVersion).Where(v => v.HasValue())),
                         EditUrl = Url.Action("Edit", "Product", new { id = m.ProductId, area = "Admin" })
                     };

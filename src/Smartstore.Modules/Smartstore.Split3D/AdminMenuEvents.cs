@@ -18,6 +18,13 @@ public class AdminMenuEvents : IConsumer
         if (message.Name.EqualsNoCase("MyAccount"))
         {
             AddMyKeysItem(message.Root);
+
+            // Addresses are listed on the customer info page (see CustomerInfoAddressesFilter).
+            if (message.Root.SelectNodeById("addresses") is { } addresses)
+            {
+                addresses.Value.Visible = false;
+            }
+
             return;
         }
 

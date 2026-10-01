@@ -31,6 +31,13 @@ public class Split3DAddon : BaseEntity
 
     public bool Active { get; set; } = true;
 
+    /// <summary>
+    /// Marketplace mode: the uploaded add-on contains features only; the shop injects licensing
+    /// (key activation, online check, updates) and obfuscates the package, see <see cref="Services.MarketplacePackager"/>.
+    /// Off for add-ons that ship their own licensing, like Split3D Print.
+    /// </summary>
+    public bool ManagedLicensing { get; set; }
+
     public int DisplayOrder { get; set; }
 }
 
@@ -57,4 +64,10 @@ public class Split3DAddonProduct : BaseEntity
     /// Validity in days for <see cref="Services.Split3DPlans.Custom"/>; ignored for fixed plans.
     /// </summary>
     public int? Days { get; set; }
+
+    /// <summary>
+    /// Number of devices a key bought with this product may activate. <c>null</c> uses
+    /// <see cref="Configuration.Split3DSettings.DefaultMaxDevices"/>.
+    /// </summary>
+    public int? MaxDevices { get; set; }
 }

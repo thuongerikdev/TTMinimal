@@ -46,6 +46,9 @@ public class Split3DController : AdminController
             ThreeMonthsProductId = _settings.ThreeMonthsProductId,
             LifetimeProductId = _settings.LifetimeProductId,
             DefaultMaxDevices = _settings.DefaultMaxDevices,
+            ObfuscateAddons = _settings.ObfuscateAddons,
+            PyArmorPython = _settings.PyArmorPython,
+            PyArmorPlatforms = _settings.PyArmorPlatforms,
             LeaseDays = _settings.LeaseDays,
             CustomerDeactivationLimit = _settings.CustomerDeactivationLimit,
             ActivationServerUrl = _settings.ActivationServerUrl,
@@ -106,6 +109,9 @@ public class Split3DController : AdminController
         _settings.AutoIssueEnabled = model.AutoIssueEnabled;
         _settings.SendEmail = model.SendEmail;
         _settings.DefaultMaxDevices = model.DefaultMaxDevices;
+        _settings.ObfuscateAddons = model.ObfuscateAddons;
+        _settings.PyArmorPython = model.PyArmorPython?.Trim().NullEmpty();
+        _settings.PyArmorPlatforms = model.PyArmorPlatforms?.Trim().NullEmpty() ?? new Split3DSettings().PyArmorPlatforms;
         _settings.LeaseDays = model.LeaseDays;
         _settings.CustomerDeactivationLimit = model.CustomerDeactivationLimit;
         _settings.ActivationServerUrl = model.ActivationServerUrl;
