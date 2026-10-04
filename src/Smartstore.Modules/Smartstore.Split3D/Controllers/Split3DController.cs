@@ -243,7 +243,8 @@ public class Split3DController : AdminController
         ViewBag.AvailableKeyTypes = Split3DPlans.All.Select(x => new SelectListItem { Value = x, Text = x }).ToList();
         ViewBag.AvailableAddons = await _db.Split3DAddons().AsNoTracking()
             .OrderBy(x => x.DisplayOrder).ThenBy(x => x.Name)
-            .Select(x => new SelectListItem { Value = x.Id.ToString(), Text = x.Name })
+            // Name, code and version: several add-ons may share similar names (e.g. a marketplace test copy).
+            .Select(x => new SelectListItem { Value = x.Id.ToString(), Text = x.Name + " (" + x.ProductCode + (x.Version != null ? " · v" + x.Version : "") + ")" })
             .ToListAsync();
 
         return View(model);

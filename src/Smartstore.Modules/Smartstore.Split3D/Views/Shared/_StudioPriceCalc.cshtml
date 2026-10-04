@@ -46,12 +46,12 @@
         @* Drop zone and 3D preview of the dropped model, under the technology cards. *@
         <div class="tt-meter-dropwrap">
             <label class="tt-meter-drop" data-tt-drop>
-                <input type="file" accept=".stl,.obj,.3mf" data-tt-file aria-label="Chọn file 3D để tự cân" />
+                <input type="file" accept=".stl,.obj,.3mf" multiple data-tt-file aria-label="Chọn một hoặc nhiều file 3D để tự cân" />
                 <span class="tt-meter-sticker" aria-hidden="true">Miễn phí<br />5 giây</span>
                 <span class="tt-meter-icon">@StudioIcons.Get("upload")</span>
                 <span class="tt-meter-text">
                     <b>Thả file 3D vào đây để tính giá</b>
-                    <small>STL · OBJ · 3MF — tự đo kích thước X·Y·Z, xem mô hình 3D và tính số gram theo loại nhựa. File chỉ đọc trên máy bạn, chưa gửi đi.</small>
+                    <small>STL · OBJ · 3MF, thả nhiều file cùng lúc để tính tổng — tự đo kích thước X·Y·Z, xem mô hình 3D và tính số gram theo loại nhựa. File chỉ đọc trên máy bạn, chưa gửi đi.</small>
                 </span>
                 <span class="tt-meter-pick">Chọn file từ máy</span>
             </label>
@@ -62,13 +62,14 @@
             <div class="tt-viewer-head">
                 <span class="tt-viewer-tag">Xem trước 3D</span>
                 <b data-tt-vname></b>
+                <button type="button" class="tt-viewer-max" data-tt-vmax aria-pressed="false">@StudioIcons.Get("expand")<span>Phóng to</span></button>
             </div>
             <div class="tt-viewer-stage">
-                <canvas data-tt-view aria-label="Mô hình 3D, kéo để xoay, cuộn để phóng to"></canvas>
+                <canvas data-tt-view aria-label="Mô hình 3D, kéo để xoay, chuột phải hoặc Shift kéo để di chuyển, cuộn để phóng to"></canvas>
                 <span class="tt-viewer-size" data-tt-vsize></span>
             </div>
             <div class="tt-viewer-foot">
-                <span>Kéo để xoay · cuộn để phóng to</span>
+                <span>Kéo để xoay · chuột phải / Shift + kéo để di chuyển · cuộn để phóng to</span>
                 <button type="button" class="tt-textlink" data-tt-vreset>Góc nhìn ban đầu</button>
             </div>
         </div>
@@ -84,11 +85,17 @@
         <div class="tt-bar-labels" data-tt-labels aria-hidden="true"></div>
 
         <div class="tt-meter" data-tt-meter>
+            <div class="tt-models" data-tt-models hidden>
+                <div class="tt-models-head">
+                    <b data-tt-msum></b>
+                    <button type="button" class="tt-textlink" data-tt-change>+ Thêm file</button>
+                </div>
+                <ol class="tt-models-list" data-tt-mlist></ol>
+            </div>
             <div class="tt-meter-body" data-tt-meter-body hidden>
                 <div class="tt-meter-info">
                     <div class="tt-meter-file">
                         <b data-tt-fname></b>
-                        <button type="button" class="tt-textlink" data-tt-change>Đổi file</button>
                     </div>
                     <div class="tt-dims">
                         <label><span>X</span><input type="text" inputmode="decimal" autocomplete="off" data-axis="0" aria-label="Kích thước X (mm)" /></label>

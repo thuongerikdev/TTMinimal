@@ -190,10 +190,10 @@
                         <legend><span>3</span> File 3D</legend>
                         <div class="tt-field">
                             <div class="tt-dropzone" data-max-mb="@Model.MaxFileSizeMb">
-                                <input type="file" name="modelFile" accept="@Model.AllowedExtensions" aria-label="Chọn file 3D" />
+                                <input type="file" name="modelFile" accept="@Model.AllowedExtensions" multiple aria-label="Chọn một hoặc nhiều file 3D" />
                                 @StudioIcons.Get("upload")
                                 <b>Kéo thả file vào đây hoặc bấm để chọn</b>
-                                <small>STL, OBJ, 3MF, STEP, ZIP, ảnh… tối đa @Model.MaxFileSizeMb MB</small>
+                                <small>STL, OBJ, 3MF, STEP, ZIP, ảnh… chọn được nhiều file, tổng tối đa @Model.MaxFileSizeMb MB</small>
                                 <span class="tt-file-name"></span>
                             </div>
                             @if (ViewData.ModelState["modelFile"]?.Errors.FirstOrDefault() is { } fileError)

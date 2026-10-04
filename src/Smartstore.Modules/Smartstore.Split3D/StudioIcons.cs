@@ -30,7 +30,8 @@ public static class StudioIcons
         ["clock"] = "<circle cx='12' cy='12' r='8.5'/><path d='M12 7.5V12l3 2'/>",
         ["spark"] = "<path d='M12 3v4M12 17v4M3 12h4M17 12h4M6 6l2.5 2.5M15.5 15.5 18 18M6 18l2.5-2.5M15.5 8.5 18 6'/>",
         ["scissors"] = "<circle cx='6.5' cy='6.5' r='2.5'/><circle cx='6.5' cy='17.5' r='2.5'/><path d='M8.5 8 20 18M8.5 16 20 6'/>",
-        ["ruler"] = "<path d='m3 16 13-13 5 5L8 21Z'/><path d='m7 12 2 2M10 9l2 2M13 6l2 2'/>"
+        ["ruler"] = "<path d='m3 16 13-13 5 5L8 21Z'/><path d='m7 12 2 2M10 9l2 2M13 6l2 2'/>",
+        ["expand"] = "<path d='M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5'/>"
     };
 
     public static IHtmlContent Get(string name, string cssClass = null)

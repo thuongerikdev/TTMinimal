@@ -1,3 +1,4 @@
+using System.IO.Compression;
 using System.Net;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
@@ -57,7 +58,14 @@ public class PrintQuoteService
     /// <summary>
     /// Saves a new request, stores its file and queues the notification email.
     /// </summary>
-    public async Task SubmitAsync(PrintQuoteRequest request, IFormFile file, CancellationToken cancelToken = default)
+    public Task SubmitAsync(PrintQuoteRequest request, IFormFile file, CancellationToken cancelToken = default)
+        => SubmitAsync(request, file != null ? [file] : [], cancelToken);
+
+    /// <summary>
+    /// Saves a new request, stores its files and queues the notification email.
+    /// Several files are stored together as one ZIP archive.
+    /// </summary>
+    public async Task SubmitAsync(PrintQuoteRequest request, IReadOnlyCollection<IFormFile> files, CancellationToken cancelToken = default)
     {
         Guard.NotNull(request);
 
@@ -67,20 +75,45 @@ public class PrintQuoteService
         _db.PrintQuoteRequests().Add(request);
         await _db.SaveChangesAsync(cancelToken);
 
-        if (file != null && file.Length > 0)
+        var uploads = (files ?? []).Where(x => x != null && x.Length > 0).ToList();
+        if (uploads.Count > 0)
         {
-            var safeName = SafeFileName(file.FileName);
-            var path = PathUtility.Join(FileFolder, request.CreatedOnUtc.ToString("yyyy-MM"), $"{request.Id}-{safeName}");
+            var single = uploads.Count == 1;
+            var fileName = single ? Path.GetFileName(uploads[0].FileName) : $"models-{request.Id}.zip";
+            var path = PathUtility.Join(FileFolder, request.CreatedOnUtc.ToString("yyyy-MM"), $"{request.Id}-{SafeFileName(fileName)}");
             var target = await _appContext.TenantRoot.GetFileAsync(path);
 
-            using (var stream = file.OpenReadStream())
+            if (single)
             {
+                using var stream = uploads[0].OpenReadStream();
                 await target.CreateAsync(stream, true, cancelToken);
             }
+            else
+            {
+                await using var output = await target.OpenWriteAsync("application/zip", cancelToken);
+                using var archive = new ZipArchive(output, ZipArchiveMode.Create);
+                var names = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
-            request.FileName = Path.GetFileName(file.FileName).Truncate(400);
+                foreach (var upload in uploads)
+                {
+                    // Same name twice: the later one gets a numeric suffix.
+                    var entryName = SafeFileName(upload.FileName);
+                    for (var i = 2; !names.Add(entryName); i++)
+                    {
+                        entryName = $"{Path.GetFileNameWithoutExtension(SafeFileName(upload.FileName))}-{i}{Path.GetExtension(upload.FileName)}";
+                    }
+
+                    // Model files are usually already compressed poorly; fastest keeps big uploads quick.
+                    var entry = archive.CreateEntry(entryName, CompressionLevel.Fastest);
+                    await using var entryStream = entry.Open();
+                    using var source = upload.OpenReadStream();
+                    await source.CopyToAsync(entryStream, cancelToken);
+                }
+            }
+
+            request.FileName = fileName.Truncate(400);
             request.FilePath = path;
-            request.FileSize = file.Length;
+            request.FileSize = (await _appContext.TenantRoot.GetFileAsync(path)).Length;
             await _db.SaveChangesAsync(cancelToken);
         }
 

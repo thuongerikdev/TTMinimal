@@ -425,20 +425,48 @@ def activate(token):
 
 # ---------------------------------------------------------------- background check
 
-_JOB = {'thread': None, 'done': False, 'last_attempt': 0.0, 'session_checked': False, 'error': None}
+# 'note' is the outcome of the last check the customer started by hand, shown in the panel.
+_JOB = {'thread': None, 'done': False, 'last_attempt': 0.0, 'session_checked': False, 'error': None, 'note': None}
 
 
 def _worker(token, body, first):
     try:
-        _store_result(_post('activate' if first else 'refresh', body), token)
-        _JOB['error'] = None
+        result = _post('activate' if first else 'refresh', body)
+        if _store_result(result, token):
+            _JOB['error'] = None
+        else:
+            _JOB['error'] = message_for(result)
     except Exception as error:  # never let a background check crash Blender
         _JOB['error'] = str(error)
     finally:
         _JOB['done'] = True
 
 
+def _job_finish():
+    """Clears a finished background check. Returns True while a check is still running."""
+    if _JOB['thread'] is not None and _JOB['done']:
+        _JOB['thread'] = None
+        _CACHE.clear()
+        _redraw()
+    return _JOB['thread'] is not None
+
+
+def _poll_manual_check():
+    """Fast timer while a check started from the panel runs, so the answer shows within a second."""
+    if _job_finish():
+        return 0.5
+    if _JOB['error']:
+        _JOB['note'] = ('ERROR', 'Không kiểm tra được: ' + _JOB['error'])
+    elif available_update():
+        _JOB['note'] = None
+    else:
+        _JOB['note'] = ('CHECKMARK', f'Đang dùng bản mới nhất ({addon_version()})')
+    _redraw()
+    return None
+
+
 def refresh_now(force=False):
+    _job_finish()
     if _JOB['thread'] is not None or not online_allowed():
         return False
     token = stored_token()
@@ -472,11 +500,7 @@ def _redraw():
 
 def _tick():
     try:
-        if _JOB['thread'] is not None and _JOB['done']:
-            _JOB['thread'] = None
-            _CACHE.clear()
-            _redraw()
-        if _JOB['thread'] is None:
+        if not _job_finish():
             refresh_now()
         _sync_core()
     except Exception as error:
@@ -575,8 +599,16 @@ def _activate(operator, token):
 
 
 def _op_import_key_execute(self, context):
+    # A drop sets directory + files (like Blender's own importers); the file browser sets filepath.
+    paths = [os.path.join(self.directory, f.name) for f in self.files if f.name] if self.files else []
+    if not paths and self.filepath:
+        paths = [self.filepath]
+    paths = [p for p in paths if p.lower().endswith(KEY_FILE_EXTENSION)] or paths
+    if not paths:
+        self.report({'ERROR'}, 'Chưa chọn file key (.ttkey)')
+        return {'CANCELLED'}
     try:
-        token = _read_key_file(self.filepath)
+        token = _read_key_file(paths[0])
     except (OSError, ValueError) as error:
         self.report({'ERROR'}, str(error))
         return {'CANCELLED'}
@@ -584,7 +616,8 @@ def _op_import_key_execute(self, context):
 
 
 def _op_import_key_invoke(self, context, event):
-    if self.filepath:  # dropped onto the viewport
+    props = self.properties
+    if props.is_property_set('filepath') or props.is_property_set('files'):  # dropped into Blender
         return self.execute(context)
     context.window_manager.fileselect_add(self)
     return {'RUNNING_MODAL'}
@@ -603,7 +636,12 @@ def _op_check_execute(self, context):
         # A fatal answer is final for the background check; a manual check activates again.
         token = stored_token()
         return _activate(self, token) if token else {'CANCELLED'}
-    refresh_now(force=True)
+    if not refresh_now(force=True) and _JOB['thread'] is None:
+        self.report({'ERROR'}, 'Chưa kiểm tra được; hãy thử lại')
+        return {'CANCELLED'}
+    _JOB['note'] = None
+    if not bpy.app.timers.is_registered(_poll_manual_check):
+        bpy.app.timers.register(_poll_manual_check, first_interval=0.5)
     self.report({'INFO'}, 'Đang kiểm tra key và bản cập nhật…')
     return {'FINISHED'}
 
@@ -629,16 +667,47 @@ def _op_update_execute(self, context):
         return {'CANCELLED'}
     path = Path(tempfile.mkdtemp(prefix='ttminimal-update-')) / info['url'].rsplit('/', 1)[1]
     path.write_bytes(data)
-    try:
-        result = bpy.ops.extensions.package_install_files(filepath=str(path), repo=parts[1], enable_on_install=True)
-    except (RuntimeError, TypeError) as error:
-        self.report({'ERROR'}, 'Không cài được bản cập nhật: ' + str(error))
-        return {'CANCELLED'}
-    if 'FINISHED' not in result:
-        self.report({'ERROR'}, 'Không cài được bản cập nhật')
-        return {'CANCELLED'}
-    self.report({'INFO'}, f"Đã cập nhật {ADDON_NAME} lên bản {info['version']}")
+    # Installing replaces this add-on, including this operator: doing it inside execute() frees the running
+    # operator and crashes Blender on the next access. Install right after the operator has returned.
+    bpy.app.timers.register(lambda: _install_update(str(path), parts[1], info['version']), first_interval=0.2)
+    self.report({'INFO'}, f"Đang cài {ADDON_NAME} bản {info['version']}…")
     return {'FINISHED'}
+
+
+def _install_update(path, repo, version):
+    """Timer callback: installs the downloaded package over this add-on. Must not touch operator
+    or panel instances of this module, they are unregistered by the install."""
+    window = None
+    try:
+        wm = bpy.context.window_manager
+        window = wm.windows[0] if wm and wm.windows else None
+        if window is not None:
+            with bpy.context.temp_override(window=window):
+                result = bpy.ops.extensions.package_install_files(filepath=path, repo=repo, enable_on_install=True)
+        else:
+            result = bpy.ops.extensions.package_install_files(filepath=path, repo=repo, enable_on_install=True)
+        # Blender's installer answers FINISHED even when it could not replace the files (e.g. a file of the
+        # add-on is locked on Windows); the version on disk tells whether the update really happened.
+        installed = addon_version()
+        if 'FINISHED' in result and _version_tuple(installed) >= _version_tuple(version):
+            message = f'Đã cập nhật {ADDON_NAME} lên bản {installed}'
+        else:
+            message = (f'Không cài được bản {version} (vẫn là {installed}). Hãy khởi động lại Blender rồi bấm Cập nhật lại, '
+                       'hoặc tải file zip ở trang Key của tôi và kéo vào Blender.')
+    except Exception as error:
+        message = f'Không cài được bản cập nhật {version}: {error}'
+    _JOB['note'] = ('CHECKMARK' if message.startswith('Đã') else 'ERROR', message)
+    print(message)
+    # A popup needs a window; in background mode (or before a window exists) only the console message remains.
+    if window is not None and not bpy.app.background:
+        try:
+            def draw(menu, _context):
+                menu.layout.label(text=message)
+            with bpy.context.temp_override(window=window):
+                bpy.context.window_manager.popup_menu(draw, title=ADDON_NAME, icon='INFO')
+        except Exception:
+            pass
+    return None  # run once
 
 
 def _op_sign_out_execute(self, context):
@@ -668,6 +737,11 @@ def _op_online_execute(self, context):
     return {'FINISHED'}
 
 
+def _wrap(text, width):
+    import textwrap
+    return textwrap.wrap(text, width) or ['']
+
+
 def _panel_draw(self, context):
     layout = self.layout
     ok, message, key = status()
@@ -686,7 +760,17 @@ def _panel_draw(self, context):
             box.operator(f'{OP}.update', text=f"Cập nhật lên bản {info['version']}", icon='FILE_REFRESH')
         else:
             layout.label(text=f'Phiên bản {addon_version()}', icon='INFO')
+        if _JOB['thread'] is not None:
+            layout.label(text='Đang kiểm tra với máy chủ…', icon='SORTTIME')
+        elif _JOB['note']:
+            icon, text = _JOB['note']
+            col = layout.column(align=True)
+            col.alert = icon == 'ERROR'
+            # Long messages wrap over several labels.
+            for i, line in enumerate(_wrap(text, 42)):
+                col.label(text=line, icon=icon if i == 0 else 'BLANK1')
         row = layout.row(align=True)
+        row.enabled = _JOB['thread'] is None
         row.operator(f'{OP}.check', text='Kiểm tra cập nhật', icon='FILE_REFRESH')
         row.operator(f'{OP}.sign_out', text='', icon='QUIT')
         return
@@ -697,7 +781,7 @@ def _panel_draw(self, context):
     if not online_allowed():
         layout.operator(f'{OP}.online', text='Cho phép Blender truy cập mạng', icon='WORLD')
     box = layout.box()
-    box.label(text='Kéo file key (.ttkey) vào cửa sổ 3D', icon='FILE_TICK')
+    box.label(text='Kéo file key (.ttkey) thả vào Blender', icon='FILE_TICK')
     box.operator(f'{OP}.import_key', text='Chọn file key…', icon='FILEBROWSER')
     box.operator(f'{OP}.paste_key', text='Dán key', icon='PASTEDOWN')
     if stored_token():
@@ -713,9 +797,11 @@ def _build_ui():
         type(f'TTLIC_OT_{UID}_import_key', (bpy.types.Operator,), {
             'bl_idname': f'{OP}.import_key', 'bl_label': 'Kích hoạt bằng file key',
             'bl_description': 'Chọn file .ttkey tải từ trang Key của tôi (hoặc kéo thả file vào cửa sổ 3D)',
-            'bl_options': {'REGISTER', 'INTERNAL'},
+            'bl_options': {'REGISTER'},
             '__annotations__': {
                 'filepath': bpy.props.StringProperty(subtype='FILE_PATH', options={'SKIP_SAVE'}),
+                'directory': bpy.props.StringProperty(subtype='DIR_PATH', options={'SKIP_SAVE', 'HIDDEN'}),
+                'files': bpy.props.CollectionProperty(type=bpy.types.OperatorFileListElement, options={'SKIP_SAVE', 'HIDDEN'}),
                 'filter_glob': bpy.props.StringProperty(default='*' + KEY_FILE_EXTENSION, options={'HIDDEN'}),
             },
             'execute': _op_import_key_execute, 'invoke': _op_import_key_invoke}),
@@ -748,7 +834,8 @@ def _build_ui():
         ops.append(type(f'TTLIC_FH_{UID}', (bpy.types.FileHandler,), {
             'bl_idname': f'TTLIC_FH_{UID}', 'bl_label': f'{ADDON_NAME} key',
             'bl_import_operator': f'{OP}.import_key', 'bl_file_extensions': KEY_FILE_EXTENSION,
-            'poll_drop': classmethod(lambda cls, context: context.area is not None and context.area.type == 'VIEW_3D')}))
+            # Any editor accepts the key file, not only the 3D viewport.
+            'poll_drop': classmethod(lambda cls, context: context.area is not None)}))
     return ops
 
 

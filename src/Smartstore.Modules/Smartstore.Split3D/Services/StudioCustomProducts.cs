@@ -54,6 +54,16 @@ public static class StudioCustomProducts
             ])
     ];
 
+    /// <summary>
+    /// Products whose text field can be filled from a list (one row per piece), see <see cref="Filters.TextListFilter"/>.
+    /// Key is the SKU; Title heads the list dialog, Item names one row ("bảng tên").
+    /// </summary>
+    public static readonly IReadOnlyDictionary<string, (string Title, string Item)> TextListProducts = new Dictionary<string, (string, string)>(StringComparer.OrdinalIgnoreCase)
+    {
+        ["TT-NAMEPLATE"] = ("Danh sách tên cần in", "bảng tên"),
+        ["TT-KEYCAP"] = ("Danh sách keycap cần in", "keycap")
+    };
+
     private static Option[] ColorOptions(int preselected)
         => _colors.Select((c, i) => new Option(c.Name, 0, c.Color, i == preselected)).ToArray();
 

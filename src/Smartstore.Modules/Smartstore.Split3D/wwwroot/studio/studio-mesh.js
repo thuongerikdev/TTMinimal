@@ -221,8 +221,8 @@
     var LIGHT = (function () { var l = [-0.45, 0.7, -0.55], n = Math.hypot(l[0], l[1], l[2]); return [l[0] / n, l[1] / n, l[2] / n]; })();
 
     var VS = 'attribute vec3 aPos; attribute vec3 aNor;' +
-        'uniform mat3 uRot; uniform vec3 uCenter; uniform vec3 uScale; varying vec3 vN;' +
-        'void main() { vec3 p = uRot * (aPos - uCenter); vN = uRot * aNor; gl_Position = vec4(p * uScale, 1.0); }';
+        'uniform mat3 uRot; uniform vec3 uCenter; uniform vec3 uScale; uniform vec2 uPan; varying vec3 vN;' +
+        'void main() { vec3 p = uRot * (aPos - uCenter); vN = uRot * aNor; gl_Position = vec4(p * uScale + vec3(uPan, 0.0), 1.0); }';
 
     // Two-sided flat lighting: key light plus a soft fill from below, so no face turns black.
     var FS = 'precision mediump float; uniform vec3 uColor; uniform vec3 uLight; varying vec3 vN;' +
@@ -253,6 +253,7 @@
             uRot: gl.getUniformLocation(prog, 'uRot'),
             uCenter: gl.getUniformLocation(prog, 'uCenter'),
             uScale: gl.getUniformLocation(prog, 'uScale'),
+            uPan: gl.getUniformLocation(prog, 'uPan'),
             uColor: gl.getUniformLocation(prog, 'uColor'),
             uLight: gl.getUniformLocation(prog, 'uLight'),
             pos: gl.createBuffer(),
@@ -267,6 +268,8 @@
         this.pitch = 0.5;
         this.color = [128, 229, 203];
         this.zoom = 1;
+        this.panX = 0;  // CSS px
+        this.panY = 0;
         this.mesh = null;
         this.spinning = false;
         this.gl = createGL(canvas);
@@ -278,26 +281,69 @@
         this.axes.setAttribute('aria-hidden', 'true');
         if (canvas.parentNode) canvas.parentNode.appendChild(this.axes);
 
+        // One pointer: left button rotates, right / middle button or Shift pans. Two fingers: pinch to zoom and pan.
+        var pointers = {};
+        function pinch() {
+            var ids = Object.keys(pointers);
+            if (ids.length < 2) return null;
+            var a = pointers[ids[0]], b = pointers[ids[1]];
+            return { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2, d: Math.hypot(a.x - b.x, a.y - b.y) || 1 };
+        }
+        function begin(e) {
+            var p = pinch();
+            drag = p
+                ? { pinch: true, x: p.x, y: p.y, d: p.d, zoom: self.zoom, panX: self.panX, panY: self.panY }
+                : { pan: e.button === 1 || e.button === 2 || e.shiftKey, x: e.clientX, y: e.clientY, yaw: self.yaw, pitch: self.pitch, panX: self.panX, panY: self.panY };
+        }
         canvas.addEventListener('pointerdown', function (e) {
             self.stopSpin();
-            drag = { x: e.clientX, y: e.clientY, yaw: self.yaw, pitch: self.pitch };
+            pointers[e.pointerId] = { x: e.clientX, y: e.clientY };
+            begin(e);
             canvas.setPointerCapture(e.pointerId);
         });
+        canvas.addEventListener('contextmenu', function (e) { e.preventDefault(); });
         canvas.addEventListener('wheel', function (e) {
             e.preventDefault();
             self.stopSpin();
-            self.zoom = Math.max(0.4, Math.min(8, self.zoom * Math.exp(-e.deltaY * 0.0015)));
-            self.request();
+            self.zoomAt(self.zoom * Math.exp(-e.deltaY * 0.0015), e.clientX, e.clientY);
         }, { passive: false });
         if ('ResizeObserver' in window) new ResizeObserver(function () { self.request(); }).observe(canvas);
         canvas.addEventListener('pointermove', function (e) {
-            if (!drag) return;
-            self.yaw = drag.yaw + (e.clientX - drag.x) * 0.01;
-            self.pitch = Math.max(-1.5, Math.min(1.5, drag.pitch + (e.clientY - drag.y) * 0.01));
+            if (!drag || !pointers[e.pointerId]) return;
+            pointers[e.pointerId] = { x: e.clientX, y: e.clientY };
+            if (drag.pinch) {
+                var p = pinch();
+                if (!p) return;
+                self.zoom = Math.max(0.4, Math.min(20, drag.zoom * p.d / drag.d));
+                self.panX = drag.panX + p.x - drag.x; self.panY = drag.panY + p.y - drag.y;
+            } else if (drag.pan) {
+                self.panX = drag.panX + e.clientX - drag.x; self.panY = drag.panY + e.clientY - drag.y;
+            } else {
+                self.yaw = drag.yaw + (e.clientX - drag.x) * 0.01;
+                self.pitch = Math.max(-1.5, Math.min(1.5, drag.pitch + (e.clientY - drag.y) * 0.01));
+            }
             self.request();
         });
-        ['pointerup', 'pointercancel'].forEach(function (t) { canvas.addEventListener(t, function () { drag = null; }); });
+        ['pointerup', 'pointercancel'].forEach(function (t) {
+            canvas.addEventListener(t, function (e) {
+                delete pointers[e.pointerId];
+                // Lifting one finger of a pinch continues as a rotation from where the other finger is.
+                if (Object.keys(pointers).length) { var id = Object.keys(pointers)[0]; begin({ clientX: pointers[id].x, clientY: pointers[id].y, button: 0 }); }
+                else drag = null;
+            });
+        });
     }
+
+    // Zooms keeping the model point under the cursor in place.
+    View.prototype.zoomAt = function (zoom, clientX, clientY) {
+        zoom = Math.max(0.4, Math.min(20, zoom));
+        var r = this.canvas.getBoundingClientRect(), k = zoom / this.zoom;
+        var cx = clientX - r.left - r.width / 2, cy = clientY - r.top - r.height / 2;
+        this.panX = cx - (cx - this.panX) * k;
+        this.panY = cy - (cy - this.panY) * k;
+        this.zoom = zoom;
+        this.request();
+    };
 
     View.prototype.set = function (mesh) {
         var n = mesh.count, src = mesh.tris, c = mesh.center, r = 0;
@@ -339,7 +385,7 @@
     };
 
     View.prototype.reset = function () {
-        this.yaw = -0.6; this.pitch = 0.5; this.zoom = 1;
+        this.yaw = -0.6; this.pitch = 0.5; this.zoom = 1; this.panX = this.panY = 0;
         this.request();
         this.startSpin();
     };
@@ -439,6 +485,7 @@
         gl.uniformMatrix3fv(g.uRot, false, [R[0][0], R[1][0], R[2][0], R[0][1], R[1][1], R[2][1], R[0][2], R[1][2], R[2][2]]);
         gl.uniform3f(g.uCenter, c[0], c[1], c[2]);
         gl.uniform3f(g.uScale, s * Math.min(1, h / w), s * Math.min(1, w / h), 0.95 / this.mesh.radius);
+        gl.uniform2f(g.uPan, 2 * this.panX / w, -2 * this.panY / h);
         gl.uniform3f(g.uColor, col[0] / 255, col[1] / 255, col[2] / 255);
         gl.uniform3f(g.uLight, LIGHT[0], LIGHT[1], LIGHT[2]);
 
@@ -457,7 +504,7 @@
         ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
         ctx.clearRect(0, 0, w, h);
 
-        var scale = Math.min(w, h) * 0.44 * this.zoom / mesh.radius, ox = w / 2, oy = h / 2;
+        var scale = Math.min(w, h) * 0.44 * this.zoom / mesh.radius, ox = w / 2 + this.panX, oy = h / 2 + this.panY;
         var pts = mesh.pts, n = mesh.n, P = new Float32Array(n * 9);
         for (var i = 0; i < n * 3; i++) {
             var x = pts[i * 3] - c[0], y = pts[i * 3 + 1] - c[1], z = pts[i * 3 + 2] - c[2];

@@ -1,0 +1,59 @@
+using System.Text.Json;
+using Microsoft.AspNetCore.Mvc.Filters;
+using Smartstore.Core.Catalog.Attributes;
+using Smartstore.Core.Data;
+using Smartstore.Core.Widgets;
+
+namespace Smartstore.Split3D.Filters;
+
+/// <summary>
+/// On the product page of a personalized product (<see cref="StudioCustomProducts.TextListProducts"/>), lets the customer
+/// fill the text field from a list: studio.js reads the JSON config added here and opens a table dialog
+/// (one row per text with its quantity). Registered for Product/ProductDetails, see Startup.
+/// </summary>
+public class TextListFilter : IAsyncActionFilter
+{
+    private readonly SmartDbContext _db;
+    private readonly Lazy<IWidgetProvider> _widgetProvider;
+
+    public TextListFilter(SmartDbContext db, Lazy<IWidgetProvider> widgetProvider)
+    {
+        _db = db;
+        _widgetProvider = widgetProvider;
+    }
+
+    public async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
+    {
+        if (context.ActionArguments.TryGetValue("productId", out var value) && value is int productId)
+        {
+            var sku = await _db.Products
+                .Where(x => x.Id == productId)
+                .Select(x => x.Sku)
+                .FirstOrDefaultAsync();
+
+            if (sku != null && StudioCustomProducts.TextListProducts.TryGetValue(sku, out var list))
+            {
+                var attribute = await _db.ProductVariantAttributes
+                    .Where(x => x.ProductId == productId && x.AttributeControlTypeId == (int)AttributeControlType.TextBox)
+                    .OrderBy(x => x.DisplayOrder)
+                    .Select(x => new { x.Id, x.ProductAttributeId })
+                    .FirstOrDefaultAsync();
+
+                if (attribute != null)
+                {
+                    var json = JsonSerializer.Serialize(new
+                    {
+                        control = ProductVariantQueryItem.CreateKey(productId, 0, attribute.ProductAttributeId, attribute.Id),
+                        title = list.Title,
+                        item = list.Item
+                    });
+
+                    // "<" is escaped by the serializer, so the JSON cannot close the script element.
+                    _widgetProvider.Value.RegisterWidget("end", new HtmlWidget($"<script type=\"application/json\" data-tt-textlist>{json}</script>"));
+                }
+            }
+        }
+
+        await next();
+    }
+}

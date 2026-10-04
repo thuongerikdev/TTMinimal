@@ -9,6 +9,17 @@
     Assets.AppendMetaDescriptionParts("Công cụ 3D (addon Blender) cho người làm in 3D: chọn gói theo thời hạn và số máy, mua ngay, nhận key và bản cập nhật tự động.");
     Assets.BodyAttributes.AppendCssClass("tt-studio-page");
     var buyUrl = Url.Action("Buy", "Tools");
+
+    // Tools in development, shown after the ones on sale.
+    var comingSoon = new[]
+    {
+        (Name: "Công cụ tạo khuôn", Kind: "Addon Blender", Icon: "layers",
+            Text: "Dựng khuôn đúc nhiều mảnh từ mô hình ngay trong Blender: tự chia mặt phân khuôn, thêm chốt định vị, lỗ rót và lỗ thoát khí, xuất file sẵn để in."),
+        (Name: "App tạo khuôn", Kind: "Ứng dụng độc lập", Icon: "cube",
+            Text: "Phiên bản chạy riêng trên máy tính, không cần cài Blender: mở STL / OBJ / 3MF, tạo khuôn vài cú bấm và xuất file in."),
+        (Name: "App Split3D", Kind: "Ứng dụng độc lập", Icon: "scissors",
+            Text: "Cắt mô hình quá khổ thành nhiều mảnh vừa bàn in, tự tạo khớp nối — như addon Split3D Print nhưng không cần Blender.")
+    };
 }
 
 <div class="tt">
@@ -96,6 +107,24 @@
                     </div>
                 </article>
             }
+
+            <div class="tt-soon">
+                <h2 class="tt-soon-title" data-tt-reveal>Sắp ra mắt</h2>
+                <div class="tt-soon-grid">
+                    @for (var i = 0; i < comingSoon.Length; i++)
+                    {
+                        var tool = comingSoon[i];
+                        <article class="tt-soon-card" data-tt-reveal style="--d:@((i * 0.08).ToString("0.00", CultureInfo.InvariantCulture))s">
+                            <span class="tt-soon-sticker">Coming soon</span>
+                            <span class="tt-soon-icon">@StudioIcons.Get(tool.Icon)</span>
+                            <span class="tt-pill">@tool.Kind</span>
+                            <h3>@tool.Name</h3>
+                            <p>@tool.Text</p>
+                            <a class="tt-textlink" asp-route="ContactUs">Báo tôi khi ra mắt @StudioIcons.Get("arrow", "tt-arrow")</a>
+                        </article>
+                    }
+                </div>
+            </div>
         </div>
     </section>
 </div>

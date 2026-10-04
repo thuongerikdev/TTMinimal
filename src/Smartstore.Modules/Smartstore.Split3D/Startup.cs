@@ -45,6 +45,11 @@ internal class Startup : StarterBase
                 .ForAction("ProductDetails")
                 .WhenNonAjaxGet();
 
+            o.Filters.AddEndpointFilter<TextListFilter, SmartController>()
+                .ForController("Product")
+                .ForAction("ProductDetails")
+                .WhenNonAjaxGet();
+
             o.Filters.AddEndpointFilter<ToolPackageRedirectFilter, SmartController>()
                 .ForController("Catalog")
                 .ForAction("Category")

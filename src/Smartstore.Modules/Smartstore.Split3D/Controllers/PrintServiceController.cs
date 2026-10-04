@@ -49,18 +49,17 @@ public class PrintServiceController : PublicController
     [ValidateAntiForgeryToken, ValidateHoneypot]
     [RequestSizeLimit(MaxRequestSize)]
     [RequestFormLimits(MultipartBodyLengthLimit = MaxRequestSize)]
-    public async Task<IActionResult> Index([FromForm(Name = "Form")] PrintQuoteFormModel form, IFormFile modelFile)
+    public async Task<IActionResult> Index([FromForm(Name = "Form")] PrintQuoteFormModel form, List<IFormFile> modelFile)
     {
-        if (modelFile != null && modelFile.Length > 0)
+        // Several model files may be sent at once (the price calculator hands over every weighed model).
+        var files = (modelFile ?? []).Where(x => x != null && x.Length > 0).ToList();
+        if (files.FirstOrDefault(x => !PrintQuoteService.IsAllowedFile(x.FileName)) is { } badFile)
         {
-            if (!PrintQuoteService.IsAllowedFile(modelFile.FileName))
-            {
-                ModelState.AddModelError("modelFile", "Định dạng file chưa được hỗ trợ. Hãy nén file thành .zip hoặc gửi link tải.");
-            }
-            else if (modelFile.Length > _quoteService.MaxFileSize)
-            {
-                ModelState.AddModelError("modelFile", $"File vượt quá {_settings.QuoteMaxFileSizeMb} MB. Hãy gửi link Google Drive / Dropbox.");
-            }
+            ModelState.AddModelError("modelFile", $"Định dạng file {badFile.FileName} chưa được hỗ trợ. Hãy nén file thành .zip hoặc gửi link tải.");
+        }
+        else if (files.Sum(x => x.Length) > _quoteService.MaxFileSize)
+        {
+            ModelState.AddModelError("modelFile", $"File vượt quá {_settings.QuoteMaxFileSizeMb} MB. Hãy gửi link Google Drive / Dropbox.");
         }
 
         if (!ModelState.IsValid)
@@ -89,7 +88,7 @@ public class PrintServiceController : PublicController
             IpAddress = _webHelper.ClientInfo.IpAddress?.ToString()
         };
 
-        await _quoteService.SubmitAsync(request, modelFile, HttpContext.RequestAborted);
+        await _quoteService.SubmitAsync(request, files, HttpContext.RequestAborted);
 
         return RedirectToAction(nameof(Index), new { sent = request.Id });
     }

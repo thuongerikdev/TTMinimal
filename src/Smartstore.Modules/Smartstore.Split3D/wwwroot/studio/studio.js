@@ -468,10 +468,10 @@
         var fab = document.querySelector('[data-tt-dropfab]');
         var canWeigh = !!(calc && calc.ttAnalyze);
 
-        function weigh(file) {
-            if (!file || !canWeigh) return;
+        function weigh(files) {
+            if (!files || !files.length || !canWeigh) return;
             calc.ttFocus();
-            calc.ttAnalyze(file);
+            calc.ttAnalyze(files);
         }
 
         each('[data-tt-herodrop]', function (zone) {
@@ -484,7 +484,7 @@
             }
             ['dragenter', 'dragover'].forEach(function (t) { zone.addEventListener(t, function () { zone.classList.add('is-over'); }); });
             ['dragleave', 'drop'].forEach(function (t) { zone.addEventListener(t, function () { zone.classList.remove('is-over'); }); });
-            input.addEventListener('change', function () { weigh(input.files && input.files[0]); input.value = ''; });
+            input.addEventListener('change', function () { weigh(Array.prototype.slice.call(input.files || [])); input.value = ''; });
         });
 
         if (fab) {
@@ -532,7 +532,7 @@
             // The overlay ignores the pointer: drops on a real file field (quote form, drop zones) keep their normal behaviour.
             if (e.target.closest && e.target.closest('.tt-dropzone, [data-tt-drop], [data-tt-herodrop]')) return;
             e.preventDefault();
-            weigh(e.dataTransfer.files && e.dataTransfer.files[0]);
+            weigh(e.dataTransfer.files);
         });
     }
 
@@ -559,7 +559,8 @@
             var autoTag = root.querySelector('[data-tt-auto]');
             var active = 0, activeMat = 0;
 
-            // Weighing state
+            // Weighing state. Every dropped model is an entry of `models`; dims, viewer and the grams / quantity
+            // fields edit the active one (`cur`). The total weight of all models picks the price tier.
             var meter = root.querySelector('[data-tt-meter]');
             var fileInput = root.querySelector('[data-tt-file]');
             var drop = root.querySelector('[data-tt-drop]');
@@ -570,15 +571,33 @@
             var unitSel = meter.querySelector('[data-tt-unitsel]');
             var fillSel = meter.querySelector('[data-tt-fill]');
             var stats = meter.querySelector('[data-tt-stats]');
+            var list = meter.querySelector('[data-tt-models]');
+            var listRows = meter.querySelector('[data-tt-mlist]');
+            var listSum = meter.querySelector('[data-tt-msum]');
             var viewer = root.querySelector('[data-tt-viewer]');
-            var view = null, mesh = null, file = null, auto = false, measurement = '';
-            var scale = [1, 1, 1], fills = { fdm: 20, resin: 100 };
+            var view = null, models = [], cur = null, auto = false;
+            var fills = { fdm: 20, resin: 100 };
 
             function tech() { return techs[active]; }
             function mat() { return tech().mats[activeMat] || tech().mats[0]; }
             function kind() { return tech().resin ? 'resin' : 'fdm'; }
-            // Size in mm of the model as stored in the file (before the customer's scale).
-            function baseSize(a) { return mesh.size[a] * (parseFloat(unitSel.value) || 1); }
+            // Size in mm of a model as stored in the file (before the customer's scale).
+            function baseSize(m, a) { return m.mesh.size[a] * m.unit; }
+            function sizeOf(m, a) { return baseSize(m, a) * m.scale[a]; }
+
+            function autoWeight(m) {
+                var r = estimate(m.mesh, [0, 1, 2].map(function (a) { return m.scale[a] * m.unit; }), tech(), mat(), fills[kind()]);
+                return { volume: r.volume, grams: Math.max(1, Math.round(r.grams)) };
+            }
+            function gramsOf(m) { return m.manual != null ? m.manual : autoWeight(m).grams; }
+
+            function totals() {
+                if (!models.length) {
+                    var q = Math.max(readInt(qty, 1), 1);
+                    return { grams: readInt(grams, 0) * q, pieces: q };
+                }
+                return models.reduce(function (t, m) { t.grams += gramsOf(m) * m.qty; t.pieces += m.qty; return t; }, { grams: 0, pieces: 0 });
+            }
 
             function drawChart() {
                 var tiers = mat().tiers, max = Math.max.apply(null, tiers.map(function (t) { return t.price; }));
@@ -594,15 +613,25 @@
             }
 
             function update() {
-                var g = readInt(grams, 0), q = Math.max(readInt(qty, 1), 1), sum = g * q;
+                // The fields belong to the active model.
+                if (cur) {
+                    if (!auto) cur.manual = Math.max(readInt(grams, 0), 0);
+                    cur.qty = Math.max(readInt(qty, 1), 1);
+                }
+                var t = totals(), sum = t.grams;
                 var tiers = mat().tiers, idx = tierFor({ tiers: tiers }, sum), tier = tiers[idx];
                 each('.tt-bar', function (b, i) { b.classList.toggle('is-active', i === idx); }, chart);
                 countTo(total, sum * tier.price);
-                if (unit) unit.textContent = money.format(tier.price) + 'đ/g · ' + tier.label + ' · tổng ' + weight(sum);
-                if (cta) {
-                    cta.href = cta.getAttribute('data-base') + '?tech=' + encodeURIComponent(tech().name) + '&mat=' + encodeURIComponent(mat().name)
-                        + (g > 0 ? '&g=' + g : '') + '&q=' + q + '#tt-quote';
+                if (unit) {
+                    unit.textContent = money.format(tier.price) + 'đ/g · ' + tier.label + ' · tổng ' + weight(sum)
+                        + (models.length > 1 ? ' · ' + models.length + ' mô hình, ' + t.pieces + ' cái' : '');
                 }
+                if (cta) {
+                    var g = t.pieces ? Math.round(sum / t.pieces) : 0;
+                    cta.href = cta.getAttribute('data-base') + '?tech=' + encodeURIComponent(tech().name) + '&mat=' + encodeURIComponent(mat().name)
+                        + (g > 0 ? '&g=' + g : '') + '&q=' + t.pieces + '#tt-quote';
+                }
+                renderList();
             }
 
             function select(ti, mi) {
@@ -615,9 +644,9 @@
                         b.classList.toggle('is-active', on); b.setAttribute('aria-pressed', on ? 'true' : 'false');
                     }, card);
                 });
-                if (mesh && kindBefore !== kind()) { fillOptions(); paintView(); }
+                if (cur && kindBefore !== kind()) { fillOptions(); paintView(); }
                 drawChart();
-                if (mesh && auto) weigh(); else update();
+                if (cur) refresh(); else update();
             }
 
             Array.prototype.forEach.call(cards, function (card) {
@@ -645,9 +674,9 @@
                 btn.addEventListener('click', function () {
                     var input = root.querySelector(btn.getAttribute('data-target'));
                     var step = parseInt(btn.getAttribute('data-step'), 10);
-                    var cur = readInt(input, 0);
-                    if (input === grams) { step *= cur >= 1000 ? 100 : cur >= 100 ? 10 : 1; setAuto(false); }
-                    input.value = Math.max(1, cur + step);
+                    var val = readInt(input, 0);
+                    if (input === grams) { step *= val >= 1000 ? 100 : val >= 100 ? 10 : 1; setAuto(false); }
+                    input.value = Math.max(1, val + step);
                     input.dispatchEvent(new Event('input'));
                 });
             }, root);
@@ -661,8 +690,8 @@
             function showError(msg) { errorEl.textContent = msg || ''; errorEl.hidden = !msg; }
 
             function fillOptions() {
-                var list = tech().resin ? RESIN_FILLS : FDM_FILLS, cur = fills[kind()];
-                fillSel.innerHTML = list.map(function (o) { return '<option value="' + o[0] + '"' + (o[0] === cur ? ' selected' : '') + '>' + o[1] + '</option>'; }).join('');
+                var opts = tech().resin ? RESIN_FILLS : FDM_FILLS, val = fills[kind()];
+                fillSel.innerHTML = opts.map(function (o) { return '<option value="' + o[0] + '"' + (o[0] === val ? ' selected' : '') + '>' + o[1] + '</option>'; }).join('');
                 meter.querySelector('[data-tt-filllabel]').textContent = tech().resin ? 'Kiểu in' : 'Độ đặc (infill)';
             }
 
@@ -675,71 +704,138 @@
 
             function writeDims(except) {
                 Array.prototype.forEach.call(dims, function (input, a) {
-                    if (a !== except) input.value = fmtNum(baseSize(a) * scale[a], 1);
+                    if (a !== except) input.value = fmtNum(sizeOf(cur, a), 1);
                 });
             }
 
-            function weigh() {
-                var s = [0, 1, 2].map(function (a) { return scale[a] * (parseFloat(unitSel.value) || 1); });
-                var r = estimate(mesh, s, tech(), mat(), fills[kind()]);
-                var g = Math.max(1, Math.round(r.grams));
-                var size = [0, 1, 2].map(function (a) { return fmtNum(baseSize(a) * scale[a], 1); }).join(' × ') + ' mm';
-                var pct = Math.round(scale[0] * 100), uniform = Math.abs(scale[0] - scale[1]) < 1e-6 && Math.abs(scale[1] - scale[2]) < 1e-6;
-                var fillText = fillSel.options[fillSel.selectedIndex] ? fillSel.options[fillSel.selectedIndex].text : '';
+            function sizeText(m) { return [0, 1, 2].map(function (a) { return fmtNum(sizeOf(m, a), 1); }).join(' × ') + ' mm'; }
 
+            // One line per model for the quote form ("Đo từ file").
+            function describe(m) {
+                var r = autoWeight(m), fillText = fillSel.options[fillSel.selectedIndex] ? fillSel.options[fillSel.selectedIndex].text : '';
+                return m.file.name + ': ' + sizeText(m) + ' · ' + fmtNum(r.volume / 1000, 1) + ' cm³ · ' + tech().name + ' ' + mat().name + ' ' + fillText
+                    + ' ≈ ' + fmtNum(gramsOf(m), 0) + ' g/cái × ' + m.qty;
+            }
+
+            function esc(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
+
+            function renderList() {
+                if (!list) return;
+                list.hidden = !models.length;
+                if (!models.length) return;
+                var t = totals();
+                listSum.textContent = models.length + ' mô hình · ' + t.pieces + ' cái · tổng ' + weight(t.grams);
+                listRows.innerHTML = models.map(function (m, i) {
+                    return '<li class="' + (m === cur ? 'is-active' : '') + '">'
+                        + '<button type="button" class="tt-model-pick" data-pick="' + i + '" aria-pressed="' + (m === cur) + '"><b>' + esc(m.file.name) + '</b>'
+                        + '<small>' + fmtNum(gramsOf(m), 0) + ' g × ' + m.qty + '</small></button>'
+                        + '<button type="button" class="tt-model-del" data-del="' + i + '" aria-label="Bỏ ' + esc(m.file.name) + '">×</button></li>';
+                }).join('');
+            }
+
+            // Redraws the info of the active model; the grams field follows the estimate unless typed in by hand.
+            function refresh() {
+                var r = autoWeight(cur), g = gramsOf(cur);
+                var pct = Math.round(cur.scale[0] * 100), uniform = Math.abs(cur.scale[0] - cur.scale[1]) < 1e-6 && Math.abs(cur.scale[1] - cur.scale[2]) < 1e-6;
                 var chips = [
                     '<span>Thể tích ' + fmtNum(r.volume / 1000, 1) + ' cm³</span>',
                     '<span>' + (uniform ? 'Tỉ lệ ' + pct + '%' : 'Tỉ lệ tự do') + '</span>',
-                    '<span class="is-key">≈ ' + fmtNum(g, 0) + ' g ' + mat().name + '</span>'
+                    '<span class="is-key">≈ ' + fmtNum(r.grams, 0) + ' g ' + mat().name + '</span>'
                 ];
-                var maxDim = Math.max.apply(null, [0, 1, 2].map(function (a) { return baseSize(a) * scale[a]; }));
+                var maxDim = Math.max.apply(null, [0, 1, 2].map(function (a) { return sizeOf(cur, a); }));
                 if (maxDim < 3) chips.push('<span class="is-warn">Mô hình rất nhỏ — file có thể dùng đơn vị cm/m, hãy chọn lại đơn vị.</span>');
                 if (maxDim > 1000) chips.push('<span class="is-warn">Mô hình lớn hơn 1 m — cần cắt ghép, studio sẽ tư vấn.</span>');
                 stats.innerHTML = chips.join('');
-                viewer.querySelector('[data-tt-vsize]').textContent = size;
+                viewer.querySelector('[data-tt-vsize]').textContent = sizeText(cur);
 
-                measurement = size + ' · ' + fmtNum(r.volume / 1000, 1) + ' cm³ · ' + tech().name + ' ' + mat().name + ' ' + fillText
-                    + ' ≈ ' + fmtNum(g, 0) + ' g/cái' + (file ? ' (' + file.name + ')' : '');
-
-                grams.value = g;
-                range.value = gramsToSlider(g); paintRange(range);
-                setAuto(true);
+                if (auto) grams.value = g;
+                range.value = gramsToSlider(readInt(grams, 0)); paintRange(range);
                 update();
             }
 
-            function analyze(f) {
-                if (!f) return Promise.resolve(false);
-                if (!MESH_EXT.test(f.name)) {
-                    showError('Tự cân hỗ trợ STL, OBJ, 3MF. File này vẫn gửi báo giá được bình thường.');
-                    return Promise.resolve(false);
+            // Size / unit / infill changed: the active model is weighed again.
+            function weigh() { cur.manual = null; setAuto(true); refresh(); }
+
+            function activate(m) {
+                cur = m;
+                body.hidden = false;
+                meter.querySelector('[data-tt-fname]').textContent = m.file.name;
+                unitSel.value = String(m.unit);
+                fillOptions(); writeDims(-1);
+                // Unhide first: the canvas needs its layout size before the first draw.
+                viewer.hidden = false;
+                viewer.querySelector('[data-tt-vname]').textContent = m.file.name;
+                if (!view) view = new window.TTMesh.View(viewer.querySelector('[data-tt-view]'));
+                view.set(m.mesh);
+                paintView();
+                qty.value = m.qty;
+                setAuto(m.manual == null);
+                if (!auto) grams.value = m.manual;
+                refresh();
+            }
+
+            function dropState() {
+                drop.classList.remove('is-busy');
+                drop.querySelector('b').textContent = models.length ? 'Thả thêm file để tính tổng' : 'Thả file 3D vào đây để tính giá';
+                drop.classList.toggle('is-loaded', !!models.length);
+                drop.parentNode.classList.toggle('is-loaded', !!models.length);
+            }
+
+            function removeModel(i) {
+                var gone = models.splice(i, 1)[0];
+                if (gone !== cur) { update(); return; }
+                if (models.length) { activate(models[Math.min(i, models.length - 1)]); }
+                else {
+                    cur = null;
+                    body.hidden = true; viewer.hidden = true;
+                    if (view) view.stopSpin();
+                    stats.innerHTML = '';
+                    setAuto(false);
+                    update();
                 }
-                showError('');
+                dropState();
+            }
+
+            function sameFile(a, b) { return a.name === b.name && a.size === b.size && a.lastModified === b.lastModified; }
+
+            // Reads the dropped files one after another and adds them to the list; the last one read becomes active.
+            function analyze(files) {
+                files = Array.prototype.slice.call(files || []).filter(Boolean);
+                if (!files.length) return Promise.resolve(false);
+                var good = files.filter(function (f) { return MESH_EXT.test(f.name); });
+                var errors = files.filter(function (f) { return !MESH_EXT.test(f.name); }).map(function (f) {
+                    return f.name + ': tự cân hỗ trợ STL, OBJ, 3MF. File này vẫn gửi báo giá được bình thường.';
+                });
+                showError(errors.join(' '));
+                if (!good.length) return Promise.resolve(false);
+
                 drop.classList.add('is-busy');
-                drop.querySelector('b').textContent = 'Đang cân ' + f.name + '…';
                 return loadMesh(root.getAttribute('data-tt-mesh-src')).then(function (M) {
-                    return M.read(f).then(function (m) {
-                        mesh = m; file = f; scale = [1, 1, 1];
-                        unitSel.value = '1';
-                        body.hidden = false;
-                        meter.querySelector('[data-tt-fname]').textContent = f.name;
-                        fillOptions(); writeDims(-1);
-                        // Unhide first: the canvas needs its layout size before the first draw.
-                        viewer.hidden = false;
-                        viewer.querySelector('[data-tt-vname]').textContent = f.name;
-                        if (!view) view = new M.View(viewer.querySelector('[data-tt-view]'));
-                        view.set(m);
-                        paintView();
-                        weigh();
-                        return true;
-                    });
-                }).catch(function (err) {
+                    return good.reduce(function (p, f, i) {
+                        return p.then(function (last) {
+                            var known = models.filter(function (m) { return sameFile(m.file, f); })[0];
+                            if (known) return known;
+                            drop.querySelector('b').textContent = 'Đang cân ' + f.name + (good.length > 1 ? ' (' + (i + 1) + '/' + good.length + ')' : '') + '…';
+                            return M.read(f).then(function (mesh) {
+                                // The first model keeps the quantity already typed in.
+                                var m = { file: f, mesh: mesh, scale: [1, 1, 1], unit: 1, manual: null, qty: models.length ? 1 : Math.max(readInt(qty, 1), 1) };
+                                models.push(m);
+                                return m;
+                            }, function (err) {
+                                errors.push(f.name + ': ' + (err && err.message ? err.message : 'không đọc được file này.'));
+                                return last;
+                            });
+                        });
+                    }, Promise.resolve(null));
+                }).then(function (last) {
+                    showError(errors.join(' '));
+                    if (last) activate(last);
+                    return !!last;
+                }, function (err) {
                     showError(err && err.message ? err.message : 'Không đọc được file này.');
                     return false;
                 }).then(function (ok) {
-                    drop.classList.remove('is-busy');
-                    drop.querySelector('b').textContent = mesh ? 'Thả file khác để cân lại' : 'Thả file 3D vào đây để tính giá';
-                    drop.classList.toggle('is-loaded', !!mesh);
-                    drop.parentNode.classList.toggle('is-loaded', !!mesh);
+                    dropState();
                     return ok;
                 });
             }
@@ -751,56 +847,78 @@
                 flash(drop.parentNode);
             };
 
-            fileInput.addEventListener('change', function () { analyze(fileInput.files && fileInput.files[0]); });
+            fileInput.addEventListener('change', function () { analyze(fileInput.files).then(function () { fileInput.value = ''; }); });
             ['dragenter', 'dragover'].forEach(function (t) { drop.addEventListener(t, function () { drop.classList.add('is-over'); }); });
             ['dragleave', 'drop'].forEach(function (t) { drop.addEventListener(t, function () { drop.classList.remove('is-over'); }); });
             meter.querySelector('[data-tt-change]').addEventListener('click', function () { fileInput.click(); });
+            listRows.addEventListener('click', function (e) {
+                var del = e.target.closest('[data-del]'), pick = e.target.closest('[data-pick]');
+                if (del) removeModel(parseInt(del.getAttribute('data-del'), 10));
+                else if (pick) { var m = models[parseInt(pick.getAttribute('data-pick'), 10)]; if (m && m !== cur) activate(m); }
+            });
+
+            // Viewer: reset, and a full-screen mode to look at details (Esc or the button closes it).
+            var maxBtn = viewer.querySelector('[data-tt-vmax]');
+            function maximize(on) {
+                viewer.classList.toggle('is-max', on);
+                document.documentElement.classList.toggle('tt-noscroll', on);
+                if (maxBtn) { maxBtn.setAttribute('aria-pressed', on ? 'true' : 'false'); maxBtn.querySelector('span').textContent = on ? 'Thu nhỏ' : 'Phóng to'; }
+                if (view) view.request();
+            }
+            if (maxBtn) maxBtn.addEventListener('click', function () { maximize(!viewer.classList.contains('is-max')); });
+            document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && viewer.classList.contains('is-max')) maximize(false); });
             viewer.querySelector('[data-tt-vreset]').addEventListener('click', function () { if (view) view.reset(); });
 
             Array.prototype.forEach.call(dims, function (input, a) {
                 input.addEventListener('input', function () {
                     input.value = String(input.value).replace(/[^\d.,]/g, '').slice(0, 8);
-                    var v = readFloat(input), base = baseSize(a);
-                    if (!mesh || v <= 0 || base <= 0) return;
+                    if (!cur) return;
+                    var v = readFloat(input), base = baseSize(cur, a);
+                    if (v <= 0 || base <= 0) return;
                     if (lock.checked) {
                         var k = v / base;
-                        scale = [k, k, k];
+                        cur.scale = [k, k, k];
                         writeDims(a);
                     } else {
-                        scale[a] = v / base;
+                        cur.scale[a] = v / base;
                     }
                     weigh();
                 });
-                input.addEventListener('blur', function () { if (mesh) writeDims(-1); });
+                input.addEventListener('blur', function () { if (cur) writeDims(-1); });
             });
 
             lock.addEventListener('change', function () {
-                if (lock.checked && mesh) { scale = [scale[0], scale[0], scale[0]]; writeDims(-1); weigh(); }
+                if (lock.checked && cur) { cur.scale = [cur.scale[0], cur.scale[0], cur.scale[0]]; writeDims(-1); weigh(); }
             });
-            unitSel.addEventListener('change', function () { if (mesh) { scale = [1, 1, 1]; writeDims(-1); weigh(); } });
-            fillSel.addEventListener('change', function () { fills[kind()] = parseInt(fillSel.value, 10); if (mesh) weigh(); });
+            unitSel.addEventListener('change', function () { if (cur) { cur.unit = parseFloat(unitSel.value) || 1; cur.scale = [1, 1, 1]; writeDims(-1); weigh(); } });
+            fillSel.addEventListener('change', function () { fills[kind()] = parseInt(fillSel.value, 10); if (cur) weigh(); });
 
             // ----- hand over to the quote form on the same page -----
 
-            function fillQuote(form, withFile) {
-                var t = tech(), m = mat();
+            function fillQuote(form, withFiles) {
+                var t = tech(), m = mat(), sum = totals();
                 each('input[name="Form.Technology"]', function (r) { r.checked = r.value.toLowerCase() === t.name.toLowerCase(); }, form);
                 var matInput = form.querySelector('[name="Form.Material"]');
                 if (matInput && (!matInput.value || matInput.getAttribute('data-auto') === matInput.value)) {
                     matInput.value = m.name; matInput.setAttribute('data-auto', m.name);
                 }
-                var q = form.querySelector('[name="Form.Quantity"]'); if (q) q.value = Math.max(readInt(qty, 1), 1);
-                var g = form.querySelector('[name="Form.EstimatedGrams"]'); if (g && readInt(grams, 0) > 0) g.value = readInt(grams, 0);
-                var hidden = form.querySelector('[name="Form.Measurement"]'); if (hidden) hidden.value = mesh ? measurement : '';
+                // Several models: total pieces, and the average weight so that grams × quantity is the total.
+                var q = form.querySelector('[name="Form.Quantity"]'); if (q) q.value = sum.pieces;
+                var g = form.querySelector('[name="Form.EstimatedGrams"]'); if (g && sum.grams > 0) g.value = Math.round(sum.grams / sum.pieces);
+                var hidden = form.querySelector('[name="Form.Measurement"]'); if (hidden) hidden.value = models.map(describe).join('\n');
 
                 var input = form.querySelector('input[type=file][name=modelFile]');
-                if (withFile && file && input && (!input.files || input.files[0] !== file)) {
-                    try {
-                        var dt = new DataTransfer(); dt.items.add(file);
-                        input.files = dt.files;
-                        input.dispatchEvent(new Event('change'));
-                    } catch (e) { /* old browsers: the customer attaches the file again */ }
-                }
+                if (!withFiles || !models.length || !input) return;
+                var have = Array.prototype.slice.call(input.files || []);
+                var add = models.filter(function (x) { return !have.some(function (f) { return sameFile(f, x.file); }); });
+                if (!add.length) return;
+                try {
+                    var dt = new DataTransfer();
+                    (input.multiple ? have : []).forEach(function (f) { dt.items.add(f); });
+                    (input.multiple ? add : add.slice(-1)).forEach(function (x) { dt.items.add(x.file); });
+                    input.files = dt.files;
+                    input.dispatchEvent(new Event('change'));
+                } catch (e) { /* old browsers: the customer attaches the files again */ }
             }
 
             var quoteForm = document.querySelector('form[data-tt-quote]');
@@ -812,15 +930,17 @@
                     target.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'start' });
                 });
 
-                // A model picked in the quote form is weighed with the technology chosen there.
+                // Models picked in the quote form are weighed with the technology chosen there.
                 var formFile = quoteForm.querySelector('input[type=file][name=modelFile]');
                 if (formFile) {
                     formFile.addEventListener('change', function () {
-                        var f = formFile.files && formFile.files[0];
-                        if (!f || f === file || !MESH_EXT.test(f.name)) return;
+                        var fresh = Array.prototype.filter.call(formFile.files || [], function (f) {
+                            return MESH_EXT.test(f.name) && !models.some(function (m) { return sameFile(m.file, f); });
+                        });
+                        if (!fresh.length) return;
                         var checked = quoteForm.querySelector('input[name="Form.Technology"]:checked');
                         techs.forEach(function (t, i) { if (checked && t.name.toLowerCase() === checked.value.toLowerCase() && i !== active) select(i, 0); });
-                        analyze(f).then(function (ok) { if (ok) fillQuote(quoteForm, false); });
+                        analyze(fresh).then(function (ok) { if (ok) fillQuote(quoteForm, false); });
                     });
                 }
             }
@@ -953,11 +1073,13 @@
             ['dragenter', 'dragover'].forEach(function (t) { zone.addEventListener(t, function () { zone.classList.add('is-over'); }); });
             ['dragleave', 'drop'].forEach(function (t) { zone.addEventListener(t, function () { zone.classList.remove('is-over'); }); });
             input.addEventListener('change', function () {
-                var f = input.files && input.files[0];
+                var files = Array.prototype.slice.call(input.files || []);
                 if (!nameEl) return;
-                if (!f) { nameEl.textContent = ''; return; }
-                var max = parseInt(zone.getAttribute('data-max-mb'), 10) || 100, mb = f.size / 1048576;
-                nameEl.textContent = f.name + ' · ' + (mb < 1 ? Math.max(1, Math.round(mb * 1024)) + ' KB' : mb.toFixed(1) + ' MB');
+                if (!files.length) { nameEl.textContent = ''; return; }
+                var max = parseInt(zone.getAttribute('data-max-mb'), 10) || 100;
+                var mb = files.reduce(function (s, f) { return s + f.size; }, 0) / 1048576;
+                nameEl.textContent = (files.length > 1 ? files.length + ' file: ' + files.map(function (f) { return f.name; }).join(', ') : files[0].name)
+                    + ' · ' + (mb < 1 ? Math.max(1, Math.round(mb * 1024)) + ' KB' : mb.toFixed(1) + ' MB');
                 nameEl.style.color = mb > max ? '#ff6b85' : '';
                 if (mb > max) nameEl.textContent += ' — vượt quá ' + max + ' MB, hãy gửi link tải';
             });
@@ -1018,6 +1140,174 @@
         });
     }
 
+    // ---------- Personalized products: fill the text field from a list (one row per piece) ----------
+
+    function initTextList() {
+        var cfgEl = document.querySelector('script[data-tt-textlist]'), cfg;
+        if (!cfgEl) return;
+        try { cfg = JSON.parse(cfgEl.textContent); } catch (e) { return; }
+        var field = document.getElementById(cfg.control);
+        if (!field) return;
+        var form = field.closest('form') || document;
+        var qtyInput = form.querySelector('input[name$="EnteredQuantity"]');
+        var SEP = ' | ', MAX_ROWS = 200;
+        var LIST_ICON = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M9 6h11M9 12h11M9 18h11"/><circle cx="4.5" cy="6" r="1"/><circle cx="4.5" cy="12" r="1"/><circle cx="4.5" cy="18" r="1"/></svg>';
+
+        function escAttr(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;'); }
+
+        // "An (x2) | Minh" <-> [{ text: 'An', qty: 2 }, { text: 'Minh', qty: 1 }]
+        function parse(value) {
+            return String(value || '').split('|').map(function (s) {
+                s = s.trim();
+                var m = /^(.*?)\s*\(x(\d+)\)$/.exec(s);
+                return m ? { text: m[1], qty: Math.max(1, parseInt(m[2], 10)) } : { text: s, qty: 1 };
+            }).filter(function (r) { return r.text; });
+        }
+        function format(rows) { return rows.map(function (r) { return r.text.replace(/\|/g, '/') + (r.qty > 1 ? ' (x' + r.qty + ')' : ''); }).join(SEP); }
+        function pieces(rows) { return rows.reduce(function (s, r) { return s + r.qty; }, 0); }
+
+        var tools = document.createElement('div');
+        tools.className = 'tt-textlist-tools';
+        tools.innerHTML = '<button type="button" class="tt-textlist-btn">' + LIST_ICON + '<span>Nhập danh sách nhiều ' + escAttr(cfg.item) + '</span></button><small class="tt-textlist-sum"></small>';
+        field.parentNode.insertBefore(tools, field.nextSibling);
+        var sumEl = tools.querySelector('small');
+
+        function showSum() {
+            var rows = parse(field.value);
+            sumEl.textContent = rows.length > 1 ? rows.length + ' dòng · ' + pieces(rows) + ' ' + cfg.item : '';
+        }
+        field.addEventListener('input', showSum);
+        showSum();
+
+        var dlg = null, tbody, totalEl, lastFocus;
+
+        function rowHtml(r) {
+            return '<tr><td class="tt-tl-no"></td>'
+                + '<td><input type="text" class="tt-input" maxlength="80" value="' + escAttr(r.text) + '" aria-label="Nội dung" data-tl-text /></td>'
+                + '<td><input type="text" class="tt-input" inputmode="numeric" maxlength="4" value="' + r.qty + '" aria-label="Số lượng" data-tl-qty /></td>'
+                + '<td><button type="button" class="tt-tl-del" aria-label="Xoá dòng">×</button></td></tr>';
+        }
+
+        function collect(all) {
+            var out = [];
+            each('tr', function (tr) {
+                var text = tr.querySelector('[data-tl-text]').value.trim();
+                var qty = Math.max(1, parseInt(tr.querySelector('[data-tl-qty]').value, 10) || 1);
+                if (all || text) out.push({ text: text, qty: qty });
+            }, tbody);
+            return out;
+        }
+
+        function renumber() {
+            var rows = collect(false);
+            each('tr', function (tr, i) { tr.querySelector('.tt-tl-no').textContent = i + 1; }, tbody);
+            totalEl.textContent = 'Tổng: ' + rows.length + ' dòng · ' + pieces(rows) + ' ' + cfg.item;
+        }
+
+        // Appends rows (or inserts them after a row); returns the first new row.
+        function addRows(rows, after) {
+            var count = tbody.rows.length;
+            rows = rows.slice(0, Math.max(0, MAX_ROWS - count));
+            if (!rows.length) return null;
+            var html = rows.map(rowHtml).join('');
+            if (after) after.insertAdjacentHTML('afterend', html); else tbody.insertAdjacentHTML('beforeend', html);
+            renumber();
+            return after ? after.nextElementSibling : tbody.rows[count];
+        }
+
+        function blank() { return { text: '', qty: 1 }; }
+
+        function build() {
+            dlg = document.createElement('div');
+            dlg.className = 'tt-dialog';
+            dlg.hidden = true;
+            dlg.innerHTML = '<div class="tt-dialog-box" role="dialog" aria-modal="true" aria-labelledby="tt-tl-title">'
+                + '<div class="tt-dialog-head"><h3 id="tt-tl-title">' + escAttr(cfg.title) + '</h3><button type="button" class="tt-dialog-x" data-tl-close aria-label="Đóng">×</button></div>'
+                + '<p class="tt-dialog-hint">Mỗi dòng là một ' + escAttr(cfg.item) + ', cùng màu và kích thước đang chọn. Dán nhiều dòng (từ Excel, Zalo…) vào một ô để điền nhanh — cột thứ hai trong Excel là số lượng.</p>'
+                + '<div class="tt-dialog-body"><table class="tt-tl-table"><thead><tr><th>#</th><th>Nội dung</th><th>SL</th><th></th></tr></thead><tbody></tbody></table></div>'
+                + '<button type="button" class="tt-textlink tt-tl-add" data-tl-add>+ Thêm dòng</button>'
+                + '<div class="tt-dialog-foot"><b data-tl-total></b><button type="button" class="tt-button" data-tl-close>Huỷ</button>'
+                + '<button type="button" class="tt-button tt-button--dark" data-tl-apply>Áp dụng</button></div></div>';
+            document.body.appendChild(dlg);
+            tbody = dlg.querySelector('tbody');
+            totalEl = dlg.querySelector('[data-tl-total]');
+
+            dlg.addEventListener('click', function (e) {
+                var tr;
+                if (e.target === dlg || e.target.closest('[data-tl-close]')) close();
+                else if (e.target.closest('[data-tl-add]')) { tr = addRows([blank()]); if (tr) tr.querySelector('input').focus(); }
+                else if (e.target.closest('.tt-tl-del')) {
+                    e.target.closest('tr').remove();
+                    if (!tbody.rows.length) addRows([blank()]);
+                    renumber();
+                }
+                else if (e.target.closest('[data-tl-apply]')) apply();
+            });
+            dlg.addEventListener('input', function (e) {
+                if (e.target.matches('[data-tl-qty]')) e.target.value = e.target.value.replace(/\D/g, '');
+                renumber();
+            });
+            dlg.addEventListener('keydown', function (e) {
+                if (e.key === 'Escape') { e.preventDefault(); close(); return; }
+                // Enter jumps to the next row (a new one at the end).
+                if (e.key === 'Enter' && e.target.matches('[data-tl-text], [data-tl-qty]')) {
+                    e.preventDefault();
+                    var tr = e.target.closest('tr'), next = tr.nextElementSibling || addRows([blank()]);
+                    if (next) next.querySelector('[data-tl-text]').focus();
+                }
+            });
+            dlg.addEventListener('paste', function (e) {
+                if (!e.target.matches('[data-tl-text]')) return;
+                var text = (e.clipboardData || window.clipboardData).getData('text') || '';
+                if (!/[\r\n]/.test(text.trim())) return;
+                e.preventDefault();
+                var rows = text.split(/\r?\n/).map(function (line) {
+                    var cols = line.split('\t');
+                    return { text: cols[0].trim(), qty: Math.max(1, parseInt(cols[1], 10) || 1) };
+                }).filter(function (r) { return r.text; });
+                if (!rows.length) return;
+                var tr = e.target.closest('tr'), first = rows.shift();
+                e.target.value = first.text;
+                tr.querySelector('[data-tl-qty]').value = first.qty;
+                if (rows.length) addRows(rows, tr);
+                renumber();
+            });
+        }
+
+        function open() {
+            if (!dlg) build();
+            lastFocus = document.activeElement;
+            tbody.innerHTML = '';
+            var rows = parse(field.value);
+            // An empty list starts with five rows to type into.
+            addRows(rows.length ? rows.concat([blank()]) : [blank(), blank(), blank(), blank(), blank()]);
+            dlg.hidden = false;
+            document.documentElement.classList.add('tt-noscroll');
+            var empty = Array.prototype.filter.call(tbody.querySelectorAll('[data-tl-text]'), function (i) { return !i.value; })[0];
+            (empty || tbody.querySelector('[data-tl-text]')).focus();
+        }
+
+        function close() {
+            dlg.hidden = true;
+            document.documentElement.classList.remove('tt-noscroll');
+            if (lastFocus && lastFocus.focus) lastFocus.focus();
+        }
+
+        function apply() {
+            var rows = collect(false);
+            field.value = format(rows);
+            field.dispatchEvent(new Event('input', { bubbles: true }));
+            field.dispatchEvent(new Event('change', { bubbles: true }));
+            if (qtyInput && rows.length) {
+                qtyInput.value = pieces(rows);
+                if (window.jQuery) jQuery(qtyInput).trigger('change'); else qtyInput.dispatchEvent(new Event('change', { bubbles: true }));
+            }
+            close();
+        }
+
+        tools.querySelector('button').addEventListener('click', open);
+    }
+
     onReady(function () {
         initScrollChrome();
         initSearch();
@@ -1034,5 +1324,6 @@
         initFaq();
         initFilter();
         initQuote();
+        initTextList();
     });
 })();
