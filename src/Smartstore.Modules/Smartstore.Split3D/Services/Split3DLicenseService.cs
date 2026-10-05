@@ -62,12 +62,18 @@ public class Split3DLicenseService
     private readonly SmartDbContext _db;
     private readonly Split3DSettings _settings;
     private readonly IEmailAccountService _emailAccountService;
+    private readonly Split3DRepoService _repoService;
 
-    public Split3DLicenseService(SmartDbContext db, Split3DSettings settings, IEmailAccountService emailAccountService)
+    public Split3DLicenseService(
+        SmartDbContext db,
+        Split3DSettings settings,
+        IEmailAccountService emailAccountService,
+        Split3DRepoService repoService)
     {
         _db = db;
         _settings = settings;
         _emailAccountService = emailAccountService;
+        _repoService = repoService;
     }
 
     public ILogger Logger { get; set; } = NullLogger.Instance;
@@ -260,7 +266,7 @@ public class Split3DLicenseService
             {
                 foreach (var license in result)
                 {
-                    QueueEmail(license);
+                    await QueueEmailAsync(license, cancelToken);
                 }
             }
 
@@ -272,9 +278,10 @@ public class Split3DLicenseService
 
     /// <summary>
     /// Queues the key email for <paramref name="license"/> (without committing).
+    /// The newest installer of the key's addon is attached, if one was uploaded.
     /// </summary>
     /// <returns><c>false</c> if no email account is configured.</returns>
-    public bool QueueEmail(Split3DLicense license)
+    public async Task<bool> QueueEmailAsync(Split3DLicense license, CancellationToken cancelToken = default)
     {
         Guard.NotNull(license);
 
@@ -286,7 +293,7 @@ public class Split3DLicenseService
         }
 
         var addonName = license.AddonId > 0
-            ? _db.Split3DAddons().Where(x => x.Id == license.AddonId).Select(x => x.Name).FirstOrDefault()
+            ? await _db.Split3DAddons().Where(x => x.Id == license.AddonId).Select(x => x.Name).FirstOrDefaultAsync(cancelToken)
             : null;
 
         var subject = ReplacePlaceholders(_settings.EmailSubject.NullEmpty() ?? "Split3D activation key", license, addonName, html: false);
@@ -299,16 +306,37 @@ public class Split3DLicenseService
             subject = $"{subject} – {addonName}";
         }
 
-        _db.QueuedEmails.Add(new QueuedEmail
+        var queuedEmail = new QueuedEmail
         {
             From = emailAccount.ToMailAddress().ToString(),
             To = license.Email,
             Subject = subject,
-            Body = $"<div style=\"font-family:Segoe UI,Arial,sans-serif;font-size:14px;line-height:1.5\">{body}</div>",
             CreatedOnUtc = DateTime.UtcNow,
             EmailAccountId = emailAccount.Id,
             Priority = 5
-        });
+        };
+
+        var latest = license.AddonId > 0 ? await _repoService.GetLatestPackageAsync(license.AddonId, cancelToken) : null;
+        if (latest is { } entry && entry.Download.MediaFileId is int mediaFileId)
+        {
+            queuedEmail.Attachments.Add(new QueuedEmailAttachment
+            {
+                StorageLocation = EmailAttachmentStorageLocation.FileReference,
+                MediaFileId = mediaFileId,
+                Name = entry.Package.FileName,
+                MimeType = entry.Download.MediaFile?.MimeType.NullEmpty() ?? "application/zip"
+            });
+
+            body += $"<p>File cài đặt mới nhất (phiên bản {System.Net.WebUtility.HtmlEncode(entry.Package.Version)}) được đính kèm trong email này: " +
+                "trong Blender mở Edit &gt; Preferences &gt; Get Extensions &gt; Install from Disk rồi chọn file .zip.</p>";
+        }
+        else if (license.AddonId > 0)
+        {
+            Logger.Warn($"Split3D: no installer file uploaded for addon {license.AddonId}; the key email is sent without attachment.");
+        }
+
+        queuedEmail.Body = $"<div style=\"font-family:Segoe UI,Arial,sans-serif;font-size:14px;line-height:1.5\">{body}</div>";
+        _db.QueuedEmails.Add(queuedEmail);
 
         license.EmailSent = true;
 

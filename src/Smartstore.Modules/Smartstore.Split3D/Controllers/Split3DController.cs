@@ -306,7 +306,7 @@ public class Split3DController : AdminController
                 Notes = model.Notes
             });
 
-            var emailQueued = model.SendEmailNow && _licenseService.QueueEmail(license);
+            var emailQueued = model.SendEmailNow && await _licenseService.QueueEmailAsync(license);
 
             await _db.SaveChangesAsync();
 
@@ -370,7 +370,7 @@ public class Split3DController : AdminController
             return NotFound();
         }
 
-        if (!_licenseService.QueueEmail(license))
+        if (!await _licenseService.QueueEmailAsync(license))
         {
             return Json(new { success = false, message = T("Plugins.Split3D.NoEmailAccount").Value });
         }
