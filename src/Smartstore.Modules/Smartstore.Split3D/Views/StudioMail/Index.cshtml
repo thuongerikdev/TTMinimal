@@ -7,7 +7,7 @@
     string[] variables =
     [
         "License.CustomerName", "License.Email", "License.Addon", "License.Plan", "License.ExpiresOn", "License.MaxDevices",
-        "License.Key", "License.KeyId", "License.OrderNumber", "License.Price", "License.MyKeysUrl", "License.Installer.FileName",
+        "License.Key", "License.KeyId", "License.OrderNumber", "License.Price", "License.MyKeysUrl", "License.Installer.DownloadUrl", "License.Installer.FileName",
         "Store.Name", "Store.Url"
     ];
 }
@@ -96,6 +96,13 @@
                             <span>
                                 <strong>@T("Plugins.Split3D.Mail.Fields.SendEmail")</strong>
                                 <small>@T("Plugins.Split3D.Mail.Fields.SendEmail.Hint")</small>
+                            </span>
+                        </label>
+                        <label class="tt-mail-switch">
+                            <input asp-for="AttachInstaller" />
+                            <span>
+                                <strong>@T("Plugins.Split3D.Mail.Fields.AttachInstaller")</strong>
+                                <small>@T("Plugins.Split3D.Mail.Fields.AttachInstaller.Hint")</small>
                             </span>
                         </label>
                         <label class="tt-mail-switch">

@@ -146,6 +146,31 @@
     </modal-footer>
 </modal>
 
+<modal id="upgrade-window" sm-render-at-page-end="true" sm-size="Large">
+    <modal-header sm-title="@T("Plugins.Split3D.Upgrade")"></modal-header>
+    <modal-body>
+        <partial name="_UpgradeLicense" model="new UpgradeLicenseModel()" />
+        <div id="upgrade-result" style="display: none">
+            <div class="alert alert-success" id="upgrade-result-message"></div>
+            <label class="font-weight-medium">@T("Plugins.Split3D.Upgrade.NewKey")</label>
+            <textarea id="upgrade-result-token" class="form-control text-monospace small" rows="5" readonly></textarea>
+            <button type="button" class="btn btn-secondary btn-sm mt-2 split3d-copy" id="upgrade-result-copy">
+                <i class="far fa-copy"></i>
+                <span>@T("Plugins.Split3D.CopyKey")</span>
+            </button>
+        </div>
+    </modal-body>
+    <modal-footer>
+        <button type="button" class="btn btn-secondary btn-flat" data-dismiss="modal">
+            <span>@T("Common.Close")</span>
+        </button>
+        <button id="upgrade-submit" type="button" class="btn btn-primary">
+            <i class="bi bi-arrow-up-circle"></i>
+            <span>@T("Plugins.Split3D.Upgrade")</span>
+        </button>
+    </modal-footer>
+</modal>
+
 <modal id="import-window" sm-render-at-page-end="true">
     <modal-header sm-title="@T("Plugins.Split3D.Import")"></modal-header>
     <modal-body>
@@ -226,6 +251,61 @@
             navigator.clipboard.writeText(token).then(function () {
                 displayNotification('@T("Plugins.Split3D.KeyCopied")', 'success');
             });
+        });
+
+        function syncUpgradeDays() {
+            var plan = $('#upgrade-KeyType').val();
+            $('#upgrade-days-row').toggle(plan === '@Split3DPlans.Custom');
+            $('#upgrade-expires-row').toggle(plan !== '@Split3DPlans.Lifetime');
+        }
+        $('#upgrade-KeyType').on('change', syncUpgradeDays);
+
+        $(document).on('click', '.split3d-upgrade', function (e) {
+            e.preventDefault();
+            var link = $(this);
+            var form = $('#upgrade-form');
+            form[0].reset();
+            form.find('[name=Id]').val(link.attr('data-id'));
+            form.find('[name=MaxDevices]').val(link.attr('data-devices'));
+            $('#upgrade-current').text(link.attr('data-label'));
+            form.show();
+            $('#upgrade-result').hide();
+            $('#upgrade-submit').show();
+            $('#upgrade-KeyType').val('@Split3DPlans.Lifetime').trigger('change');
+            $('#upgrade-window').modal('show');
+        });
+
+        $('#upgrade-submit').on('click', function (e) {
+            e.preventDefault();
+            var form = $('#upgrade-form');
+            if (!form[0].reportValidity()) {
+                return false;
+            }
+
+            var btn = $(this).prop('disabled', true);
+            $.ajax({
+                cache: false,
+                type: 'POST',
+                url: '@Url.Action("Upgrade")',
+                data: form.serialize(),
+                dataType: 'json',
+                success: function (data) {
+                    if (data.success) {
+                        form.hide();
+                        btn.hide();
+                        $('#upgrade-result-message').text(data.message);
+                        $('#upgrade-result-token').val(data.token);
+                        $('#upgrade-result-copy').attr('data-token', data.token);
+                        $('#upgrade-result').show();
+                        grid().read();
+                    }
+                    else {
+                        displayNotification(data.message, 'error');
+                    }
+                },
+                complete: function () { btn.prop('disabled', false); }
+            });
+            return false;
         });
 
         $(document).on('click', '.split3d-resend', function (e) {

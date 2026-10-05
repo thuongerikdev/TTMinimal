@@ -1,0 +1,77 @@
+@model UpgradeKeyModel
+
+@{
+    Assets.AppendTitleParts("Nâng cấp key");
+
+    Layout = "_MyAccount";
+    ViewBag.PageClassToken = "split3d-keys";
+    ViewBag.PageTitle = "Nâng cấp key";
+}
+
+<style>
+    .s3d-up-option { border: 2px solid #e2e8f0; border-radius: .75rem; padding: 1rem; height: 100%; display: flex; flex-direction: column; }
+    .s3d-up-option.lifetime { border-color: #16a34a; }
+    .s3d-up-price { font-size: 1.5rem; font-weight: 800; }
+    .s3d-up-full { text-decoration: line-through; color: #94a3b8; }
+</style>
+
+<div class="card shadow-sm mb-4">
+    <div class="card-body">
+        <div class="text-muted small text-uppercase mb-1">Key hiện tại</div>
+        <div class="font-weight-bold">@Model.AddonName · @Model.Plan · @Model.MaxDevices máy</div>
+        <div class="text-muted small">
+            @(Model.ExpiresOn != null ? "Hết hạn: " + Model.ExpiresOn : "Vĩnh viễn")
+            · Đã trả: @Model.PaidPrice
+        </div>
+    </div>
+</div>
+
+@if (!Model.CanUpgrade)
+{
+    <div class="alert alert-warning">Key đã hết hạn hoặc bị khoá nên không nâng cấp được. Hãy mua key mới hoặc liên hệ cửa hàng.</div>
+}
+else if (Model.Options.Count == 0)
+{
+    <div class="alert alert-info">Key đang ở gói cao nhất, không còn gói nào để nâng cấp.</div>
+}
+else
+{
+    <p>
+        Chọn gói mới — bạn chỉ trả <b>phần chênh lệch</b> so với số tiền đã trả cho key này.
+        Thời hạn của gói mới tính từ ngày cấp key ban đầu.
+    </p>
+
+    <div class="row">
+        @foreach (var option in Model.Options)
+        {
+            <div class="col-sm-6 col-lg-4 mb-3">
+                <div class="s3d-up-option @(option.ExpiresOn == null ? "lifetime" : "")">
+                    <div class="font-weight-bold">@option.Name</div>
+                    <div class="text-muted small mb-2">
+                        @option.Plan · @option.MaxDevices máy
+                        <br />@(option.ExpiresOn != null ? "Hạn mới: " + option.ExpiresOn : "Không giới hạn thời gian")
+                    </div>
+                    <div class="mt-auto">
+                        <div class="s3d-up-full small">@option.FullPrice</div>
+                        <div class="s3d-up-price">@option.Price</div>
+                        <form method="post" asp-action="Upgrade" asp-controller="Split3DKeys" asp-route-id="@Model.Id" asp-area="">
+                            <input type="hidden" name="productId" value="@option.ProductId" />
+                            <button type="submit" class="btn btn-success btn-block mt-2">
+                                <i class="bi bi-arrow-up-circle"></i>
+                                <span>Nâng cấp</span>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+
+    <div class="alert alert-light border small">
+        <b>Không cần cài lại addon, không cần nhập key mới.</b>
+        Ngay khi đơn được xác nhận thanh toán, key được nâng cấp (giữ nguyên các máy đang kích hoạt).
+        Addon trong Blender tự nhận gói mới ở lần kiểm tra online kế tiếp — hoặc bấm <i>Kiểm tra lại</i> trong bảng key của addon để nhận ngay.
+    </div>
+}
+
+<a class="btn btn-link px-0" href="@Url.Action("Index", "Split3DKeys", new { area = "" })">← Key của tôi</a>

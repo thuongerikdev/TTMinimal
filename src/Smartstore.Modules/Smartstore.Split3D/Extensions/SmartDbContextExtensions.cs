@@ -16,6 +16,9 @@ public static class SmartDbContextExtensions
     public static DbSet<Split3DDevice> Split3DDevices(this SmartDbContext db)
         => db.Set<Split3DDevice>();
 
+    public static DbSet<Split3DLicenseUpgrade> Split3DLicenseUpgrades(this SmartDbContext db)
+        => db.Set<Split3DLicenseUpgrade>();
+
     public static DbSet<PrintQuoteRequest> PrintQuoteRequests(this SmartDbContext db)
         => db.Set<PrintQuoteRequest>();
 }

@@ -36,6 +36,16 @@ public class Split3DOrderInfo
     /// </summary>
     public int ExpectedKeys { get; init; }
 
+    /// <summary>
+    /// Key upgrades bought with the order (see <see cref="Split3DUpgradeService"/>).
+    /// </summary>
+    public List<Split3DLicenseUpgrade> Upgrades { get; init; } = [];
+
+    /// <summary>
+    /// Keys of <see cref="Upgrades"/> by license record id, for display.
+    /// </summary>
+    public Dictionary<int, Split3DLicense> UpgradedLicenses { get; init; } = [];
+
     public Split3DOrderState State { get; init; }
 }
 
@@ -58,8 +68,14 @@ public class Split3DOrderQuery
     public async Task<List<Split3DOrderInfo>> GetOrdersAsync(int? customerId, bool openOnly, int take = 200, CancellationToken cancelToken = default)
     {
         var plans = await _licenseService.GetProductPlansAsync(cancelToken);
+        var upgradeProductId = await _db.Products
+            .Where(x => x.Sku == Split3DUpgradeService.UpgradeProductSku && !x.Deleted)
+            .Select(x => x.Id)
+            .FirstOrDefaultAsync(cancelToken);
+
         var productIds = plans.Keys.ToArray();
-        if (productIds.Length == 0)
+        var orderProductIds = upgradeProductId > 0 ? [.. productIds, upgradeProductId] : productIds;
+        if (orderProductIds.Length == 0)
         {
             return [];
         }
@@ -68,7 +84,7 @@ public class Split3DOrderQuery
             .AsNoTracking()
             .Include(x => x.OrderItems)
                 .ThenInclude(x => x.Product)
-            .Where(x => !x.Deleted && x.OrderItems.Any(i => productIds.Contains(i.ProductId)));
+            .Where(x => !x.Deleted && x.OrderItems.Any(i => orderProductIds.Contains(i.ProductId)));
 
         if (customerId.HasValue)
         {
@@ -91,23 +107,37 @@ public class Split3DOrderQuery
             ? await _db.Split3DLicenses().AsNoTracking().Where(x => orderIds.Contains(x.OrderId)).ToListAsync(cancelToken)
             : [];
 
+        var upgrades = orderIds.Length > 0 && upgradeProductId > 0
+            ? await _db.Split3DLicenseUpgrades().AsNoTracking()
+                .Where(x => orderIds.Contains(x.OrderId) && x.StatusId != (int)Split3DUpgradeStatus.Cancelled)
+                .ToListAsync(cancelToken)
+            : [];
+        var upgradedIds = upgrades.Select(x => x.Split3DLicenseId).Distinct().ToArray();
+        var upgradedLicenses = upgradedIds.Length > 0
+            ? await _db.Split3DLicenses().AsNoTracking().Where(x => upgradedIds.Contains(x.Id)).ToDictionaryAsync(x => x.Id, cancelToken)
+            : [];
+
         var addonNames = plans.Values.Select(x => x.Addon).DistinctBy(x => x.Id).ToDictionary(x => x.Id, x => x.Name);
         var result = orders
             .Select(order =>
             {
-                var items = order.OrderItems.Where(x => productIds.Contains(x.ProductId)).ToList();
+                var items = order.OrderItems.Where(x => orderProductIds.Contains(x.ProductId)).ToList();
                 var orderLicenses = licenses.Where(x => x.OrderId == order.Id).OrderBy(x => x.IssuedOnUtc).ToList();
-                var expected = items.Sum(x => x.Quantity);
+                var orderUpgrades = upgrades.Where(x => x.OrderId == order.Id).ToList();
+                var expected = items.Where(x => productIds.Contains(x.ProductId)).Sum(x => x.Quantity);
+                var done = orderLicenses.Count + orderUpgrades.Count(x => x.Status == Split3DUpgradeStatus.Applied);
 
                 return new Split3DOrderInfo
                 {
                     AddonNames = addonNames,
-                    ItemAddons = items.ToDictionary(x => x.Id, x => plans[x.ProductId].Addon),
+                    ItemAddons = items.Where(x => plans.ContainsKey(x.ProductId)).ToDictionary(x => x.Id, x => plans[x.ProductId].Addon),
                     Order = order,
                     Items = items,
                     Licenses = orderLicenses,
                     ExpectedKeys = expected,
-                    State = GetState(order, orderLicenses.Count, expected)
+                    Upgrades = orderUpgrades,
+                    UpgradedLicenses = upgradedLicenses,
+                    State = GetState(order, done, expected + orderUpgrades.Count)
                 };
             })
             .ToList();
@@ -117,6 +147,8 @@ public class Split3DOrderQuery
             : result;
     }
 
+    /// <param name="issuedKeys">Issued keys plus applied upgrades.</param>
+    /// <param name="expectedKeys">Keys plus upgrades the order is entitled to.</param>
     public static Split3DOrderState GetState(Order order, int issuedKeys, int expectedKeys)
     {
         if (order.OrderStatus == OrderStatus.Cancelled

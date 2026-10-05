@@ -14,12 +14,27 @@ public class Events : IConsumer
     public async Task HandleEventAsync(
         OrderPlacedEvent message,
         Split3DLicenseService licenseService,
+        Split3DUpgradeService upgradeService,
         Split3DSettings settings,
         SmartDbContext db,
         ILogger logger,
         CancellationToken cancelToken)
     {
         var order = message.Order;
+        Split3DLicenseUpgrade upgrade = null;
+
+        if (order != null)
+        {
+            try
+            {
+                upgrade = await upgradeService.AttachToOrderAsync(order, cancelToken);
+            }
+            catch (Exception ex)
+            {
+                logger.Error(ex, $"Split3D: failed to link the key upgrade to order {order.Id}.");
+            }
+        }
+
         if (order == null
             || !order.PaymentMethodSystemName.EqualsNoCase(Split3DStorefrontSetup.PrepaymentSystemName)
             || order.PaymentStatus == PaymentStatus.Paid
@@ -31,7 +46,7 @@ public class Events : IConsumer
         try
         {
             var productIds = (await licenseService.GetProductPlansAsync(cancelToken)).Keys.ToArray();
-            if (!await db.OrderItems.AnyAsync(x => x.OrderId == order.Id && productIds.Contains(x.ProductId), cancelToken))
+            if (upgrade == null && !await db.OrderItems.AnyAsync(x => x.OrderId == order.Id && productIds.Contains(x.ProductId), cancelToken))
             {
                 return;
             }
@@ -43,7 +58,9 @@ public class Events : IConsumer
                 $"- Số tài khoản: {settings.BankAccountNumber}\n" +
                 $"- Chủ tài khoản: {settings.BankAccountHolder}\n" +
                 $"- Nội dung chuyển khoản: {order.GetOrderNumber()}\n\n" +
-                "Key kích hoạt và file cài đặt sẽ được gửi tự động ngay khi chúng tôi xác nhận đã nhận tiền.";
+                (upgrade != null
+                    ? "Key sẽ được nâng cấp tự động ngay khi chúng tôi xác nhận đã nhận tiền; addon trong Blender tự nhận gói mới, không cần cài lại."
+                    : "Key kích hoạt và file cài đặt sẽ được gửi tự động ngay khi chúng tôi xác nhận đã nhận tiền.");
 
             db.OrderNotes.Add(order, note, displayToCustomer: true);
             await db.SaveChangesAsync(cancelToken);
@@ -57,6 +74,7 @@ public class Events : IConsumer
     public async Task HandleEventAsync(
         OrderPaidEvent message,
         Split3DLicenseService licenseService,
+        Split3DUpgradeService upgradeService,
         Split3DSettings settings,
         SmartDbContext db,
         ILogger logger,
@@ -77,6 +95,18 @@ public class Events : IConsumer
             logger.Error(ex, $"Split3D: failed to issue license key for order {message.Order.Id}.");
 
             db.OrderNotes.Add(message.Order, $"Split3D: automatic key issuing failed: {ex.Message}");
+            await db.SaveChangesAsync(cancelToken);
+        }
+
+        try
+        {
+            await upgradeService.ApplyForOrderAsync(message.Order, cancelToken);
+        }
+        catch (Exception ex)
+        {
+            logger.Error(ex, $"Split3D: failed to upgrade the key of order {message.Order.Id}.");
+
+            db.OrderNotes.Add(message.Order, $"Split3D: automatic key upgrade failed: {ex.Message}");
             await db.SaveChangesAsync(cancelToken);
         }
     }

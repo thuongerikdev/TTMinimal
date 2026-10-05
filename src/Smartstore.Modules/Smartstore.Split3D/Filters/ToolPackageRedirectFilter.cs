@@ -27,6 +27,14 @@ public class ToolPackageRedirectFilter : IAsyncActionFilter
             return;
         }
 
+        // The hidden key-upgrade product (cart link) has no page of its own: upgrades are chosen on "My keys".
+        if (value is int upgradeProductId
+            && await _db.Products.AnyAsync(x => x.Id == upgradeProductId && x.Sku == Split3DUpgradeService.UpgradeProductSku))
+        {
+            context.Result = new RedirectToActionResult("Index", "Split3DKeys", new { area = "" });
+            return;
+        }
+
         if (context.ActionArguments.TryGetValue("categoryId", out value)
             && value is int categoryId
             && await _db.Categories.AnyAsync(x => x.Id == categoryId && Split3DStorefrontContent.CategoryNames.Contains(x.Name)))

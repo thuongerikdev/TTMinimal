@@ -33,6 +33,15 @@ public partial class Split3DRepoService
     /// <summary>
     /// Gets the repository token of <paramref name="license"/>, creating one if needed (without committing).
     /// </summary>
+    public const string LatestFileName = "latest.zip";
+
+    /// <summary>
+    /// Direct download URL of the newest installer for <paramref name="license"/>, creating the repository token if needed
+    /// (without committing). Works without login; stays valid across new versions.
+    /// </summary>
+    public static string GetDownloadUrl(Split3DLicense license, string baseUrl)
+        => $"{baseUrl.TrimEnd('/')}/split3d/repo/{EnsureToken(license)}/{LatestFileName}";
+
     public static string EnsureToken(Split3DLicense license)
     {
         Guard.NotNull(license);

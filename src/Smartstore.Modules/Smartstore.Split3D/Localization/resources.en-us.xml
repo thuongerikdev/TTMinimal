@@ -1267,6 +1267,12 @@
     <LocaleResource Name="Mail.Fields.SendEmail.Hint">
         <Value>As soon as keys are issued for a paid order, the key email is queued.</Value>
     </LocaleResource>
+    <LocaleResource Name="Mail.Fields.AttachInstaller">
+        <Value>Also attach the .zip to the email</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.Fields.AttachInstaller.Hint">
+        <Value>The email always has a Download installer button (direct, no login, always the newest version). Turn on to attach the file as well; the email gets larger and some providers block .zip files.</Value>
+    </LocaleResource>
     <LocaleResource Name="Mail.Fields.TemplateActive">
         <Value>Key email template active</Value>
     </LocaleResource>
@@ -1368,5 +1374,62 @@
     </LocaleResource>
     <LocaleResource Name="Mail.Fields.TestEmail.Hint">
         <Value>Address that receives the test email.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Upgrade">
+        <Value>Upgrade key</Value>
+    </LocaleResource>
+    <LocaleResource Name="Upgrade.Hint">
+        <Value>The key keeps its id, so active devices stay signed in. It is re-signed with the new expiry; the Blender addon picks up the new key at its next online check (no reinstall, no key entry).</Value>
+    </LocaleResource>
+    <LocaleResource Name="Upgrade.NewKey">
+        <Value>New key (same id)</Value>
+    </LocaleResource>
+    <LocaleResource Name="Upgrade.NotFound">
+        <Value>Key not found.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Upgrade.Done">
+        <Value>Upgraded: {0}.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Upgrade.Fields.KeyType">
+        <Value>New plan</Value>
+    </LocaleResource>
+    <LocaleResource Name="Upgrade.Fields.KeyType.Hint">
+        <Value>Plan after the upgrade. The validity is counted from the original issue date of the key.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Upgrade.Fields.Days">
+        <Value>Days</Value>
+    </LocaleResource>
+    <LocaleResource Name="Upgrade.Fields.Days.Hint">
+        <Value>Validity in days (from the issue date) for a custom plan.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Upgrade.Fields.ExpiresOn">
+        <Value>New expiry (optional)</Value>
+    </LocaleResource>
+    <LocaleResource Name="Upgrade.Fields.ExpiresOn.Hint">
+        <Value>A specific expiry date instead of the plan duration, e.g. to renew an expired key. Empty = from the plan.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Upgrade.Fields.MaxDevices">
+        <Value>Max. devices</Value>
+    </LocaleResource>
+    <LocaleResource Name="Upgrade.Fields.MaxDevices.Hint">
+        <Value>Devices the key may be active on at the same time after the upgrade.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Upgrade.Fields.Price">
+        <Value>Amount charged (VND)</Value>
+    </LocaleResource>
+    <LocaleResource Name="Upgrade.Fields.Price.Hint">
+        <Value>Added to the price of the key (revenue statistics). 0 for a free upgrade.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Upgrade.Fields.Notes">
+        <Value>Notes</Value>
+    </LocaleResource>
+    <LocaleResource Name="Upgrade.Fields.Notes.Hint">
+        <Value>Reason for the upgrade, appended to the notes of the key.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Upgrade.Fields.SendEmailNow">
+        <Value>Email the new key</Value>
+    </LocaleResource>
+    <LocaleResource Name="Upgrade.Fields.SendEmailNow.Hint">
+        <Value>Sends the key email with the upgraded key to the customer.</Value>
     </LocaleResource>
 </Language>

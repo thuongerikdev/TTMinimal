@@ -41,6 +41,20 @@
 </table>
 <p class="keybox-hint">Sao chép toàn bộ đoạn key ở trên, kể cả khi trình đọc email tự xuống dòng.</p>
 
+{% if License.Installer %}
+<table class="download" role="presentation">
+  <tr>
+    <td class="download-cell">
+      <p class="download-label">File cài đặt</p>
+      <p class="download-name">{{ License.Installer.FileName }}</p>
+      <p class="download-meta">Phiên bản {{ License.Installer.Version }} &middot; {{ License.Installer.Size }} &middot; luôn là bản mới nhất</p>
+      <a class="btn btn-primary btn-lg" href="{{ License.Installer.DownloadUrl }}" target="_blank">&#11015;&nbsp; Tải file cài đặt</a>
+      <p class="download-hint">Bấm là tải ngay, không cần đăng nhập. Đường dẫn dành riêng cho key của bạn, vui lòng không chia sẻ.</p>
+    </td>
+  </tr>
+</table>
+{% endif %}
+
 <h2>Kích hoạt trong 3 bước</h2>
 <table class="steps" role="presentation">
   <tr>
@@ -48,11 +62,11 @@
     <td class="step-text">
       <b>Cài addon.</b>
       {% if License.Installer %}
-        File <b>{{ License.Installer.FileName }}</b> (phiên bản {{ License.Installer.Version }}) đã được đính kèm trong email này.
+        Bấm <a href="{{ License.Installer.DownloadUrl }}">Tải file cài đặt</a> ở trên{% if License.Installer.Attached %} (file cũng được đính kèm trong email này){% endif %}.
       {% else %}
         Tải file cài đặt trong trang <a href="{{ License.MyKeysUrl }}">Key của tôi</a>.
       {% endif %}
-      Trong Blender mở <b>Edit &rsaquo; Preferences &rsaquo; Get Extensions &rsaquo; Install from Disk</b> rồi chọn file .zip.
+      Trong Blender mở <b>Edit &rsaquo; Preferences &rsaquo; Get Extensions &rsaquo; Install from Disk</b> rồi chọn file .zip vừa tải (không cần giải nén).
     </td>
   </tr>
   <tr>

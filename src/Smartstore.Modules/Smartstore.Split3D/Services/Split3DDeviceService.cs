@@ -84,6 +84,13 @@ public sealed class Split3DActivationResult
     public int? MaxDevices { get; init; }
 
     /// <summary>
+    /// The current key when it differs from the one the addon sent (same key id, re-signed after a plan upgrade).
+    /// The addon replaces its stored key with it, so an upgrade needs no reinstall and no new key entry.
+    /// </summary>
+    [JsonPropertyName("token")]
+    public string? Token { get; init; }
+
+    /// <summary>
     /// A newer addon version the key may install from inside Blender. <c>null</c> if none.
     /// </summary>
     [JsonPropertyName("update")]
@@ -249,6 +256,7 @@ public partial class Split3DDeviceService
             Message = "Activated.",
             Lease = lease,
             MaxDevices = maxDevices,
+            Token = request.Token!.Trim() != license.Token ? license.Token : null,
             LicenseRecordId = license.Id
         };
     }

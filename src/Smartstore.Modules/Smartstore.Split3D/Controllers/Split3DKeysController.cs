@@ -18,6 +18,7 @@ public class Split3DKeysController : PublicController
     private readonly Split3DRepoService _repoService;
     private readonly IPaymentService _paymentService;
     private readonly BankQrService _bankQrService;
+    private readonly Split3DUpgradeService _upgradeService;
     private readonly Split3DSettings _settings;
 
     public Split3DKeysController(
@@ -27,6 +28,7 @@ public class Split3DKeysController : PublicController
         Split3DRepoService repoService,
         IPaymentService paymentService,
         BankQrService bankQrService,
+        Split3DUpgradeService upgradeService,
         Split3DSettings settings)
     {
         _db = db;
@@ -35,6 +37,7 @@ public class Split3DKeysController : PublicController
         _repoService = repoService;
         _paymentService = paymentService;
         _bankQrService = bankQrService;
+        _upgradeService = upgradeService;
         _settings = settings;
     }
 
@@ -84,7 +87,11 @@ public class Split3DKeysController : PublicController
                 State = x.State,
                 ExpectedKeys = x.ExpectedKeys,
                 IsBankTransfer = x.Order.PaymentMethodSystemName.EqualsNoCase(Split3DStorefrontSetup.PrepaymentSystemName),
-                Items = x.Items.Select(i => $"{i.Quantity} × {i.Product?.Name}").ToList(),
+                Items = x.Items
+                    .Where(i => i.Product?.Sku != Split3DUpgradeService.UpgradeProductSku)
+                    .Select(i => $"{i.Quantity} × {i.Product?.Name}")
+                    .Concat(x.Upgrades.Select(u => "Nâng cấp key: " + Split3DUpgradeService.Describe(u, null)))
+                    .ToList(),
                 Keys = x.Licenses.Select(l => ToModel(l, now, addonNames, devices[l.Id])).ToList()
             })
             .ToList(),
@@ -112,7 +119,106 @@ public class Split3DKeysController : PublicController
             orders.SelectMany(x => x.Licenses).Concat(otherKeys),
             model.Orders.SelectMany(x => x.Keys).Concat(model.OtherKeys));
 
+        // "Upgrade" button (with the cheapest price) for keys that have a bigger package.
+        var keyModels = model.Orders.SelectMany(x => x.Keys).Concat(model.OtherKeys).ToLookup(x => x.Id);
+        foreach (var license in orders.SelectMany(x => x.Licenses).Concat(otherKeys).Where(Split3DUpgradeService.CanBuyUpgrade).DistinctBy(x => x.Id))
+        {
+            var options = await _upgradeService.GetOptionsAsync(license, HttpContext.RequestAborted);
+            if (options.Count > 0)
+            {
+                foreach (var key in keyModels[license.Id])
+                {
+                    key.CanUpgrade = true;
+                    key.UpgradeFrom = Split3DLicenseService.FormatPrice(options.Min(x => x.Price));
+                }
+            }
+        }
+
         return View(model);
+    }
+
+    /// <summary>
+    /// Upgrade page of one key: the bigger packages of the same addon with the price difference.
+    /// The key keeps its id and devices; the addon picks up the new plan by itself after payment.
+    /// </summary>
+    public async Task<IActionResult> Upgrade(int id)
+    {
+        var customer = Services.WorkContext.CurrentCustomer;
+        if (!customer.IsRegistered())
+        {
+            return ChallengeOrForbid();
+        }
+
+        var license = await GetOwnLicenseAsync(customer, id);
+        if (license == null)
+        {
+            return NotFound();
+        }
+
+        var addon = await _db.Split3DAddons().FindByIdAsync(license.AddonId, false);
+        var options = await _upgradeService.GetOptionsAsync(license, HttpContext.RequestAborted);
+
+        string Format(DateTime utc) => Services.DateTimeHelper
+            .ConvertToUserTime(utc, DateTimeKind.Utc)
+            .ToString("dd/MM/yyyy", CultureInfo.InvariantCulture);
+
+        var model = new UpgradeKeyModel
+        {
+            Id = license.Id,
+            AddonName = addon?.Name ?? license.ProductCode,
+            Plan = license.KeyType,
+            ExpiresOn = license.ExpiresOnUtc.HasValue ? Format(license.ExpiresOnUtc.Value) : null,
+            MaxDevices = _deviceService.GetMaxDevices(license),
+            PaidPrice = Split3DLicenseService.FormatPrice(license.Price),
+            CanUpgrade = Split3DUpgradeService.CanBuyUpgrade(license),
+            Options = options.Select(x => new UpgradeKeyOptionModel
+            {
+                ProductId = x.Product.Id,
+                Name = x.Product.Name,
+                Plan = x.KeyType == Split3DPlans.Custom && x.Days.HasValue ? $"{x.Days} ngày" : x.KeyType,
+                MaxDevices = x.MaxDevices,
+                ExpiresOn = x.ExpiresOnUtc.HasValue ? Format(x.ExpiresOnUtc.Value) : null,
+                FullPrice = Split3DLicenseService.FormatPrice(x.FullPrice),
+                Price = Split3DLicenseService.FormatPrice(x.Price)
+            })
+            .ToList()
+        };
+
+        return View(model);
+    }
+
+    /// <summary>
+    /// Puts the chosen upgrade into the cart and opens the checkout.
+    /// </summary>
+    [HttpPost, ValidateAntiForgeryToken]
+    public async Task<IActionResult> Upgrade(int id, int productId)
+    {
+        var customer = Services.WorkContext.CurrentCustomer;
+        if (!customer.IsRegistered())
+        {
+            return ChallengeOrForbid();
+        }
+
+        var license = await GetOwnLicenseAsync(customer, id);
+        if (license == null)
+        {
+            return NotFound();
+        }
+
+        var warnings = await _upgradeService.AddToCartAsync(customer, Services.StoreContext.CurrentStore.Id, license, productId, HttpContext.RequestAborted);
+        if (warnings.Count > 0)
+        {
+            NotifyError(string.Join(" ", warnings));
+            return RedirectToAction(nameof(Upgrade), new { id });
+        }
+
+        return RedirectToRoute("Checkout");
+    }
+
+    private async Task<Split3DLicense> GetOwnLicenseAsync(Customer customer, int id)
+    {
+        var ownLicenseIds = await GetOwnLicenseIdsAsync(customer);
+        return ownLicenseIds.Contains(id) ? await _db.Split3DLicenses().FindByIdAsync(id, false) : null;
     }
 
     /// <summary>

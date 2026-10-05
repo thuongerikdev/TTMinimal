@@ -92,8 +92,11 @@ public class Split3DRepoController : Controller
             return StatusCode(StatusCodes.Status403Forbidden);
         }
 
+        // "latest.zip" (download button of the key email) always serves the newest version under its real file name.
         var latest = await _repoService.GetLatestPackageAsync(license.AddonId, HttpContext.RequestAborted);
-        if (latest is not { } entry || !entry.Package.FileName.Equals(fileName, StringComparison.OrdinalIgnoreCase))
+        if (latest is not { } entry
+            || (!fileName.Equals(Split3DRepoService.LatestFileName, StringComparison.OrdinalIgnoreCase)
+                && !entry.Package.FileName.Equals(fileName, StringComparison.OrdinalIgnoreCase)))
         {
             return NotFound();
         }

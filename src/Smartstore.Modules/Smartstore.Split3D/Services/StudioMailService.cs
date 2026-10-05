@@ -9,6 +9,7 @@ using Smartstore.Core.Identity;
 using Smartstore.Core.Localization;
 using Smartstore.Core.Messaging;
 using Smartstore.Core.Stores;
+using Smartstore.Utilities;
 
 namespace Smartstore.Split3D.Services;
 
@@ -28,6 +29,15 @@ public partial class StudioMailService
     public const string DefaultLicenseTo = "{{ License.Email }}";
 
     private const string LicenseBodyResource = "Smartstore.Split3D.Mail.LicenseKey.liquid";
+
+    /// <summary>
+    /// SHA-256 of earlier shipped default bodies (trimmed, LF line ends). A stored template still equal to one of
+    /// them was never customized and is upgraded to the current default.
+    /// </summary>
+    private static readonly string[] _previousDefaultBodyHashes =
+    [
+        "0405845b2608e3b6fa00d2b1bd37955f464dfacf642dada95bfd9ba70c6959bf"
+    ];
     private static readonly CultureInfo _vnCulture = CultureInfo.GetCultureInfo("vi-VN");
 
     [GeneratedRegex("^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$")]
@@ -79,6 +89,12 @@ public partial class StudioMailService
         var template = await _db.MessageTemplates.FirstOrDefaultAsync(x => x.Name == LicenseTemplateName, cancelToken);
         if (template != null)
         {
+            if (_previousDefaultBodyHashes.Contains(HashBody(template.Body)))
+            {
+                template.Body = GetDefaultLicenseBody();
+                await _db.SaveChangesAsync(cancelToken);
+            }
+
             return template;
         }
 
@@ -110,9 +126,16 @@ public partial class StudioMailService
         return reader.ReadToEnd();
     }
 
+    private static string HashBody(string body)
+    {
+        var normalized = (body ?? string.Empty).Replace("\r\n", "\n").Trim();
+        return Convert.ToHexStringLower(System.Security.Cryptography.SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(normalized)));
+    }
+
     /// <summary>
     /// Creates the key email from the message template and puts it into the send queue (commits).
-    /// The newest installer of the key's addon is attached, if one was uploaded.
+    /// The email links the newest installer of the key's addon (direct download, no login) and attaches it
+    /// when <see cref="Split3DSettings.AttachInstaller"/> is on.
     /// </summary>
     /// <returns><c>false</c> if the template is inactive or no email account is configured.</returns>
     public async Task<bool> QueueLicenseEmailAsync(Split3DLicense license, CancellationToken cancelToken = default)
@@ -154,7 +177,7 @@ public partial class StudioMailService
             return false;
         }
 
-        if (installer is { } entry && entry.Download.MediaFileId is int mediaFileId)
+        if (_settings.AttachInstaller && installer is { } entry && entry.Download.MediaFileId is int mediaFileId)
         {
             result.Email.Attachments.Add(new QueuedEmailAttachment
             {
@@ -164,9 +187,9 @@ public partial class StudioMailService
                 MimeType = entry.Download.MediaFile?.MimeType.NullEmpty() ?? "application/zip"
             });
         }
-        else if (license.AddonId > 0)
+        else if (installer == null && license.AddonId > 0)
         {
-            Logger.Warn($"Split3D: no installer file uploaded for addon {license.AddonId}; the key email is sent without attachment.");
+            Logger.Warn($"Split3D: no installer file uploaded for addon {license.AddonId}; the key email has no download.");
         }
 
         license.EmailSent = true;
@@ -218,7 +241,10 @@ public partial class StudioMailService
             part["Installer"] = new Dictionary<string, object>
             {
                 ["FileName"] = installer.FileName,
-                ["Version"] = installer.Version
+                ["Version"] = installer.Version,
+                ["Size"] = Prettifier.HumanizeBytes(installer.Size),
+                ["Attached"] = _settings.AttachInstaller,
+                ["DownloadUrl"] = Split3DRepoService.GetDownloadUrl(license, baseUrl)
             };
         }
 
@@ -255,7 +281,11 @@ public partial class StudioMailService
             ["Installer"] = new Dictionary<string, object>
             {
                 ["FileName"] = "split3d_print-3.0.140.zip",
-                ["Version"] = "3.0.140"
+                ["Version"] = "3.0.140",
+                ["Size"] = "1.2 MB",
+                ["Attached"] = _settings.AttachInstaller,
+                // A made-up key has no download folder: the demo button opens "My keys".
+                ["DownloadUrl"] = $"{baseUrl}/split3dkeys"
             }
         };
     }

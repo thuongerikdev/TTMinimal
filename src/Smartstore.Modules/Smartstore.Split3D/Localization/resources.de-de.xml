@@ -1267,6 +1267,12 @@
     <LocaleResource Name="Mail.Fields.SendEmail.Hint">
         <Value>Sobald für eine bezahlte Bestellung Schlüssel ausgestellt sind, wird die Schlüssel-E-Mail eingereiht.</Value>
     </LocaleResource>
+    <LocaleResource Name="Mail.Fields.AttachInstaller">
+        <Value>ZIP-Datei zusätzlich anhängen</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.Fields.AttachInstaller.Hint">
+        <Value>Die E-Mail enthält immer einen Download-Button (direkt, ohne Anmeldung, immer die neueste Version). Einschalten, um die Datei zusätzlich anzuhängen; die E-Mail wird größer und manche Anbieter blockieren ZIP-Dateien.</Value>
+    </LocaleResource>
     <LocaleResource Name="Mail.Fields.TemplateActive">
         <Value>Vorlage Schlüssel-E-Mail aktiv</Value>
     </LocaleResource>
@@ -1368,5 +1374,62 @@
     </LocaleResource>
     <LocaleResource Name="Mail.Fields.TestEmail.Hint">
         <Value>Adresse, die die Test-E-Mail erhält.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Upgrade">
+        <Value>Schlüssel upgraden</Value>
+    </LocaleResource>
+    <LocaleResource Name="Upgrade.Hint">
+        <Value>Der Schlüssel behält seine ID, aktive Geräte bleiben angemeldet. Er wird mit der neuen Laufzeit neu signiert; das Blender-Addon übernimmt den neuen Schlüssel bei der nächsten Online-Prüfung (keine Neuinstallation, keine Eingabe).</Value>
+    </LocaleResource>
+    <LocaleResource Name="Upgrade.NewKey">
+        <Value>Neuer Schlüssel (gleiche ID)</Value>
+    </LocaleResource>
+    <LocaleResource Name="Upgrade.NotFound">
+        <Value>Schlüssel nicht gefunden.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Upgrade.Done">
+        <Value>Upgrade durchgeführt: {0}.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Upgrade.Fields.KeyType">
+        <Value>Neues Paket</Value>
+    </LocaleResource>
+    <LocaleResource Name="Upgrade.Fields.KeyType.Hint">
+        <Value>Paket nach dem Upgrade. Die Laufzeit zählt ab dem ursprünglichen Ausstellungsdatum.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Upgrade.Fields.Days">
+        <Value>Tage</Value>
+    </LocaleResource>
+    <LocaleResource Name="Upgrade.Fields.Days.Hint">
+        <Value>Laufzeit in Tagen (ab Ausstellung) für ein individuelles Paket.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Upgrade.Fields.ExpiresOn">
+        <Value>Neues Ablaufdatum (optional)</Value>
+    </LocaleResource>
+    <LocaleResource Name="Upgrade.Fields.ExpiresOn.Hint">
+        <Value>Ein festes Ablaufdatum statt der Paketlaufzeit, z. B. um einen abgelaufenen Schlüssel zu verlängern. Leer = laut Paket.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Upgrade.Fields.MaxDevices">
+        <Value>Max. Geräte</Value>
+    </LocaleResource>
+    <LocaleResource Name="Upgrade.Fields.MaxDevices.Hint">
+        <Value>Geräte, auf denen der Schlüssel nach dem Upgrade gleichzeitig aktiv sein darf.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Upgrade.Fields.Price">
+        <Value>Berechneter Betrag (VND)</Value>
+    </LocaleResource>
+    <LocaleResource Name="Upgrade.Fields.Price.Hint">
+        <Value>Wird zum Preis des Schlüssels addiert (Umsatzstatistik). 0 für ein kostenloses Upgrade.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Upgrade.Fields.Notes">
+        <Value>Notizen</Value>
+    </LocaleResource>
+    <LocaleResource Name="Upgrade.Fields.Notes.Hint">
+        <Value>Grund für das Upgrade, wird an die Notizen des Schlüssels angehängt.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Upgrade.Fields.SendEmailNow">
+        <Value>Neuen Schlüssel mailen</Value>
+    </LocaleResource>
+    <LocaleResource Name="Upgrade.Fields.SendEmailNow.Hint">
+        <Value>Sendet die Schlüssel-E-Mail mit dem neuen Schlüssel an den Kunden.</Value>
     </LocaleResource>
 </Language>

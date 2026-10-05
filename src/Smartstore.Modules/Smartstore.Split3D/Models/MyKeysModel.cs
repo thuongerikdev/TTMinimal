@@ -83,6 +83,53 @@ public class MyKeyModel
     public string DownloadUrl { get; set; }
 
     public string PackageVersion { get; set; }
+
+    /// <summary>
+    /// A bigger package can be bought for the key.
+    /// </summary>
+    public bool CanUpgrade { get; set; }
+
+    /// <summary>
+    /// Formatted price of the cheapest upgrade.
+    /// </summary>
+    public string UpgradeFrom { get; set; }
+}
+
+public class UpgradeKeyModel : EntityModelBase
+{
+    public string AddonName { get; set; }
+    public string Plan { get; set; }
+
+    /// <summary>
+    /// <c>null</c> for lifetime keys.
+    /// </summary>
+    public string ExpiresOn { get; set; }
+
+    public int MaxDevices { get; set; }
+    public string PaidPrice { get; set; }
+
+    /// <summary>
+    /// <c>false</c> for blocked or expired keys.
+    /// </summary>
+    public bool CanUpgrade { get; set; }
+
+    public List<UpgradeKeyOptionModel> Options { get; set; } = [];
+}
+
+public class UpgradeKeyOptionModel
+{
+    public int ProductId { get; set; }
+    public string Name { get; set; }
+    public string Plan { get; set; }
+    public int MaxDevices { get; set; }
+
+    /// <summary>
+    /// Expiry after the upgrade, <c>null</c> for lifetime.
+    /// </summary>
+    public string ExpiresOn { get; set; }
+
+    public string FullPrice { get; set; }
+    public string Price { get; set; }
 }
 
 public class MyDeviceModel

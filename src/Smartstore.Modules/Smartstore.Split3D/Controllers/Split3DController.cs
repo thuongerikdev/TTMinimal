@@ -227,11 +227,14 @@ public class Split3DController : AdminController
             OrderNumber = x.Order.GetOrderNumber(),
             CreatedOn = Services.DateTimeHelper.ConvertToUserTime(x.Order.CreatedOnUtc, DateTimeKind.Utc).ToString("dd/MM/yyyy HH:mm", CultureInfo.InvariantCulture),
             Customer = customers.GetValueOrDefault(x.Order.CustomerId),
-            Items = string.Join(", ", x.Items.Select(i => $"{i.Quantity} × {i.Product?.Name}")),
+            Items = string.Join(", ", x.Items
+                .Where(i => i.Product?.Sku != Split3DUpgradeService.UpgradeProductSku)
+                .Select(i => $"{i.Quantity} × {i.Product?.Name}")
+                .Concat(x.Upgrades.Select(u => "Nâng cấp " + Split3DUpgradeService.Describe(u, x.UpgradedLicenses.GetValueOrDefault(u.Split3DLicenseId))))),
             OrderTotal = Split3DLicenseService.FormatPrice(x.Order.OrderTotal),
             State = x.State,
-            IssuedKeys = x.Licenses.Count,
-            ExpectedKeys = x.ExpectedKeys,
+            IssuedKeys = x.Licenses.Count + x.Upgrades.Count(u => u.Status == Split3DUpgradeStatus.Applied),
+            ExpectedKeys = x.ExpectedKeys + x.Upgrades.Count,
             EditUrl = Url.Action("Edit", "Order", new { id = x.Order.Id, area = "Admin" })
         })
         .ToList();
@@ -328,7 +331,7 @@ public class Split3DController : AdminController
     /// </summary>
     [HttpPost]
     [Permission(Permissions.Order.Update)]
-    public async Task<IActionResult> ProcessOrder(int orderId, [FromServices] IOrderProcessingService orderProcessingService)
+    public async Task<IActionResult> ProcessOrder(int orderId, [FromServices] IOrderProcessingService orderProcessingService, [FromServices] Split3DUpgradeService upgradeService)
     {
         var order = await _db.Orders.FirstOrDefaultAsync(x => x.Id == orderId && !x.Deleted);
         if (order == null)
@@ -349,8 +352,50 @@ public class Split3DController : AdminController
             }
 
             var issued = await _licenseService.IssueForOrderAsync(order, HttpContext.RequestAborted);
+            var upgraded = await upgradeService.ApplyForOrderAsync(order, HttpContext.RequestAborted);
 
-            return Json(new { success = true, message = T("Plugins.Split3D.Pending.Processed", order.GetOrderNumber(), issued.Count).Value });
+            return Json(new { success = true, message = T("Plugins.Split3D.Pending.Processed", order.GetOrderNumber(), issued.Count + upgraded.Count).Value });
+        }
+        catch (Exception ex) when (ex is ArgumentException or Split3DKeyException)
+        {
+            return Json(new { success = false, message = ex.Message });
+        }
+    }
+
+    /// <summary>
+    /// Upgrades a key directly: same key id (devices stay activated), new plan/expiry/device limit.
+    /// The addon picks up the re-signed key at its next online check.
+    /// </summary>
+    [HttpPost]
+    [Permission(Permissions.Configuration.Module.Update)]
+    public async Task<IActionResult> Upgrade(UpgradeLicenseModel model, [FromServices] Split3DUpgradeService upgradeService)
+    {
+        var license = await _db.Split3DLicenses().FindByIdAsync(model.Id);
+        if (license == null)
+        {
+            return Json(new { success = false, message = T("Plugins.Split3D.Upgrade.NotFound").Value });
+        }
+
+        try
+        {
+            var upgrade = await upgradeService.UpgradeByAdminAsync(license, new Split3DUpgradeSpec
+            {
+                KeyType = model.KeyType,
+                Days = model.Days,
+                ExpiresOnUtc = model.ExpiresOn.HasValue ? DateTime.SpecifyKind(model.ExpiresOn.Value.Date.AddDays(1).AddSeconds(-1), DateTimeKind.Utc) : null,
+                MaxDevices = model.MaxDevices,
+                Price = model.Price,
+                Notes = model.Notes
+            }, HttpContext.RequestAborted);
+
+            var message = T("Plugins.Split3D.Upgrade.Done", Split3DUpgradeService.Describe(upgrade, license)).Value;
+            if (model.SendEmailNow)
+            {
+                var (_, emailMessage) = await TryQueueEmailAsync(license);
+                message += " " + emailMessage;
+            }
+
+            return Json(new { success = true, message, token = license.Token });
         }
         catch (Exception ex) when (ex is ArgumentException or Split3DKeyException)
         {

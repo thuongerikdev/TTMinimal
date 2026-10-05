@@ -20,6 +20,7 @@ internal class Startup : StarterBase
         services.AddScoped<Split3DRepoService>();
         services.AddScoped<Split3DStorefrontSetup>();
         services.AddScoped<Split3DOrderQuery>();
+        services.AddScoped<Split3DUpgradeService>();
         services.AddScoped<StudioStorefrontSetup>();
         services.AddScoped<PrintQuoteService>();
         services.AddScoped<BankQrService>();

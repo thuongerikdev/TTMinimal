@@ -50,6 +50,13 @@
             <i class="far fa-file-arrow-down"></i>
             <span>Tải file key (.ttkey)</span>
         </a>
+        @if (key.CanUpgrade)
+        {
+            <a href="@Url.Action("Upgrade", "Split3DKeys", new { id = key.Id, area = "" })" class="btn btn-success btn-sm mt-2">
+                <i class="bi bi-arrow-up-circle"></i>
+                <span>Nâng cấp gói · từ @key.UpgradeFrom</span>
+            </a>
+        }
 
         @if (key.InstallUrl != null)
         {

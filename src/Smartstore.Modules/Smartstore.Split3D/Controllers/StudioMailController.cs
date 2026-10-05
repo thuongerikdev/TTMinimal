@@ -72,6 +72,7 @@ public class StudioMailController : AdminController
             FooterText = _mailSettings.FooterText,
             ShowContact = _mailSettings.ShowContact,
             SendEmail = _split3DSettings.SendEmail,
+            AttachInstaller = _split3DSettings.AttachInstaller,
             TemplateId = template.Id,
             TemplateActive = template.IsActive,
             Subject = template.GetLocalized(x => x.Subject, languageId, false, false).Value.NullEmpty() ?? template.Subject,
@@ -102,6 +103,7 @@ public class StudioMailController : AdminController
         await Services.SettingFactory.SaveSettingsAsync(_mailSettings);
 
         _split3DSettings.SendEmail = model.SendEmail;
+        _split3DSettings.AttachInstaller = model.AttachInstaller;
         await Services.SettingFactory.SaveSettingsAsync(_split3DSettings);
 
         var template = await _mailService.GetOrCreateLicenseTemplateAsync();

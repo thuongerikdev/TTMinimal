@@ -131,3 +131,28 @@ public class IssueLicenseModel : ModelBase
     [LocalizedDisplay("*SendEmailNow")]
     public bool SendEmailNow { get; set; } = true;
 }
+
+[LocalizedDisplay("Plugins.Split3D.Upgrade.Fields.")]
+public class UpgradeLicenseModel : EntityModelBase
+{
+    [LocalizedDisplay("*KeyType")]
+    public string KeyType { get; set; } = Split3DPlans.Lifetime;
+
+    [LocalizedDisplay("*Days")]
+    public int? Days { get; set; }
+
+    [LocalizedDisplay("*ExpiresOn")]
+    public DateTime? ExpiresOn { get; set; }
+
+    [LocalizedDisplay("*MaxDevices")]
+    public int? MaxDevices { get; set; }
+
+    [LocalizedDisplay("*Price")]
+    public decimal Price { get; set; }
+
+    [LocalizedDisplay("*Notes")]
+    public string Notes { get; set; }
+
+    [LocalizedDisplay("*SendEmailNow")]
+    public bool SendEmailNow { get; set; } = true;
+}

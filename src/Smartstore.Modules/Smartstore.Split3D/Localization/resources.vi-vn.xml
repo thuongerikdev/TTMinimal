@@ -3931,6 +3931,12 @@
     <LocaleResource Name="Mail.Fields.SendEmail.Hint">
         <Value>Sau khi key được cấp cho đơn đã thanh toán, email key được đưa vào hàng đợi ngay.</Value>
     </LocaleResource>
+    <LocaleResource Name="Mail.Fields.AttachInstaller">
+        <Value>Đính kèm thêm file .zip vào email</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.Fields.AttachInstaller.Hint">
+        <Value>Email luôn có nút Tải file cài đặt (tải thẳng, không cần đăng nhập, luôn là bản mới nhất). Bật nếu muốn đính kèm thêm file; email sẽ nặng hơn và Gmail đôi khi chặn file .zip.</Value>
+    </LocaleResource>
     <LocaleResource Name="Mail.Fields.TemplateActive">
         <Value>Bật mẫu email key</Value>
     </LocaleResource>
@@ -4032,5 +4038,62 @@
     </LocaleResource>
     <LocaleResource Name="Mail.Fields.TestEmail.Hint">
         <Value>Địa chỉ nhận email gửi thử.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Upgrade">
+        <Value>Nâng cấp key</Value>
+    </LocaleResource>
+    <LocaleResource Name="Upgrade.Hint">
+        <Value>Key giữ nguyên ID nên các máy đang kích hoạt không bị đăng xuất. Key được ký lại với hạn mới; addon trong Blender tự nhận key mới ở lần kiểm tra online kế tiếp (không cần cài lại, không cần nhập key).</Value>
+    </LocaleResource>
+    <LocaleResource Name="Upgrade.NewKey">
+        <Value>Key mới (cùng ID)</Value>
+    </LocaleResource>
+    <LocaleResource Name="Upgrade.NotFound">
+        <Value>Không tìm thấy key.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Upgrade.Done">
+        <Value>Đã nâng cấp: {0}.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Upgrade.Fields.KeyType">
+        <Value>Gói mới</Value>
+    </LocaleResource>
+    <LocaleResource Name="Upgrade.Fields.KeyType.Hint">
+        <Value>Gói sau khi nâng cấp. Thời hạn tính từ ngày cấp key ban đầu.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Upgrade.Fields.Days">
+        <Value>Số ngày</Value>
+    </LocaleResource>
+    <LocaleResource Name="Upgrade.Fields.Days.Hint">
+        <Value>Số ngày hiệu lực (tính từ ngày cấp key) cho gói tùy chỉnh.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Upgrade.Fields.ExpiresOn">
+        <Value>Hạn mới (tùy chọn)</Value>
+    </LocaleResource>
+    <LocaleResource Name="Upgrade.Fields.ExpiresOn.Hint">
+        <Value>Đặt ngày hết hạn cụ thể thay cho thời hạn của gói, ví dụ để gia hạn key đã hết hạn. Để trống = tính theo gói.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Upgrade.Fields.MaxDevices">
+        <Value>Số máy tối đa</Value>
+    </LocaleResource>
+    <LocaleResource Name="Upgrade.Fields.MaxDevices.Hint">
+        <Value>Số máy được kích hoạt cùng lúc sau khi nâng cấp.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Upgrade.Fields.Price">
+        <Value>Số tiền thu thêm (VND)</Value>
+    </LocaleResource>
+    <LocaleResource Name="Upgrade.Fields.Price.Hint">
+        <Value>Được cộng vào giá của key (thống kê doanh thu). 0 nếu nâng cấp miễn phí.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Upgrade.Fields.Notes">
+        <Value>Ghi chú</Value>
+    </LocaleResource>
+    <LocaleResource Name="Upgrade.Fields.Notes.Hint">
+        <Value>Lý do nâng cấp, lưu vào ghi chú của key.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Upgrade.Fields.SendEmailNow">
+        <Value>Gửi email key mới</Value>
+    </LocaleResource>
+    <LocaleResource Name="Upgrade.Fields.SendEmailNow.Hint">
+        <Value>Gửi lại email key cho khách với key đã nâng cấp.</Value>
     </LocaleResource>
 </Language>

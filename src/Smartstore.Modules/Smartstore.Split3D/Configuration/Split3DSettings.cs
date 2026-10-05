@@ -14,6 +14,12 @@ public class Split3DSettings : ISettings
     public bool SendEmail { get; set; } = true;
 
     /// <summary>
+    /// Also attach the installer zip to the key email. The email always has a direct download button;
+    /// attachments make the email large and some mail providers block zip files.
+    /// </summary>
+    public bool AttachInstaller { get; set; }
+
+    /// <summary>
     /// The "product" value embedded in the signed payload. Must match what the addon expects.
     /// </summary>
     public string ProductCode { get; set; } = "split3d-custom-109";

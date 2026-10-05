@@ -1,0 +1,45 @@
+@model UpgradeLicenseModel
+
+@* Ids are prefixed: the issue form on the same page uses the same property names. *@
+<form action="#" id="upgrade-form">
+    <input type="hidden" name="Id" value="" />
+    <div class="alert alert-info">
+        <div class="font-weight-medium" id="upgrade-current"></div>
+        <div class="small mt-1">@T("Plugins.Split3D.Upgrade.Hint")</div>
+    </div>
+    <div class="adminContent">
+        <div class="adminRow">
+            <div class="adminTitle"><smart-label asp-for="KeyType" /></div>
+            <div class="adminData">
+                <select asp-for="KeyType" id="upgrade-KeyType" asp-items="ViewBag.AvailableKeyTypes"></select>
+            </div>
+        </div>
+        <div class="adminRow" id="upgrade-days-row" style="display: none">
+            <div class="adminTitle"><smart-label asp-for="Days" /></div>
+            <div class="adminData"><input asp-for="Days" id="upgrade-Days" type="number" min="1" max="36500" /></div>
+        </div>
+        <div class="adminRow" id="upgrade-expires-row" style="display: none">
+            <div class="adminTitle"><smart-label asp-for="ExpiresOn" /></div>
+            <div class="adminData"><input name="ExpiresOn" id="upgrade-ExpiresOn" type="date" class="form-control" /></div>
+        </div>
+        <div class="adminRow">
+            <div class="adminTitle"><smart-label asp-for="MaxDevices" /></div>
+            <div class="adminData"><input asp-for="MaxDevices" id="upgrade-MaxDevices" type="number" min="1" max="1000" /></div>
+        </div>
+        <div class="adminRow">
+            <div class="adminTitle"><smart-label asp-for="Price" /></div>
+            <div class="adminData"><input asp-for="Price" id="upgrade-Price" type="number" min="0" step="1000" /></div>
+        </div>
+        <div class="adminRow">
+            <div class="adminTitle"><smart-label asp-for="Notes" /></div>
+            <div class="adminData"><input asp-for="Notes" id="upgrade-Notes" /></div>
+        </div>
+        <div class="adminRow">
+            <div class="adminTitle"><smart-label asp-for="SendEmailNow" /></div>
+            <div class="adminData">
+                <input type="checkbox" name="SendEmailNow" id="upgrade-SendEmailNow" value="true" checked class="form-check-input" />
+                <input type="hidden" name="SendEmailNow" value="false" />
+            </div>
+        </div>
+    </div>
+</form>
