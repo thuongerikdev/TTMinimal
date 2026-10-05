@@ -9,5 +9,9 @@
         <!-- Licensing module injected into marketplace add-ons (Services/MarketplacePackager). -->
         <EmbeddedResource Include="Marketplace\_ttlicense.py" LogicalName="Smartstore.Split3D.Marketplace._ttlicense.py" />
         <None Remove="Marketplace\_ttlicense.py" />
+
+        <!-- Default body of the key email message template (Services/StudioMailService). -->
+        <EmbeddedResource Include="Mail\LicenseKey.liquid" LogicalName="Smartstore.Split3D.Mail.LicenseKey.liquid" />
+        <None Remove="Mail\LicenseKey.liquid" />
     </ItemGroup>
 </Project>

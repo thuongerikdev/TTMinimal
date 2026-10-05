@@ -260,7 +260,7 @@
         <Value>E-Mail senden</Value>
     </LocaleResource>
     <LocaleResource Name="NoEmailAccount">
-        <Value>Es ist kein E-Mail-Konto konfiguriert. Bitte richten Sie zuerst ein Standard-E-Mail-Konto ein.</Value>
+        <Value>Die Schlüssel-E-Mail wurde nicht gesendet: Die Vorlage ist inaktiv oder kein E-Mail-Konto (SMTP) eingerichtet.</Value>
     </LocaleResource>
     <LocaleResource Name="Issued">
         <Value>Der Schlüssel wurde ausgestellt.</Value>
@@ -440,23 +440,11 @@
     <LocaleResource Name="Fields.BankAccountHolder.Hint">
         <Value>Name des Kontoinhabers.</Value>
     </LocaleResource>
-    <LocaleResource Name="Fields.EmailSubject">
-        <Value>E-Mail-Betreff</Value>
-    </LocaleResource>
-    <LocaleResource Name="Fields.EmailSubject.Hint">
-        <Value>Betreff der Schlüssel-E-Mail.</Value>
-    </LocaleResource>
-    <LocaleResource Name="Fields.EmailBody">
-        <Value>E-Mail-Text</Value>
-    </LocaleResource>
-    <LocaleResource Name="Fields.EmailBody.Hint">
-        <Value>Text der Schlüssel-E-Mail. Platzhalter: {CustomerName}, {Email}, {Plan}, {ExpiresOn}, {Price}, {Key}.</Value>
-    </LocaleResource>
     <LocaleResource Name="Fields.SimplifyAdminMenu">
         <Value>Admin-Menü vereinfachen</Value>
     </LocaleResource>
     <LocaleResource Name="Fields.SimplifyAdminMenu.Hint">
-        <Value>Blendet die unten aufgeführten Admin-Menüpunkte aus. Nur das Menü ist betroffen; die Seiten bleiben per URL erreichbar und Berechtigungen bleiben unverändert.</Value>
+        <Value>Ordnet das Admin-Menü neu: tägliche Seiten (Aufträge, Schlüssel, Geräte, Anfragen, Produkte, Kunden) werden Hauptmenüpunkte, alles andere wird unter Konfiguration gruppiert. Blendet außerdem die unten aufgeführten Punkte aus. Die Seiten bleiben per URL erreichbar und Berechtigungen bleiben unverändert.</Value>
     </LocaleResource>
     <LocaleResource Name="Fields.HiddenAdminMenuItems">
         <Value>Ausgeblendete Menüpunkte</Value>
@@ -841,10 +829,13 @@
         <Value>TT Minimal Studio</Value>
     </LocaleResource>
     <LocaleResource Name="Studio.Quotes">
-        <Value>Angebotsanfragen</Value>
+        <Value>Druck- &amp; Designanfragen</Value>
     </LocaleResource>
     <LocaleResource Name="Studio.Settings">
         <Value>Studio-Einstellungen</Value>
+    </LocaleResource>
+    <LocaleResource Name="AdminMenu.StoreSetup">
+        <Value>Shop-Einrichtung</Value>
     </LocaleResource>
     <LocaleResource Name="Studio.Group.Contact">
         <Value>Marke &amp; Kontakt</Value>
@@ -1118,4 +1109,264 @@
         <Value>Zielplattformen, durch Kommas getrennt, z. B. windows.x86_64, linux.x86_64, darwin.x86_64, darwin.aarch64.</Value>
     </LocaleResource>
 
+    <LocaleResource Name="Checkout.PaymentMethod">
+        <Value>Zahlungsart</Value>
+    </LocaleResource>
+    <LocaleResource Name="Checkout.PaymentHint">
+        <Value>Bankdaten bzw. QR-Code werden direkt nach der Bestellung angezeigt.</Value>
+    </LocaleResource>
+
+    <!-- TT Minimal Studio > Emails (key email template and layout of all store emails) -->
+    <LocaleResource Name="Mail.MenuTitle">
+        <Value>E-Mails</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.KeyMenuTitle">
+        <Value>Schlüssel-E-Mail</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.Title">
+        <Value>E-Mails &amp; Vorlagen</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.EditLink">
+        <Value>Schlüssel-E-Mail gestalten</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.EditLink.Hint">
+        <Value>Inhalt, Absender und Layout der Schlüssel-E-Mail werden unter TT Minimal Studio › E-Mails bearbeitet (mit Vorschau und Testversand).</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.SendFailed">
+        <Value>Die Schlüssel-E-Mail konnte nicht erstellt werden: {0}</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.OpenTemplate">
+        <Value>Nachrichtenvorlage öffnen</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.Queue">
+        <Value>E-Mail-Warteschlange</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.Status.Sender">
+        <Value>Absenderkonto</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.NoAccount">
+        <Value>Kein E-Mail-Konto (SMTP) eingerichtet</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.AddAccount">
+        <Value>E-Mail-Konto hinzufügen</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.Status.Auto">
+        <Value>Schlüssel nach Zahlung senden</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.Status.AutoOn">
+        <Value>Automatisch</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.Status.AutoOff">
+        <Value>Aus</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.Status.Template">
+        <Value>Vorlage Schlüssel-E-Mail</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.Status.Active">
+        <Value>Aktiv</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.Status.Inactive">
+        <Value>Inaktiv – es wird nichts gesendet</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.Flow">
+        <Value>Ablauf: &lt;b&gt;Bestellung bezahlt&lt;/b&gt; (oder &lt;i&gt;Zahlungseingang bestätigen&lt;/i&gt;) → Schlüssel ausgestellt → E-Mail aus der Vorlage &lt;code&gt;Split3D.LicenseKey.CustomerNotification&lt;/code&gt; → &lt;b&gt;E-Mail-Warteschlange&lt;/b&gt; → Versand über das SMTP-Konto innerhalb von ~1 Minute. Das Layout unten gilt für &lt;b&gt;alle&lt;/b&gt; E-Mails des Shops (Bestellungen, Konto…).</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.Tab.Key">
+        <Value>Schlüssel-E-Mail</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.Tab.Layout">
+        <Value>Layout &amp; Farben</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.DefaultAccount">
+        <Value>Standardkonto ({0})</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.ResetBody">
+        <Value>Standard wiederherstellen</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.ResetBody.Confirm">
+        <Value>Aktuellen Inhalt durch die Standardvorlage ersetzen? (Erst beim Speichern übernommen.)</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.Variables">
+        <Value>Einfügen</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.Layout.pop">
+        <Value>Pop Studio</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.Layout.pop.Hint">
+        <Value>Cremefarbene Seite, Tintenrahmen, harter Schatten – wie die Website.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.Layout.clean">
+        <Value>Schlicht</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.Layout.clean.Hint">
+        <Value>Weiße Karte, dünner Rahmen, weicher Schatten – ruhig und gut lesbar.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.Header.ink">
+        <Value>Dunkler Balken</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.Header.accent">
+        <Value>Akzent</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.Header.light">
+        <Value>Hell</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.Colors">
+        <Value>Farben</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.ResetColors">
+        <Value>TT-Minimal-Markenfarben verwenden</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.Refresh">
+        <Value>Vorschau aktualisieren</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.SendTest">
+        <Value>Test senden</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.SendTest.Hint">
+        <Value>Sendet die angezeigte E-Mail (Beispieldaten, ungespeicherter Inhalt) an diese Adresse, um sie in Gmail / auf dem Handy zu prüfen.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.TemplateMissing">
+        <Value>Nachrichtenvorlage '{0}' wurde nicht gefunden.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.TestEmailInvalid">
+        <Value>Bitte eine gültige Empfängeradresse eingeben.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.TestQueued">
+        <Value>Test-E-Mail an {0} eingereiht. Sie kommt in etwa einer Minute an.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.ColorInvalid">
+        <Value>Farben müssen das Format #rrggbb haben.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.SubjectRequired">
+        <Value>Bitte einen Betreff eingeben.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.BodyRequired">
+        <Value>Der E-Mail-Text darf nicht leer sein.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.Preview.License">
+        <Value>Schlüssel-E-Mail (Beispieldaten)</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.Preview.OrderPlacedCustomerNotification">
+        <Value>Bestellung eingegangen – Kunde</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.Preview.OrderCompletedCustomerNotification">
+        <Value>Bestellung abgeschlossen – Kunde</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.Preview.CustomerNewOrderNote">
+        <Value>Neue Bestellnotiz</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.Preview.CustomerWelcomeMessage">
+        <Value>Willkommensnachricht</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.Preview.CustomerPasswordRecovery">
+        <Value>Passwort-Wiederherstellung</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.Fields.SendEmail">
+        <Value>Schlüssel bei Zahlung automatisch senden</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.Fields.SendEmail.Hint">
+        <Value>Sobald für eine bezahlte Bestellung Schlüssel ausgestellt sind, wird die Schlüssel-E-Mail eingereiht.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.Fields.TemplateActive">
+        <Value>Vorlage Schlüssel-E-Mail aktiv</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.Fields.TemplateActive.Hint">
+        <Value>Wenn aus, wird keine Schlüssel-E-Mail gesendet (auch nicht über Erneut senden).</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.Fields.EmailAccountId">
+        <Value>Senden von</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.Fields.EmailAccountId.Hint">
+        <Value>SMTP-Konto für die Schlüssel-E-Mail. Leer = Standardkonto des Shops.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.Fields.Subject">
+        <Value>Betreff</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.Fields.Subject.Hint">
+        <Value>Unterstützt Liquid-Variablen, z. B. {{ License.Addon }}.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.Fields.Bcc">
+        <Value>BCC</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.Fields.Bcc.Hint">
+        <Value>Blindkopie für die Unterlagen des Shops; mehrere Adressen mit Komma trennen.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.Fields.Body">
+        <Value>E-Mail-Text</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.Fields.Body.Hint">
+        <Value>Liquid-Vorlage auf Basis des gemeinsamen Layouts ({% extends 'master' %}). Gilt für alle Sprachen; Strg+Leertaste schlägt Variablen vor, F11 Vollbild.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.Fields.BrandingEnabled">
+        <Value>TT-Minimal-Design für alle E-Mails</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.Fields.BrandingEnabled.Hint">
+        <Value>Wendet Farben, Kopf- und Fußzeile des Studios auf alle Shop-E-Mails an. Aus = Smartstore-Standarddesign.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.Fields.Layout">
+        <Value>Layout</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.Fields.Layout.Hint">
+        <Value>Grundrahmen der E-Mail.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.Fields.HeaderStyle">
+        <Value>Kopfzeile</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.Fields.HeaderStyle.Hint">
+        <Value>Markenleiste oben in der E-Mail.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.Fields.ShowLogo">
+        <Value>Logo-Bild anzeigen</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.Fields.ShowLogo.Hint">
+        <Value>Verwendet das Shop-Logo statt des Markennamens als Text.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.Fields.AccentColor">
+        <Value>Akzent</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.Fields.AccentColor.Hint">
+        <Value>Buttons, Schrittnummern, Streifen auf der Karte.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.Fields.HighlightColor">
+        <Value>Hervorhebung</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.Fields.HighlightColor.Hint">
+        <Value>Hintergrund des Schlüsselfelds und der Badges.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.Fields.BackgroundColor">
+        <Value>Hintergrund</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.Fields.BackgroundColor.Hint">
+        <Value>Seite hinter der Inhaltskarte.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.Fields.InkColor">
+        <Value>Tinte</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.Fields.InkColor.Hint">
+        <Value>Überschriften, Rahmen und Schatten.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.Fields.HeaderNote">
+        <Value>Kopfzeilen-Notiz</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.Fields.HeaderNote.Hint">
+        <Value>Rechts neben dem Markennamen. Leer = Studio-Slogan.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.Fields.FooterText">
+        <Value>Schlusstext</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.Fields.FooterText.Hint">
+        <Value>Ein Absatz pro Zeile, über den Kontaktdaten.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.Fields.ShowContact">
+        <Value>Kontaktdaten anzeigen</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.Fields.ShowContact.Hint">
+        <Value>Telefon, Zalo, Facebook und Adresse aus den Studio-Einstellungen.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.Fields.TestEmail">
+        <Value>Testempfänger</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.Fields.TestEmail.Hint">
+        <Value>Adresse, die die Test-E-Mail erhält.</Value>
+    </LocaleResource>
 </Language>

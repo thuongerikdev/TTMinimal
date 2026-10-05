@@ -29,6 +29,7 @@ public class AdminMenu : IMenuProvider
         node.Append(CreateItem("split3d-licenses", "License keys", "Plugins.Split3D.Licenses", "key", "List", "Split3D"));
         node.Append(CreateItem("split3d-devices", "Devices", "Plugins.Split3D.Devices", "pc-display", "List", "Split3DDevice"));
         node.Append(CreateItem("split3d-addons", "Addons & plans", "Plugins.Split3D.Addons", "boxes", "List", "Split3DAddon"));
+        node.Append(CreateItem("split3d-mail", "Key email", "Plugins.Split3D.Mail.KeyMenuTitle", "envelope-paper", "Index", "StudioMail"));
         node.Append(CreateItem("split3d-configure", "Settings", "Admin.Common.Configure", "gear", "Configure", "Split3D"));
 
         var studio = new MenuItem().ToBuilder()
@@ -40,7 +41,9 @@ public class AdminMenu : IMenuProvider
             .AsItem();
 
         var studioNode = new TreeNode<MenuItem>(studio, studio.Id);
-        studioNode.Append(CreateItem("tt-studio-quotes", "Quote requests", "Plugins.Split3D.Studio.Quotes", "printer", "List", "PrintQuote"));
+        studioNode.Append(CreateItem("tt-studio-quotes", "Print & design requests", "Plugins.Split3D.Studio.Quotes", "printer", "List", "PrintQuote"));
+        studioNode.Append(CreateItem("tt-studio-mail", "Emails", "Plugins.Split3D.Mail.MenuTitle", "envelope-paper-heart", "Index", "StudioMail"));
+        studioNode.Append(CreateItem("tt-studio-mail", "Emails", "Plugins.Split3D.Mail.MenuTitle", "envelope-paper-heart", "Index", "StudioMail"));
         studioNode.Append(CreateItem("tt-studio-settings", "Studio settings", "Plugins.Split3D.Studio.Settings", "shop", "Settings", "PrintQuote"));
 
         var dashboardNode = rootNode.SelectNodeById("dashboard");

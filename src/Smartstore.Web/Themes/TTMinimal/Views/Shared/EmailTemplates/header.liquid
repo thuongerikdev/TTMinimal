@@ -1,0 +1,25 @@
+{% assign _header = "ink" %}
+{% if Studio and Studio.HeaderStyle %}{% assign _header = Studio.HeaderStyle %}{% endif %}
+{% assign _brand = Store.Name %}
+{% if Studio and Studio.BrandName %}{% assign _brand = Studio.BrandName %}{% endif %}
+<table class="masthead masthead-{{ _header }}" role="presentation">
+	<tr>
+		<td class="masthead-cell">
+			<a href="{{ Store.Url }}" class="brand" target="_blank">
+				{% if Studio.ShowLogo and Store.Logo and Store.Logo.Src %}
+					<img class="masthead-logo" src="{{ Store.Logo.Src }}" alt="{{ _brand }}"
+						{% if Store.Logo.Width %}width="{{ Store.Logo.Width }}"{% endif %}
+						{% if Store.Logo.Height %}height="{{ Store.Logo.Height }}"{% endif %}
+					/>
+				{% else %}
+					<span class="brand-dot">&nbsp;</span>{{ _brand }}
+				{% endif %}
+			</a>
+		</td>
+		{% if Studio and Studio.HeaderNote %}
+		<td class="masthead-note-cell">
+			<span class="masthead-note">{{ Studio.HeaderNote }}</span>
+		</td>
+		{% endif %}
+	</tr>
+</table>

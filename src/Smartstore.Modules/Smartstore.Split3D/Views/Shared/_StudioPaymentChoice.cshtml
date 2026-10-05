@@ -1,0 +1,62 @@
+@model CheckoutPaymentChoiceModel
+
+@{
+    var single = Model.Methods.Count == 1;
+}
+
+@* Replaces the payment part of the order review box (its "Change" button would lead to the skipped payment page). *@
+<style>
+    .checkout-confirm-page .order-review-data-box { display: none; }
+</style>
+
+<section class="card card-body mb-3 studio-payment-choice" aria-labelledby="studio-payment-title">
+    <h5 id="studio-payment-title" class="heading-title order-review-heading mb-2">@T("Plugins.Split3D.Checkout.PaymentMethod")</h5>
+
+    @if (single)
+    {
+        var method = Model.Methods[0];
+        <div class="font-weight-bold">@method.Name</div>
+    }
+    else
+    {
+        <div class="studio-payment-options" role="radiogroup" aria-labelledby="studio-payment-title">
+            @foreach (var method in Model.Methods)
+            {
+                var id = "studio-pm-" + method.SystemName.Replace('.', '-');
+                <div class="form-check mb-2">
+                    <input class="form-check-input studio-pm-radio" type="radio" name="studio-payment-method" id="@id" value="@method.SystemName" attr-checked='(method.Selected, "checked")' />
+                    <label class="form-check-label" for="@id">
+                        <span class="font-weight-bold">@method.Name</span>
+                    </label>
+                </div>
+            }
+        </div>
+    }
+
+    <div class="text-muted small mt-1">@T("Plugins.Split3D.Checkout.PaymentHint")</div>
+</section>
+
+@if (!single)
+{
+    <script sm-target-zone="scripts" data-origin="studio-payment-choice">
+        $(function () {
+            $('.studio-pm-radio').on('change', function () {
+                var radios = $('.studio-pm-radio').prop('disabled', true);
+                $.ajax({
+                    type: 'POST',
+                    cache: false,
+                    url: '@Url.Action("Refresh", "Checkout", new { area = string.Empty })',
+                    data: { paymentMethodSystemName: this.value, actionName: 'PaymentMethod', parts: 1 },
+                    success: function (response) {
+                        if (response && response.contents && response.contents[1]) {
+                            $('#order-totals').html(response.contents[1]);
+                        }
+                    },
+                    complete: function () {
+                        radios.prop('disabled', false);
+                    }
+                });
+            });
+        });
+    </script>
+}

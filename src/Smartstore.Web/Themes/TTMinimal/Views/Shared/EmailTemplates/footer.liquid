@@ -1,0 +1,20 @@
+{% if Studio %}
+	{% for line in Studio.FooterLines %}
+		<p class="footer-note">{{ line }}</p>
+	{% endfor %}
+
+	{% if Studio.ShowContact %}
+		<p class="footer-contact">
+			{% if Studio.Phone1 %}<a class="chip" href="tel:{{ Studio.Phone1 }}">{{ Studio.Phone1 }}</a>{% endif %}
+			{% if Studio.ZaloUrl %}<a class="chip" href="{{ Studio.ZaloUrl }}" target="_blank">Zalo</a>{% endif %}
+			{% if Studio.FacebookUrl %}<a class="chip" href="{{ Studio.FacebookUrl }}" target="_blank">Facebook</a>{% endif %}
+			<a class="chip" href="{{ Store.Url }}" target="_blank">{{ Studio.StoreHost }}</a>
+		</p>
+		{% if Studio.Address %}<p class="text-xs">{{ Studio.Address }}</p>{% endif %}
+	{% endif %}
+
+	<p class="footer-copy">{{ Store.Copyright }}</p>
+{% else %}
+	<p class="footer-copy">{{ Store.Copyright }}</p>
+	<p class="text-xs"><a href="{{ Store.Url }}">{{ Store.Url }}</a></p>
+{% endif %}

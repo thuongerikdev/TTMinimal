@@ -150,12 +150,43 @@ a:focus-visible, button:focus-visible, summary:focus-visible {
         border: 2px solid $tt-ink;
     }
 
-    #shopbar-user.d-lg-none { display: block !important; }
+    // Replaced by .tt-account (dropdown with logout).
+    #shopbar-user { display: none !important; }
+}
+
+.tt-account {
+    .dropdown-menu {
+        min-width: 220px;
+        margin-top: .6rem;
+        padding: .4rem;
+        background: $tt-cream;
+        border: 2px solid $tt-ink;
+        border-radius: 14px;
+        box-shadow: 5px 5px 0 $tt-ink;
+    }
+
+    .dropdown-item {
+        display: flex;
+        align-items: center;
+        gap: .6rem;
+        padding: .5rem .7rem;
+        border-radius: 9px;
+        font-weight: 600;
+        color: $tt-ink;
+
+        i { width: 1.1rem; text-align: center; }
+        &:hover, &:focus { background: #fff; color: $tt-ink; }
+    }
+
+    .dropdown-divider { margin: .3rem .2rem; border-top: 2px dashed rgba($tt-ink, .25); }
 }
 
 .tt-icon-btn {
     display: inline-grid;
     place-items: center;
+    // Utility classes like d-lg-inline-flex force flex; keep the icon centered there too.
+    align-items: center;
+    justify-content: center;
     width: 42px;
     height: 42px;
     padding: 0;

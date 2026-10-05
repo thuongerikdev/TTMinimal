@@ -39,6 +39,23 @@
             </a>
         }
 
+        @* Account: Flex shows this in the TopBar (which TT Minimal drops). The dropdown carries the logout link. *@
+        @if (Model.IsAuthenticated)
+        {
+            <div class="dropdown tt-account">
+                <a class="tt-icon-btn" href="@Url.Action("Info", "Customer")" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" rel="nofollow" title="@T("Account.MyAccount")" aria-label="@T("Account.MyAccount")">
+                    <i class="fa fa-user" aria-hidden="true"></i>
+                </a>
+                @await Component.InvokeAsync("AccountDropdown")
+            </div>
+        }
+        else
+        {
+            <a class="tt-icon-btn" href="@Url.RouteUrl("Login", new { returnUrl = Context.Request.Query["returnUrl"].ToString() })" rel="nofollow" title="@T("Account.Login")" aria-label="@T("Account.Login")">
+                <i class="fa fa-user" aria-hidden="true"></i>
+            </a>
+        }
+
         <div class="shopbar-col-group shopbar-col-group-tools">
             <partial name="ShopBar.Tools" model="Model" />
         </div>

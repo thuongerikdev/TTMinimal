@@ -1,0 +1,85 @@
+{% extends 'master' %}
+
+{% block 'body' %}
+<span class="eyebrow">Key kích hoạt</span>
+
+<h1>Chào {{ License.CustomerName }}, key của bạn đã sẵn sàng!</h1>
+<p class="lead">
+  Cảm ơn bạn đã chọn <b>{{ License.Addon }}</b>. Dưới đây là key kích hoạt và hướng dẫn để bắt đầu chỉ trong 3 bước.
+</p>
+
+<table class="facts" role="presentation">
+  <tr>
+    <td class="fact">
+      <span class="fact-label">Sản phẩm</span>
+      <span class="fact-value">{{ License.Addon }}</span>
+    </td>
+    <td class="fact">
+      <span class="fact-label">Gói</span>
+      <span class="fact-value">{{ License.Plan }}</span>
+    </td>
+  </tr>
+  <tr>
+    <td class="fact fact-last">
+      <span class="fact-label">Hạn sử dụng</span>
+      <span class="fact-value">{{ License.ExpiresOn }}</span>
+    </td>
+    <td class="fact fact-last">
+      <span class="fact-label">Số máy dùng cùng lúc</span>
+      <span class="fact-value">{{ License.MaxDevices }} máy</span>
+    </td>
+  </tr>
+</table>
+
+<table class="keybox" role="presentation">
+  <tr>
+    <td class="keybox-cell">
+      <p class="keybox-label">Key của bạn &middot; #{{ License.KeyId }}</p>
+      <span class="keybox-code">{{ License.Key }}</span>
+    </td>
+  </tr>
+</table>
+<p class="keybox-hint">Sao chép toàn bộ đoạn key ở trên, kể cả khi trình đọc email tự xuống dòng.</p>
+
+<h2>Kích hoạt trong 3 bước</h2>
+<table class="steps" role="presentation">
+  <tr>
+    <td class="step-no-cell"><span class="step-no">1</span></td>
+    <td class="step-text">
+      <b>Cài addon.</b>
+      {% if License.Installer %}
+        File <b>{{ License.Installer.FileName }}</b> (phiên bản {{ License.Installer.Version }}) đã được đính kèm trong email này.
+      {% else %}
+        Tải file cài đặt trong trang <a href="{{ License.MyKeysUrl }}">Key của tôi</a>.
+      {% endif %}
+      Trong Blender mở <b>Edit &rsaquo; Preferences &rsaquo; Get Extensions &rsaquo; Install from Disk</b> rồi chọn file .zip.
+    </td>
+  </tr>
+  <tr>
+    <td class="step-no-cell"><span class="step-no">2</span></td>
+    <td class="step-text">
+      <b>Mở bảng {{ License.Addon }}</b> ở thanh bên của Viewport (phím <b>N</b>).
+    </td>
+  </tr>
+  <tr>
+    <td class="step-no-cell"><span class="step-no">3</span></td>
+    <td class="step-text">
+      <b>Dán key và bấm Kích hoạt.</b> Lần kích hoạt đầu tiên máy cần có kết nối internet.
+    </td>
+  </tr>
+</table>
+
+<p class="text-center mt-3 mb-3">
+  <a class="btn btn-primary" href="{{ License.MyKeysUrl }}" target="_blank">Xem key &amp; thiết bị của tôi</a>
+</p>
+
+<table class="note" role="presentation">
+  <tr>
+    <td class="note-cell">
+      Key gắn với email <b>{{ License.Email }}</b> và dùng được trên tối đa {{ License.MaxDevices }} máy cùng lúc.
+      Đổi máy? Đăng xuất máy cũ trong trang Key của tôi. Vui lòng không chia sẻ key cho người khác.
+      {% if License.OrderNumber %}<br />Đơn hàng #{{ License.OrderNumber }} &middot; cấp ngày {{ License.IssuedOn }}{% if License.HasPrice %} &middot; {{ License.Price }}{% endif %}{% endif %}
+    </td>
+  </tr>
+</table>
+{% endblock %}

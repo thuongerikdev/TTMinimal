@@ -19,7 +19,7 @@ namespace Smartstore.Split3D.Components;
 /// </summary>
 public class StudioHomeViewComponent : SmartViewComponent
 {
-    const int MaxProducts = 8;
+    const int MaxProducts = 24;
     const int ThumbnailSize = 600;
 
     private readonly SmartDbContext _db;
@@ -96,6 +96,7 @@ public class StudioHomeViewComponent : SmartViewComponent
         }
 
         model.Products = await GetProductsAsync(addonProductIds, storeId);
+        model.ServiceCategories = await GetServiceCategoriesAsync(model.Products, addonCategory?.Id ?? 0, model.AddonCategoryUrl);
         model.Addons = await GetAddonsAsync();
 
         return View(model);
@@ -174,6 +175,47 @@ public class StudioHomeViewComponent : SmartViewComponent
                 CategoryId = productCategories.Get(product.Id)?.CategoryId ?? 0,
                 HasVariants = variantProductIds.Contains(product.Id),
                 IsCustom = customProductIds.Contains(product.Id)
+            });
+        }
+
+        return cards;
+    }
+
+    /// <summary>
+    /// The categories of the listed product cards, for the collection's category column.
+    /// </summary>
+    private async Task<List<StudioCategoryCard>> GetServiceCategoriesAsync(List<StudioProductCard> products, int addonCategoryId, string addonCategoryUrl)
+    {
+        var counts = products
+            .Where(x => x.CategoryId > 0)
+            .GroupBy(x => x.CategoryId)
+            .ToDictionary(x => x.Key, x => x.Count());
+
+        if (counts.Count == 0)
+        {
+            return [];
+        }
+
+        var categoryIds = counts.Keys.ToArray();
+        var categories = await _db.Categories
+            .AsNoTracking()
+            .Where(x => categoryIds.Contains(x.Id))
+            .OrderBy(x => x.DisplayOrder)
+            .ThenBy(x => x.Name)
+            .ToListAsync();
+
+        var cards = new List<StudioCategoryCard>();
+
+        foreach (var category in categories)
+        {
+            cards.Add(new StudioCategoryCard
+            {
+                Id = category.Id,
+                Name = category.GetLocalized(x => x.Name),
+                Url = category.Id == addonCategoryId && addonCategoryUrl.HasValue()
+                    ? addonCategoryUrl
+                    : Url.RouteUrl("Category", new { SeName = await category.GetActiveSlugAsync() }),
+                ProductCount = counts.Get(category.Id)
             });
         }
 

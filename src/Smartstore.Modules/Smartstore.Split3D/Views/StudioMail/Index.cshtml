@@ -1,0 +1,415 @@
+@model StudioMailModel
+
+@{
+    ViewBag.Title = T("Plugins.Split3D.Mail.Title").Value;
+    var hasAccount = Model.EmailAccounts.Count > 0;
+    var accountEmail = Model.EmailAccounts.FirstOrDefault(x => x.Value == Model.EmailAccountId.ToString())?.Text ?? Model.DefaultAccountEmail;
+    string[] variables =
+    [
+        "License.CustomerName", "License.Email", "License.Addon", "License.Plan", "License.ExpiresOn", "License.MaxDevices",
+        "License.Key", "License.KeyId", "License.OrderNumber", "License.Price", "License.MyKeysUrl", "License.Installer.FileName",
+        "Store.Name", "Store.Url"
+    ];
+}
+
+<div class="section-header">
+    <div class="title">
+        <i class="bi bi-envelope-paper-heart"></i>
+        @ViewBag.Title
+    </div>
+    <div class="options">
+        <a href="@Url.Action("Edit", "MessageTemplate", new { area = "Admin", id = Model.TemplateId })" class="btn btn-secondary">
+            <i class="bi bi-code-slash"></i>
+            <span>@T("Plugins.Split3D.Mail.OpenTemplate")</span>
+        </a>
+        <a href="@Url.Action("List", "QueuedEmail", new { area = "Admin" })" class="btn btn-secondary">
+            <i class="bi bi-inboxes"></i>
+            <span>@T("Plugins.Split3D.Mail.Queue")</span>
+        </a>
+        <button type="submit" form="studio-mail-form" class="btn btn-warning">
+            <i class="fa fa-check"></i>
+            <span>@T("Admin.Common.Save")</span>
+        </button>
+    </div>
+</div>
+
+<div class="tt-mail-status">
+    <div class="tt-mail-stat @(hasAccount ? "is-ok" : "is-bad")">
+        <i class="bi @(hasAccount ? "bi-send-check" : "bi-exclamation-octagon")"></i>
+        <div>
+            <span class="tt-mail-stat-label">@T("Plugins.Split3D.Mail.Status.Sender")</span>
+            @if (hasAccount)
+            {
+                <strong>@accountEmail</strong>
+            }
+            else
+            {
+                <strong>@T("Plugins.Split3D.Mail.NoAccount")</strong>
+                <a href="@Url.Action("List", "EmailAccount", new { area = "Admin" })">@T("Plugins.Split3D.Mail.AddAccount")</a>
+            }
+        </div>
+    </div>
+    <div class="tt-mail-stat @(Model.SendEmail ? "is-ok" : "is-off")">
+        <i class="bi @(Model.SendEmail ? "bi-lightning-charge" : "bi-pause-circle")"></i>
+        <div>
+            <span class="tt-mail-stat-label">@T("Plugins.Split3D.Mail.Status.Auto")</span>
+            <strong>@T(Model.SendEmail ? "Plugins.Split3D.Mail.Status.AutoOn" : "Plugins.Split3D.Mail.Status.AutoOff")</strong>
+        </div>
+    </div>
+    <div class="tt-mail-stat @(Model.TemplateActive ? "is-ok" : "is-off")">
+        <i class="bi @(Model.TemplateActive ? "bi-envelope-check" : "bi-envelope-slash")"></i>
+        <div>
+            <span class="tt-mail-stat-label">@T("Plugins.Split3D.Mail.Status.Template")</span>
+            <strong>@T(Model.TemplateActive ? "Plugins.Split3D.Mail.Status.Active" : "Plugins.Split3D.Mail.Status.Inactive")</strong>
+        </div>
+    </div>
+</div>
+
+<div class="tt-mail-flow">
+    <i class="bi bi-diagram-3"></i>
+    <span>@Html.Raw(T("Plugins.Split3D.Mail.Flow").Value)</span>
+</div>
+
+<div class="row tt-mail">
+    <div class="col-xl-5 col-lg-6">
+        <form asp-action="Index" method="post" id="studio-mail-form">
+            <div asp-validation-summary="All"></div>
+
+            <ul class="nav nav-tabs tt-mail-tabs" role="tablist">
+                <li class="nav-item">
+                    <a class="nav-link active" data-toggle="tab" data-bs-toggle="tab" href="#tt-mail-key" role="tab">
+                        <i class="bi bi-key"></i> @T("Plugins.Split3D.Mail.Tab.Key")
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" data-toggle="tab" data-bs-toggle="tab" href="#tt-mail-layout" role="tab">
+                        <i class="bi bi-palette"></i> @T("Plugins.Split3D.Mail.Tab.Layout")
+                    </a>
+                </li>
+            </ul>
+
+            <div class="tab-content tt-mail-panel">
+                <div class="tab-pane fade show active" id="tt-mail-key" role="tabpanel">
+                    <div class="tt-mail-switches">
+                        <label class="tt-mail-switch">
+                            <input asp-for="SendEmail" />
+                            <span>
+                                <strong>@T("Plugins.Split3D.Mail.Fields.SendEmail")</strong>
+                                <small>@T("Plugins.Split3D.Mail.Fields.SendEmail.Hint")</small>
+                            </span>
+                        </label>
+                        <label class="tt-mail-switch">
+                            <input asp-for="TemplateActive" />
+                            <span>
+                                <strong>@T("Plugins.Split3D.Mail.Fields.TemplateActive")</strong>
+                                <small>@T("Plugins.Split3D.Mail.Fields.TemplateActive.Hint")</small>
+                            </span>
+                        </label>
+                    </div>
+
+                    <div class="form-group">
+                        <smart-label asp-for="EmailAccountId" />
+                        <select asp-for="EmailAccountId" asp-items="Model.EmailAccounts" class="form-control noskin" data-tt-preview>
+                            <option value="0">@T("Plugins.Split3D.Mail.DefaultAccount", Model.DefaultAccountEmail ?? "–")</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <smart-label asp-for="Subject" />
+                        <input asp-for="Subject" class="form-control" data-tt-preview />
+                        <span asp-validation-for="Subject"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <smart-label asp-for="Bcc" />
+                        <input asp-for="Bcc" class="form-control" placeholder="shop@example.com" />
+                    </div>
+
+                    <div class="form-group mb-2">
+                        <div class="d-flex align-items-end">
+                            <smart-label asp-for="Body" />
+                            <button type="button" class="btn btn-sm btn-outline-secondary ml-auto ms-auto" id="tt-mail-reset">
+                                <i class="bi bi-arrow-counterclockwise"></i>
+                                <span>@T("Plugins.Split3D.Mail.ResetBody")</span>
+                            </button>
+                        </div>
+                        <div class="tt-mail-vars">
+                            <span class="tt-mail-vars-label">@T("Plugins.Split3D.Mail.Variables")</span>
+                            @foreach (var variable in variables)
+                            {
+                                <button type="button" class="tt-mail-var" data-var="@variable">@variable.Replace("License.", string.Empty)</button>
+                            }
+                        </div>
+                        <editor asp-for="Body" asp-additional-viewdata='new { templateName = "MessageTemplate/" + StudioMailService.LicenseTemplateName, height = "460px" }' />
+                        <span asp-validation-for="Body"></span>
+                        <div class="form-text text-muted">@T("Plugins.Split3D.Mail.Fields.Body.Hint")</div>
+                    </div>
+                </div>
+
+                <div class="tab-pane fade" id="tt-mail-layout" role="tabpanel">
+                    <div class="tt-mail-switches">
+                        <label class="tt-mail-switch">
+                            <input asp-for="BrandingEnabled" data-tt-preview />
+                            <span>
+                                <strong>@T("Plugins.Split3D.Mail.Fields.BrandingEnabled")</strong>
+                                <small>@T("Plugins.Split3D.Mail.Fields.BrandingEnabled.Hint")</small>
+                            </span>
+                        </label>
+                    </div>
+
+                    <div class="form-group">
+                        <smart-label asp-for="Layout" />
+                        <div class="tt-mail-choices">
+                            @foreach (var layout in new[] { "pop", "clean" })
+                            {
+                                <label class="tt-mail-choice">
+                                    <input type="radio" name="Layout" value="@layout" checked="@(Model.Layout == layout)" data-tt-preview />
+                                    <span class="tt-mail-mini tt-mail-mini-@layout">
+                                        <i class="tt-mail-mini-head"></i>
+                                        <i class="tt-mail-mini-card"><b></b><b></b><b></b></i>
+                                    </span>
+                                    <strong>@T("Plugins.Split3D.Mail.Layout." + layout)</strong>
+                                    <small>@T("Plugins.Split3D.Mail.Layout." + layout + ".Hint")</small>
+                                </label>
+                            }
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <smart-label asp-for="HeaderStyle" />
+                        <div class="tt-mail-choices tt-mail-choices-3">
+                            @foreach (var style in new[] { "ink", "accent", "light" })
+                            {
+                                <label class="tt-mail-choice tt-mail-choice-sm">
+                                    <input type="radio" name="HeaderStyle" value="@style" checked="@(Model.HeaderStyle == style)" data-tt-preview />
+                                    <span class="tt-mail-head tt-mail-head-@style"><i></i>TT</span>
+                                    <strong>@T("Plugins.Split3D.Mail.Header." + style)</strong>
+                                </label>
+                            }
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="d-block">@T("Plugins.Split3D.Mail.Colors")</label>
+                        <div class="tt-mail-colors">
+                            @foreach (var (name, value) in new[]
+                            {
+                                (nameof(Model.AccentColor), Model.AccentColor),
+                                (nameof(Model.HighlightColor), Model.HighlightColor),
+                                (nameof(Model.BackgroundColor), Model.BackgroundColor),
+                                (nameof(Model.InkColor), Model.InkColor)
+                            })
+                            {
+                                <label class="tt-mail-color" title="@T("Plugins.Split3D.Mail.Fields." + name + ".Hint")">
+                                    <input type="color" value="@value" data-color-for="@name" />
+                                    <input type="text" name="@name" value="@value" class="form-control form-control-sm" maxlength="7" spellcheck="false" data-tt-preview />
+                                    <span>@T("Plugins.Split3D.Mail.Fields." + name)</span>
+                                </label>
+                            }
+                        </div>
+                        <button type="button" class="btn btn-sm btn-link px-0" id="tt-mail-colors-reset">@T("Plugins.Split3D.Mail.ResetColors")</button>
+                    </div>
+
+                    <div class="form-group">
+                        <smart-label asp-for="HeaderNote" />
+                        <input asp-for="HeaderNote" class="form-control" data-tt-preview />
+                    </div>
+
+                    <div class="form-group">
+                        <smart-label asp-for="FooterText" />
+                        <textarea asp-for="FooterText" rows="3" class="form-control" data-tt-preview></textarea>
+                    </div>
+
+                    <div class="tt-mail-switches">
+                        <label class="tt-mail-switch">
+                            <input asp-for="ShowContact" data-tt-preview />
+                            <span>
+                                <strong>@T("Plugins.Split3D.Mail.Fields.ShowContact")</strong>
+                                <small>@T("Plugins.Split3D.Mail.Fields.ShowContact.Hint")</small>
+                            </span>
+                        </label>
+                        <label class="tt-mail-switch">
+                            <input asp-for="ShowLogo" data-tt-preview />
+                            <span>
+                                <strong>@T("Plugins.Split3D.Mail.Fields.ShowLogo")</strong>
+                                <small>@T("Plugins.Split3D.Mail.Fields.ShowLogo.Hint")</small>
+                            </span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <div class="col-xl-7 col-lg-6">
+        <div class="tt-mail-preview">
+            <div class="tt-mail-toolbar">
+                <select id="tt-mail-template" class="form-control form-control-sm noskin">
+                    @foreach (var item in Model.PreviewTemplates)
+                    {
+                        <option value="@item.Value" selected="@item.Selected">@item.Text</option>
+                    }
+                </select>
+                <div class="btn-group btn-group-sm tt-mail-devices" role="group">
+                    <button type="button" class="btn btn-secondary active" data-device="desktop" title="Desktop"><i class="bi bi-laptop"></i></button>
+                    <button type="button" class="btn btn-secondary" data-device="mobile" title="Mobile"><i class="bi bi-phone"></i></button>
+                </div>
+                <button type="button" class="btn btn-sm btn-secondary" id="tt-mail-refresh" title="@T("Plugins.Split3D.Mail.Refresh")">
+                    <i class="bi bi-arrow-repeat"></i>
+                </button>
+            </div>
+
+            <div class="tt-mail-inbox">
+                <div class="tt-mail-avatar">TT</div>
+                <div class="tt-mail-meta">
+                    <div class="tt-mail-subject" id="tt-mail-subject">…</div>
+                    <div class="tt-mail-from"><span id="tt-mail-from"></span> → <span id="tt-mail-to"></span></div>
+                    <div class="tt-mail-attach" id="tt-mail-attach"></div>
+                </div>
+            </div>
+
+            <div class="tt-mail-frame-wrap" id="tt-mail-frame-wrap">
+                <div class="tt-mail-error" id="tt-mail-error" style="display:none"></div>
+                <iframe id="tt-mail-frame" title="Email preview" sandbox="allow-same-origin allow-popups"></iframe>
+            </div>
+
+            <div class="tt-mail-test">
+                <i class="bi bi-send"></i>
+                <input type="email" id="tt-mail-test-email" class="form-control" value="@Model.TestEmail" placeholder="email@example.com" />
+                <button type="button" class="btn btn-primary" id="tt-mail-send-test">
+                    <span>@T("Plugins.Split3D.Mail.SendTest")</span>
+                </button>
+            </div>
+            <div class="form-text text-muted">@T("Plugins.Split3D.Mail.SendTest.Hint")</div>
+        </div>
+    </div>
+</div>
+
+<script>
+    $(function () {
+        var form = $('#studio-mail-form');
+        var frame = document.getElementById('tt-mail-frame');
+        var timer = null, pending = null;
+        var defaults = { AccentColor: '#ff67bc', HighlightColor: '#ffe348', BackgroundColor: '#fffbed', InkColor: '#20201f' };
+
+        function editor() {
+            var el = form.find('.CodeMirror')[0];
+            return el ? el.CodeMirror : null;
+        }
+
+        function payload(extra) {
+            var cm = editor();
+            if (cm) cm.save();
+            return form.serialize() + '&previewTemplate=' + encodeURIComponent($('#tt-mail-template').val()) + (extra || '');
+        }
+
+        function refresh() {
+            if (pending) pending.abort();
+            $('#tt-mail-frame-wrap').addClass('is-loading');
+            pending = $.ajax({
+                cache: false,
+                type: 'POST',
+                url: '@Url.Action("Preview")',
+                data: payload(),
+                dataType: 'json'
+            }).done(function (data) {
+                if (!data.success) {
+                    $('#tt-mail-error').text(data.message).show();
+                    return;
+                }
+                $('#tt-mail-error').hide();
+                $('#tt-mail-subject').text(data.subject);
+                $('#tt-mail-from').text(data.from);
+                $('#tt-mail-to').text(data.to);
+                $('#tt-mail-attach').empty().toggle(data.attachments.length > 0);
+                data.attachments.forEach(function (name) {
+                    $('<span class="tt-mail-file"><i class="bi bi-paperclip"></i></span>').append(document.createTextNode(name)).appendTo('#tt-mail-attach');
+                });
+                frame.srcdoc = data.html;
+            }).always(function () {
+                pending = null;
+                $('#tt-mail-frame-wrap').removeClass('is-loading');
+            });
+        }
+
+        function schedule() {
+            clearTimeout(timer);
+            timer = setTimeout(refresh, 450);
+        }
+
+        form.on('input change', '[data-tt-preview]', schedule);
+        $('#tt-mail-template').on('change', refresh);
+        $('#tt-mail-refresh').on('click', refresh);
+
+        // CodeMirror is created by the Liquid editor template on document ready.
+        setTimeout(function () {
+            var cm = editor();
+            if (cm) cm.on('change', schedule);
+        }, 0);
+
+        $('.tt-mail-vars').on('click', '.tt-mail-var', function () {
+            var cm = editor(), text = '{{ ' + $(this).data('var') + ' }}';
+            if (cm) {
+                cm.replaceSelection(text);
+                cm.focus();
+            }
+        });
+
+        $('#tt-mail-reset').on('click', function () {
+            if (!confirm('@T("Plugins.Split3D.Mail.ResetBody.Confirm")')) return;
+            $.post('@Url.Action("DefaultBody")', form.find('input[name=__RequestVerificationToken]').serialize(), function (data) {
+                var cm = editor();
+                if (cm) cm.setValue(data.body); else form.find('[name=Body]').val(data.body);
+                form.find('[name=Subject]').val(data.subject);
+                schedule();
+            });
+        });
+
+        // Color pickers mirror the text fields (the text field is what gets posted).
+        form.on('input', '[data-color-for]', function () {
+            form.find('[name=' + $(this).data('color-for') + ']').val(this.value).trigger('input');
+        });
+        form.on('input', '.tt-mail-color [type=text]', function () {
+            if (/^#[0-9a-f]{6}$/i.test(this.value)) {
+                $(this).siblings('[type=color]').val(this.value);
+            }
+        });
+        $('#tt-mail-colors-reset').on('click', function () {
+            $.each(defaults, function (name, value) {
+                form.find('[name=' + name + ']').val(value);
+                form.find('[data-color-for=' + name + ']').val(value);
+            });
+            schedule();
+        });
+
+        $('.tt-mail-devices').on('click', '[data-device]', function () {
+            $(this).addClass('active').siblings().removeClass('active');
+            $('#tt-mail-frame-wrap').toggleClass('is-mobile', $(this).data('device') === 'mobile');
+        });
+
+        $('#tt-mail-send-test').on('click', function () {
+            var btn = $(this).prop('disabled', true);
+            $.ajax({
+                cache: false,
+                type: 'POST',
+                url: '@Url.Action("SendTest")',
+                data: payload('&TestEmail=' + encodeURIComponent($('#tt-mail-test-email').val())),
+                dataType: 'json'
+            }).done(function (data) {
+                displayNotification(data.message, data.success ? 'success' : 'error');
+            }).always(function () {
+                btn.prop('disabled', false);
+            });
+        });
+
+        // Auto-height of the preview frame.
+        frame.addEventListener('load', function () {
+            try {
+                var doc = frame.contentDocument;
+                frame.style.height = Math.max(520, doc.documentElement.scrollHeight + 8) + 'px';
+            } catch (e) { }
+        });
+
+        refresh();
+    });
+</script>

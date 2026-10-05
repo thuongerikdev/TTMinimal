@@ -260,7 +260,7 @@
         <Value>Gửi email</Value>
     </LocaleResource>
     <LocaleResource Name="NoEmailAccount">
-        <Value>Chưa cấu hình tài khoản email. Hãy thiết lập tài khoản email mặc định trước.</Value>
+        <Value>Không gửi được email key: mẫu email key đang tắt hoặc chưa có tài khoản email (SMTP).</Value>
     </LocaleResource>
     <LocaleResource Name="Issued">
         <Value>Đã cấp key.</Value>
@@ -440,23 +440,11 @@
     <LocaleResource Name="Fields.BankAccountHolder.Hint">
         <Value>Tên chủ tài khoản.</Value>
     </LocaleResource>
-    <LocaleResource Name="Fields.EmailSubject">
-        <Value>Tiêu đề email</Value>
-    </LocaleResource>
-    <LocaleResource Name="Fields.EmailSubject.Hint">
-        <Value>Tiêu đề của email gửi key.</Value>
-    </LocaleResource>
-    <LocaleResource Name="Fields.EmailBody">
-        <Value>Nội dung email</Value>
-    </LocaleResource>
-    <LocaleResource Name="Fields.EmailBody.Hint">
-        <Value>Nội dung email gửi key. Biến thay thế: {CustomerName}, {Email}, {Plan}, {ExpiresOn}, {Price}, {Key}.</Value>
-    </LocaleResource>
     <LocaleResource Name="Fields.SimplifyAdminMenu">
         <Value>Rút gọn menu quản trị</Value>
     </LocaleResource>
     <LocaleResource Name="Fields.SimplifyAdminMenu.Hint">
-        <Value>Ẩn các mục menu quản trị liệt kê bên dưới. Chỉ ẩn trên menu; trang vẫn truy cập được qua URL và quyền không thay đổi.</Value>
+        <Value>Sắp xếp lại menu quản trị: các màn dùng hằng ngày (đơn hàng, key, thiết bị, yêu cầu, sản phẩm, khách hàng) thành mục riêng trên thanh menu, mọi phần cấu hình gộp vào menu Cấu hình. Đồng thời ẩn các mục liệt kê bên dưới. Trang vẫn truy cập được qua URL và quyền không thay đổi.</Value>
     </LocaleResource>
     <LocaleResource Name="Fields.HiddenAdminMenuItems">
         <Value>Các mục menu bị ẩn</Value>
@@ -3505,10 +3493,13 @@
         <Value>TT Minimal Studio</Value>
     </LocaleResource>
     <LocaleResource Name="Studio.Quotes">
-        <Value>Yêu cầu báo giá in 3D</Value>
+        <Value>Yêu cầu in &amp; thiết kế</Value>
     </LocaleResource>
     <LocaleResource Name="Studio.Settings">
         <Value>Cài đặt studio</Value>
+    </LocaleResource>
+    <LocaleResource Name="AdminMenu.StoreSetup">
+        <Value>Thiết lập cửa hàng</Value>
     </LocaleResource>
     <LocaleResource Name="Studio.Group.Contact">
         <Value>Thương hiệu &amp; liên hệ</Value>
@@ -3782,4 +3773,264 @@
         <Value>Các hệ điều hành đích, cách nhau dấu phẩy, VD: windows.x86_64, linux.x86_64, darwin.x86_64, darwin.aarch64.</Value>
     </LocaleResource>
 
+    <LocaleResource Name="Checkout.PaymentMethod">
+        <Value>Hình thức thanh toán</Value>
+    </LocaleResource>
+    <LocaleResource Name="Checkout.PaymentHint">
+        <Value>Thông tin chuyển khoản / mã QR hiện ngay sau khi bạn đặt hàng.</Value>
+    </LocaleResource>
+
+    <!-- TT Minimal Studio > Emails (key email template and layout of all store emails) -->
+    <LocaleResource Name="Mail.MenuTitle">
+        <Value>Email &amp; mẫu thư</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.KeyMenuTitle">
+        <Value>Email gửi key</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.Title">
+        <Value>Email &amp; mẫu thư</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.EditLink">
+        <Value>Thiết kế email gửi key</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.EditLink.Hint">
+        <Value>Nội dung, người gửi và bố cục email key được chỉnh trong TT Minimal Studio › Email &amp; mẫu thư (có xem trước và gửi thử).</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.SendFailed">
+        <Value>Không tạo được email key: {0}</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.OpenTemplate">
+        <Value>Mở trong Mẫu email</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.Queue">
+        <Value>Hàng đợi email</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.Status.Sender">
+        <Value>Tài khoản gửi</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.NoAccount">
+        <Value>Chưa có tài khoản email (SMTP) nào</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.AddAccount">
+        <Value>Thêm tài khoản email</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.Status.Auto">
+        <Value>Gửi key sau thanh toán</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.Status.AutoOn">
+        <Value>Tự động</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.Status.AutoOff">
+        <Value>Đang tắt</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.Status.Template">
+        <Value>Mẫu email key</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.Status.Active">
+        <Value>Đang bật</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.Status.Inactive">
+        <Value>Đang tắt – không gửi</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.Flow">
+        <Value>Luồng gửi: &lt;b&gt;đơn hàng được thanh toán&lt;/b&gt; (hoặc bấm &lt;i&gt;Xác nhận đã nhận tiền&lt;/i&gt;) → cấp key → email dựng từ mẫu &lt;code&gt;Split3D.LicenseKey.CustomerNotification&lt;/code&gt; → &lt;b&gt;hàng đợi email&lt;/b&gt; → gửi qua tài khoản SMTP trong vòng ~1 phút. Bố cục bên dưới áp dụng cho &lt;b&gt;mọi&lt;/b&gt; email của shop (đơn hàng, tài khoản…).</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.Tab.Key">
+        <Value>Email gửi key</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.Tab.Layout">
+        <Value>Bố cục &amp; màu sắc</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.DefaultAccount">
+        <Value>Tài khoản mặc định ({0})</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.ResetBody">
+        <Value>Khôi phục mẫu gốc</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.ResetBody.Confirm">
+        <Value>Thay nội dung hiện tại bằng mẫu gốc? (Chưa lưu cho tới khi bấm Lưu.)</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.Variables">
+        <Value>Chèn biến</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.Layout.pop">
+        <Value>Pop Studio</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.Layout.pop.Hint">
+        <Value>Nền kem, viền mực đậm, bóng đổ cứng – giống website.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.Layout.clean">
+        <Value>Tối giản</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.Layout.clean.Hint">
+        <Value>Thẻ trắng viền mảnh, bóng mềm – trang nhã, dễ đọc.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.Header.ink">
+        <Value>Thanh tối</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.Header.accent">
+        <Value>Màu nhấn</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.Header.light">
+        <Value>Sáng</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.Colors">
+        <Value>Màu sắc</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.ResetColors">
+        <Value>Dùng lại màu thương hiệu TT Minimal</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.Refresh">
+        <Value>Làm mới xem trước</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.SendTest">
+        <Value>Gửi thử</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.SendTest.Hint">
+        <Value>Gửi email đang xem trước (dữ liệu mẫu, nội dung chưa lưu) tới địa chỉ này để kiểm tra trên Gmail / điện thoại.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.TemplateMissing">
+        <Value>Không tìm thấy mẫu email '{0}'.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.TestEmailInvalid">
+        <Value>Vui lòng nhập email nhận thư thử hợp lệ.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.TestQueued">
+        <Value>Đã xếp hàng email thử tới {0}. Thư sẽ tới trong khoảng 1 phút.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.ColorInvalid">
+        <Value>Màu phải có dạng #rrggbb.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.SubjectRequired">
+        <Value>Vui lòng nhập tiêu đề email.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.BodyRequired">
+        <Value>Nội dung email không được để trống.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.Preview.License">
+        <Value>Email gửi key (dữ liệu mẫu)</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.Preview.OrderPlacedCustomerNotification">
+        <Value>Đơn hàng mới – gửi khách</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.Preview.OrderCompletedCustomerNotification">
+        <Value>Đơn hàng hoàn tất – gửi khách</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.Preview.CustomerNewOrderNote">
+        <Value>Ghi chú đơn hàng mới</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.Preview.CustomerWelcomeMessage">
+        <Value>Chào mừng tài khoản mới</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.Preview.CustomerPasswordRecovery">
+        <Value>Khôi phục mật khẩu</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.Fields.SendEmail">
+        <Value>Tự động gửi key khi đơn được thanh toán</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.Fields.SendEmail.Hint">
+        <Value>Sau khi key được cấp cho đơn đã thanh toán, email key được đưa vào hàng đợi ngay.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.Fields.TemplateActive">
+        <Value>Bật mẫu email key</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.Fields.TemplateActive.Hint">
+        <Value>Khi tắt, không email key nào được gửi (kể cả khi bấm Gửi lại email).</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.Fields.EmailAccountId">
+        <Value>Gửi từ tài khoản</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.Fields.EmailAccountId.Hint">
+        <Value>Tài khoản SMTP dùng để gửi email key. Để trống = tài khoản mặc định của shop.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.Fields.Subject">
+        <Value>Tiêu đề</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.Fields.Subject.Hint">
+        <Value>Hỗ trợ biến Liquid, ví dụ {{ License.Addon }}.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.Fields.Bcc">
+        <Value>BCC (bản sao ẩn)</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.Fields.Bcc.Hint">
+        <Value>Gửi kèm một bản sao cho shop để lưu lại, nhiều địa chỉ cách nhau dấu phẩy.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.Fields.Body">
+        <Value>Nội dung email</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.Fields.Body.Hint">
+        <Value>Mẫu Liquid kế thừa bố cục chung ({% extends 'master' %}). Nội dung này dùng cho mọi ngôn ngữ; Ctrl+Space để gợi ý biến, F11 toàn màn hình.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.Fields.BrandingEnabled">
+        <Value>Dùng giao diện TT Minimal cho mọi email</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.Fields.BrandingEnabled.Hint">
+        <Value>Áp dụng màu sắc, header và footer của studio cho tất cả email của shop. Tắt = giao diện mặc định của Smartstore.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.Fields.Layout">
+        <Value>Kiểu bố cục</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.Fields.Layout.Hint">
+        <Value>Khung tổng thể của email.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.Fields.HeaderStyle">
+        <Value>Kiểu header</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.Fields.HeaderStyle.Hint">
+        <Value>Thanh thương hiệu ở đầu email.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.Fields.ShowLogo">
+        <Value>Hiện logo ảnh</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.Fields.ShowLogo.Hint">
+        <Value>Dùng ảnh logo của cửa hàng thay cho tên thương hiệu dạng chữ.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.Fields.AccentColor">
+        <Value>Màu nhấn</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.Fields.AccentColor.Hint">
+        <Value>Nút bấm, số thứ tự các bước, dải màu trên thẻ.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.Fields.HighlightColor">
+        <Value>Màu làm nổi</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.Fields.HighlightColor.Hint">
+        <Value>Nền ô key và nhãn nổi bật.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.Fields.BackgroundColor">
+        <Value>Màu nền</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.Fields.BackgroundColor.Hint">
+        <Value>Nền phía sau thẻ nội dung.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.Fields.InkColor">
+        <Value>Màu mực</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.Fields.InkColor.Hint">
+        <Value>Tiêu đề, viền và bóng đổ.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.Fields.HeaderNote">
+        <Value>Dòng chữ nhỏ trên header</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.Fields.HeaderNote.Hint">
+        <Value>Hiện bên phải tên thương hiệu. Để trống = slogan của studio.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.Fields.FooterText">
+        <Value>Lời nhắn cuối email</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.Fields.FooterText.Hint">
+        <Value>Mỗi dòng là một đoạn, hiện phía trên thông tin liên hệ.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.Fields.ShowContact">
+        <Value>Hiện thông tin liên hệ</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.Fields.ShowContact.Hint">
+        <Value>Số điện thoại, Zalo, Facebook và địa chỉ lấy từ Cài đặt studio.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.Fields.TestEmail">
+        <Value>Email nhận thư thử</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.Fields.TestEmail.Hint">
+        <Value>Địa chỉ nhận email gửi thử.</Value>
+    </LocaleResource>
 </Language>

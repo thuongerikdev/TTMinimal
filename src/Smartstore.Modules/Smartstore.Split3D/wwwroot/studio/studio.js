@@ -425,7 +425,7 @@
 
     // Model weighing. The reader (studio-mesh.js) is only downloaded when a file is dropped.
     var FDM_FILLS = [[10, '10%'], [15, '15%'], [20, '20% (chuẩn)'], [30, '30%'], [50, '50%'], [100, '100% (đặc)']];
-    var RESIN_FILLS = [[100, 'Đặc'], [0, 'Rỗng, vỏ 2 mm']];
+    var RESIN_FILLS = [[0, 'Rỗng, vỏ 2 mm'], [100, 'Đặc']];
     var FDM_WALL_MM = 1.2, RESIN_WALL_MM = 2;
     var MESH_EXT = /\.(stl|obj|3mf)$/i;
 
@@ -581,7 +581,7 @@
             var tierNow = null;
             var viewer = root.querySelector('[data-tt-viewer]');
             var view = null, models = [], cur = null, auto = false;
-            var fills = { fdm: 20, resin: 100 };
+            var fills = { fdm: 20, resin: 0 };
 
             function tech() { return techs[active]; }
             function mat() { return tech().mats[activeMat] || tech().mats[0]; }
@@ -1138,9 +1138,28 @@
                 chip.addEventListener('click', function () {
                     var cat = chip.getAttribute('data-cat');
                     Array.prototype.forEach.call(chips, function (c) { c.classList.toggle('is-active', c === chip); });
+                    var n = 0;
                     each('[data-cat]', function (card) {
-                        card.classList.toggle('is-hidden', cat !== 'all' && card.getAttribute('data-cat') !== cat);
+                        var hide = cat !== 'all' && card.getAttribute('data-cat') !== cat;
+                        card.classList.toggle('is-hidden', hide);
+                        card.classList.remove('is-pop');
+                        if (!hide) {
+                            void card.offsetWidth;
+                            card.style.setProperty('--pd', (Math.min(n++, 7) * .05) + 's');
+                            card.classList.add('is-pop');
+                        }
                     }, grid);
+
+                    // "Show all of <category>" link below the grid follows the selected category.
+                    var more = grid.parentNode.querySelector('[data-tt-filter-more]');
+                    if (more) {
+                        var url = chip.getAttribute('data-url');
+                        more.hidden = !url;
+                        if (url) {
+                            more.href = url;
+                            more.querySelector('span').textContent = chip.getAttribute('data-name') || '';
+                        }
+                    }
                 });
             });
         });

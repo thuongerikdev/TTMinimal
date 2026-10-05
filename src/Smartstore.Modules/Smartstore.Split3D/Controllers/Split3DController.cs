@@ -52,8 +52,6 @@ public class Split3DController : AdminController
             LeaseDays = _settings.LeaseDays,
             CustomerDeactivationLimit = _settings.CustomerDeactivationLimit,
             ActivationServerUrl = _settings.ActivationServerUrl,
-            EmailSubject = _settings.EmailSubject,
-            EmailBody = _settings.EmailBody,
             SimplifyAdminMenu = _settings.SimplifyAdminMenu,
             HiddenAdminMenuItems = _settings.HiddenAdminMenuItems,
             BankName = _settings.BankName,
@@ -117,8 +115,6 @@ public class Split3DController : AdminController
         _settings.ActivationServerUrl = model.ActivationServerUrl;
         _settings.PublicKeyJson = model.PublicKeyJson?.Trim();
         _settings.PrivateKeyJson = privateKeyJson;
-        _settings.EmailSubject = model.EmailSubject?.Trim();
-        _settings.EmailBody = model.EmailBody;
         _settings.SimplifyAdminMenu = model.SimplifyAdminMenu;
         _settings.HiddenAdminMenuItems = model.HiddenAdminMenuItems.NullEmpty() ?? Split3DSettings.DefaultHiddenAdminMenuItems;
         _settings.BankName = model.BankName?.Trim();
@@ -306,17 +302,19 @@ public class Split3DController : AdminController
                 Notes = model.Notes
             });
 
-            var emailQueued = model.SendEmailNow && await _licenseService.QueueEmailAsync(license);
-
             await _db.SaveChangesAsync();
+
+            var message = T("Plugins.Split3D.Issued").Value;
+            if (model.SendEmailNow)
+            {
+                (_, message) = await TryQueueEmailAsync(license);
+            }
 
             return Json(new
             {
                 success = true,
                 token = license.Token,
-                message = emailQueued
-                    ? T("Plugins.Split3D.Issued.EmailQueued", license.Email).Value
-                    : T("Plugins.Split3D.Issued").Value
+                message
             });
         }
         catch (Exception ex) when (ex is ArgumentException or Split3DKeyException)
@@ -370,14 +368,27 @@ public class Split3DController : AdminController
             return NotFound();
         }
 
-        if (!await _licenseService.QueueEmailAsync(license))
+        var (success, message) = await TryQueueEmailAsync(license);
+
+        return Json(new { success, message });
+    }
+
+    private async Task<(bool Success, string Message)> TryQueueEmailAsync(Split3DLicense license)
+    {
+        try
         {
-            return Json(new { success = false, message = T("Plugins.Split3D.NoEmailAccount").Value });
+            if (await _licenseService.QueueEmailAsync(license, HttpContext.RequestAborted))
+            {
+                return (true, T("Plugins.Split3D.Issued.EmailQueued", license.Email).Value);
+            }
+
+            return (false, T("Plugins.Split3D.NoEmailAccount").Value);
         }
-
-        await _db.SaveChangesAsync();
-
-        return Json(new { success = true, message = T("Plugins.Split3D.Issued.EmailQueued", license.Email).Value });
+        catch (Exception ex)
+        {
+            Logger.Error(ex, $"Split3D: key email for license {license.Id} failed.");
+            return (false, T("Plugins.Split3D.Mail.SendFailed", ex.Message).Value);
+        }
     }
 
     [HttpPost]

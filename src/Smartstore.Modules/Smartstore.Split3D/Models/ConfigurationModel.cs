@@ -80,10 +80,4 @@ public class ConfigurationModel : ModelBase
 
     [LocalizedDisplay("*BankAccountHolder")]
     public string BankAccountHolder { get; set; }
-
-    [LocalizedDisplay("*EmailSubject")]
-    public string EmailSubject { get; set; }
-
-    [LocalizedDisplay("*EmailBody")]
-    public string EmailBody { get; set; }
 }

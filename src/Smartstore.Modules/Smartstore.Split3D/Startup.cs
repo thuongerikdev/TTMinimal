@@ -23,6 +23,7 @@ internal class Startup : StarterBase
         services.AddScoped<StudioStorefrontSetup>();
         services.AddScoped<PrintQuoteService>();
         services.AddScoped<BankQrService>();
+        services.AddScoped<StudioMailService>();
 
         services.Configure<MvcOptions>(o =>
         {
@@ -30,6 +31,17 @@ internal class Startup : StarterBase
                 .ForController("Checkout")
                 .ForAction("Completed")
                 .WhenNonAjax();
+
+            // Two-step checkout: cart > confirm, the payment method is chosen on the confirm page.
+            o.Filters.AddEndpointFilter<CheckoutPaymentFilter, SmartController>()
+                .ForController("Checkout")
+                .ForAction("PaymentMethod")
+                .WhenNonAjaxGet();
+
+            o.Filters.AddEndpointFilter<CheckoutConfirmPaymentFilter, SmartController>()
+                .ForController("Checkout")
+                .ForAction("Confirm")
+                .WhenNonAjaxGet();
 
             o.Filters.AddEndpointFilter<CustomerInfoAddressesFilter, SmartController>()
                 .ForController("Customer")

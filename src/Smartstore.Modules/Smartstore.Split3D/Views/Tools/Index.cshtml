@@ -23,7 +23,7 @@
 }
 
 <div class="tt">
-    <section class="tt-bleed tt-page-hero tt-page-hero--mint">
+    <section class="tt-bleed tt-page-hero tt-page-hero--mint tt-page-hero--compact">
         <div class="tt-wrap">
             <div class="tt-tag tt-tilt" data-tt-reveal>CÔNG CỤ 3D · ADDON BLENDER</div>
             <h1 class="tt-split">LÀM 3D NHANH HƠN.<br /><em>IN 3D DỄ HƠN.</em></h1>
@@ -34,13 +34,14 @@
         </div>
     </section>
 
-    <section class="tt-bleed tt-section">
+    <section class="tt-bleed tt-section tt-section--tools">
         <div class="tt-wrap">
             @if (Model.Tools.Count == 0)
             {
                 <p class="tt-lead">Công cụ đang được cập nhật, bạn quay lại sau nhé.</p>
             }
 
+            <div class="tt-tools">
             @foreach (var tool in Model.Tools)
             {
                 var selected = tool.Packages.FirstOrDefault(x => x.ProductId == Model.SelectedProductId)
@@ -107,6 +108,7 @@
                     </div>
                 </article>
             }
+            </div>
 
             <div class="tt-soon">
                 <h2 class="tt-soon-title" data-tt-reveal>Sắp ra mắt</h2>

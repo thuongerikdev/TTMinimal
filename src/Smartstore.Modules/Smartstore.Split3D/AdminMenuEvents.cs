@@ -6,8 +6,8 @@ using Smartstore.Events;
 namespace Smartstore.Split3D;
 
 /// <summary>
-/// Hides configured admin menu items to keep the backend focused on selling Split3D keys.
-/// Only visibility is changed; permissions and direct URLs stay as they are.
+/// Reorganizes the admin menu (see <see cref="AdminMenuOrganizer"/>) and hides configured admin menu items
+/// to keep the backend focused on selling. Permissions and direct URLs stay as they are.
 /// </summary>
 public class AdminMenuEvents : IConsumer
 {
@@ -33,13 +33,13 @@ public class AdminMenuEvents : IConsumer
             return;
         }
 
+        AdminMenuOrganizer.Organize(message.Root);
+
+        // Also runs without hidden ids: collapses groups left without visible entries after reorganizing.
         var hiddenIds = ParseIds(settings.HiddenAdminMenuItems);
-        if (hiddenIds.Count > 0)
+        foreach (var child in message.Root.Children)
         {
-            foreach (var child in message.Root.Children)
-            {
-                Apply(child, hiddenIds);
-            }
+            Apply(child, hiddenIds);
         }
     }
 

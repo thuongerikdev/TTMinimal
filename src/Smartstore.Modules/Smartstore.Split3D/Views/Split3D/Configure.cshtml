@@ -147,16 +147,13 @@
             </div>
         </div>
         <div class="adminRow">
-            <div class="adminTitle"><smart-label asp-for="EmailSubject" /></div>
+            <div class="adminTitle"></div>
             <div class="adminData">
-                <input asp-for="EmailSubject" />
-            </div>
-        </div>
-        <div class="adminRow">
-            <div class="adminTitle"><smart-label asp-for="EmailBody" /></div>
-            <div class="adminData">
-                <textarea asp-for="EmailBody" rows="12" class="form-control"></textarea>
-                <div class="form-text text-muted">{Addon} {CustomerName} {Email} {Plan} {ExpiresOn} {Price} {Key}</div>
+                <a href="@Url.Action("Index", "StudioMail", new { area = "Admin" })" class="btn btn-secondary">
+                    <i class="bi bi-envelope-paper-heart"></i>
+                    <span>@T("Plugins.Split3D.Mail.EditLink")</span>
+                </a>
+                <div class="form-text text-muted">@T("Plugins.Split3D.Mail.EditLink.Hint")</div>
             </div>
         </div>
 

@@ -667,7 +667,8 @@ public class Split3DStorefrontSetup
     {
         var paymentSettings = await _services.SettingFactory.LoadSettingsAsync<PaymentSettings>();
         paymentSettings.ActivePaymentMethodSystemNames = [PrepaymentSystemName];
-        paymentSettings.SkipPaymentSelectionIfSingleOption = false;
+        // Bank transfer needs no input: skip the payment page, bank details are shown on the completed page.
+        paymentSettings.SkipPaymentSelectionIfSingleOption = true;
         await _services.SettingFactory.SaveSettingsAsync(paymentSettings);
 
         var method = await _db.PaymentMethods.FirstOrDefaultAsync(x => x.PaymentMethodSystemName == PrepaymentSystemName, cancelToken);
@@ -723,7 +724,7 @@ public class Split3DStorefrontSetup
 
         var cartSettings = await _services.SettingFactory.LoadSettingsAsync<ShoppingCartSettings>();
         cartSettings.ShowEsdRevocationWaiverBox = false;
-        // Digital goods: cart > payment > confirm, no address or shipping steps.
+        // Digital goods: cart > confirm (payment page skipped, single bank transfer method), no address or shipping steps.
         cartSettings.CheckoutProcess = CheckoutProcess.TerminalWithPayment;
         await _services.SettingFactory.SaveSettingsAsync(cartSettings);
 
@@ -733,7 +734,7 @@ public class Split3DStorefrontSetup
         await _services.SettingFactory.SaveSettingsAsync(taxSettings);
 
         await _db.SaveChangesAsync(cancelToken);
-        log.Add("Checkout simplified for digital goods: cart, payment, confirm (login required, no address or shipping).");
+        log.Add("Checkout simplified for digital goods: cart, confirm (login required, no address or shipping).");
     }
 
     #endregion

@@ -8,7 +8,8 @@ public class Split3DSettings : ISettings
     public bool AutoIssueEnabled { get; set; } = true;
 
     /// <summary>
-    /// Queue an email with the key to the customer after issuing.
+    /// Queue an email with the key to the customer after issuing. Content and look are edited in
+    /// TT Minimal Studio &gt; Email (message template <see cref="Services.StudioMailService.LicenseTemplateName"/>).
     /// </summary>
     public bool SendEmail { get; set; } = true;
 
@@ -65,25 +66,6 @@ public class Split3DSettings : ISettings
     /// on a local development copy still point customers to the live server.
     /// </summary>
     public string ActivationServerUrl { get; set; } = "https://ttminimal.com";
-
-    /// <summary>
-    /// Subject of the key email. Supports the same placeholders as <see cref="EmailBody"/>.
-    /// </summary>
-    public string EmailSubject { get; set; } = "Key kích hoạt Split3D Print";
-
-    /// <summary>
-    /// Plain text body of the key email. Placeholders: {CustomerName}, {Email}, {Plan},
-    /// {ExpiresOn}, {Price}, {Key}.
-    /// </summary>
-    public string EmailBody { get; set; } =
-        "Chào {CustomerName},\n\n" +
-        "Thông tin kích hoạt Split3D Print:\n" +
-        "Email: {Email}\n" +
-        "Gói: {Plan}\n" +
-        "Hạn sử dụng: {ExpiresOn}\n" +
-        "Giá: {Price}\n\n" +
-        "Key kích hoạt:\n{Key}\n\n" +
-        "Mở bảng Split3D trong Blender, dán toàn bộ key rồi bấm Kích hoạt.\n";
 
     /// <summary>
     /// Hides the admin menu items listed in <see cref="HiddenAdminMenuItems"/>.

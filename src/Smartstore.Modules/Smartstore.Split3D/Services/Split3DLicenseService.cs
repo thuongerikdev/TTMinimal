@@ -6,7 +6,6 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Smartstore.Core.Checkout.Orders;
 using Smartstore.Core.Data;
 using Smartstore.Core.DataExchange.Import;
-using Smartstore.Core.Messaging;
 
 namespace Smartstore.Split3D.Services;
 
@@ -61,19 +60,16 @@ public class Split3DLicenseService
 
     private readonly SmartDbContext _db;
     private readonly Split3DSettings _settings;
-    private readonly IEmailAccountService _emailAccountService;
-    private readonly Split3DRepoService _repoService;
+    private readonly StudioMailService _mailService;
 
     public Split3DLicenseService(
         SmartDbContext db,
         Split3DSettings settings,
-        IEmailAccountService emailAccountService,
-        Split3DRepoService repoService)
+        StudioMailService mailService)
     {
         _db = db;
         _settings = settings;
-        _emailAccountService = emailAccountService;
-        _repoService = repoService;
+        _mailService = mailService;
     }
 
     public ILogger Logger { get; set; } = NullLogger.Instance;
@@ -262,86 +258,42 @@ public class Split3DLicenseService
 
             _db.OrderNotes.Add(order, note.ToString(), displayToCustomer: true);
 
+            await _db.SaveChangesAsync(cancelToken);
+
             if (_settings.SendEmail)
             {
                 foreach (var license in result)
                 {
-                    await QueueEmailAsync(license, cancelToken);
+                    try
+                    {
+                        if (!await QueueEmailAsync(license, cancelToken))
+                        {
+                            _db.OrderNotes.Add(order, $"Split3D: key email to {license.Email} was not sent (message template inactive or no email account).");
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        // The key is issued and visible in the order note; a failed email must not lose it.
+                        Logger.Error(ex, $"Split3D: key email for license {license.Id} failed.");
+                        _db.OrderNotes.Add(order, $"Split3D: key email to {license.Email} failed: {ex.Message}");
+                    }
                 }
-            }
 
-            await _db.SaveChangesAsync(cancelToken);
+                await _db.SaveChangesAsync(cancelToken);
+            }
         }
 
         return result;
     }
 
     /// <summary>
-    /// Queues the key email for <paramref name="license"/> (without committing).
+    /// Queues the key email for <paramref name="license"/> using the message template
+    /// <see cref="StudioMailService.LicenseTemplateName"/> (commits).
     /// The newest installer of the key's addon is attached, if one was uploaded.
     /// </summary>
-    /// <returns><c>false</c> if no email account is configured.</returns>
-    public async Task<bool> QueueEmailAsync(Split3DLicense license, CancellationToken cancelToken = default)
-    {
-        Guard.NotNull(license);
-
-        var emailAccount = _emailAccountService.GetDefaultEmailAccount();
-        if (emailAccount == null)
-        {
-            Logger.Warn("Split3D: cannot send the key email because no email account is configured.");
-            return false;
-        }
-
-        var addonName = license.AddonId > 0
-            ? await _db.Split3DAddons().Where(x => x.Id == license.AddonId).Select(x => x.Name).FirstOrDefaultAsync(cancelToken)
-            : null;
-
-        var subject = ReplacePlaceholders(_settings.EmailSubject.NullEmpty() ?? "Split3D activation key", license, addonName, html: false);
-        var body = ReplacePlaceholders(_settings.EmailBody.NullEmpty() ?? "{Key}", license, addonName, html: true);
-
-        if (addonName.HasValue() && !(_settings.EmailBody ?? string.Empty).Contains("{Addon}"))
-        {
-            // Older templates do not mention the addon: prefix it so multi-addon customers know which key is which.
-            body = $"<p><strong>{System.Net.WebUtility.HtmlEncode(addonName)}</strong></p>" + body;
-            subject = $"{subject} – {addonName}";
-        }
-
-        var queuedEmail = new QueuedEmail
-        {
-            From = emailAccount.ToMailAddress().ToString(),
-            To = license.Email,
-            Subject = subject,
-            CreatedOnUtc = DateTime.UtcNow,
-            EmailAccountId = emailAccount.Id,
-            Priority = 5
-        };
-
-        var latest = license.AddonId > 0 ? await _repoService.GetLatestPackageAsync(license.AddonId, cancelToken) : null;
-        if (latest is { } entry && entry.Download.MediaFileId is int mediaFileId)
-        {
-            queuedEmail.Attachments.Add(new QueuedEmailAttachment
-            {
-                StorageLocation = EmailAttachmentStorageLocation.FileReference,
-                MediaFileId = mediaFileId,
-                Name = entry.Package.FileName,
-                MimeType = entry.Download.MediaFile?.MimeType.NullEmpty() ?? "application/zip"
-            });
-
-            body += $"<p>File cài đặt mới nhất (phiên bản {System.Net.WebUtility.HtmlEncode(entry.Package.Version)}) được đính kèm trong email này: " +
-                "trong Blender mở Edit &gt; Preferences &gt; Get Extensions &gt; Install from Disk rồi chọn file .zip.</p>";
-        }
-        else if (license.AddonId > 0)
-        {
-            Logger.Warn($"Split3D: no installer file uploaded for addon {license.AddonId}; the key email is sent without attachment.");
-        }
-
-        queuedEmail.Body = $"<div style=\"font-family:Segoe UI,Arial,sans-serif;font-size:14px;line-height:1.5\">{body}</div>";
-        _db.QueuedEmails.Add(queuedEmail);
-
-        license.EmailSent = true;
-
-        return true;
-    }
+    /// <returns><c>false</c> if the template is inactive or no email account is configured.</returns>
+    public Task<bool> QueueEmailAsync(Split3DLicense license, CancellationToken cancelToken = default)
+        => _mailService.QueueLicenseEmailAsync(license, cancelToken);
 
     /// <summary>
     /// Imports keys from a table (CSV/XLSX). The signed token is the source of truth for
@@ -461,24 +413,6 @@ public class Split3DLicenseService
 
     public static string FormatPrice(decimal price)
         => price.ToString("#,##0", _vnCulture.NumberFormat).Replace('.', ',') + " VND";
-
-    private static string ReplacePlaceholders(string template, Split3DLicense license, string addonName, bool html)
-    {
-        string Encode(string value) => html ? System.Net.WebUtility.HtmlEncode(value) : value;
-
-        var text = Encode(template)
-            .Replace("{CustomerName}", Encode(license.CustomerName))
-            .Replace("{Email}", Encode(license.Email))
-            .Replace("{Addon}", Encode(addonName ?? license.ProductCode))
-            .Replace("{Plan}", Encode(license.KeyType))
-            .Replace("{ExpiresOn}", Encode(FormatExpiry(license.ExpiresOnUtc)))
-            .Replace("{Price}", Encode(FormatPrice(license.Price)))
-            .Replace("{Key}", html
-                ? $"<code style=\"display:block;word-break:break-all;padding:8px;background:#f1f6fa\">{Encode(license.Token)}</code>"
-                : license.Token);
-
-        return html ? text.Replace("\r\n", "\n").Replace("\n", "<br>") : text.Replace("\r", "").Replace("\n", " ");
-    }
 
     private static string CleanEmail(string email)
     {

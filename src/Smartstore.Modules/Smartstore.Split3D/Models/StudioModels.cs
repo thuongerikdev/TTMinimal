@@ -59,6 +59,11 @@ public class StudioHomeModel
     public string PrintServiceUrl { get; set; }
     public List<StudioCategoryCard> Categories { get; set; } = [];
     public List<StudioProductCard> Products { get; set; } = [];
+
+    /// <summary>
+    /// The categories of <see cref="Products"/>, shown as the collection's category column.
+    /// </summary>
+    public List<StudioCategoryCard> ServiceCategories { get; set; } = [];
     public List<StudioAddonCard> Addons { get; set; } = [];
     public string AddonCategoryUrl { get; set; }
 }

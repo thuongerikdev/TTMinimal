@@ -2,6 +2,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Smartstore.Core;
 using Smartstore.Core.Catalog;
+using Smartstore.Core.Checkout.Payment;
 using Smartstore.Core.Checkout.Shipping;
 using Smartstore.Core.Common.Configuration;
 using Smartstore.Core.Content.Menus;
@@ -19,7 +20,7 @@ namespace Smartstore.Split3D.Services;
 /// </summary>
 public class StudioStorefrontSetup
 {
-    public const int CurrentVersion = 3;
+    public const int CurrentVersion = 4;
     public const string ThemeName = "TTMinimal";
     public const string PrintServiceRouteName = "TTPrintService";
     public const string DesignServiceRouteName = "TTDesignService";
@@ -75,6 +76,7 @@ public class StudioStorefrontSetup
         await StudioCustomProducts.ApplyAsync(_db, _urlService, cancelToken);
         await ApplyMainMenuAsync(cancelToken);
         await ApplyShippingAsync(cancelToken);
+        await ApplyCheckoutAsync(cancelToken);
         await ApplyAdminMenuAsync();
 
         // Without the theme files the layout is incomplete: leave the version unset so the next start tries again.
@@ -301,6 +303,26 @@ public class StudioStorefrontSetup
         }
 
         await _db.SaveChangesAsync(cancelToken);
+    }
+
+    /// <summary>
+    /// Skips the payment page when bank transfer is the only payment method (version 4), so checkout is
+    /// cart > confirm and the bank details appear once, on the completed page.
+    /// </summary>
+    private async Task ApplyCheckoutAsync(CancellationToken cancelToken)
+    {
+        var storeIds = await _db.Settings
+            .Where(x => x.Name == "PaymentSettings.SkipPaymentSelectionIfSingleOption" && x.StoreId > 0)
+            .Select(x => x.StoreId)
+            .Distinct()
+            .ToListAsync(cancelToken);
+
+        foreach (var storeId in storeIds.Prepend(0))
+        {
+            var paymentSettings = await _services.SettingFactory.LoadSettingsAsync<PaymentSettings>(storeId);
+            paymentSettings.SkipPaymentSelectionIfSingleOption = true;
+            await _services.SettingFactory.SaveSettingsAsync(paymentSettings, storeId);
+        }
     }
 
     private async Task ApplyAdminMenuAsync()

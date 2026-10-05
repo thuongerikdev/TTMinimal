@@ -9,6 +9,7 @@
     var toys = Url.Content("~/Modules/Smartstore.Split3D/studio/studio-toys.webp");
     var toysCut = Url.Content("~/Modules/Smartstore.Split3D/studio/studio-toys-cut.webp");
     var cardColors = new[] { "mint", "yellow", "lilac", "pink" };
+    var serviceCats = Model.ServiceCategories;
     string Delay(int i, double step = .08) => (i * step).ToString("0.00", CultureInfo.InvariantCulture) + "s";
 
     ViewData["QuoteUrl"] = Model.PrintServiceUrl;
@@ -116,62 +117,72 @@
                         <div class="tt-kicker">BỘ SƯU TẬP CỦA STUDIO</div>
                         <h2 class="tt-split">NHỎ XINH.<br /><mark>CÁ TÍNH LỚN.</mark></h2>
                     </div>
-                    @if (Model.Categories.Count > 1)
+                </div>
+                <div class="tt-shelf@(serviceCats.Count > 0 ? "" : " tt-shelf--single")">
+                    @if (serviceCats.Count > 0)
                     {
-                        <div class="tt-chips" data-tt-filter="#tt-product-grid">
-                            <button type="button" class="tt-chip is-active" data-cat="all">Tất cả</button>
-                            @foreach (var cat in Model.Categories)
+                        <nav class="tt-shelf-nav" data-tt-filter="#tt-product-grid" aria-label="Danh mục dịch vụ">
+                            <div class="tt-shelf-title">Danh mục dịch vụ</div>
+                            <button type="button" class="tt-shelf-item is-active" data-cat="all" data-url="">
+                                <span>Tất cả</span><b>@Model.Products.Count</b>
+                            </button>
+                            @for (var i = 0; i < serviceCats.Count; i++)
                             {
-                                <button type="button" class="tt-chip" data-cat="@cat.Id">@cat.Name</button>
+                                var cat = serviceCats[i];
+                                <button type="button" class="tt-shelf-item" data-cat="@cat.Id" data-url="@cat.Url" data-name="@cat.Name">
+                                    <i class="tt-@(cardColors[i % cardColors.Length])"></i><span>@cat.Name</span><b>@cat.ProductCount</b>
+                                </button>
+                            }
+                        </nav>
+                    }
+                    <div class="tt-shelf-main">
+                        <div class="tt-products" id="tt-product-grid">
+                            @for (var i = 0; i < Model.Products.Count; i++)
+                            {
+                                var p = Model.Products[i];
+                                <a class="tt-product tt-@(cardColors[i % cardColors.Length])" href="@p.Url" data-cat="@p.CategoryId" data-tt-reveal style="--d:@Delay(i % 4)">
+                                    <div class="tt-product-media">
+                                        <span class="tt-noimg">✦</span>
+                                        @if (p.ImageUrl.HasValue())
+                                        {
+                                            <img src="@p.ImageUrl" alt="@p.Name" loading="lazy" onerror="this.remove()" />
+                                        }
+                                        @if (p.IsCustom)
+                                        {
+                                            <span class="tt-badge tt-badge--custom">✎ TUỲ CHỈNH</span>
+                                        }
+                                        else if (p.HasVariants)
+                                        {
+                                            <span class="tt-badge">NHIỀU MÀU &amp; SIZE</span>
+                                        }
+                                    </div>
+                                    <span class="tt-product-cat">@(p.CategoryName ?? "MADE BY TT")</span>
+                                    <span class="tt-product-name">@p.Name</span>
+                                    <span class="tt-product-price">
+                                        @(p.PriceFrom && !p.Price.StartsWith("Từ") ? "Từ " : "")@p.Price
+                                        @if (p.OldPrice.HasValue())
+                                        {
+                                            <del>@p.OldPrice</del>
+                                        }
+                                    </span>
+                                    @if (p.IsCustom)
+                                    {
+                                        <span class="tt-product-custom">Tuỳ chỉnh ngay @StudioIcons.Get("arrow")</span>
+                                    }
+                                </a>
                             }
                         </div>
-                    }
-                </div>
-                <div class="tt-products" id="tt-product-grid">
-                    @for (var i = 0; i < Model.Products.Count; i++)
-                    {
-                        var p = Model.Products[i];
-                        <a class="tt-product tt-@(cardColors[i % cardColors.Length])" href="@p.Url" data-cat="@p.CategoryId" data-tt-reveal style="--d:@Delay(i % 4)">
-                            <div class="tt-product-media">
-                                <span class="tt-noimg">✦</span>
-                                @if (p.ImageUrl.HasValue())
-                                {
-                                    <img src="@p.ImageUrl" alt="@p.Name" loading="lazy" onerror="this.remove()" />
-                                }
-                                @if (p.IsCustom)
-                                {
-                                    <span class="tt-badge tt-badge--custom">✎ TUỲ CHỈNH</span>
-                                }
-                                else if (p.HasVariants)
-                                {
-                                    <span class="tt-badge">NHIỀU MÀU &amp; SIZE</span>
-                                }
-                            </div>
-                            <span class="tt-product-cat">@(p.CategoryName ?? "MADE BY TT")</span>
-                            <span class="tt-product-name">@p.Name</span>
-                            <span class="tt-product-price">
-                                @(p.PriceFrom && !p.Price.StartsWith("Từ") ? "Từ " : "")@p.Price
-                                @if (p.OldPrice.HasValue())
-                                {
-                                    <del>@p.OldPrice</del>
-                                }
-                            </span>
-                            @if (p.IsCustom)
-                            {
-                                <span class="tt-product-custom">Tuỳ chỉnh ngay @StudioIcons.Get("arrow")</span>
-                            }
-                        </a>
-                    }
-                </div>
-                @if (Model.Categories.Count > 0)
-                {
-                    <div class="tt-actions" style="margin-top:2.5rem">
-                        @foreach (var cat in Model.Categories.Take(3))
+                        @if (serviceCats.Count > 0)
                         {
-                            <a class="tt-button" href="@cat.Url">@cat.Name →</a>
+                            var firstCat = serviceCats[0];
+                            <div class="tt-actions" style="margin-top:2rem">
+                                <a class="tt-button" href="@firstCat.Url" data-tt-filter-more hidden>
+                                    Xem tất cả <span>@firstCat.Name</span> →
+                                </a>
+                            </div>
                         }
                     </div>
-                }
+                </div>
             </div>
         }
         else

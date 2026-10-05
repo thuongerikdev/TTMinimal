@@ -260,7 +260,7 @@
         <Value>Send email</Value>
     </LocaleResource>
     <LocaleResource Name="NoEmailAccount">
-        <Value>No email account is configured. Please set up a default email account first.</Value>
+        <Value>The key email was not sent: the key email template is inactive or no email account (SMTP) is configured.</Value>
     </LocaleResource>
     <LocaleResource Name="Issued">
         <Value>The key has been issued.</Value>
@@ -440,23 +440,11 @@
     <LocaleResource Name="Fields.BankAccountHolder.Hint">
         <Value>Name of the account holder.</Value>
     </LocaleResource>
-    <LocaleResource Name="Fields.EmailSubject">
-        <Value>Email subject</Value>
-    </LocaleResource>
-    <LocaleResource Name="Fields.EmailSubject.Hint">
-        <Value>Subject of the key email.</Value>
-    </LocaleResource>
-    <LocaleResource Name="Fields.EmailBody">
-        <Value>Email text</Value>
-    </LocaleResource>
-    <LocaleResource Name="Fields.EmailBody.Hint">
-        <Value>Text of the key email. Placeholders: {CustomerName}, {Email}, {Plan}, {ExpiresOn}, {Price}, {Key}.</Value>
-    </LocaleResource>
     <LocaleResource Name="Fields.SimplifyAdminMenu">
         <Value>Simplify admin menu</Value>
     </LocaleResource>
     <LocaleResource Name="Fields.SimplifyAdminMenu.Hint">
-        <Value>Hides the admin menu items listed below. Only the menu is affected; the pages remain accessible via URL and permissions are unchanged.</Value>
+        <Value>Reorganizes the admin menu: daily screens (orders, keys, devices, requests, products, customers) become top-level links, everything else is grouped under Configuration. Also hides the items listed below. Pages remain accessible via URL and permissions are unchanged.</Value>
     </LocaleResource>
     <LocaleResource Name="Fields.HiddenAdminMenuItems">
         <Value>Hidden menu items</Value>
@@ -841,10 +829,13 @@
         <Value>TT Minimal Studio</Value>
     </LocaleResource>
     <LocaleResource Name="Studio.Quotes">
-        <Value>Quote requests</Value>
+        <Value>Print &amp; design requests</Value>
     </LocaleResource>
     <LocaleResource Name="Studio.Settings">
         <Value>Studio settings</Value>
+    </LocaleResource>
+    <LocaleResource Name="AdminMenu.StoreSetup">
+        <Value>Store setup</Value>
     </LocaleResource>
     <LocaleResource Name="Studio.Group.Contact">
         <Value>Brand &amp; contact</Value>
@@ -1118,4 +1109,264 @@
         <Value>Target platforms, comma separated, e.g. windows.x86_64, linux.x86_64, darwin.x86_64, darwin.aarch64.</Value>
     </LocaleResource>
 
+    <LocaleResource Name="Checkout.PaymentMethod">
+        <Value>Payment method</Value>
+    </LocaleResource>
+    <LocaleResource Name="Checkout.PaymentHint">
+        <Value>Bank details / QR code are shown right after you place the order.</Value>
+    </LocaleResource>
+
+    <!-- TT Minimal Studio > Emails (key email template and layout of all store emails) -->
+    <LocaleResource Name="Mail.MenuTitle">
+        <Value>Emails</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.KeyMenuTitle">
+        <Value>Key email</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.Title">
+        <Value>Emails &amp; templates</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.EditLink">
+        <Value>Design the key email</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.EditLink.Hint">
+        <Value>Content, sender and layout of the key email are edited in TT Minimal Studio › Emails (with live preview and test sending).</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.SendFailed">
+        <Value>The key email could not be created: {0}</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.OpenTemplate">
+        <Value>Open message template</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.Queue">
+        <Value>Email queue</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.Status.Sender">
+        <Value>Sender account</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.NoAccount">
+        <Value>No email account (SMTP) configured</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.AddAccount">
+        <Value>Add an email account</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.Status.Auto">
+        <Value>Send key after payment</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.Status.AutoOn">
+        <Value>Automatic</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.Status.AutoOff">
+        <Value>Off</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.Status.Template">
+        <Value>Key email template</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.Status.Active">
+        <Value>Active</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.Status.Inactive">
+        <Value>Inactive – nothing is sent</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.Flow">
+        <Value>Flow: &lt;b&gt;order paid&lt;/b&gt; (or &lt;i&gt;Confirm payment received&lt;/i&gt;) → key issued → email built from the template &lt;code&gt;Split3D.LicenseKey.CustomerNotification&lt;/code&gt; → &lt;b&gt;email queue&lt;/b&gt; → sent through the SMTP account within ~1 minute. The layout below applies to &lt;b&gt;all&lt;/b&gt; store emails (orders, account…).</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.Tab.Key">
+        <Value>Key email</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.Tab.Layout">
+        <Value>Layout &amp; colors</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.DefaultAccount">
+        <Value>Default account ({0})</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.ResetBody">
+        <Value>Restore default</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.ResetBody.Confirm">
+        <Value>Replace the current content with the default template? (Not saved until you click Save.)</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.Variables">
+        <Value>Insert</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.Layout.pop">
+        <Value>Pop Studio</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.Layout.pop.Hint">
+        <Value>Cream page, ink outlines, hard shadow – like the website.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.Layout.clean">
+        <Value>Clean</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.Layout.clean.Hint">
+        <Value>White card, thin border, soft shadow – calm and easy to read.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.Header.ink">
+        <Value>Dark bar</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.Header.accent">
+        <Value>Accent</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.Header.light">
+        <Value>Light</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.Colors">
+        <Value>Colors</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.ResetColors">
+        <Value>Use the TT Minimal brand colors</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.Refresh">
+        <Value>Refresh preview</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.SendTest">
+        <Value>Send test</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.SendTest.Hint">
+        <Value>Sends the previewed email (sample data, unsaved content) to this address to check it in Gmail / on a phone.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.TemplateMissing">
+        <Value>Message template '{0}' was not found.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.TestEmailInvalid">
+        <Value>Please enter a valid recipient address.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.TestQueued">
+        <Value>Test email queued for {0}. It arrives in about a minute.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.ColorInvalid">
+        <Value>Colors must look like #rrggbb.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.SubjectRequired">
+        <Value>Please enter a subject.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.BodyRequired">
+        <Value>The email body must not be empty.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.Preview.License">
+        <Value>Key email (sample data)</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.Preview.OrderPlacedCustomerNotification">
+        <Value>Order placed – customer</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.Preview.OrderCompletedCustomerNotification">
+        <Value>Order completed – customer</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.Preview.CustomerNewOrderNote">
+        <Value>New order note</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.Preview.CustomerWelcomeMessage">
+        <Value>Welcome message</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.Preview.CustomerPasswordRecovery">
+        <Value>Password recovery</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.Fields.SendEmail">
+        <Value>Send the key automatically when an order is paid</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.Fields.SendEmail.Hint">
+        <Value>As soon as keys are issued for a paid order, the key email is queued.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.Fields.TemplateActive">
+        <Value>Key email template active</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.Fields.TemplateActive.Hint">
+        <Value>When off, no key email is sent at all (not even via Resend email).</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.Fields.EmailAccountId">
+        <Value>Send from</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.Fields.EmailAccountId.Hint">
+        <Value>SMTP account used for the key email. Empty = the store's default account.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.Fields.Subject">
+        <Value>Subject</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.Fields.Subject.Hint">
+        <Value>Supports Liquid variables, e.g. {{ License.Addon }}.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.Fields.Bcc">
+        <Value>BCC</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.Fields.Bcc.Hint">
+        <Value>Blind copy for the shop's records; separate several addresses with commas.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.Fields.Body">
+        <Value>Email body</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.Fields.Body.Hint">
+        <Value>Liquid template extending the shared layout ({% extends 'master' %}). Used for all languages; Ctrl+Space suggests variables, F11 toggles full screen.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.Fields.BrandingEnabled">
+        <Value>Use the TT Minimal look for all emails</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.Fields.BrandingEnabled.Hint">
+        <Value>Applies the studio colors, header and footer to every store email. Off = Smartstore's default look.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.Fields.Layout">
+        <Value>Layout</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.Fields.Layout.Hint">
+        <Value>Overall frame of the email.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.Fields.HeaderStyle">
+        <Value>Header style</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.Fields.HeaderStyle.Hint">
+        <Value>Brand bar at the top of the email.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.Fields.ShowLogo">
+        <Value>Show logo image</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.Fields.ShowLogo.Hint">
+        <Value>Uses the store logo image instead of the brand name as text.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.Fields.AccentColor">
+        <Value>Accent</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.Fields.AccentColor.Hint">
+        <Value>Buttons, step numbers, stripe on the card.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.Fields.HighlightColor">
+        <Value>Highlight</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.Fields.HighlightColor.Hint">
+        <Value>Background of the key box and badges.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.Fields.BackgroundColor">
+        <Value>Background</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.Fields.BackgroundColor.Hint">
+        <Value>Page behind the content card.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.Fields.InkColor">
+        <Value>Ink</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.Fields.InkColor.Hint">
+        <Value>Headings, outlines and shadows.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.Fields.HeaderNote">
+        <Value>Header note</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.Fields.HeaderNote.Hint">
+        <Value>Shown right of the brand name. Empty = the studio tagline.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.Fields.FooterText">
+        <Value>Closing text</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.Fields.FooterText.Hint">
+        <Value>One paragraph per line, shown above the contact details.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.Fields.ShowContact">
+        <Value>Show contact details</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.Fields.ShowContact.Hint">
+        <Value>Phone, Zalo, Facebook and address from the studio settings.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.Fields.TestEmail">
+        <Value>Test recipient</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.Fields.TestEmail.Hint">
+        <Value>Address that receives the test email.</Value>
+    </LocaleResource>
 </Language>
