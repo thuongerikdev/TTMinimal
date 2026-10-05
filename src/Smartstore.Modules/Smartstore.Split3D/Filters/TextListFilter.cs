@@ -1,4 +1,5 @@
 using System.Text.Json;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Smartstore.Core.Catalog.Attributes;
 using Smartstore.Core.Data;
@@ -8,8 +9,9 @@ namespace Smartstore.Split3D.Filters;
 
 /// <summary>
 /// On the product page of a personalized product (<see cref="StudioCustomProducts.TextListProducts"/>), lets the customer
-/// fill the text field from a list: studio.js reads the JSON config added here and opens a table dialog
-/// (one row per text with its quantity). Registered for Product/ProductDetails, see Startup.
+/// order a whole list at once: studio.js reads the JSON config added here and opens a table dialog (one row per text
+/// with its own colors, quantity and note) that adds every row to the cart as its own line.
+/// Registered for Product/ProductDetails, see Startup.
 /// </summary>
 public class TextListFilter : IAsyncActionFilter
 {
@@ -45,7 +47,8 @@ public class TextListFilter : IAsyncActionFilter
                     {
                         control = ProductVariantQueryItem.CreateKey(productId, 0, attribute.ProductAttributeId, attribute.Id),
                         title = list.Title,
-                        item = list.Item
+                        item = list.Item,
+                        cartUrl = (context.Controller as Controller)?.Url.RouteUrl("ShoppingCart")
                     });
 
                     // "<" is escaped by the serializer, so the JSON cannot close the script element.

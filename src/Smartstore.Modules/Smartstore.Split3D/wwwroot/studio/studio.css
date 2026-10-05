@@ -406,6 +406,14 @@ textarea.tt-input { resize: vertical; min-height: 110px; }
 .tt-dropzone svg { width: 36px; height: 36px; }
 .tt-dropzone small { opacity: .7; }
 .tt-file-name { font-weight: 800; word-break: break-all; }
+.tt-qfiles, .tt-qfiles-viewer { margin-top: 12px; }
+.tt-qfiles .tt-models-list { max-height: 260px; }
+.tt-qfiles .tt-model-pick:disabled { cursor: default; }
+.tt-qfiles .tt-model-pick:disabled:hover { background: none; }
+.tt-qfiles .tt-model-pick:not(:disabled) small { text-decoration: underline; text-underline-offset: 2px; }
+.tt-qfiles-viewer .tt-viewer-stage { aspect-ratio: 4 / 3; }
+.tt-qfiles-viewer .tt-viewer-foot { flex-wrap: wrap; justify-content: flex-start; }
+.tt-qfiles-viewer .tt-viewer-foot span { flex: 1 1 100%; }
 .tt-check { display: flex; gap: 10px; align-items: center; cursor: pointer; font-weight: 700; }
 .tt-check input { width: 18px; height: 18px; accent-color: var(--ink); }
 .tt-aside { position: sticky; top: 110px; display: grid; gap: 22px; }
@@ -680,3 +688,14 @@ textarea.tt-input { resize: vertical; min-height: 110px; }
 .tt-dialog-foot { display: flex; align-items: center; justify-content: flex-end; flex-wrap: wrap; gap: 10px; margin-top: 16px; }
 .tt-dialog-foot b { margin-right: auto; font-size: 14px; }
 .tt-dialog-foot .tt-button { padding: 10px 20px; font-size: 15px; }
+.tt-dialog-box--wide { width: min(980px, 100%); }
+.tt-dialog-box--wide .tt-tl-table { min-width: 640px; }
+.tt-dialog-box--wide .tt-tl-table th:nth-child(3), .tt-dialog-box--wide .tt-tl-table td:nth-child(3) { width: auto; }
+.tt-tl-table th.tt-tl-color { width: 118px; }
+.tt-tl-table th.tt-tl-qty { width: 64px; }
+.tt-tl-table select.tt-input { padding: 6px 8px; cursor: pointer; }
+.tt-tl-table select.is-invalid { border-color: #e2395b; background: #ffe3ea; }
+.tt-tl-msg { margin: 10px 0 0 !important; padding: 8px 12px; border: 2px solid var(--ink); border-radius: 10px; background: #ffe3ea; font-size: 13px; font-weight: 700; }
+.tt-tl-msg.is-ok { background: var(--mint); }
+.tt-tl-msg[hidden] { display: none; }
+.tt-dialog.is-busy .tt-dialog-box { cursor: progress; }

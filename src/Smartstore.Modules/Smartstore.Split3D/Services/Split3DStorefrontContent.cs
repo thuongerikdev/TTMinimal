@@ -309,6 +309,8 @@ public static class Split3DStorefrontContent
               <li>Chủ tài khoản: <strong>{Value(accountHolder)}</strong></li>
               <li>Nội dung chuyển khoản: <strong>mã đơn hàng</strong> (hiển thị sau khi đặt hàng)</li>
             </ul>
+            <p>Quét mã bằng app ngân hàng hoặc MoMo:</p>
+            <img src="{StudioAssets.BankQr.TrimStart('~')}" alt="VietQR {Value(accountNumber)}" style="max-width: 200px; width: 100%; height: auto" loading="lazy" />
             """;
     }
 

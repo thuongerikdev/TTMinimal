@@ -5,7 +5,7 @@ namespace Smartstore.Split3D;
 /// </summary>
 public static class StudioAssets
 {
-    public const string Version = "21";
+    public const string Version = "23";
 
     public const string StyleSheet = "~/Modules/Smartstore.Split3D/studio/studio.css?v=" + Version;
 
@@ -26,4 +26,10 @@ public static class StudioAssets
     public const string FaviconPng = "~/Modules/Smartstore.Split3D/studio/favicon-32.png?v=" + Version;
 
     public const string AppleTouchIcon = "~/Modules/Smartstore.Split3D/studio/apple-touch-icon.png?v=" + Version;
+
+    /// <summary>
+    /// VietQR code of the bank account shown for bank transfer (Prepayment) orders.
+    /// Replace the file when the bank account in the Split3D settings changes.
+    /// </summary>
+    public const string BankQr = "~/Modules/Smartstore.Split3D/studio/bank-qr.webp?v=" + Version;
 }

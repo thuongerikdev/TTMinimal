@@ -189,7 +189,7 @@
                     <fieldset class="tt-fieldset">
                         <legend><span>3</span> File 3D</legend>
                         <div class="tt-field">
-                            <div class="tt-dropzone" data-max-mb="@Model.MaxFileSizeMb">
+                            <div class="tt-dropzone" data-max-mb="@Model.MaxFileSizeMb" data-mesh-src="@Url.Content(StudioAssets.MeshScript)">
                                 <input type="file" name="modelFile" accept="@Model.AllowedExtensions" multiple aria-label="Chọn một hoặc nhiều file 3D" />
                                 @StudioIcons.Get("upload")
                                 <b>Kéo thả file vào đây hoặc bấm để chọn</b>

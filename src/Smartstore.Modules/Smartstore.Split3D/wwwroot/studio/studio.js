@@ -1072,16 +1072,128 @@
             if (!input) return;
             ['dragenter', 'dragover'].forEach(function (t) { zone.addEventListener(t, function () { zone.classList.add('is-over'); }); });
             ['dragleave', 'drop'].forEach(function (t) { zone.addEventListener(t, function () { zone.classList.remove('is-over'); }); });
+
+            // Picked files are listed under the drop zone. Picking again adds to the list instead of replacing it,
+            // × removes one, and a 3D file (STL/OBJ/3MF) opens in the preview below the list.
+            var meshSrc = zone.getAttribute('data-mesh-src');
+            var files = [], meshes = [], shown = null, view = null;
+            var box = document.createElement('div');
+            box.className = 'tt-models tt-qfiles';
+            box.hidden = true;
+            box.innerHTML = '<div class="tt-models-head"><b></b><button type="button">+ Thêm file</button></div><ol class="tt-models-list"></ol>';
+            zone.parentNode.insertBefore(box, zone.nextSibling);
+            var sumEl = box.querySelector('b'), rowsEl = box.querySelector('ol'), viewer = null;
+
+            function escHtml(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
+            function fmtSize(bytes) { var mb = bytes / 1048576; return mb < 1 ? Math.max(1, Math.round(mb * 1024)) + ' KB' : mb.toFixed(1) + ' MB'; }
+            function sameFile(a, b) { return a.name === b.name && a.size === b.size && a.lastModified === b.lastModified; }
+            function canView(f) { return !!(meshSrc && MESH_EXT.test(f.name)); }
+            function isShown(f) { return !!shown && sameFile(f, shown); }
+            function cachedMesh(f) { var hit = meshes.filter(function (x) { return sameFile(x.file, f); })[0]; return hit && hit.mesh; }
+
+            function setFiles(list) {
+                try {
+                    var dt = new DataTransfer();
+                    list.forEach(function (f) { dt.items.add(f); });
+                    input.files = dt.files;
+                } catch (e) { /* old browsers: the input keeps its own selection */ }
+                files = Array.prototype.slice.call(input.files || []);
+            }
+
+            function render() {
+                box.hidden = !files.length;
+                var bytes = files.reduce(function (s, f) { return s + f.size; }, 0);
+                var max = parseInt(zone.getAttribute('data-max-mb'), 10) || 100, over = bytes / 1048576 > max;
+                sumEl.textContent = files.length + ' file · ' + fmtSize(bytes);
+                if (nameEl) {
+                    nameEl.textContent = !files.length ? '' : over ? 'Tổng ' + fmtSize(bytes) + ' — vượt quá ' + max + ' MB, hãy gửi link tải' : '';
+                    nameEl.style.color = over ? '#ff6b85' : '';
+                }
+                rowsEl.innerHTML = files.map(function (f, i) {
+                    var on = isShown(f), view3d = canView(f);
+                    return '<li class="' + (on ? 'is-active' : '') + '">'
+                        + '<button type="button" class="tt-model-pick" data-pick="' + i + '"' + (view3d ? ' aria-pressed="' + on + '"' : ' disabled') + '>'
+                        + '<b>' + escHtml(f.name) + '</b><small>' + fmtSize(f.size) + (view3d ? ' · ' + (on ? 'Đang xem' : 'Xem 3D') : '') + '</small></button>'
+                        + '<button type="button" class="tt-model-del" data-del="' + i + '" aria-label="Bỏ ' + escHtml(f.name) + '">×</button></li>';
+                }).join('');
+            }
+
+            function buildViewer() {
+                viewer = document.createElement('div');
+                viewer.className = 'tt-viewer tt-qfiles-viewer';
+                viewer.innerHTML = '<div class="tt-viewer-head"><span class="tt-viewer-tag">Xem trước 3D</span><b></b>'
+                    + '<button type="button" class="tt-viewer-max" aria-pressed="false"><span>Phóng to</span></button></div>'
+                    + '<div class="tt-viewer-stage"><canvas aria-label="Mô hình 3D, kéo để xoay, chuột phải hoặc Shift kéo để di chuyển, cuộn để phóng to"></canvas><span class="tt-viewer-size"></span></div>'
+                    + '<div class="tt-viewer-foot"><span>Kéo để xoay · chuột phải / Shift + kéo để di chuyển · cuộn để phóng to</span>'
+                    + '<button type="button" class="tt-textlink" data-reset>Góc nhìn ban đầu</button><button type="button" class="tt-textlink" data-hide>Đóng</button></div>';
+                box.parentNode.insertBefore(viewer, box.nextSibling);
+                var maxBtn = viewer.querySelector('.tt-viewer-max');
+                function maximize(on) {
+                    viewer.classList.toggle('is-max', on);
+                    document.documentElement.classList.toggle('tt-noscroll', on);
+                    maxBtn.setAttribute('aria-pressed', on ? 'true' : 'false');
+                    maxBtn.querySelector('span').textContent = on ? 'Thu nhỏ' : 'Phóng to';
+                    if (view) view.request();
+                }
+                viewer.maximize = maximize;
+                maxBtn.addEventListener('click', function () { maximize(!viewer.classList.contains('is-max')); });
+                document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && viewer.classList.contains('is-max')) maximize(false); });
+                viewer.querySelector('[data-reset]').addEventListener('click', function () { if (view) view.reset(); });
+                viewer.querySelector('[data-hide]').addEventListener('click', hide);
+            }
+
+            function hide() {
+                shown = null;
+                if (viewer) { viewer.maximize(false); viewer.hidden = true; }
+                if (view) view.stopSpin();
+                render();
+            }
+
+            function show(f) {
+                shown = f;
+                render();
+                if (!viewer) buildViewer();
+                // Unhide first: the canvas needs its layout size before the first draw.
+                viewer.hidden = false;
+                viewer.querySelector('.tt-viewer-head b').textContent = f.name;
+                var sizeEl = viewer.querySelector('.tt-viewer-size');
+                sizeEl.textContent = 'Đang đọc…';
+                var cached = cachedMesh(f);
+                loadMesh(meshSrc).then(function (M) {
+                    return (cached ? Promise.resolve(cached) : M.read(f)).then(function (mesh) {
+                        if (!cached) meshes.push({ file: f, mesh: mesh });
+                        if (!isShown(f)) return;
+                        if (!view) view = new M.View(viewer.querySelector('canvas'));
+                        var tech = document.querySelector('input[name="Form.Technology"]:checked');
+                        view.color = tech && /resin/i.test(tech.value) ? [201, 166, 247] : [128, 229, 203];
+                        view.set(mesh);
+                        sizeEl.textContent = mesh.size.map(function (v) { return fmtNum(v, 1); }).join(' × ') + ' mm';
+                    });
+                }).catch(function (err) {
+                    if (isShown(f)) sizeEl.textContent = (err && err.message) || 'Không đọc được file này.';
+                });
+            }
+
             input.addEventListener('change', function () {
-                var files = Array.prototype.slice.call(input.files || []);
-                if (!nameEl) return;
-                if (!files.length) { nameEl.textContent = ''; return; }
-                var max = parseInt(zone.getAttribute('data-max-mb'), 10) || 100;
-                var mb = files.reduce(function (s, f) { return s + f.size; }, 0) / 1048576;
-                nameEl.textContent = (files.length > 1 ? files.length + ' file: ' + files.map(function (f) { return f.name; }).join(', ') : files[0].name)
-                    + ' · ' + (mb < 1 ? Math.max(1, Math.round(mb * 1024)) + ' KB' : mb.toFixed(1) + ' MB');
-                nameEl.style.color = mb > max ? '#ff6b85' : '';
-                if (mb > max) nameEl.textContent += ' — vượt quá ' + max + ' MB, hãy gửi link tải';
+                var picked = Array.prototype.slice.call(input.files || []);
+                var add = picked.filter(function (f) { return !files.some(function (k) { return sameFile(k, f); }); });
+                setFiles(files.concat(add));
+                if (shown && !files.some(isShown)) hide(); else render();
+            });
+
+            box.querySelector('.tt-models-head button').addEventListener('click', function () { input.click(); });
+            rowsEl.addEventListener('click', function (e) {
+                var del = e.target.closest('[data-del]'), pick = e.target.closest('[data-pick]');
+                if (del) {
+                    var gone = files[parseInt(del.getAttribute('data-del'), 10)];
+                    meshes = meshes.filter(function (x) { return !sameFile(x.file, gone); });
+                    setFiles(files.filter(function (f) { return f !== gone; }));
+                    if (isShown(gone)) hide(); else render();
+                }
+                else if (pick) {
+                    var f = files[parseInt(pick.getAttribute('data-pick'), 10)];
+                    if (f && isShown(f)) hide(); else if (f && canView(f)) show(f);
+                }
             });
         });
 
@@ -1140,68 +1252,81 @@
         });
     }
 
-    // ---------- Personalized products: fill the text field from a list (one row per piece) ----------
+    // ---------- Personalized products: order a whole list at once (one cart line per row) ----------
 
+    // Every row has its own text, colors (the swatch attributes of the product), quantity and note. "Thêm vào giỏ"
+    // posts one add-to-cart request per row with the product form, so each piece keeps its own colors and price;
+    // the other attributes (size, profile…) are taken from the product page.
     function initTextList() {
         var cfgEl = document.querySelector('script[data-tt-textlist]'), cfg;
         if (!cfgEl) return;
         try { cfg = JSON.parse(cfgEl.textContent); } catch (e) { return; }
         var field = document.getElementById(cfg.control);
         if (!field) return;
-        var form = field.closest('form') || document;
+        var form = field.closest('form');
+        var addBtn = document.querySelector('.btn-add-to-cart[data-href]');
+        if (!form || !addBtn) return;
         var qtyInput = form.querySelector('input[name$="EnteredQuantity"]');
-        var SEP = ' | ', MAX_ROWS = 200;
+        var MAX_ROWS = 300;
         var LIST_ICON = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M9 6h11M9 12h11M9 18h11"/><circle cx="4.5" cy="6" r="1"/><circle cx="4.5" cy="12" r="1"/><circle cx="4.5" cy="18" r="1"/></svg>';
 
         function escAttr(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;'); }
+        // "Xanh Dương " -> "xanh duong": headers and color names are matched loosely.
+        function norm(s) { return String(s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/đ/g, 'd').replace(/\s+/g, ' ').trim(); }
 
-        // "An (x2) | Minh" <-> [{ text: 'An', qty: 2 }, { text: 'Minh', qty: 1 }]
-        function parse(value) {
-            return String(value || '').split('|').map(function (s) {
-                s = s.trim();
-                var m = /^(.*?)\s*\(x(\d+)\)$/.exec(s);
-                return m ? { text: m[1], qty: Math.max(1, parseInt(m[2], 10)) } : { text: s, qty: 1 };
-            }).filter(function (r) { return r.text; });
-        }
-        function format(rows) { return rows.map(function (r) { return r.text.replace(/\|/g, '/') + (r.qty > 1 ? ' (x' + r.qty + ')' : ''); }).join(SEP); }
-        function pieces(rows) { return rows.reduce(function (s, r) { return s + r.qty; }, 0); }
+        // Color columns: the swatch attributes of the product ("Màu nền, Trắng" is the aria-label of an option).
+        var attrs = [];
+        each('input.swatch-input[type=radio]', function (input) {
+            var label = input.getAttribute('aria-label') || '', cut = label.indexOf(', ');
+            if (cut < 0) return;
+            var a = attrs.filter(function (x) { return x.name === input.name; })[0];
+            if (!a) attrs.push(a = { name: input.name, title: label.slice(0, cut), options: [] });
+            a.options.push({ value: input.value, text: label.slice(cut + 2) });
+        }, form);
+        function current(a) { var c = form.querySelector('input[name="' + a.name + '"]:checked'); return c ? c.value : ''; }
+        function optionFor(a, text) { var n = norm(text); return a.options.filter(function (o) { return norm(o.text) === n; })[0]; }
 
         var tools = document.createElement('div');
         tools.className = 'tt-textlist-tools';
-        tools.innerHTML = '<button type="button" class="tt-textlist-btn">' + LIST_ICON + '<span>Nhập danh sách nhiều ' + escAttr(cfg.item) + '</span></button><small class="tt-textlist-sum"></small>';
+        tools.innerHTML = '<button type="button" class="tt-textlist-btn">' + LIST_ICON + '<span>Đặt nhiều ' + escAttr(cfg.item) + ' một lượt</span></button>'
+            + '<small class="tt-textlist-sum">mỗi ' + escAttr(cfg.item) + ' một màu riêng, dán từ Excel</small>';
         field.parentNode.insertBefore(tools, field.nextSibling);
-        var sumEl = tools.querySelector('small');
 
-        function showSum() {
-            var rows = parse(field.value);
-            sumEl.textContent = rows.length > 1 ? rows.length + ' dòng · ' + pieces(rows) + ' ' + cfg.item : '';
-        }
-        field.addEventListener('input', showSum);
-        showSum();
-
-        var dlg = null, tbody, totalEl, lastFocus;
+        var dlg = null, tbody, totalEl, msgEl, sendBtn, lastFocus, busy = false;
 
         function rowHtml(r) {
-            return '<tr><td class="tt-tl-no"></td>'
-                + '<td><input type="text" class="tt-input" maxlength="80" value="' + escAttr(r.text) + '" aria-label="Nội dung" data-tl-text /></td>'
+            var html = '<tr><td class="tt-tl-no"></td>'
+                + '<td><input type="text" class="tt-input" maxlength="80" value="' + escAttr(r.text) + '" aria-label="Nội dung" data-tl-text /></td>';
+            attrs.forEach(function (a, i) {
+                var val = r.colors[i] == null ? current(a) : r.colors[i];
+                html += '<td><select class="tt-input noskin' + (val ? '' : ' is-invalid') + '" aria-label="' + escAttr(a.title) + '" data-tl-attr="' + i + '">'
+                    + (val ? '' : '<option value="">— chọn —</option>')
+                    + a.options.map(function (o) { return '<option value="' + escAttr(o.value) + '"' + (o.value === val ? ' selected' : '') + '>' + escAttr(o.text) + '</option>'; }).join('')
+                    + '</select></td>';
+            });
+            return html
                 + '<td><input type="text" class="tt-input" inputmode="numeric" maxlength="4" value="' + r.qty + '" aria-label="Số lượng" data-tl-qty /></td>'
+                + '<td><input type="text" class="tt-input" maxlength="120" value="' + escAttr(r.note) + '" aria-label="Ghi chú" placeholder="font, kiểu chữ…" data-tl-note /></td>'
                 + '<td><button type="button" class="tt-tl-del" aria-label="Xoá dòng">×</button></td></tr>';
         }
 
-        function collect(all) {
-            var out = [];
-            each('tr', function (tr) {
-                var text = tr.querySelector('[data-tl-text]').value.trim();
-                var qty = Math.max(1, parseInt(tr.querySelector('[data-tl-qty]').value, 10) || 1);
-                if (all || text) out.push({ text: text, qty: qty });
-            }, tbody);
-            return out;
+        function readRow(tr) {
+            return {
+                tr: tr,
+                text: tr.querySelector('[data-tl-text]').value.trim(),
+                colors: Array.prototype.map.call(tr.querySelectorAll('[data-tl-attr]'), function (s) { return s.value; }),
+                qty: Math.max(1, parseInt(tr.querySelector('[data-tl-qty]').value, 10) || 1),
+                note: tr.querySelector('[data-tl-note]').value.trim()
+            };
         }
+        function collect() { return Array.prototype.map.call(tbody.rows, readRow).filter(function (r) { return r.text; }); }
+        function pieces(rows) { return rows.reduce(function (s, r) { return s + r.qty; }, 0); }
 
         function renumber() {
-            var rows = collect(false);
+            var rows = collect();
             each('tr', function (tr, i) { tr.querySelector('.tt-tl-no').textContent = i + 1; }, tbody);
-            totalEl.textContent = 'Tổng: ' + rows.length + ' dòng · ' + pieces(rows) + ' ' + cfg.item;
+            totalEl.textContent = rows.length + ' dòng · ' + pieces(rows) + ' ' + cfg.item;
+            sendBtn.querySelector('span').textContent = rows.length ? 'Thêm ' + pieces(rows) + ' ' + cfg.item + ' vào giỏ' : 'Thêm vào giỏ';
         }
 
         // Appends rows (or inserts them after a row); returns the first new row.
@@ -1215,24 +1340,90 @@
             return after ? after.nextElementSibling : tbody.rows[count];
         }
 
-        function blank() { return { text: '', qty: 1 }; }
+        function blank() { return { text: '', colors: [], qty: 1, note: '' }; }
+
+        // Pasted cells from Excel / Google Sheets. With a header row the columns are matched by name
+        // (Tên, Màu chữ, Màu nền, SL, font…); without one: first text column = text, color names fill
+        // the color columns in order, a small number is the quantity, anything else goes to the note.
+        // STT and prices are skipped. Colors the product does not offer stay "— chọn —" and are noted.
+        function parsePaste(text) {
+            var lines = text.replace(/\r/g, '').split('\n').map(function (l) { return l.split('\t'); })
+                .filter(function (cells) { return cells.some(function (c) { return c.trim(); }); });
+            if (!lines.length) return [];
+            // The header is the first of the top lines with a text column next to a color or quantity column;
+            // title lines above it ("Thông tin tag tên") are dropped.
+            var TEXT_HEAD = /^(ten|noi dung|chu|text|name)/, map = null;
+            function isAttrHead(h) { return attrs.some(function (a) { return norm(a.title) === h; }); }
+            for (var li = 0; li < Math.min(3, lines.length) && !map; li++) {
+                var head = lines[li].map(norm);
+                if (!head.some(function (h) { return TEXT_HEAD.test(h); }) || !head.some(function (h) { return isAttrHead(h) || /^(sl|so luong|qty|mau)/.test(h); })) continue;
+                map = head.map(function (h) {
+                    if (/^(stt|#|gia|thanh tien|don gia)/.test(h)) return { skip: true };
+                    if (/^(sl|so luong|qty)/.test(h)) return { qty: true };
+                    var ai = -1;
+                    attrs.forEach(function (a, i) { if (ai < 0 && norm(a.title) === h) ai = i; });
+                    if (ai >= 0) return { attr: ai };
+                    if (TEXT_HEAD.test(h)) return { text: true };
+                    return { note: true };
+                });
+                lines = lines.slice(li + 1);
+            }
+            return lines.map(function (cells) {
+                var r = blank(), notes = [], nextAttr = 0;
+                r.colors = attrs.map(function () { return null; });
+                cells.forEach(function (raw, ci) {
+                    var c = raw.trim(), m = map && map[ci];
+                    if (!c || (m && m.skip)) return;
+                    if (m) {
+                        if (m.text) r.text = r.text ? r.text + ' ' + c : c;
+                        else if (m.qty) r.qty = Math.max(1, parseInt(c, 10) || 1);
+                        else if (m.attr != null) {
+                            var o = optionFor(attrs[m.attr], c);
+                            r.colors[m.attr] = o ? o.value : '';
+                            if (!o) notes.push(attrs[m.attr].title + ': ' + c);
+                        }
+                        else if (notes.indexOf(c) < 0) notes.push(c);
+                        return;
+                    }
+                    if (/^\d+([.,]\d+)?$/.test(c)) {
+                        if (ci > 0 && r.text && +c.replace(',', '.') < 1000 && r.qty === 1) r.qty = Math.max(1, parseInt(c, 10));
+                        return;  // STT, price
+                    }
+                    if (!r.text) { r.text = c; return; }
+                    for (var i = nextAttr; i < attrs.length; i++) {
+                        var opt = optionFor(attrs[i], c);
+                        if (opt) { r.colors[i] = opt.value; nextAttr = i + 1; return; }
+                    }
+                    notes.push(c);
+                });
+                r.note = notes.join(', ');
+                return r;
+            }).filter(function (r) { return r.text; });
+        }
 
         function build() {
             dlg = document.createElement('div');
             dlg.className = 'tt-dialog';
             dlg.hidden = true;
-            dlg.innerHTML = '<div class="tt-dialog-box" role="dialog" aria-modal="true" aria-labelledby="tt-tl-title">'
+            dlg.innerHTML = '<div class="tt-dialog-box tt-dialog-box--wide" role="dialog" aria-modal="true" aria-labelledby="tt-tl-title">'
                 + '<div class="tt-dialog-head"><h3 id="tt-tl-title">' + escAttr(cfg.title) + '</h3><button type="button" class="tt-dialog-x" data-tl-close aria-label="Đóng">×</button></div>'
-                + '<p class="tt-dialog-hint">Mỗi dòng là một ' + escAttr(cfg.item) + ', cùng màu và kích thước đang chọn. Dán nhiều dòng (từ Excel, Zalo…) vào một ô để điền nhanh — cột thứ hai trong Excel là số lượng.</p>'
-                + '<div class="tt-dialog-body"><table class="tt-tl-table"><thead><tr><th>#</th><th>Nội dung</th><th>SL</th><th></th></tr></thead><tbody></tbody></table></div>'
+                + '<p class="tt-dialog-hint">Mỗi dòng là một ' + escAttr(cfg.item) + ' với màu riêng; các lựa chọn khác (kích thước…) lấy theo trang sản phẩm. '
+                + '<b>Copy cả bảng từ Excel (kèm dòng tiêu đề Tên, Màu chữ, Màu nền…) rồi dán vào ô Nội dung</b> để điền nhanh — cột font / ghi chú được giữ lại.</p>'
+                + '<div class="tt-dialog-body"><table class="tt-tl-table"><thead><tr><th>#</th><th>Nội dung</th>'
+                + attrs.map(function (a) { return '<th class="tt-tl-color">' + escAttr(a.title) + '</th>'; }).join('')
+                + '<th class="tt-tl-qty">SL</th><th>Ghi chú</th><th></th></tr></thead><tbody></tbody></table></div>'
                 + '<button type="button" class="tt-textlink tt-tl-add" data-tl-add>+ Thêm dòng</button>'
+                + '<p class="tt-tl-msg" data-tl-msg hidden></p>'
                 + '<div class="tt-dialog-foot"><b data-tl-total></b><button type="button" class="tt-button" data-tl-close>Huỷ</button>'
-                + '<button type="button" class="tt-button tt-button--dark" data-tl-apply>Áp dụng</button></div></div>';
+                + '<button type="button" class="tt-button tt-button--dark" data-tl-send><span>Thêm vào giỏ</span></button></div></div>';
             document.body.appendChild(dlg);
             tbody = dlg.querySelector('tbody');
             totalEl = dlg.querySelector('[data-tl-total]');
+            msgEl = dlg.querySelector('[data-tl-msg]');
+            sendBtn = dlg.querySelector('[data-tl-send]');
 
             dlg.addEventListener('click', function (e) {
+                if (busy) return;
                 var tr;
                 if (e.target === dlg || e.target.closest('[data-tl-close]')) close();
                 else if (e.target.closest('[data-tl-add]')) { tr = addRows([blank()]); if (tr) tr.querySelector('input').focus(); }
@@ -1241,16 +1432,23 @@
                     if (!tbody.rows.length) addRows([blank()]);
                     renumber();
                 }
-                else if (e.target.closest('[data-tl-apply]')) apply();
+                else if (e.target.closest('[data-tl-send]')) send();
             });
             dlg.addEventListener('input', function (e) {
                 if (e.target.matches('[data-tl-qty]')) e.target.value = e.target.value.replace(/\D/g, '');
                 renumber();
             });
+            dlg.addEventListener('change', function (e) {
+                if (!e.target.matches('[data-tl-attr]')) return;
+                e.target.classList.toggle('is-invalid', !e.target.value);
+                // A color picked for an unavailable one replaces the "Màu nền: Xanh dương" note.
+                var note = e.target.closest('tr').querySelector('[data-tl-note]'), title = attrs[+e.target.getAttribute('data-tl-attr')].title;
+                if (e.target.value) note.value = note.value.split(', ').filter(function (p) { return p.indexOf(title + ': ') !== 0; }).join(', ');
+            });
             dlg.addEventListener('keydown', function (e) {
-                if (e.key === 'Escape') { e.preventDefault(); close(); return; }
+                if (e.key === 'Escape' && !busy) { e.preventDefault(); close(); return; }
                 // Enter jumps to the next row (a new one at the end).
-                if (e.key === 'Enter' && e.target.matches('[data-tl-text], [data-tl-qty]')) {
+                if (e.key === 'Enter' && e.target.matches('input')) {
                     e.preventDefault();
                     var tr = e.target.closest('tr'), next = tr.nextElementSibling || addRows([blank()]);
                     if (next) next.querySelector('[data-tl-text]').focus();
@@ -1259,28 +1457,35 @@
             dlg.addEventListener('paste', function (e) {
                 if (!e.target.matches('[data-tl-text]')) return;
                 var text = (e.clipboardData || window.clipboardData).getData('text') || '';
-                if (!/[\r\n]/.test(text.trim())) return;
+                if (!/[\r\n\t]/.test(text.trim())) return;
                 e.preventDefault();
-                var rows = text.split(/\r?\n/).map(function (line) {
-                    var cols = line.split('\t');
-                    return { text: cols[0].trim(), qty: Math.max(1, parseInt(cols[1], 10) || 1) };
-                }).filter(function (r) { return r.text; });
+                var rows = parsePaste(text);
                 if (!rows.length) return;
-                var tr = e.target.closest('tr'), first = rows.shift();
-                e.target.value = first.text;
-                tr.querySelector('[data-tl-qty]').value = first.qty;
-                if (rows.length) addRows(rows, tr);
+                var tr = e.target.closest('tr');
+                // Pasting into an empty row replaces it, otherwise the rows go below.
+                var empty = !readRow(tr).text;
+                var first = addRows(rows, tr);
+                if (empty) tr.remove();
                 renumber();
+                if (first) first.querySelector('[data-tl-text]').focus();
             });
+        }
+
+        function showMsg(text, ok) {
+            msgEl.textContent = text || '';
+            msgEl.hidden = !text;
+            msgEl.classList.toggle('is-ok', !!ok);
         }
 
         function open() {
             if (!dlg) build();
             lastFocus = document.activeElement;
-            tbody.innerHTML = '';
-            var rows = parse(field.value);
-            // An empty list starts with five rows to type into.
-            addRows(rows.length ? rows.concat([blank()]) : [blank(), blank(), blank(), blank(), blank()]);
+            showMsg('');
+            if (!tbody.rows.length) {
+                // A text typed on the page starts the list; otherwise five empty rows.
+                var start = field.value.trim() ? [{ text: field.value.trim(), colors: [], qty: Math.max(1, parseInt(qtyInput && qtyInput.value, 10) || 1), note: '' }] : [];
+                addRows(start.concat(start.length ? [blank()] : [blank(), blank(), blank(), blank(), blank()]));
+            }
             dlg.hidden = false;
             document.documentElement.classList.add('tt-noscroll');
             var empty = Array.prototype.filter.call(tbody.querySelectorAll('[data-tl-text]'), function (i) { return !i.value; })[0];
@@ -1293,16 +1498,60 @@
             if (lastFocus && lastFocus.focus) lastFocus.focus();
         }
 
-        function apply() {
-            var rows = collect(false);
-            field.value = format(rows);
-            field.dispatchEvent(new Event('input', { bubbles: true }));
-            field.dispatchEvent(new Event('change', { bubbles: true }));
-            if (qtyInput && rows.length) {
-                qtyInput.value = pieces(rows);
-                if (window.jQuery) jQuery(qtyInput).trigger('change'); else qtyInput.dispatchEvent(new Event('change', { bubbles: true }));
+        function setBusy(on) {
+            busy = on;
+            dlg.classList.toggle('is-busy', on);
+            Array.prototype.forEach.call(dlg.querySelectorAll('button, input, select'), function (el) { el.disabled = on; });
+        }
+
+        // One add-to-cart request per row, one after another. Rows added are removed from the table,
+        // so after an error a second click only sends the rest.
+        function send() {
+            var rows = collect();
+            if (!rows.length) { showMsg('Nhập ít nhất một dòng.'); return; }
+            var missing = rows.filter(function (r) { return r.colors.some(function (c) { return !c; }); });
+            if (missing.length) {
+                showMsg('Chọn màu cho ' + missing.length + ' dòng đánh dấu đỏ (màu không có trong danh sách đã được ghi vào cột Ghi chú).');
+                var bad = missing[0].tr.querySelector('.is-invalid'); if (bad) bad.focus();
+                return;
             }
-            close();
+            var href = addBtn.getAttribute('data-href'), done = 0, total = rows.length;
+            setBusy(true);
+            showMsg('Đang thêm 0/' + total + '…', true);
+
+            rows.reduce(function (p, r) {
+                return p.then(function () {
+                    var data = new FormData(form);
+                    data.set(field.name, r.note ? r.text + ' — ' + r.note : r.text);
+                    attrs.forEach(function (a, i) { data.set(a.name, r.colors[i]); });
+                    if (qtyInput) data.set(qtyInput.name, r.qty);
+                    return fetch(href, {
+                        method: 'POST',
+                        credentials: 'same-origin',
+                        headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                        body: new URLSearchParams(data)
+                    }).then(function (res) {
+                        if (!res.ok) throw new Error('Lỗi máy chủ (' + res.status + ').');
+                        return res.json();
+                    }).then(function (json) {
+                        if (json && json.success === false) {
+                            var m = json.message;
+                            throw new Error('Dòng "' + r.text + '": ' + (Array.isArray(m) ? m.join(' ') : m || 'không thêm được.'));
+                        }
+                        r.tr.remove();
+                        done++;
+                        showMsg('Đang thêm ' + done + '/' + total + '…', true);
+                    });
+                });
+            }, Promise.resolve()).then(function () {
+                showMsg('Đã thêm ' + total + ' dòng vào giỏ hàng, đang mở giỏ…', true);
+                location.href = cfg.cartUrl || '/cart';
+            }, function (err) {
+                setBusy(false);
+                if (!tbody.rows.length) addRows([blank()]);
+                renumber();
+                showMsg((done ? 'Đã thêm ' + done + ' dòng. ' : '') + ((err && err.message) || 'Không thêm được, hãy thử lại.'));
+            });
         }
 
         tools.querySelector('button').addEventListener('click', open);
