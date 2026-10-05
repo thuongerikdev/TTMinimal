@@ -18,6 +18,7 @@ public class CheckoutCompletedFilter : IAsyncActionFilter
     private readonly Lazy<IWidgetProvider> _widgetProvider;
     private readonly Lazy<SmartDbContext> _db;
     private readonly Lazy<IPaymentService> _paymentService;
+    private readonly Lazy<BankQrService> _bankQrService;
     private readonly IWorkContext _workContext;
     private readonly IStoreContext _storeContext;
     private readonly Split3DSettings _settings;
@@ -26,6 +27,7 @@ public class CheckoutCompletedFilter : IAsyncActionFilter
         Lazy<IWidgetProvider> widgetProvider,
         Lazy<SmartDbContext> db,
         Lazy<IPaymentService> paymentService,
+        Lazy<BankQrService> bankQrService,
         IWorkContext workContext,
         IStoreContext storeContext,
         Split3DSettings settings)
@@ -33,6 +35,7 @@ public class CheckoutCompletedFilter : IAsyncActionFilter
         _widgetProvider = widgetProvider;
         _db = db;
         _paymentService = paymentService;
+        _bankQrService = bankQrService;
         _workContext = workContext;
         _storeContext = storeContext;
         _settings = settings;
@@ -58,6 +61,11 @@ public class CheckoutCompletedFilter : IAsyncActionFilter
             model.IsPaid = order.PaymentStatus == PaymentStatus.Paid;
             model.IsBankTransfer = order.PaymentMethodSystemName.EqualsNoCase(Split3DStorefrontSetup.PrepaymentSystemName);
             model.CanPayOnline = !model.IsPaid && !model.IsBankTransfer && await _paymentService.Value.CanRePostProcessPaymentAsync(order);
+
+            if (model.IsBankTransfer && !model.IsPaid)
+            {
+                model.BankQrSvg = _bankQrService.Value.GenerateSvg(_settings, order);
+            }
         }
 
         _widgetProvider.Value.RegisterWidget("checkout_completed_top",

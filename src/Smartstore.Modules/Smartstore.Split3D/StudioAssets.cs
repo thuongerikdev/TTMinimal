@@ -5,7 +5,7 @@ namespace Smartstore.Split3D;
 /// </summary>
 public static class StudioAssets
 {
-    public const string Version = "23";
+    public const string Version = "24";
 
     public const string StyleSheet = "~/Modules/Smartstore.Split3D/studio/studio.css?v=" + Version;
 
@@ -17,6 +17,11 @@ public static class StudioAssets
     public const string MeshScript = "~/Modules/Smartstore.Split3D/studio/studio-mesh.js?v=" + Version;
 
     /// <summary>
+    /// Excel (.xlsx) reader and writer for the name list import / template, loaded on demand on personalized product pages.
+    /// </summary>
+    public const string XlsxScript = "~/Modules/Smartstore.Split3D/studio/studio-xlsx.js?v=" + Version;
+
+    /// <summary>
     /// "Pop Studio" skin for the admin area (see <see cref="Filters.AdminStyleFilter"/>).
     /// </summary>
     public const string AdminStyleSheet = "~/Modules/Smartstore.Split3D/studio/admin.css?v=" + Version;
@@ -26,10 +31,4 @@ public static class StudioAssets
     public const string FaviconPng = "~/Modules/Smartstore.Split3D/studio/favicon-32.png?v=" + Version;
 
     public const string AppleTouchIcon = "~/Modules/Smartstore.Split3D/studio/apple-touch-icon.png?v=" + Version;
-
-    /// <summary>
-    /// VietQR code of the bank account shown for bank transfer (Prepayment) orders.
-    /// Replace the file when the bank account in the Split3D settings changes.
-    /// </summary>
-    public const string BankQr = "~/Modules/Smartstore.Split3D/studio/bank-qr.webp?v=" + Version;
 }

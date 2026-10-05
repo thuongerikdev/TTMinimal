@@ -22,6 +22,7 @@ internal class Startup : StarterBase
         services.AddScoped<Split3DOrderQuery>();
         services.AddScoped<StudioStorefrontSetup>();
         services.AddScoped<PrintQuoteService>();
+        services.AddScoped<BankQrService>();
 
         services.Configure<MvcOptions>(o =>
         {

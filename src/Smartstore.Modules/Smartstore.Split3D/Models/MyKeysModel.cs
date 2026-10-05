@@ -36,6 +36,11 @@ public class MyKeysOrderModel
     public bool IsBankTransfer { get; set; }
 
     /// <summary>
+    /// Inline SVG VietQR code with amount and transfer content prefilled. <c>null</c> if the bank is not supported.
+    /// </summary>
+    public string BankQrSvg { get; set; }
+
+    /// <summary>
     /// The order is awaiting an online payment (e.g. PayOS) that the customer can start from here.
     /// </summary>
     public bool CanPayOnline { get; set; }

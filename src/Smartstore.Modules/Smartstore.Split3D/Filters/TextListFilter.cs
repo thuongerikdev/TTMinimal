@@ -48,7 +48,8 @@ public class TextListFilter : IAsyncActionFilter
                         control = ProductVariantQueryItem.CreateKey(productId, 0, attribute.ProductAttributeId, attribute.Id),
                         title = list.Title,
                         item = list.Item,
-                        cartUrl = (context.Controller as Controller)?.Url.RouteUrl("ShoppingCart")
+                        cartUrl = (context.Controller as Controller)?.Url.RouteUrl("ShoppingCart"),
+                        xlsxSrc = (context.Controller as Controller)?.Url.Content(StudioAssets.XlsxScript)
                     });
 
                     // "<" is escaped by the serializer, so the JSON cannot close the script element.

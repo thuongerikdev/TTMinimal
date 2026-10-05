@@ -15,6 +15,11 @@ public class CheckoutCompletedModel
     public bool IsBankTransfer { get; set; }
 
     /// <summary>
+    /// Inline SVG VietQR code with amount and transfer content prefilled. <c>null</c> if the bank is not supported.
+    /// </summary>
+    public string BankQrSvg { get; set; }
+
+    /// <summary>
     /// The order is paid on a payment provider page (e.g. PayOS) that can be (re)started by the customer.
     /// </summary>
     public bool CanPayOnline { get; set; }

@@ -423,7 +423,10 @@
         <Value>Bank</Value>
     </LocaleResource>
     <LocaleResource Name="Fields.BankName.Hint">
-        <Value>Name der Bank in den Zahlungshinweisen.</Value>
+        <Value>Name der Bank in den Zahlungshinweisen. Wird auch für den VietQR-Code verwendet, z. B. MB, Vietcombank, Techcombank. Bei anderen Banken die 6-stellige Napas-BIN anhängen, z. B. "Meine Bank (970400)".</Value>
+    </LocaleResource>
+    <LocaleResource Name="BankQr.Hint">
+        <Value>Mit einer Banking-App oder MoMo scannen. Betrag und Verwendungszweck sind vorausgefüllt.</Value>
     </LocaleResource>
     <LocaleResource Name="Fields.BankAccountNumber">
         <Value>Kontonummer</Value>

@@ -251,7 +251,7 @@ html.tt-noscroll, html.tt-noscroll body { overflow: hidden; }
 .tt-models-head { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 9px 14px; border-bottom: 2px solid var(--ink); background: var(--yellow); font-size: 13px; }
 .tt-models-head b { font-weight: 900; }
 .tt-models-head button { flex: none; border: 0; background: none; padding: 0; color: var(--ink); cursor: pointer; font-size: 12px; font-weight: 900; }
-.tt-models-list { list-style: none; margin: 0; padding: 6px; max-height: 196px; overflow-y: auto; }
+.tt-models-list { list-style: none; margin: 0; padding: 6px; max-height: 320px; overflow-y: auto; }
 .tt-models-list li { display: flex; align-items: stretch; gap: 4px; border-radius: 9px; }
 .tt-models-list li + li { margin-top: 4px; }
 .tt-models-list li.is-active { background: #fff; box-shadow: inset 0 0 0 2px var(--ink); }
@@ -261,6 +261,44 @@ html.tt-noscroll, html.tt-noscroll body { overflow: hidden; }
 .tt-model-pick small { flex: none; font-size: 12px; font-weight: 800; font-variant-numeric: tabular-nums; }
 .tt-model-del { flex: none; width: 32px; border: 0; background: none; color: var(--ink); font-size: 18px; line-height: 1; cursor: pointer; border-radius: 9px; }
 .tt-model-del:hover { background: var(--pink); }
+.tt-models-toggle { min-width: 0; display: inline-flex; align-items: center; gap: 6px; border: 0; background: none; padding: 0; color: var(--ink); cursor: pointer; text-align: left; }
+.tt-models-toggle b { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tt-models-toggle svg { flex: none; transition: transform .2s; }
+.tt-models.is-collapsed .tt-models-toggle svg { transform: rotate(-90deg); }
+.tt-models.is-collapsed .tt-models-head { border-bottom: 0; }
+.tt-models-body[hidden], .tt-models-list[hidden], .tt-models-total[hidden] { display: none; }
+.tt-models-tabs { display: flex; align-items: center; gap: 4px; padding: 6px 8px 0; border-bottom: 2px solid var(--ink); }
+.tt-models-tabs [role=tab] { margin-bottom: -2px; padding: 6px 12px; border: 2px solid transparent; border-bottom: 0; border-radius: 9px 9px 0 0; background: none; color: var(--ink); font-size: 13px; font-weight: 800; cursor: pointer; }
+.tt-models-tabs [role=tab][aria-selected=true] { border-color: var(--ink); background: #fff; }
+.tt-models-all { margin-left: auto; gap: 6px; padding-bottom: 4px; font-size: 12px; font-weight: 800; }
+.tt-model-check { flex: none; display: inline-flex; align-items: center; justify-content: center; position: relative; min-width: 34px; cursor: pointer; }
+.tt-model-check input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+.tt-model-check span { width: 22px; height: 22px; border: 2px solid var(--ink); border-radius: 7px; background: #fff; display: grid; place-items: center; transition: background .15s; }
+.tt-model-check input:checked + span { background: #22b464; }
+.tt-model-check input:checked + span::after { content: ""; width: 6px; height: 11px; margin-top: -3px; border: solid #fff; border-width: 0 3px 3px 0; transform: rotate(45deg); }
+.tt-model-check input:indeterminate + span::after { content: ""; width: 10px; height: 3px; background: var(--ink); }
+.tt-model-check input:focus-visible + span { outline: 3px solid var(--blue); outline-offset: 2px; }
+.tt-models-list li { align-items: center; }
+.tt-models-list li.is-off .tt-model-pick, .tt-models-list li.is-off .tt-model-qty { opacity: .45; }
+.tt-models-list li.is-off .tt-model-price { opacity: .55; font-weight: 700; font-style: italic; }
+.tt-model-qty { flex: none; display: inline-flex; align-items: center; border: 1.5px solid var(--ink); border-radius: 8px; background: #fff; overflow: hidden; }
+.tt-model-qty button { width: 24px; height: 28px; border: 0; background: none; color: var(--ink); font-weight: 900; cursor: pointer; }
+.tt-model-qty button:hover { background: var(--yellow); }
+.tt-model-qty input { width: 36px; height: 28px; border: 0; padding: 0; text-align: center; font-size: 13px; font-weight: 800; background: none; color: var(--ink); }
+.tt-model-price { flex: none; min-width: 84px; text-align: right; font-size: 13px; font-weight: 900; font-variant-numeric: tabular-nums; }
+.tt-models-total { padding: 8px 10px 10px; font-size: 13px; }
+.tt-models-total p { margin: 8px 2px 0; opacity: .8; }
+.tt-models-sumtable { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+.tt-models-sumtable th { padding: 5px 6px; font-size: 11px; font-weight: 900; letter-spacing: .5px; text-transform: uppercase; text-align: right; border-bottom: 2px solid var(--ink); }
+.tt-models-sumtable td { padding: 5px 6px; text-align: right; border-bottom: 1px solid rgba(32, 32, 31, .12); }
+.tt-models-sumtable th:first-child, .tt-models-sumtable td:first-child { text-align: left; max-width: 160px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tt-models-sumtable tfoot td { border-bottom: 0; border-top: 2px solid var(--ink); font-weight: 900; background: var(--yellow); }
+@media (max-width: 575px) {
+    .tt-models-list li { flex-wrap: wrap; }
+    .tt-model-pick { flex-basis: calc(100% - 80px); }
+    .tt-model-qty { margin-left: 38px; }
+    .tt-model-price { margin-left: auto; }
+}
 .tt-dims { display: flex; align-items: center; gap: 6px; margin-top: 10px; }
 .tt-dims label { flex: 1; min-width: 0; display: flex; align-items: center; margin: 0; border: 2px solid var(--ink); border-radius: 9px; background: var(--cream); }
 .tt-dims label:focus-within { box-shadow: 2px 2px 0 var(--pink); }
@@ -689,6 +727,11 @@ textarea.tt-input { resize: vertical; min-height: 110px; }
 .tt-dialog-foot b { margin-right: auto; font-size: 14px; }
 .tt-dialog-foot .tt-button { padding: 10px 20px; font-size: 15px; }
 .tt-dialog-box--wide { width: min(980px, 100%); }
+.tt-tl-excel { display: inline-flex; flex-wrap: wrap; gap: 4px 14px; }
+.tt-tl-excel .tt-textlink { border: 0; background: none; padding: 0; color: var(--ink); font-size: 13px; font-weight: 800; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+.tt-tl-excel .tt-textlink:hover { color: var(--pink); }
+.tt-tl-actions { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 16px; margin-top: 10px; }
+.tt-tl-actions .tt-tl-add { margin-top: 0; }
 .tt-dialog-box--wide .tt-tl-table { min-width: 640px; }
 .tt-dialog-box--wide .tt-tl-table th:nth-child(3), .tt-dialog-box--wide .tt-tl-table td:nth-child(3) { width: auto; }
 .tt-tl-table th.tt-tl-color { width: 118px; }

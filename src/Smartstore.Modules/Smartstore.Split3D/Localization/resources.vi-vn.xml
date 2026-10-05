@@ -423,7 +423,10 @@
         <Value>Ngân hàng</Value>
     </LocaleResource>
     <LocaleResource Name="Fields.BankName.Hint">
-        <Value>Tên ngân hàng hiển thị trong hướng dẫn chuyển khoản.</Value>
+        <Value>Tên ngân hàng hiển thị trong hướng dẫn chuyển khoản, đồng thời dùng để tạo mã VietQR, ví dụ MB, Vietcombank, Techcombank. Ngân hàng khác thì ghi thêm mã BIN Napas 6 số, ví dụ "Ngân hàng X (970400)".</Value>
+    </LocaleResource>
+    <LocaleResource Name="BankQr.Hint">
+        <Value>Quét bằng app ngân hàng hoặc MoMo, số tiền và nội dung đã được điền sẵn.</Value>
     </LocaleResource>
     <LocaleResource Name="Fields.BankAccountNumber">
         <Value>Số tài khoản</Value>

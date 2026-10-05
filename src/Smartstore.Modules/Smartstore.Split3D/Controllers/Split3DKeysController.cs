@@ -17,6 +17,7 @@ public class Split3DKeysController : PublicController
     private readonly Split3DDeviceService _deviceService;
     private readonly Split3DRepoService _repoService;
     private readonly IPaymentService _paymentService;
+    private readonly BankQrService _bankQrService;
     private readonly Split3DSettings _settings;
 
     public Split3DKeysController(
@@ -25,6 +26,7 @@ public class Split3DKeysController : PublicController
         Split3DDeviceService deviceService,
         Split3DRepoService repoService,
         IPaymentService paymentService,
+        BankQrService bankQrService,
         Split3DSettings settings)
     {
         _db = db;
@@ -32,6 +34,7 @@ public class Split3DKeysController : PublicController
         _deviceService = deviceService;
         _repoService = repoService;
         _paymentService = paymentService;
+        _bankQrService = bankQrService;
         _settings = settings;
     }
 
@@ -92,6 +95,11 @@ public class Split3DKeysController : PublicController
         {
             var orderModel = model.Orders.First(x => x.OrderId == order.Order.Id);
             orderModel.CanPayOnline = !orderModel.IsBankTransfer && await _paymentService.CanRePostProcessPaymentAsync(order.Order);
+
+            if (orderModel.IsBankTransfer)
+            {
+                orderModel.BankQrSvg = _bankQrService.GenerateSvg(_settings, order.Order);
+            }
         }
 
         if (_settings.CustomerDeactivationLimit > 0)

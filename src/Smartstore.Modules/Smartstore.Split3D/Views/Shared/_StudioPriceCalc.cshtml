@@ -85,12 +85,24 @@
         <div class="tt-bar-labels" data-tt-labels aria-hidden="true"></div>
 
         <div class="tt-meter" data-tt-meter>
+            @* Dropped models: a collapsible list (tick = counted in the total, own quantity and price) and a total tab. *@
             <div class="tt-models" data-tt-models hidden>
                 <div class="tt-models-head">
-                    <b data-tt-msum></b>
+                    <button type="button" class="tt-models-toggle" data-tt-mtoggle aria-expanded="true" aria-controls="tt-models-body">
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6" /></svg>
+                        <b data-tt-msum></b>
+                    </button>
                     <button type="button" class="tt-textlink" data-tt-change>+ Thêm file</button>
                 </div>
-                <ol class="tt-models-list" data-tt-mlist></ol>
+                <div class="tt-models-body" id="tt-models-body" data-tt-mbody>
+                    <div class="tt-models-tabs" role="tablist" aria-label="Danh sách mô hình">
+                        <button type="button" role="tab" aria-selected="true" data-tt-mtab="list">Từng file</button>
+                        <button type="button" role="tab" aria-selected="false" data-tt-mtab="sum">Tổng</button>
+                        <label class="tt-model-check tt-models-all"><input type="checkbox" data-tt-mall checked /><span aria-hidden="true"></span>Tính tất cả</label>
+                    </div>
+                    <ol class="tt-models-list" role="tabpanel" data-tt-mlist></ol>
+                    <div class="tt-models-total" role="tabpanel" data-tt-mtotal hidden></div>
+                </div>
             </div>
             <div class="tt-meter-body" data-tt-meter-body hidden>
                 <div class="tt-meter-info">

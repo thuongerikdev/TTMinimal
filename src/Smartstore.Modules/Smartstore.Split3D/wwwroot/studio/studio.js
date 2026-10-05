@@ -574,6 +574,11 @@
             var list = meter.querySelector('[data-tt-models]');
             var listRows = meter.querySelector('[data-tt-mlist]');
             var listSum = meter.querySelector('[data-tt-msum]');
+            var listBody = meter.querySelector('[data-tt-mbody]');
+            var listToggle = meter.querySelector('[data-tt-mtoggle]');
+            var listAll = meter.querySelector('[data-tt-mall]');
+            var listTotal = meter.querySelector('[data-tt-mtotal]');
+            var tierNow = null;
             var viewer = root.querySelector('[data-tt-viewer]');
             var view = null, models = [], cur = null, auto = false;
             var fills = { fdm: 20, resin: 100 };
@@ -591,12 +596,15 @@
             }
             function gramsOf(m) { return m.manual != null ? m.manual : autoWeight(m).grams; }
 
+            // Models with the tick removed stay in the list but are left out of the total.
+            function included() { return models.filter(function (m) { return m.on; }); }
+
             function totals() {
                 if (!models.length) {
                     var q = Math.max(readInt(qty, 1), 1);
                     return { grams: readInt(grams, 0) * q, pieces: q };
                 }
-                return models.reduce(function (t, m) { t.grams += gramsOf(m) * m.qty; t.pieces += m.qty; return t; }, { grams: 0, pieces: 0 });
+                return included().reduce(function (t, m) { t.grams += gramsOf(m) * m.qty; t.pieces += m.qty; return t; }, { grams: 0, pieces: 0 });
             }
 
             function drawChart() {
@@ -620,11 +628,14 @@
                 }
                 var t = totals(), sum = t.grams;
                 var tiers = mat().tiers, idx = tierFor({ tiers: tiers }, sum), tier = tiers[idx];
+                tierNow = tier;
                 each('.tt-bar', function (b, i) { b.classList.toggle('is-active', i === idx); }, chart);
                 countTo(total, sum * tier.price);
                 if (unit) {
-                    unit.textContent = money.format(tier.price) + 'đ/g · ' + tier.label + ' · tổng ' + weight(sum)
-                        + (models.length > 1 ? ' · ' + models.length + ' mô hình, ' + t.pieces + ' cái' : '');
+                    unit.textContent = models.length && !t.pieces
+                        ? 'Chưa tích file nào để tính'
+                        : money.format(tier.price) + 'đ/g · ' + tier.label + ' · tổng ' + weight(sum)
+                            + (models.length > 1 ? ' · ' + included().length + '/' + models.length + ' mô hình, ' + t.pieces + ' cái' : '');
                 }
                 if (cta) {
                     var g = t.pieces ? Math.round(sum / t.pieces) : 0;
@@ -719,18 +730,56 @@
 
             function esc(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
 
+            function priceOf(m) { return Math.round(gramsOf(m) * m.qty * (tierNow ? tierNow.price : 0)); }
+
             function renderList() {
                 if (!list) return;
                 list.hidden = !models.length;
                 if (!models.length) return;
-                var t = totals();
-                listSum.textContent = models.length + ' mô hình · ' + t.pieces + ' cái · tổng ' + weight(t.grams);
+                var t = totals(), on = included();
+                listSum.textContent = on.length + '/' + models.length + ' file · ' + t.pieces + ' cái · ' + weight(t.grams)
+                    + ' · ' + money.format(Math.round(t.grams * (tierNow ? tierNow.price : 0))) + 'đ';
+                listAll.checked = on.length === models.length;
+                listAll.indeterminate = on.length > 0 && on.length < models.length;
+
+                // Typing in a quantity box re-renders the rows; keep the caret there.
+                var focused = document.activeElement && listRows.contains(document.activeElement) ? document.activeElement.getAttribute('data-mqty') : null;
                 listRows.innerHTML = models.map(function (m, i) {
-                    return '<li class="' + (m === cur ? 'is-active' : '') + '">'
+                    return '<li class="' + (m === cur ? 'is-active' : '') + (m.on ? '' : ' is-off') + '">'
+                        + '<label class="tt-model-check" title="' + (m.on ? 'Bỏ tích để không tính file này' : 'Tích để tính file này') + '">'
+                        + '<input type="checkbox" data-on="' + i + '"' + (m.on ? ' checked' : '') + ' aria-label="Tính ' + esc(m.file.name) + '" /><span aria-hidden="true"></span></label>'
                         + '<button type="button" class="tt-model-pick" data-pick="' + i + '" aria-pressed="' + (m === cur) + '"><b>' + esc(m.file.name) + '</b>'
-                        + '<small>' + fmtNum(gramsOf(m), 0) + ' g × ' + m.qty + '</small></button>'
+                        + '<small>' + fmtNum(gramsOf(m), 0) + ' g/cái</small></button>'
+                        + '<span class="tt-model-qty"><button type="button" data-mstep="-1" data-i="' + i + '" aria-label="Giảm">−</button>'
+                        + '<input type="text" inputmode="numeric" maxlength="4" value="' + m.qty + '" data-mqty="' + i + '" aria-label="Số lượng ' + esc(m.file.name) + '" />'
+                        + '<button type="button" data-mstep="1" data-i="' + i + '" aria-label="Tăng">+</button></span>'
+                        + '<span class="tt-model-price">' + (m.on ? money.format(priceOf(m)) + 'đ' : 'không tính') + '</span>'
                         + '<button type="button" class="tt-model-del" data-del="' + i + '" aria-label="Bỏ ' + esc(m.file.name) + '">×</button></li>';
                 }).join('');
+                if (focused != null) {
+                    var inp = listRows.querySelector('[data-mqty="' + focused + '"]');
+                    if (inp) { inp.focus(); inp.setSelectionRange(inp.value.length, inp.value.length); }
+                }
+                renderTotal(t, on);
+            }
+
+            // "Tổng" tab: the ticked models with their amounts, then weight, price tier and total.
+            function renderTotal(t, on) {
+                var price = tierNow ? tierNow.price : 0;
+                listTotal.innerHTML = '<table class="tt-models-sumtable"><thead><tr><th>File</th><th>SL</th><th>Khối lượng</th><th>Thành tiền</th></tr></thead><tbody>'
+                    + (on.length ? on.map(function (m) {
+                        return '<tr><td>' + esc(m.file.name) + '</td><td>' + m.qty + '</td><td>' + weight(gramsOf(m) * m.qty) + '</td><td>' + money.format(priceOf(m)) + 'đ</td></tr>';
+                    }).join('') : '<tr><td colspan="4">Chưa tích file nào.</td></tr>')
+                    + '</tbody><tfoot><tr><td>Tổng ' + on.length + '/' + models.length + ' file</td><td>' + t.pieces + '</td><td>' + weight(t.grams) + '</td>'
+                    + '<td>' + money.format(Math.round(t.grams * price)) + 'đ</td></tr></tfoot></table>'
+                    + (tierNow ? '<p>Bậc giá <b>' + esc(tierNow.label) + '</b> · ' + money.format(price) + 'đ/g · ' + esc(tech().name + ' ' + mat().name)
+                        + ' — tổng khối lượng các file được tích quyết định bậc giá chung.</p>' : '');
+            }
+
+            function showTab(name) {
+                each('[data-tt-mtab]', function (b) { b.setAttribute('aria-selected', b.getAttribute('data-tt-mtab') === name ? 'true' : 'false'); }, list);
+                listRows.hidden = name !== 'list';
+                listTotal.hidden = name !== 'sum';
             }
 
             // Redraws the info of the active model; the grams field follows the estimate unless typed in by hand.
@@ -818,7 +867,7 @@
                             drop.querySelector('b').textContent = 'Đang cân ' + f.name + (good.length > 1 ? ' (' + (i + 1) + '/' + good.length + ')' : '') + '…';
                             return M.read(f).then(function (mesh) {
                                 // The first model keeps the quantity already typed in.
-                                var m = { file: f, mesh: mesh, scale: [1, 1, 1], unit: 1, manual: null, qty: models.length ? 1 : Math.max(readInt(qty, 1), 1) };
+                                var m = { file: f, mesh: mesh, on: true, scale: [1, 1, 1], unit: 1, manual: null, qty: models.length ? 1 : Math.max(readInt(qty, 1), 1) };
                                 models.push(m);
                                 return m;
                             }, function (err) {
@@ -851,10 +900,42 @@
             ['dragenter', 'dragover'].forEach(function (t) { drop.addEventListener(t, function () { drop.classList.add('is-over'); }); });
             ['dragleave', 'drop'].forEach(function (t) { drop.addEventListener(t, function () { drop.classList.remove('is-over'); }); });
             meter.querySelector('[data-tt-change]').addEventListener('click', function () { fileInput.click(); });
+            // Quantity of one model: the fields above follow when it is the active one.
+            function setQty(m, value) {
+                m.qty = Math.max(1, Math.min(9999, value || 1));
+                if (m === cur) qty.value = m.qty;
+                update();
+            }
             listRows.addEventListener('click', function (e) {
-                var del = e.target.closest('[data-del]'), pick = e.target.closest('[data-pick]');
+                var del = e.target.closest('[data-del]'), pick = e.target.closest('[data-pick]'), step = e.target.closest('[data-mstep]');
                 if (del) removeModel(parseInt(del.getAttribute('data-del'), 10));
+                else if (step) { var sm = models[parseInt(step.getAttribute('data-i'), 10)]; if (sm) setQty(sm, sm.qty + parseInt(step.getAttribute('data-mstep'), 10)); }
                 else if (pick) { var m = models[parseInt(pick.getAttribute('data-pick'), 10)]; if (m && m !== cur) activate(m); }
+            });
+            listRows.addEventListener('change', function (e) {
+                if (!e.target.matches('[data-on]')) return;
+                var m = models[parseInt(e.target.getAttribute('data-on'), 10)];
+                if (m) { m.on = e.target.checked; update(); }
+            });
+            listRows.addEventListener('input', function (e) {
+                if (!e.target.matches('[data-mqty]')) return;
+                e.target.value = e.target.value.replace(/\D/g, '');
+                var m = models[parseInt(e.target.getAttribute('data-mqty'), 10)];
+                if (m && e.target.value) setQty(m, parseInt(e.target.value, 10));
+            });
+            listRows.addEventListener('focusout', function (e) {
+                if (e.target.matches('[data-mqty]') && !e.target.value) update();
+            });
+            listAll.addEventListener('change', function () {
+                models.forEach(function (m) { m.on = listAll.checked; });
+                update();
+            });
+            each('[data-tt-mtab]', function (b) { b.addEventListener('click', function () { showTab(b.getAttribute('data-tt-mtab')); }); }, list);
+            listToggle.addEventListener('click', function () {
+                var open = listToggle.getAttribute('aria-expanded') !== 'true';
+                listToggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+                listBody.hidden = !open;
+                list.classList.toggle('is-collapsed', !open);
             });
 
             // Viewer: reset, and a full-screen mode to look at details (Esc or the button closes it).
@@ -905,12 +986,13 @@
                 // Several models: total pieces, and the average weight so that grams × quantity is the total.
                 var q = form.querySelector('[name="Form.Quantity"]'); if (q) q.value = sum.pieces;
                 var g = form.querySelector('[name="Form.EstimatedGrams"]'); if (g && sum.grams > 0) g.value = Math.round(sum.grams / sum.pieces);
-                var hidden = form.querySelector('[name="Form.Measurement"]'); if (hidden) hidden.value = models.map(describe).join('\n');
+                var on = included();
+                var hidden = form.querySelector('[name="Form.Measurement"]'); if (hidden) hidden.value = on.map(describe).join('\n');
 
                 var input = form.querySelector('input[type=file][name=modelFile]');
-                if (!withFiles || !models.length || !input) return;
+                if (!withFiles || !on.length || !input) return;
                 var have = Array.prototype.slice.call(input.files || []);
-                var add = models.filter(function (x) { return !have.some(function (f) { return sameFile(f, x.file); }); });
+                var add = on.filter(function (x) { return !have.some(function (f) { return sameFile(f, x.file); }); });
                 if (!add.length) return;
                 try {
                     var dt = new DataTransfer();
@@ -1268,6 +1350,8 @@
         if (!form || !addBtn) return;
         var qtyInput = form.querySelector('input[name$="EnteredQuantity"]');
         var MAX_ROWS = 300;
+        var EXCEL_TOOLS = '<span class="tt-tl-excel"><button type="button" class="tt-textlink" data-tl-template>Tải file mẫu Excel</button>'
+            + '<button type="button" class="tt-textlink" data-tl-import>Import Excel</button></span>';
         var LIST_ICON = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M9 6h11M9 12h11M9 18h11"/><circle cx="4.5" cy="6" r="1"/><circle cx="4.5" cy="12" r="1"/><circle cx="4.5" cy="18" r="1"/></svg>';
 
         function escAttr(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;'); }
@@ -1288,8 +1372,8 @@
 
         var tools = document.createElement('div');
         tools.className = 'tt-textlist-tools';
-        tools.innerHTML = '<button type="button" class="tt-textlist-btn">' + LIST_ICON + '<span>Đặt nhiều ' + escAttr(cfg.item) + ' một lượt</span></button>'
-            + '<small class="tt-textlist-sum">mỗi ' + escAttr(cfg.item) + ' một màu riêng, dán từ Excel</small>';
+        tools.innerHTML = '<button type="button" class="tt-textlist-btn" data-tl-open>' + LIST_ICON + '<span>Đặt nhiều ' + escAttr(cfg.item) + ' một lượt</span></button>'
+            + EXCEL_TOOLS;
         field.parentNode.insertBefore(tools, field.nextSibling);
 
         var dlg = null, tbody, totalEl, msgEl, sendBtn, lastFocus, busy = false;
@@ -1347,7 +1431,11 @@
         // the color columns in order, a small number is the quantity, anything else goes to the note.
         // STT and prices are skipped. Colors the product does not offer stay "— chọn —" and are noted.
         function parsePaste(text) {
-            var lines = text.replace(/\r/g, '').split('\n').map(function (l) { return l.split('\t'); })
+            return parseRows(text.replace(/\r/g, '').split('\n').map(function (l) { return l.split('\t'); }));
+        }
+
+        function parseRows(lines) {
+            lines = lines.map(function (cells) { return cells.map(function (c) { return c == null ? '' : String(c); }); })
                 .filter(function (cells) { return cells.some(function (c) { return c.trim(); }); });
             if (!lines.length) return [];
             // The header is the first of the top lines with a text column next to a color or quantity column;
@@ -1408,11 +1496,11 @@
             dlg.innerHTML = '<div class="tt-dialog-box tt-dialog-box--wide" role="dialog" aria-modal="true" aria-labelledby="tt-tl-title">'
                 + '<div class="tt-dialog-head"><h3 id="tt-tl-title">' + escAttr(cfg.title) + '</h3><button type="button" class="tt-dialog-x" data-tl-close aria-label="Đóng">×</button></div>'
                 + '<p class="tt-dialog-hint">Mỗi dòng là một ' + escAttr(cfg.item) + ' với màu riêng; các lựa chọn khác (kích thước…) lấy theo trang sản phẩm. '
-                + '<b>Copy cả bảng từ Excel (kèm dòng tiêu đề Tên, Màu chữ, Màu nền…) rồi dán vào ô Nội dung</b> để điền nhanh — cột font / ghi chú được giữ lại.</p>'
+                + '<b>Bấm Import Excel</b> (nên dùng file mẫu có sẵn danh sách màu) hoặc copy cả bảng trong Excel kèm dòng tiêu đề rồi dán vào ô Nội dung — cột font / ghi chú được giữ lại.</p>'
                 + '<div class="tt-dialog-body"><table class="tt-tl-table"><thead><tr><th>#</th><th>Nội dung</th>'
                 + attrs.map(function (a) { return '<th class="tt-tl-color">' + escAttr(a.title) + '</th>'; }).join('')
                 + '<th class="tt-tl-qty">SL</th><th>Ghi chú</th><th></th></tr></thead><tbody></tbody></table></div>'
-                + '<button type="button" class="tt-textlink tt-tl-add" data-tl-add>+ Thêm dòng</button>'
+                + '<div class="tt-tl-actions"><button type="button" class="tt-textlink tt-tl-add" data-tl-add>+ Thêm dòng</button>' + EXCEL_TOOLS + '</div>'
                 + '<p class="tt-tl-msg" data-tl-msg hidden></p>'
                 + '<div class="tt-dialog-foot"><b data-tl-total></b><button type="button" class="tt-button" data-tl-close>Huỷ</button>'
                 + '<button type="button" class="tt-button tt-button--dark" data-tl-send><span>Thêm vào giỏ</span></button></div></div>';
@@ -1433,6 +1521,7 @@
                     renumber();
                 }
                 else if (e.target.closest('[data-tl-send]')) send();
+                else excelClick(e);
             });
             dlg.addEventListener('input', function (e) {
                 if (e.target.matches('[data-tl-qty]')) e.target.value = e.target.value.replace(/\D/g, '');
@@ -1554,7 +1643,97 @@
             });
         }
 
-        tools.querySelector('button').addEventListener('click', open);
+        // ----- Excel: template download and import (studio-xlsx.js is loaded on first use) -----
+
+        function loadXlsx() {
+            if (window.TTXlsx) return Promise.resolve(window.TTXlsx);
+            if (!loadXlsx.p) {
+                loadXlsx.p = new Promise(function (resolve, reject) {
+                    var el = document.createElement('script');
+                    var own = document.querySelector('script[src*="/studio/studio.js"]');
+                    el.src = cfg.xlsxSrc || (own ? own.src.replace('/studio.js', '/studio-xlsx.js') : '');
+                    el.async = true;
+                    el.onload = function () { if (window.TTXlsx) resolve(window.TTXlsx); else reject(new Error('Không tải được bộ đọc Excel.')); };
+                    el.onerror = function () { loadXlsx.p = null; reject(new Error('Không tải được bộ đọc Excel, hãy thử lại.')); };
+                    document.head.appendChild(el);
+                });
+            }
+            return loadXlsx.p;
+        }
+
+        // Header row with dropdowns of the product's colors; the same headers are recognized on import.
+        function downloadTemplate() {
+            loadXlsx().then(function (X) {
+                var head = ['STT', 'Tên'].concat(attrs.map(function (a) { return a.title; }), ['SL', 'Ghi chú (font, kiểu chữ…)']);
+                var lists = {};
+                attrs.forEach(function (a, i) { lists[i + 2] = a.options.map(function (o) { return o.text; }); });
+                var blob = X.write({ sheet: cfg.item, rows: [head], widths: [6, 28].concat(attrs.map(function () { return 14; }), [6, 30]), lists: lists, listRows: MAX_ROWS + 1 });
+                var a = document.createElement('a');
+                a.href = URL.createObjectURL(blob);
+                a.download = 'mau-' + norm(cfg.item).replace(/[^a-z0-9]+/g, '-') + '.xlsx';
+                document.body.appendChild(a);
+                a.click();
+                setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
+            }, function (err) { alert(err.message); });
+        }
+
+        // CSV / TSV text into rows of cells (quoted fields supported).
+        function parseCsv(text) {
+            var first = text.split(/\r?\n/)[0] || '', sep = first.indexOf('\t') >= 0 ? '\t' : first.split(';').length > first.split(',').length ? ';' : ',';
+            var rows = [], row = [], cell = '', q = false;
+            for (var i = 0; i < text.length; i++) {
+                var ch = text[i];
+                if (q) {
+                    if (ch === '"' && text[i + 1] === '"') { cell += '"'; i++; }
+                    else if (ch === '"') q = false;
+                    else cell += ch;
+                }
+                else if (ch === '"') q = true;
+                else if (ch === sep) { row.push(cell); cell = ''; }
+                else if (ch === '\n' || ch === '\r') {
+                    if (ch === '\r' && text[i + 1] === '\n') i++;
+                    row.push(cell); rows.push(row); row = []; cell = '';
+                }
+                else cell += ch;
+            }
+            row.push(cell); rows.push(row);
+            return rows;
+        }
+
+        var importInput = document.createElement('input');
+        importInput.type = 'file';
+        importInput.accept = '.xlsx,.csv,.tsv,.txt';
+        importInput.hidden = true;
+        document.body.appendChild(importInput);
+        importInput.addEventListener('change', function () {
+            var file = importInput.files && importInput.files[0];
+            importInput.value = '';
+            if (!file) return;
+            var read = /\.xlsx$/i.test(file.name)
+                ? loadXlsx().then(function (X) { return X.read(file); })
+                : file.text().then(parseCsv);
+            read.then(function (lines) {
+                var rows = parseRows(lines);
+                if (!dlg || dlg.hidden) open();
+                if (!rows.length) { showMsg('Không thấy dòng nào trong file ' + file.name + ' — cần cột Tên (dùng file mẫu cho chắc).'); return; }
+                // Empty rows are replaced by the imported ones.
+                Array.prototype.slice.call(tbody.rows).forEach(function (tr) { if (!readRow(tr).text) tr.remove(); });
+                addRows(rows);
+                var bad = rows.filter(function (r) { return r.colors.some(function (c) { return c === ''; }); }).length;
+                showMsg('Đã nhập ' + rows.length + ' dòng từ ' + file.name + (bad ? ' — ' + bad + ' dòng có màu shop chưa có (tô đỏ), hãy chọn lại.' : '.'), !bad);
+            }).catch(function (err) {
+                if (!dlg || dlg.hidden) open();
+                showMsg('Không đọc được ' + file.name + ': ' + ((err && err.message) || 'file lỗi.'));
+            });
+        });
+
+        function excelClick(e) {
+            if (e.target.closest('[data-tl-template]')) downloadTemplate();
+            else if (e.target.closest('[data-tl-import]')) importInput.click();
+        }
+
+        tools.querySelector('[data-tl-open]').addEventListener('click', open);
+        tools.addEventListener('click', excelClick);
     }
 
     onReady(function () {
