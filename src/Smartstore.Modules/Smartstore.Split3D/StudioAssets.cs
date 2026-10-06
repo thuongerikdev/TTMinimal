@@ -5,7 +5,7 @@ namespace Smartstore.Split3D;
 /// </summary>
 public static class StudioAssets
 {
-    public const string Version = "28";
+    public const string Version = "29";
 
     public const string StyleSheet = "~/Modules/Smartstore.Split3D/studio/studio.css?v=" + Version;
 
@@ -20,6 +20,11 @@ public static class StudioAssets
     /// Excel (.xlsx) reader and writer for the name list import / template, loaded on demand on personalized product pages.
     /// </summary>
     public const string XlsxScript = "~/Modules/Smartstore.Split3D/studio/studio-xlsx.js?v=" + Version;
+
+    /// <summary>
+    /// 3D preview of the name plate (typed text on a plate), loaded on the name plate product page.
+    /// </summary>
+    public const string NameplateScript = "~/Modules/Smartstore.Split3D/studio/studio-nameplate.js?v=" + Version;
 
     /// <summary>
     /// "Pop Studio" skin for the admin area (see <see cref="Filters.AdminStyleFilter"/>).

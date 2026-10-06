@@ -56,12 +56,13 @@ public static class StudioCustomProducts
 
     /// <summary>
     /// Products whose text field can be filled from a list (one row per piece), see <see cref="Filters.TextListFilter"/>.
-    /// Key is the SKU; Title heads the list dialog, Item names one row ("bảng tên").
+    /// Key is the SKU; Title heads the list dialog, Item names one row ("bảng tên"), Preview shows the text as a 3D
+    /// name plate (studio-nameplate.js) on the product page and in the list dialog.
     /// </summary>
-    public static readonly IReadOnlyDictionary<string, (string Title, string Item)> TextListProducts = new Dictionary<string, (string, string)>(StringComparer.OrdinalIgnoreCase)
+    public static readonly IReadOnlyDictionary<string, (string Title, string Item, bool Preview)> TextListProducts = new Dictionary<string, (string, string, bool)>(StringComparer.OrdinalIgnoreCase)
     {
-        ["TT-NAMEPLATE"] = ("Danh sách tên cần in", "bảng tên"),
-        ["TT-KEYCAP"] = ("Danh sách keycap cần in", "keycap")
+        ["TT-NAMEPLATE"] = ("Danh sách tên cần in", "bảng tên", true),
+        ["TT-KEYCAP"] = ("Danh sách keycap cần in", "keycap", false)
     };
 
     private static Option[] ColorOptions(int preselected)

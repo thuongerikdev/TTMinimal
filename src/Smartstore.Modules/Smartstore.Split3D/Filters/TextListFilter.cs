@@ -10,7 +10,8 @@ namespace Smartstore.Split3D.Filters;
 /// <summary>
 /// On the product page of a personalized product (<see cref="StudioCustomProducts.TextListProducts"/>), lets the customer
 /// order a whole list at once: studio.js reads the JSON config added here and opens a table dialog (one row per text
-/// with its own colors, quantity and note) that adds every row to the cart as its own line.
+/// with its own colors, quantity and note) that adds every row to the cart as its own line. Name plates also get a
+/// live 3D preview of the typed text and of any row of the list.
 /// Registered for Product/ProductDetails, see Startup.
 /// </summary>
 public class TextListFilter : IAsyncActionFilter
@@ -43,13 +44,15 @@ public class TextListFilter : IAsyncActionFilter
 
                 if (attribute != null)
                 {
+                    var url = (context.Controller as Controller)?.Url;
                     var json = JsonSerializer.Serialize(new
                     {
                         control = ProductVariantQueryItem.CreateKey(productId, 0, attribute.ProductAttributeId, attribute.Id),
                         title = list.Title,
                         item = list.Item,
-                        cartUrl = (context.Controller as Controller)?.Url.RouteUrl("ShoppingCart"),
-                        xlsxSrc = (context.Controller as Controller)?.Url.Content(StudioAssets.XlsxScript)
+                        cartUrl = url?.RouteUrl("ShoppingCart"),
+                        xlsxSrc = url?.Content(StudioAssets.XlsxScript),
+                        previewSrc = list.Preview ? url?.Content(StudioAssets.NameplateScript) : null
                     });
 
                     // "<" is escaped by the serializer, so the JSON cannot close the script element.

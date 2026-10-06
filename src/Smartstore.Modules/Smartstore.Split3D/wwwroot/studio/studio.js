@@ -1468,12 +1468,16 @@
         var cfgEl = document.querySelector('script[data-tt-textlist]'), cfg;
         if (!cfgEl) return;
         try { cfg = JSON.parse(cfgEl.textContent); } catch (e) { return; }
-        var field = document.getElementById(cfg.control);
+        // The variant attributes and the offer actions are re-rendered by Smartstore after every attribute change,
+        // so the text field and the quantity input are looked up again whenever they are needed.
+        function getField() { return document.getElementById(cfg.control); }
+        function getQty() { return form.querySelector('input[name$="EnteredQuantity"]'); }
+        var field = getField();
         if (!field) return;
         var form = field.closest('form');
         var addBtn = document.querySelector('.btn-add-to-cart[data-href]');
         if (!form || !addBtn) return;
-        var qtyInput = form.querySelector('input[name$="EnteredQuantity"]');
+        var qtyInput = getQty();
         var MAX_ROWS = 300;
         var EXCEL_TOOLS = '<span class="tt-tl-excel"><button type="button" class="tt-textlink" data-tl-template>Tải file mẫu Excel</button>'
             + '<button type="button" class="tt-textlink" data-tl-import>Import Excel</button></span>';
@@ -1490,7 +1494,10 @@
             if (cut < 0) return;
             var a = attrs.filter(function (x) { return x.name === input.name; })[0];
             if (!a) attrs.push(a = { name: input.name, title: label.slice(0, cut), options: [] });
-            a.options.push({ value: input.value, text: label.slice(cut + 2) });
+            // The swatch shows the option's color; the 3D preview paints with it.
+            var visual = input.closest('.swatch') && input.closest('.swatch').querySelector('.swatch-visual');
+            var color = visual ? getComputedStyle(visual).backgroundColor : '';
+            a.options.push({ value: input.value, text: label.slice(cut + 2), color: /^rgba\(.*,\s*0\)$|^transparent$/.test(color) ? '' : color });
         }, form);
         function current(a) { var c = form.querySelector('input[name="' + a.name + '"]:checked'); return c ? c.value : ''; }
         function optionFor(a, text) { var n = norm(text); return a.options.filter(function (o) { return norm(o.text) === n; })[0]; }
@@ -1499,7 +1506,11 @@
         tools.className = 'tt-textlist-tools';
         tools.innerHTML = '<button type="button" class="tt-textlist-btn" data-tl-open>' + LIST_ICON + '<span>Đặt nhiều ' + escAttr(cfg.item) + ' một lượt</span></button>'
             + EXCEL_TOOLS;
-        field.parentNode.insertBefore(tools, field.nextSibling);
+        function mountTools() {
+            var f = getField();
+            if (f && !tools.isConnected) f.parentNode.insertBefore(tools, f.nextSibling);
+        }
+        mountTools();
 
         var dlg = null, tbody, totalEl, msgEl, sendBtn, lastFocus, busy = false;
 
@@ -1536,6 +1547,7 @@
             each('tr', function (tr, i) { tr.querySelector('.tt-tl-no').textContent = i + 1; }, tbody);
             totalEl.textContent = rows.length + ' dòng · ' + pieces(rows) + ' ' + cfg.item;
             sendBtn.querySelector('span').textContent = rows.length ? 'Thêm ' + pieces(rows) + ' ' + cfg.item + ' vào giỏ' : 'Thêm vào giỏ';
+            schedulePreview();
         }
 
         // Appends rows (or inserts them after a row); returns the first new row.
@@ -1622,6 +1634,8 @@
                 + '<div class="tt-dialog-head"><h3 id="tt-tl-title">' + escAttr(cfg.title) + '</h3><button type="button" class="tt-dialog-x" data-tl-close aria-label="Đóng">×</button></div>'
                 + '<p class="tt-dialog-hint">Mỗi dòng là một ' + escAttr(cfg.item) + ' với màu riêng; các lựa chọn khác (kích thước…) lấy theo trang sản phẩm. '
                 + '<b>Bấm Import Excel</b> (nên dùng file mẫu có sẵn danh sách màu) hoặc copy cả bảng trong Excel kèm dòng tiêu đề rồi dán vào ô Nội dung — cột font / ghi chú được giữ lại.</p>'
+                + (cfg.previewSrc ? '<div class="tt-tl-preview" data-tl-preview hidden><div class="tt-tl-stage"><canvas role="img" aria-label="Xem trước 3D dòng đang chọn"></canvas></div>'
+                    + '<div class="tt-tl-pcap"><span class="tt-viewer-tag">3D</span><b data-tl-pname></b><small data-tl-psize></small><span>Bấm vào một dòng để xem bảng tên đó · kéo để xoay</span></div></div>' : '')
                 + '<div class="tt-dialog-body"><table class="tt-tl-table"><thead><tr><th>#</th><th>Nội dung</th>'
                 + attrs.map(function (a) { return '<th class="tt-tl-color">' + escAttr(a.title) + '</th>'; }).join('')
                 + '<th class="tt-tl-qty">SL</th><th>Ghi chú</th><th></th></tr></thead><tbody></tbody></table></div>'
@@ -1650,10 +1664,15 @@
             });
             dlg.addEventListener('input', function (e) {
                 if (e.target.matches('[data-tl-qty]')) e.target.value = e.target.value.replace(/\D/g, '');
+                if (e.target.matches('[data-tl-text]')) pickRow(e.target.closest('tr'), true);
                 renumber();
             });
+            // The row being edited (or clicked) is the one shown in the 3D preview.
+            dlg.addEventListener('focusin', function (e) { pickRow(e.target.closest('tbody tr')); });
+            dlg.addEventListener('pointerdown', function (e) { if (!e.target.closest('.tt-tl-del')) pickRow(e.target.closest('tbody tr')); });
             dlg.addEventListener('change', function (e) {
                 if (!e.target.matches('[data-tl-attr]')) return;
+                schedulePreview();
                 e.target.classList.toggle('is-invalid', !e.target.value);
                 // A color picked for an unavailable one replaces the "Màu nền: Xanh dương" note.
                 var note = e.target.closest('tr').querySelector('[data-tl-note]'), title = attrs[+e.target.getAttribute('data-tl-attr')].title;
@@ -1697,13 +1716,18 @@
             showMsg('');
             if (!tbody.rows.length) {
                 // A text typed on the page starts the list; otherwise five empty rows.
-                var start = field.value.trim() ? [{ text: field.value.trim(), colors: [], qty: Math.max(1, parseInt(qtyInput && qtyInput.value, 10) || 1), note: '' }] : [];
+                var f = getField(), qty = getQty(), text = f ? f.value.trim() : '';
+                var start = text ? [{ text: text, colors: [], qty: Math.max(1, parseInt(qty && qty.value, 10) || 1), note: '' }] : [];
                 addRows(start.concat(start.length ? [blank()] : [blank(), blank(), blank(), blank(), blank()]));
             }
             dlg.hidden = false;
             document.documentElement.classList.add('tt-noscroll');
             var empty = Array.prototype.filter.call(tbody.querySelectorAll('[data-tl-text]'), function (i) { return !i.value; })[0];
-            (empty || tbody.querySelector('[data-tl-text]')).focus();
+            // The preview starts on the picked row, else the first one with a text.
+            if (!picked || !picked.isConnected) picked = Array.prototype.filter.call(tbody.rows, function (tr) { return readRow(tr).text; })[0] || null;
+            openPreview();
+            (empty || tbody.querySelector('[data-tl-text]')).focus({ preventScroll: true });
+            if (picked) schedulePreview();
         }
 
         function close() {
@@ -1770,20 +1794,26 @@
 
         // ----- Excel: template download and import (studio-xlsx.js is loaded on first use) -----
 
-        function loadXlsx() {
-            if (window.TTXlsx) return Promise.resolve(window.TTXlsx);
-            if (!loadXlsx.p) {
-                loadXlsx.p = new Promise(function (resolve, reject) {
+        // Loads a studio script once; resolves with the global it defines.
+        var libs = {};
+        function loadLib(src, name, error) {
+            if (window[name]) return Promise.resolve(window[name]);
+            if (!libs[name]) {
+                libs[name] = new Promise(function (resolve, reject) {
                     var el = document.createElement('script');
-                    var own = document.querySelector('script[src*="/studio/studio.js"]');
-                    el.src = cfg.xlsxSrc || (own ? own.src.replace('/studio.js', '/studio-xlsx.js') : '');
+                    el.src = src;
                     el.async = true;
-                    el.onload = function () { if (window.TTXlsx) resolve(window.TTXlsx); else reject(new Error('Không tải được bộ đọc Excel.')); };
-                    el.onerror = function () { loadXlsx.p = null; reject(new Error('Không tải được bộ đọc Excel, hãy thử lại.')); };
+                    el.onload = function () { if (window[name]) resolve(window[name]); else reject(new Error(error + '.')); };
+                    el.onerror = function () { libs[name] = null; reject(new Error(error + ', hãy thử lại.')); };
                     document.head.appendChild(el);
                 });
             }
-            return loadXlsx.p;
+            return libs[name];
+        }
+
+        function loadXlsx() {
+            var own = document.querySelector('script[src*="/studio/studio.js"]');
+            return loadLib(cfg.xlsxSrc || (own ? own.src.replace('/studio.js', '/studio-xlsx.js') : ''), 'TTXlsx', 'Không tải được bộ đọc Excel');
         }
 
         // Header row with dropdowns of the product's colors; the same headers are recognized on import.
@@ -1856,6 +1886,164 @@
             if (e.target.closest('[data-tl-template]')) downloadTemplate();
             else if (e.target.closest('[data-tl-import]')) importInput.click();
         }
+
+        // ----- 3D preview of the name plate (studio-nameplate.js) -----
+        // A card above the product pictures shows the text typed on the page. Once a list exists, chips under it
+        // switch to any row of the list; the list dialog has its own small preview of the row being edited.
+
+        var picked = null, np = null, previewQueued = false;
+        var baseAttr = attrs.filter(function (a) { return /nen/.test(norm(a.title)); })[0];
+        var textAttr = attrs.filter(function (a) { return a !== baseAttr && /chu/.test(norm(a.title)); })[0]
+            || attrs.filter(function (a) { return a !== baseAttr; })[0];
+
+        // Plate length in mm from the checked size option ("Dài 15 cm").
+        function plateLength() {
+            var len = 0;
+            each('input[type=radio]:checked', function (input) {
+                if (len || input.classList.contains('swatch-input')) return;
+                var label = input.closest('label') || form.querySelector('label[for="' + input.id + '"]');
+                var m = (label ? label.textContent : '').match(/(\d+(?:[.,]\d+)?)\s*(cm|mm)\b/i);
+                if (m) len = parseFloat(m[1].replace(',', '.')) * (m[2].toLowerCase() === 'cm' ? 10 : 1);
+            }, form);
+            return len || 100;
+        }
+
+        // A row without its own color takes the one picked on the page.
+        function colorOf(a, value, fallback) {
+            if (!a) return fallback;
+            var v = value || current(a), o = a.options.filter(function (x) { return x.value === v; })[0];
+            return (o && o.color) || fallback;
+        }
+
+        function plateSpec(r) {
+            return {
+                text: r.text,
+                base: colorOf(baseAttr, r.colors[attrs.indexOf(baseAttr)], '#ffffff'),
+                color: colorOf(textAttr, r.colors[attrs.indexOf(textAttr)], '#20201f'),
+                length: plateLength()
+            };
+        }
+
+        function pageRow() { var f = getField(); return { text: f ? f.value.trim() : '', colors: [] }; }
+
+        function sizeText(d) { return d ? d.length + ' × ' + d.height + ' × ' + String(d.depth).replace('.', ',') + ' mm' : ''; }
+
+        // Rows join the preview once they have a text; typing in a row always shows it.
+        function pickRow(tr, force) {
+            if (!np || !tr || tr === picked || !(force || readRow(tr).text)) return;
+            picked = tr;
+            schedulePreview();
+        }
+
+        function schedulePreview() {
+            if (!np || previewQueued) return;
+            previewQueued = true;
+            requestAnimationFrame(function () { previewQueued = false; renderPreview(); });
+        }
+
+        function renderPreview() {
+            if (picked && !picked.isConnected) picked = null;
+            var r = picked ? readRow(picked) : pageRow(), spec = plateSpec(r);
+            var no = picked ? Array.prototype.indexOf.call(tbody.rows, picked) + 1 : 0;
+
+            if (np.card) {
+                np.title.textContent = r.text ? (no ? 'Dòng ' + no + ' · ' : '') + r.text : 'Xem trước bảng tên';
+                if (np.view) {
+                    np.empty.hidden = !!r.text;
+                    np.view.set(spec).then(function (d) { np.size.textContent = sizeText(d); });
+                }
+
+                var rows = tbody ? Array.prototype.filter.call(tbody.rows, function (tr) { return readRow(tr).text; }) : [];
+                // The page text gets its own chip unless the list already has it (the list starts with it).
+                var page = pageRow(), pageChip = page.text && !rows.some(function (tr) { return readRow(tr).text === page.text; });
+                np.list.hidden = !rows.length;
+                np.list.innerHTML = !rows.length ? '' : '<span class="tt-np-list-label">Danh sách ' + rows.length + ' ' + escAttr(cfg.item) + ' — bấm để xem:</span>'
+                    + (pageChip ? chip(-1, page, !picked, 'Trên trang: ') : '')
+                    + rows.map(function (tr) {
+                        var rr = readRow(tr);
+                        return chip(tr.sectionRowIndex, rr, tr === picked || (!picked && !pageChip && rr.text === page.text), '');
+                    }).join('');
+            }
+
+            if (tbody) each('tr', function (tr) { tr.classList.toggle('is-current', tr === picked); }, tbody);
+            if (np.dlgView && dlg && !dlg.hidden) {
+                var dr = picked ? r : { text: '', colors: [] };
+                dlg.querySelector('[data-tl-pname]').textContent = dr.text ? 'Dòng ' + no + ' · ' + dr.text : 'Nhập tên vào bảng để xem trước';
+                np.dlgView.set(plateSpec(dr)).then(function (d) { dlg.querySelector('[data-tl-psize]').textContent = dr.text ? sizeText(d) : ''; });
+            }
+        }
+
+        function chip(index, r, on, prefix) {
+            var s = plateSpec(r);
+            return '<button type="button" class="tt-np-chip' + (on ? ' is-on' : '') + '" data-np-pick="' + index + '" aria-pressed="' + on + '" title="' + escAttr(r.text) + '">'
+                + '<i style="background:' + escAttr(s.base) + ';color:' + escAttr(s.color) + '">A</i><span>' + escAttr(prefix + r.text) + '</span></button>';
+        }
+
+        function openPreview() {
+            if (!np) return;
+            np.ready.then(function (P) {
+                var box = dlg.querySelector('[data-tl-preview]');
+                if (!box) return;
+                box.hidden = false;
+                if (!np.dlgView) np.dlgView = new P.View(box.querySelector('canvas'));
+                schedulePreview();
+            }, function () { });
+        }
+
+        function initPreview() {
+            np = { ready: loadLib(cfg.previewSrc, 'TTNameplate', 'Không tải được bản xem trước 3D') };
+            var host = document.querySelector('.pd-data-col-inner');
+            if (host) {
+                var card = np.card = document.createElement('div');
+                card.className = 'tt-viewer tt-np';
+                card.innerHTML = '<div class="tt-viewer-head"><span class="tt-viewer-tag">3D</span><b data-np-title>Xem trước bảng tên</b>'
+                    + '<button type="button" class="tt-viewer-max" aria-pressed="false"><span>Phóng to</span></button></div>'
+                    + '<div class="tt-viewer-stage tt-np-stage"><canvas role="img" aria-label="Xem trước 3D bảng tên, kéo để xoay"></canvas>'
+                    + '<span class="tt-np-empty" data-np-empty>Nhập tên muốn in để xem trước 3D</span><span class="tt-viewer-size" data-np-size></span></div>'
+                    + '<div class="tt-np-list" data-np-list hidden></div>'
+                    + '<div class="tt-viewer-foot"><span>Kéo để xoay · Ctrl + lăn chuột để phóng to · ảnh minh hoạ, studio gửi file xem trước trước khi in</span>'
+                    + '<button type="button" class="tt-textlink" data-np-reset>Góc nhìn ban đầu</button></div>';
+                host.insertBefore(card, host.firstChild);
+                np.title = card.querySelector('[data-np-title]');
+                np.empty = card.querySelector('[data-np-empty]');
+                np.size = card.querySelector('[data-np-size]');
+                np.list = card.querySelector('[data-np-list]');
+
+                var maxBtn = card.querySelector('.tt-viewer-max');
+                var maximize = function (on) {
+                    card.classList.toggle('is-max', on);
+                    document.documentElement.classList.toggle('tt-noscroll', on);
+                    maxBtn.setAttribute('aria-pressed', on ? 'true' : 'false');
+                    maxBtn.querySelector('span').textContent = on ? 'Thu nhỏ' : 'Phóng to';
+                    if (np.view) np.view.request();
+                };
+                maxBtn.addEventListener('click', function () { maximize(!card.classList.contains('is-max')); });
+                document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && card.classList.contains('is-max')) maximize(false); });
+                card.querySelector('[data-np-reset]').addEventListener('click', function () { if (np.view) np.view.reset(); });
+                np.list.addEventListener('click', function (e) {
+                    var b = e.target.closest('[data-np-pick]');
+                    if (!b) return;
+                    var i = +b.getAttribute('data-np-pick');
+                    picked = i < 0 || !tbody ? null : tbody.rows[i] || null;
+                    renderPreview();
+                });
+            }
+
+            np.ready.then(function (P) {
+                if (np.card) np.view = new P.View(np.card.querySelector('canvas'), { wheel: function () { return np.card.classList.contains('is-max'); } });
+                schedulePreview();
+            }, function (err) {
+                if (np.card) { np.empty.textContent = err.message; np.empty.hidden = false; }
+            });
+
+            // Typing on the page shows the page text again; any option change (colors, size) repaints.
+            form.addEventListener('input', function (e) { if (e.target.id === cfg.control) { picked = null; schedulePreview(); } });
+            form.addEventListener('change', schedulePreview);
+            schedulePreview();
+        }
+
+        if (cfg.previewSrc) initPreview();
+        if (window.jQuery) window.jQuery('#main-update-container').on('updated', function () { mountTools(); schedulePreview(); });
 
         tools.querySelector('[data-tl-open]').addEventListener('click', open);
         tools.addEventListener('click', excelClick);
