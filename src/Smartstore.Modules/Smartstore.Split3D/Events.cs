@@ -15,6 +15,7 @@ public class Events : IConsumer
         OrderPlacedEvent message,
         Split3DLicenseService licenseService,
         Split3DUpgradeService upgradeService,
+        PrintOrderService printOrderService,
         Split3DSettings settings,
         SmartDbContext db,
         ILogger logger,
@@ -22,6 +23,7 @@ public class Events : IConsumer
     {
         var order = message.Order;
         Split3DLicenseUpgrade upgrade = null;
+        var printJobs = new List<PrintOrder>();
 
         if (order != null)
         {
@@ -32,6 +34,16 @@ public class Events : IConsumer
             catch (Exception ex)
             {
                 logger.Error(ex, $"Split3D: failed to link the key upgrade to order {order.Id}.");
+            }
+
+            try
+            {
+                // Links the print jobs paid with this order and copies the delivery address into it.
+                printJobs = await printOrderService.AttachToOrderAsync(order, cancelToken);
+            }
+            catch (Exception ex)
+            {
+                logger.Error(ex, $"Split3D: failed to link the print job to order {order.Id}.");
             }
         }
 
@@ -46,7 +58,9 @@ public class Events : IConsumer
         try
         {
             var productIds = (await licenseService.GetProductPlansAsync(cancelToken)).Keys.ToArray();
-            if (upgrade == null && !await db.OrderItems.AnyAsync(x => x.OrderId == order.Id && productIds.Contains(x.ProductId), cancelToken))
+            if (upgrade == null
+                && printJobs.Count == 0
+                && !await db.OrderItems.AnyAsync(x => x.OrderId == order.Id && productIds.Contains(x.ProductId), cancelToken))
             {
                 return;
             }
@@ -58,9 +72,11 @@ public class Events : IConsumer
                 $"- Số tài khoản: {settings.BankAccountNumber}\n" +
                 $"- Chủ tài khoản: {settings.BankAccountHolder}\n" +
                 $"- Nội dung chuyển khoản: {order.GetOrderNumber()}\n\n" +
-                (upgrade != null
-                    ? "Key sẽ được nâng cấp tự động ngay khi chúng tôi xác nhận đã nhận tiền; addon trong Blender tự nhận gói mới, không cần cài lại."
-                    : "Key kích hoạt và file cài đặt sẽ được gửi tự động ngay khi chúng tôi xác nhận đã nhận tiền.");
+                (printJobs.Count > 0
+                    ? "Studio bắt đầu kiểm tra file và xác nhận đơn in ngay khi nhận được tiền cọc."
+                    : upgrade != null
+                        ? "Key sẽ được nâng cấp tự động ngay khi chúng tôi xác nhận đã nhận tiền; addon trong Blender tự nhận gói mới, không cần cài lại."
+                        : "Key kích hoạt và file cài đặt sẽ được gửi tự động ngay khi chúng tôi xác nhận đã nhận tiền.");
 
             db.OrderNotes.Add(order, note, displayToCustomer: true);
             await db.SaveChangesAsync(cancelToken);
@@ -75,12 +91,28 @@ public class Events : IConsumer
         OrderPaidEvent message,
         Split3DLicenseService licenseService,
         Split3DUpgradeService upgradeService,
+        PrintOrderService printOrderService,
         Split3DSettings settings,
         SmartDbContext db,
         ILogger logger,
         CancellationToken cancelToken)
     {
-        if (!settings.AutoIssueEnabled || message.Order == null)
+        if (message.Order == null)
+        {
+            return;
+        }
+
+        try
+        {
+            // A paid print job waits for the studio to confirm it; the money is in, nothing is printed yet.
+            await printOrderService.MarkPaidAsync(message.Order, cancelToken);
+        }
+        catch (Exception ex)
+        {
+            logger.Error(ex, $"Split3D: failed to mark the print jobs of order {message.Order.Id} as paid.");
+        }
+
+        if (!settings.AutoIssueEnabled)
         {
             return;
         }

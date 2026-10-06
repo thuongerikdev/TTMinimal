@@ -4111,4 +4111,495 @@
     <LocaleResource Name="Upgrade.Fields.SendEmailNow.Hint">
         <Value>Gửi lại email key cho khách với key đã nâng cấp.</Value>
     </LocaleResource>
+
+    <LocaleResource Name="PrintJob.ListTitle">
+        <Value>Đơn in 3D</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.Title">
+        <Value>Đơn in {0}</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.ToConfirmCount">
+        <Value>Chờ xác nhận</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.OpenCount">
+        <Value>Đang sản xuất</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.Customer">
+        <Value>Khách hàng &amp; nhận hàng</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.Models">
+        <Value>Mô hình &amp; giá</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.Workflow">
+        <Value>Luồng xử lý</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.Settlement">
+        <Value>Chốt giá &amp; ghi chú</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.Received">
+        <Value>đã nhận</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.PayLink">
+        <Value>Link thanh toán</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.PayLinkHint">
+        <Value>Gửi link này cho khách: link tự đưa đơn in vào giỏ và mở trang thanh toán. Bấm vào ô để copy.</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.StatusMessage">
+        <Value>Nội dung ghi vào đơn hàng</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.StatusMessagePlaceholder">
+        <Value>Thời gian in, mã vận đơn, giá đã chốt…</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.NotifyCustomer">
+        <Value>Khách nhìn thấy ghi chú này</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.SetStatusManually">
+        <Value>Đổi sang trạng thái khác</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.SetStatusManually.Hint">
+        <Value>Sửa trạng thái mà không thông báo cho khách.</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.StatusChanged">
+        <Value>Đơn in {0}: {1}</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.OpenOrder">
+        <Value>Mở đơn hàng</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.FromQuote">
+        <Value>Từ yêu cầu báo giá</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.ModelName">
+        <Value>Mô hình</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.Grams">
+        <Value>Khối lượng</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.Quantity">
+        <Value>Số lượng</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.Size">
+        <Value>Kích thước</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.PiecesUnit">
+        <Value>cái</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.Pickup">
+        <Value>Nhận tại xưởng</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.Shipping">
+        <Value>Giao hàng</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.Action.MarkPaid">
+        <Value>Đã nhận tiền</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.Action.Confirm">
+        <Value>Xác nhận đơn</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.Action.StartPrinting">
+        <Value>Bắt đầu in</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.Action.Ready">
+        <Value>In xong</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.Action.Complete">
+        <Value>Đã giao / hoàn thành</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.Action.Cancel">
+        <Value>Huỷ đơn</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.Status.Draft">
+        <Value>Chưa thanh toán</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.Status.AwaitingPayment">
+        <Value>Chờ thanh toán</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.Status.Paid">
+        <Value>Đã trả tiền, chờ xác nhận</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.Status.Confirmed">
+        <Value>Đã xác nhận</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.Status.Printing">
+        <Value>Đang in</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.Status.Ready">
+        <Value>Đã in xong, chờ giao</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.Status.Completed">
+        <Value>Hoàn thành</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.Status.Cancelled">
+        <Value>Đã huỷ</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.Fields.Code">
+        <Value>Mã đơn in</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.Fields.Code.Hint">
+        <Value>Mã hiện cho khách và trên dòng giỏ hàng.</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.Fields.CreatedOn">
+        <Value>Ngày tạo</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.Fields.CreatedOn.Hint">
+        <Value>Thời điểm khách đặt in.</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.Fields.Status">
+        <Value>Trạng thái</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.Fields.Status.Hint">
+        <Value>Đơn đang ở bước nào trong luồng xử lý.</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.Fields.RecipientName">
+        <Value>Người nhận</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.Fields.RecipientName.Hint">
+        <Value>Tên người nhận hàng.</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.Fields.Phone">
+        <Value>Điện thoại / Zalo</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.Fields.Phone.Hint">
+        <Value>Số để xác nhận đơn và hẹn giao hàng.</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.Fields.Email">
+        <Value>Email</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.Fields.Email.Hint">
+        <Value>Nhận email xác nhận đơn.</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.Fields.Technology">
+        <Value>Công nghệ in</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.Fields.Technology.Hint">
+        <Value>Kiểu in và vật liệu của đơn.</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.Fields.Material">
+        <Value>Vật liệu</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.Fields.Material.Hint">
+        <Value>Vật liệu và màu khách chọn.</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.Fields.Fill">
+        <Value>Độ đặc / kiểu in</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.Fields.Fill.Hint">
+        <Value>Độ đặc dùng để tính khối lượng.</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.Fields.TotalGrams">
+        <Value>Tổng khối lượng</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.Fields.TotalGrams.Hint">
+        <Value>Khối lượng toàn bộ, tự cân trên trình duyệt.</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.Fields.Pieces">
+        <Value>Số cái</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.Fields.Pieces.Hint">
+        <Value>Tổng số cái của mọi mô hình.</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.Fields.PricePerGram">
+        <Value>Đơn giá / gram</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.Fields.PricePerGram.Hint">
+        <Value>Bậc giá dùng để tính đơn.</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.Fields.PriceEstimate">
+        <Value>Tạm tính</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.Fields.PriceEstimate.Hint">
+        <Value>Khối lượng × đơn giá, trước khi slice thật.</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.Fields.DepositAmount">
+        <Value>Đã thanh toán</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.Fields.DepositAmount.Hint">
+        <Value>Số tiền khách đã trả khi đặt.</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.Fields.FinalPrice">
+        <Value>Giá chốt</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.Fields.FinalPrice.Hint">
+        <Value>Giá sau khi slice file thật. Để trống nếu giữ giá tạm tính.</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.Fields.ShippingFee">
+        <Value>Phí vận chuyển</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.Fields.ShippingFee.Hint">
+        <Value>Thu cùng số tiền còn lại khi giao hàng.</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.Fields.Outstanding">
+        <Value>Còn phải thu</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.Fields.Outstanding.Hint">
+        <Value>Giá chốt cộng phí ship trừ tiền đã trả.</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.Fields.DeliveryMethod">
+        <Value>Cách nhận hàng</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.Fields.DeliveryMethod.Hint">
+        <Value>Nhận tại xưởng hoặc giao hàng.</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.Fields.Address">
+        <Value>Địa chỉ</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.Fields.Address.Hint">
+        <Value>Địa chỉ giao hàng, hoặc địa chỉ xưởng nếu khách tự nhận.</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.Fields.DesiredOn">
+        <Value>Cần trước ngày</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.Fields.DesiredOn.Hint">
+        <Value>Ngày khách cần có hàng.</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.Fields.Note">
+        <Value>Ghi chú của khách</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.Fields.Note.Hint">
+        <Value>Nội dung khách ghi khi đặt in.</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.Fields.AdminNote">
+        <Value>Ghi chú nội bộ</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.Fields.AdminNote.Hint">
+        <Value>Chỉ hiện trong trang quản trị.</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.Fields.Order">
+        <Value>Đơn hàng</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.Fields.Order.Hint">
+        <Value>Đơn hàng đã thu tiền cọc.</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.Fields.File">
+        <Value>File mô hình</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.Fields.File.Hint">
+        <Value>File khách gửi, lưu trong App_Data/Tenants/Default/PrintOrders.</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintOrder.Fields.RecipientName">
+        <Value>Họ và tên</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintOrder.Fields.RecipientName.Hint">
+        <Value>Tên người nhận hàng.</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintOrder.Fields.Phone">
+        <Value>Số điện thoại / Zalo</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintOrder.Fields.Phone.Hint">
+        <Value>Studio gọi / nhắn số này để xác nhận đơn.</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintOrder.Fields.Email">
+        <Value>Email</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintOrder.Fields.Email.Hint">
+        <Value>Nhận email xác nhận đơn.</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintOrder.Fields.DeliveryMethod">
+        <Value>Cách nhận hàng</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintOrder.Fields.DeliveryMethod.Hint">
+        <Value>Nhận tại xưởng hoặc giao hàng.</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintOrder.Fields.AddressLine">
+        <Value>Địa chỉ nhận hàng</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintOrder.Fields.AddressLine.Hint">
+        <Value>Số nhà, đường, phường / xã, quận / huyện.</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintOrder.Fields.City">
+        <Value>Tỉnh / thành phố</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintOrder.Fields.City.Hint">
+        <Value>Tỉnh hoặc thành phố của địa chỉ nhận.</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintOrder.Fields.DesiredOn">
+        <Value>Cần hàng trước ngày</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintOrder.Fields.DesiredOn.Hint">
+        <Value>Ngày cần có hàng.</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintOrder.Fields.Note">
+        <Value>Ghi chú</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintOrder.Fields.Note.Hint">
+        <Value>Màu sắc, hoàn thiện, giờ nhận hàng.</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintQuote.Status.Contacted">
+        <Value>Đã liên hệ</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintQuote.Status.Ordered">
+        <Value>Đã chốt đơn</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintQuote.DueCount">
+        <Value>Cần liên hệ</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintQuote.ContactCustomer">
+        <Value>Liên hệ khách</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintQuote.Due">
+        <Value>đến hẹn</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintQuote.Channel.Phone">
+        <Value>Gọi</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintQuote.MessagePreview">
+        <Value>Tin nhắn gửi khách</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintQuote.MessageHint">
+        <Value>Lấy từ mẫu tin nhắn; nút SMS và Email điền sẵn nội dung này.</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintQuote.CopyMessage">
+        <Value>Copy</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintQuote.FollowUpIn">
+        <Value>Hẹn liên hệ lại sau</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintQuote.FollowUpKeep">
+        <Value>giữ nguyên</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintQuote.FollowUpNone">
+        <Value>không hẹn lại</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintQuote.Days">
+        <Value>ngày</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintQuote.ContactMessagePlaceholder">
+        <Value>Đã trao đổi gì, khách trả lời thế nào…</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintQuote.IsIncoming">
+        <Value>Khách chủ động liên hệ</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintQuote.LogContact">
+        <Value>Ghi vào nhật ký liên hệ</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintQuote.ContactLogged">
+        <Value>Đã ghi nhật ký: {0}</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintQuote.FollowUpSet">
+        <Value>Đã hẹn liên hệ lại sau {0} ngày.</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintQuote.FollowUpCleared">
+        <Value>Đã bỏ hẹn liên hệ lại.</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintQuote.ContactLog">
+        <Value>Nhật ký liên hệ</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintQuote.LoggedBy">
+        <Value>Người ghi</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintQuote.Incoming">
+        <Value>khách gọi tới</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintQuote.LastContact">
+        <Value>Liên hệ gần nhất: {0}</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintQuote.CreateOrder">
+        <Value>Chốt đơn in</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintQuote.CreateOrderButton">
+        <Value>Tạo đơn in</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintQuote.CreateOrderHint">
+        <Value>Tạo đơn in theo giá này kèm link thanh toán để gửi khách.</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintQuote.OrderCreated">
+        <Value>Đã tạo đơn in {0}.</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintQuote.OrderCreatedLog">
+        <Value>Đã tạo đơn in {0}, giá {1}.</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintQuote.OrderExists">
+        <Value>Đơn in {0} vẫn đang chờ khách thanh toán.</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintQuote.PriceRequired">
+        <Value>Hãy nhập giá báo cho khách trước.</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintQuote.Fields.ContactCount">
+        <Value>Số lần liên hệ</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintQuote.Fields.ContactCount.Hint">
+        <Value>Số lần đã ghi vào nhật ký liên hệ.</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintQuote.Fields.LastContactOn">
+        <Value>Liên hệ gần nhất</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintQuote.Fields.LastContactOn.Hint">
+        <Value>Lần gần nhất liên hệ được khách.</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintQuote.Fields.FollowUpOn">
+        <Value>Hẹn liên hệ lại</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintQuote.Fields.FollowUpOn.Hint">
+        <Value>Yêu cầu quá hẹn được đếm trên badge menu.</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintQuote.Fields.Channel">
+        <Value>Kênh liên hệ</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintQuote.Fields.Channel.Hint">
+        <Value>Liên hệ khách bằng cách nào.</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintQuote.Fields.ContactMessage">
+        <Value>Nội dung / kết quả</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintQuote.Fields.ContactMessage.Hint">
+        <Value>Lưu vào nhật ký liên hệ.</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintQuote.Fields.DepositPercent">
+        <Value>Cọc %</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintQuote.Fields.DepositPercent.Hint">
+        <Value>Phần trăm khách trả trước khi đặt.</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintQuote.Fields.PrintOrder">
+        <Value>Đơn in</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintQuote.Fields.PrintOrder.Hint">
+        <Value>Đơn in được tạo từ yêu cầu này.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Studio.PrintOrders">
+        <Value>Đơn in 3D</Value>
+    </LocaleResource>
+    <LocaleResource Name="Studio.Fields.DepositPercent">
+        <Value>Tiền cọc</Value>
+    </LocaleResource>
+    <LocaleResource Name="Studio.Fields.DepositPercent.Hint">
+        <Value>Phần trăm giá tạm tính thu ngay khi khách đặt in. 100 = thu đủ.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Studio.Fields.AllowPickup">
+        <Value>Cho nhận tại xưởng</Value>
+    </LocaleResource>
+    <LocaleResource Name="Studio.Fields.AllowPickup.Hint">
+        <Value>Cho khách chọn tự đến xưởng nhận thay vì giao hàng.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Studio.Fields.DepositNote">
+        <Value>Ghi chú về tiền cọc</Value>
+    </LocaleResource>
+    <LocaleResource Name="Studio.Fields.DepositNote.Hint">
+        <Value>Hiện dưới số tiền cọc trên trang đặt in.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Studio.Fields.QuoteMessageTemplate">
+        <Value>Mẫu tin nhắn báo giá</Value>
+    </LocaleResource>
+    <LocaleResource Name="Studio.Fields.QuoteMessageTemplate.Hint">
+        <Value>Biến thay thế: {Name}, {Id}, {Brand}, {Price}, {Phone}, {Link}.</Value>
+    </LocaleResource>
+
+    <LocaleResource Name="Completed.PrintTitle">
+        <Value>Các bước tiếp theo cho đơn in của bạn</Value>
+    </LocaleResource>
+    <LocaleResource Name="Completed.PrintJob">
+        <Value>Đơn in {0}.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Completed.PrintOutstanding">
+        <Value>Khoảng {0} còn lại sẽ thanh toán khi nhận hàng.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Completed.PrintStep2">
+        <Value>Studio kiểm tra file, xác nhận đơn và bắt đầu in (thường trong giờ làm việc).</Value>
+    </LocaleResource>
+    <LocaleResource Name="Completed.PrintStep3">
+        <Value>Studio nhắn lại khi in xong và hẹn bạn nhận tại xưởng hoặc giao hàng.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Completed.PrintTrack">
+        <Value>Theo dõi đơn hàng</Value>
+    </LocaleResource>
 </Language>

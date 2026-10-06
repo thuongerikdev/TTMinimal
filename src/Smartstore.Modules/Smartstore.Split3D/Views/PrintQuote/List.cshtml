@@ -15,6 +15,10 @@
             <i class="bi bi-box-arrow-up-right"></i>
             <span>@T("Plugins.Split3D.PrintQuote.OpenPage")</span>
         </a>
+        <a href="@Url.Action("List", "PrintJob")" class="btn btn-secondary">
+            <i class="bi bi-box-seam"></i>
+            <span>@T("Plugins.Split3D.PrintJob.ListTitle")</span>
+        </a>
         <a href="@Url.Action("Settings")" class="btn btn-secondary">
             <i class="bi bi-gear"></i>
             <span>@T("Plugins.Split3D.Studio.Settings")</span>
@@ -34,6 +38,12 @@
             <div class="card card-body py-2">
                 <div class="text-muted small text-uppercase">@T("Plugins.Split3D.PrintQuote.OpenCount")</div>
                 <div class="fs-h3 font-weight-bold text-primary">@Model.OpenCount.ToString("N0")</div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3 mb-2">
+            <div class="card card-body py-2">
+                <div class="text-muted small text-uppercase">@T("Plugins.Split3D.PrintQuote.DueCount")</div>
+                <div class="fs-h3 font-weight-bold text-warning">@Model.DueCount.ToString("N0")</div>
             </div>
         </div>
     </div>

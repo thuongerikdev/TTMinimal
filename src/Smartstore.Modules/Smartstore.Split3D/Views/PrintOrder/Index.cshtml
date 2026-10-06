@@ -1,0 +1,191 @@
+@model PrintOrderPageModel
+
+@addTagHelper Smartstore.Web.TagHelpers.Public.*, Smartstore.Web.Common
+
+@{
+    // Module views default to the admin layout (Views/_ViewStart.cshtml); this is a storefront page.
+    Layout = "_Layout";
+    Assets.AppendTitleParts("Đặt in 3D – thông tin nhận hàng");
+    Assets.BodyAttributes.AppendCssClass("tt-studio-page");
+
+    var job = Model.Job;
+    var form = Model.Form;
+    var contact = Model.Contact;
+}
+
+<div class="tt">
+    <section class="tt-bleed tt-page-hero tt-page-hero--mint">
+        <div class="tt-wrap">
+            <div class="tt-tag tt-tilt" data-tt-reveal>ĐẶT IN · @job.Code</div>
+            <h1 class="tt-split">THÔNG TIN NHẬN HÀNG.<br /><em>RỒI THANH TOÁN.</em></h1>
+            <p data-tt-reveal style="--d:.25s">
+                Bạn đặt cọc @job.DepositPercent% để studio vào hàng in@(job.Outstanding > 0 ? $" — phần còn lại {PrintPriceList.FormatPrice(job.Outstanding)} thanh toán khi nhận hàng" : string.Empty).
+                Studio kiểm tra file rồi xác nhận đơn trước khi in.
+            </p>
+        </div>
+    </section>
+
+    <section class="tt-bleed tt-section" style="padding-top:0">
+        <div class="tt-wrap tt-order">
+            <form class="tt-form" method="post" asp-antiforgery="true" data-tt-orderform>
+                <honeypot />
+                <input type="hidden" asp-for="Form.Id" />
+                <h2>Giao hàng &amp; liên hệ</h2>
+                <p class="tt-form-sub">Studio cần số điện thoại để xác nhận đơn và nhắn khi in xong. Ô có dấu <em style="color:#ff6b85;font-style:normal">*</em> là bắt buộc.</p>
+
+                <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                @if (Model.RequiresLogin)
+                {
+                    <div class="tt-note-box">
+                        @StudioIcons.Get("spark")
+                        <span>Bước thanh toán cần đăng nhập. Bạn có thể điền thông tin ở đây trước, hệ thống sẽ đưa bạn tới trang đăng nhập / tạo tài khoản sau.</span>
+                    </div>
+                }
+
+                <fieldset class="tt-fieldset">
+                    <legend><span>1</span> Người nhận</legend>
+                    <div class="tt-row">
+                        <div class="tt-field">
+                            <label asp-for="Form.Name">Họ và tên <em>*</em></label>
+                            <input asp-for="Form.Name" class="tt-input" autocomplete="name" />
+                            <span asp-validation-for="Form.Name"></span>
+                        </div>
+                        <div class="tt-field">
+                            <label asp-for="Form.Phone">Số điện thoại / Zalo <em>*</em></label>
+                            <input asp-for="Form.Phone" class="tt-input" type="tel" autocomplete="tel" />
+                            <span asp-validation-for="Form.Phone"></span>
+                        </div>
+                    </div>
+                    <div class="tt-field">
+                        <label asp-for="Form.Email">Email</label>
+                        <input asp-for="Form.Email" class="tt-input" type="email" autocomplete="email" placeholder="Để nhận email xác nhận đơn" />
+                        <span asp-validation-for="Form.Email"></span>
+                    </div>
+                </fieldset>
+
+                <fieldset class="tt-fieldset">
+                    <legend><span>2</span> Nhận hàng</legend>
+                    @if (Model.AllowPickup)
+                    {
+                        <div class="tt-field">
+                            <div class="tt-pick" data-tt-delivery>
+                                <label>
+                                    <input type="radio" asp-for="Form.DeliveryMethodId" value="@((int)PrintDeliveryMethod.Shipping)" />
+                                    <span>Giao hàng<small>Phí ship studio báo sau khi xác nhận đơn</small></span>
+                                </label>
+                                <label>
+                                    <input type="radio" asp-for="Form.DeliveryMethodId" value="@((int)PrintDeliveryMethod.Pickup)" />
+                                    <span>Nhận tại xưởng<small>@contact.Address</small></span>
+                                </label>
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        <input type="hidden" asp-for="Form.DeliveryMethodId" value="@((int)PrintDeliveryMethod.Shipping)" />
+                    }
+
+                    <div data-tt-shipfields class="@(form.IsPickup && Model.AllowPickup ? "d-none" : string.Empty)">
+                        <div class="tt-field">
+                            <label asp-for="Form.AddressLine">Địa chỉ nhận hàng <em>*</em></label>
+                            <input asp-for="Form.AddressLine" class="tt-input" autocomplete="street-address" placeholder="Số nhà, ngõ, đường, phường / xã, quận / huyện" />
+                            <span asp-validation-for="Form.AddressLine"></span>
+                        </div>
+                        <div class="tt-row">
+                            <div class="tt-field">
+                                <label asp-for="Form.City">Tỉnh / thành phố <em>*</em></label>
+                                <input asp-for="Form.City" class="tt-input" autocomplete="address-level1" placeholder="VD: Hà Nội" />
+                                <span asp-validation-for="Form.City"></span>
+                            </div>
+                            <div class="tt-field">
+                                <label asp-for="Form.DesiredOn">Cần hàng trước ngày</label>
+                                <input asp-for="Form.DesiredOn" class="tt-input" type="date" />
+                                <span asp-validation-for="Form.DesiredOn"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="tt-field">
+                        <label asp-for="Form.Note">Ghi chú cho studio</label>
+                        <textarea asp-for="Form.Note" class="tt-input" rows="3" placeholder="Màu sắc mong muốn, yêu cầu hoàn thiện, giờ nhận hàng…"></textarea>
+                    </div>
+                </fieldset>
+
+                <button type="submit" class="tt-button tt-button--dark tt-button--block">
+                    @StudioIcons.Get("arrow") <span>Tới bước thanh toán @PrintPriceList.FormatPrice(job.DepositAmount)</span>
+                </button>
+                <p class="tt-form-foot">
+                    <a class="tt-textlink" href="@Model.CalculatorUrl">← Quay lại bộ tính giá để sửa file</a>
+                </p>
+            </form>
+
+            <aside class="tt-aside" data-tt-reveal="right">
+                <div class="tt-ordercard">
+                    <h3>Đơn in @job.Code</h3>
+                    <ul class="tt-orderlist">
+                        @foreach (var line in job.Models)
+                        {
+                            <li>
+                                <span>
+                                    <b>@line.Name</b>
+                                    <small>@line.Grams.ToString("N0") g × @line.Quantity@(line.Size.HasValue() ? " · " + line.Size : string.Empty)</small>
+                                </span>
+                                <em>@PrintPriceList.FormatWeight(line.TotalGrams)</em>
+                            </li>
+                        }
+                    </ul>
+                    <dl class="tt-ordersum">
+                        <dt>Công nghệ</dt>
+                        <dd>@job.Technology @job.Material@(job.Fill.HasValue() ? " · " + job.Fill : string.Empty)</dd>
+                        <dt>Tổng khối lượng</dt>
+                        <dd>@PrintPriceList.FormatWeight(job.TotalGrams) · @job.Pieces cái</dd>
+                        @if (job.PricePerGram > 0)
+                        {
+                            <dt>Đơn giá</dt>
+                            <dd>@PrintPriceList.FormatPrice(job.PricePerGram)/g@(job.TierLabel.HasValue() ? " · " + job.TierLabel : string.Empty)</dd>
+                        }
+                        <dt>Tạm tính</dt>
+                        <dd>@PrintPriceList.FormatPrice(job.PriceEstimate)</dd>
+                        <dt class="is-key">Thanh toán ngay (@job.DepositPercent%)</dt>
+                        <dd class="is-key">@PrintPriceList.FormatPrice(job.DepositAmount)</dd>
+                        @if (job.Outstanding > 0)
+                        {
+                            <dt>Còn lại khi nhận hàng</dt>
+                            <dd>@PrintPriceList.FormatPrice(job.Outstanding)</dd>
+                        }
+                    </dl>
+                    @if (job.FileName.HasValue())
+                    {
+                        <p class="tt-orderfile">@StudioIcons.Get("upload")<span>@job.FileName@(job.FileSize.HasValue() ? $" ({job.FileSize})" : string.Empty) đã được gửi tới studio</span></p>
+                    }
+                    @if (Model.DepositNote.HasValue())
+                    {
+                        <p class="tt-note-line">@StudioIcons.Get("spark")<span>@Model.DepositNote</span></p>
+                    }
+                </div>
+
+                <div>
+                    <h3>Các bước tiếp theo</h3>
+                    <ul class="tt-list">
+                        <li>@StudioIcons.Get("check")<span><b>Bạn thanh toán cọc</b>Chuyển khoản hoặc thanh toán online ở bước sau.</span></li>
+                        <li>@StudioIcons.Get("chat")<span><b>Studio xác nhận đơn</b>Kiểm tra file slice thật, chốt giá và nhắn lại cho bạn.</span></li>
+                        <li>@StudioIcons.Get("truck")<span><b>In và giao hàng</b>Nhận tại xưởng ở Hà Nội hoặc giao tận nơi.</span></li>
+                    </ul>
+                </div>
+
+                <div>
+                    <h3>Cần hỏi thêm?</h3>
+                    @foreach (var p in contact.Phones)
+                    {
+                        <a class="tt-contact-row" href="@StudioContactModel.TelUrl(p)">@StudioIcons.Get("phone")<span><small>Hotline</small><b>@StudioContactModel.FormatPhone(p)</b></span></a>
+                    }
+                    @if (contact.ZaloUrl.HasValue())
+                    {
+                        <a class="tt-contact-row" href="@contact.ZaloUrl" target="_blank" rel="noopener">@StudioIcons.Get("chat")<span><small>Nhắn tin</small><b>Zalo</b></span></a>
+                    }
+                </div>
+            </aside>
+        </div>
+    </section>
+</div>

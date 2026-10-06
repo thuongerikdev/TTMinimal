@@ -5,7 +5,17 @@
 }
 
 <div class="alert alert-info my-4">
-    <div class="h5 mb-2">@T("Plugins.Split3D.Completed.Title")</div>
+    <div class="h5 mb-2">@(Model.PrintOnly ? T("Plugins.Split3D.Completed.PrintTitle") : T("Plugins.Split3D.Completed.Title"))</div>
+    @if (Model.PrintJobCodes.Count > 0)
+    {
+        <p class="mb-2">
+            @T("Plugins.Split3D.Completed.PrintJob", string.Join(", ", Model.PrintJobCodes))
+            @if (Model.Outstanding > 0)
+            {
+                <text> </text>@T("Plugins.Split3D.Completed.PrintOutstanding", PrintPriceList.FormatPrice(Model.Outstanding))
+            }
+        </p>
+    }
     @if (Model.IsPaid)
     {
         <p class="mb-3">@T("Plugins.Split3D.Completed.PaidOnline")</p>
@@ -22,8 +32,8 @@
                     </button>
                 </form>
             </li>
-            <li>@T("Plugins.Split3D.Completed.Step2Online")</li>
-            <li>@T("Plugins.Split3D.Completed.Step3")</li>
+            <li>@(Model.PrintOnly ? T("Plugins.Split3D.Completed.PrintStep2") : T("Plugins.Split3D.Completed.Step2Online"))</li>
+            <li>@(Model.PrintOnly ? T("Plugins.Split3D.Completed.PrintStep3") : T("Plugins.Split3D.Completed.Step3"))</li>
         </ol>
     }
     else
@@ -48,12 +58,22 @@
                     }
                 }
             </li>
-            <li>@T("Plugins.Split3D.Completed.Step2")</li>
-            <li>@T("Plugins.Split3D.Completed.Step3")</li>
+            <li>@(Model.PrintOnly ? T("Plugins.Split3D.Completed.PrintStep2") : T("Plugins.Split3D.Completed.Step2"))</li>
+            <li>@(Model.PrintOnly ? T("Plugins.Split3D.Completed.PrintStep3") : T("Plugins.Split3D.Completed.Step3"))</li>
         </ol>
     }
-    <a class="btn btn-primary" href="@Url.Action("Index", "Split3DKeys", new { area = "" })">
-        <i class="fa fa-key"></i>
-        <span>@T("Plugins.Split3D.MyKeys.Track")</span>
-    </a>
+    @if (Model.PrintOnly)
+    {
+        <a class="btn btn-primary" href="@Url.Action("Details", "Order", new { id = Model.OrderId, area = "" })">
+            <i class="fa fa-receipt"></i>
+            <span>@T("Plugins.Split3D.Completed.PrintTrack")</span>
+        </a>
+    }
+    else
+    {
+        <a class="btn btn-primary" href="@Url.Action("Index", "Split3DKeys", new { area = "" })">
+            <i class="fa fa-key"></i>
+            <span>@T("Plugins.Split3D.MyKeys.Track")</span>
+        </a>
+    }
 </div>

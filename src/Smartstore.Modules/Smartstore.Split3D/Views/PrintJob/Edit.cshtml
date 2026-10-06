@@ -1,0 +1,276 @@
+@model PrintJobModel
+
+@{
+    ViewBag.Title = T("Plugins.Split3D.PrintJob.Title", Model.Code).Value;
+    var statuses = (List<(int Id, string Name)>)ViewBag.Statuses;
+    var zalo = new string((Model.Phone ?? string.Empty).Where(char.IsDigit).ToArray());
+
+    // The next step the studio usually takes, offered as the primary button.
+    var nextStep = (PrintOrderStatus)Model.StatusId switch
+    {
+        PrintOrderStatus.Draft or PrintOrderStatus.AwaitingPayment => ((int?)PrintOrderStatus.Paid, T("Plugins.Split3D.PrintJob.Action.MarkPaid").Value),
+        PrintOrderStatus.Paid => ((int?)PrintOrderStatus.Confirmed, T("Plugins.Split3D.PrintJob.Action.Confirm").Value),
+        PrintOrderStatus.Confirmed => ((int?)PrintOrderStatus.Printing, T("Plugins.Split3D.PrintJob.Action.StartPrinting").Value),
+        PrintOrderStatus.Printing => ((int?)PrintOrderStatus.Ready, T("Plugins.Split3D.PrintJob.Action.Ready").Value),
+        PrintOrderStatus.Ready => ((int?)PrintOrderStatus.Completed, T("Plugins.Split3D.PrintJob.Action.Complete").Value),
+        _ => (null, null)
+    };
+}
+
+<div class="section-header">
+    <div class="title">
+        <a sm-backto href="@Url.Action("List")"></a>
+        <i class="bi bi-box-seam"></i>
+        @ViewBag.Title
+        <span class="badge @Model.StatusBadge ml-2">@Model.StatusName</span>
+    </div>
+    <div class="options">
+        <button type="submit" form="printjob-delete-form" class="btn btn-danger"
+                onclick="return confirm('@T("Admin.Common.AreYouSure")')">
+            <i class="far fa-trash-alt"></i>
+            <span>@T("Admin.Common.Delete")</span>
+        </button>
+        @if (Model.OrderUrl.HasValue())
+        {
+            <a href="@Model.OrderUrl" class="btn btn-secondary">
+                <i class="bi bi-receipt"></i>
+                <span>@T("Plugins.Split3D.PrintJob.OpenOrder") @Model.OrderNumber</span>
+            </a>
+        }
+        <button type="submit" form="printjob-form" class="btn btn-warning">
+            <i class="fa fa-check"></i>
+            <span>@T("Admin.Common.Save")</span>
+        </button>
+    </div>
+</div>
+
+<form asp-action="Delete" asp-route-id="@Model.Id" method="post" id="printjob-delete-form"></form>
+
+<div class="row">
+    <div class="col-lg-7 mb-4">
+        <div class="card mb-3">
+            <div class="card-header font-weight-bold"><i class="bi bi-person mr-1"></i> @T("Plugins.Split3D.PrintJob.Customer")</div>
+            <div class="card-body">
+                <dl class="row mb-0">
+                    <dt class="col-sm-4"><smart-label asp-for="CreatedOn" /></dt>
+                    <dd class="col-sm-8">@Model.CreatedOn.ToString("dd/MM/yyyy HH:mm")</dd>
+
+                    <dt class="col-sm-4"><smart-label asp-for="RecipientName" /></dt>
+                    <dd class="col-sm-8">@Model.RecipientName.NaIfEmpty()</dd>
+
+                    <dt class="col-sm-4"><smart-label asp-for="Phone" /></dt>
+                    <dd class="col-sm-8">
+                        <a href="tel:@Model.Phone">@Model.Phone</a>
+                        @if (zalo.HasValue())
+                        {
+                            <a class="ml-2 small" href="https://zalo.me/@zalo" target="_blank" rel="noopener">Zalo</a>
+                        }
+                    </dd>
+
+                    @if (Model.Email.HasValue())
+                    {
+                        <dt class="col-sm-4"><smart-label asp-for="Email" /></dt>
+                        <dd class="col-sm-8"><a href="mailto:@Model.Email">@Model.Email</a></dd>
+                    }
+
+                    <dt class="col-sm-4"><smart-label asp-for="DeliveryMethodId" /></dt>
+                    <dd class="col-sm-8">@Model.DeliveryMethodName</dd>
+
+                    <dt class="col-sm-4"><smart-label asp-for="Address" /></dt>
+                    <dd class="col-sm-8">@Model.Address.NaIfEmpty()</dd>
+
+                    @if (Model.DesiredOn.HasValue)
+                    {
+                        <dt class="col-sm-4"><smart-label asp-for="DesiredOn" /></dt>
+                        <dd class="col-sm-8">@Model.DesiredOn.Value.ToString("dd/MM/yyyy")</dd>
+                    }
+
+                    @if (Model.Note.HasValue())
+                    {
+                        <dt class="col-sm-4"><smart-label asp-for="Note" /></dt>
+                        <dd class="col-sm-8" style="white-space:pre-wrap">@Model.Note</dd>
+                    }
+
+                    @if (Model.QuoteUrl.HasValue())
+                    {
+                        <dt class="col-sm-4">@T("Plugins.Split3D.PrintJob.FromQuote")</dt>
+                        <dd class="col-sm-8"><a href="@Model.QuoteUrl">#@Model.QuoteRequestId</a></dd>
+                    }
+                </dl>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header font-weight-bold"><i class="bi bi-boxes mr-1"></i> @T("Plugins.Split3D.PrintJob.Models")</div>
+            <div class="card-body">
+                <dl class="row">
+                    <dt class="col-sm-4"><smart-label asp-for="Technology" /></dt>
+                    <dd class="col-sm-8">@Model.Technology @Model.Material @(Model.Fill.HasValue() ? "· " + Model.Fill : string.Empty)</dd>
+
+                    <dt class="col-sm-4"><smart-label asp-for="TotalGrams" /></dt>
+                    <dd class="col-sm-8">@PrintPriceList.FormatWeight(Model.TotalGrams) · @Model.Pieces @T("Plugins.Split3D.PrintJob.PiecesUnit")</dd>
+
+                    @if (Model.PricePerGram > 0)
+                    {
+                        <dt class="col-sm-4"><smart-label asp-for="PricePerGram" /></dt>
+                        <dd class="col-sm-8">@PrintPriceList.FormatPrice(Model.PricePerGram)/g</dd>
+                    }
+
+                    <dt class="col-sm-4"><smart-label asp-for="FileName" /></dt>
+                    <dd class="col-sm-8">
+                        @if (Model.HasFile)
+                        {
+                            <a href="@Model.DownloadUrl" class="btn btn-sm btn-primary">
+                                <i class="bi bi-download"></i>
+                                <span>@Model.FileName (@Model.FileSize)</span>
+                            </a>
+                        }
+                        else if (Model.FileLink.HasValue())
+                        {
+                            <a href="@Model.FileLink" target="_blank" rel="noopener noreferrer">@Model.FileLink</a>
+                        }
+                        else
+                        {
+                            <span class="text-muted">-</span>
+                        }
+                    </dd>
+                </dl>
+
+                @if (Model.Models.Count > 0)
+                {
+                    <table class="table table-sm mb-0">
+                        <thead>
+                            <tr>
+                                <th>@T("Plugins.Split3D.PrintJob.ModelName")</th>
+                                <th class="text-right">@T("Plugins.Split3D.PrintJob.Grams")</th>
+                                <th class="text-right">@T("Plugins.Split3D.PrintJob.Quantity")</th>
+                                <th>@T("Plugins.Split3D.PrintJob.Size")</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var line in Model.Models)
+                            {
+                                <tr>
+                                    <td>@line.Name @(line.Manual ? Html.Raw("<span class=\"text-muted small\">(tự nhập)</span>") : null)</td>
+                                    <td class="text-right">@line.Grams.ToString("N0") g</td>
+                                    <td class="text-right">@line.Quantity</td>
+                                    <td class="text-muted small">@line.Size</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                }
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-5 mb-4">
+        <div class="card mb-3">
+            <div class="card-header font-weight-bold"><i class="bi bi-arrow-right-circle mr-1"></i> @T("Plugins.Split3D.PrintJob.Workflow")</div>
+            <div class="card-body">
+                <dl class="row">
+                    <dt class="col-sm-5"><smart-label asp-for="PriceEstimate" /></dt>
+                    <dd class="col-sm-7">@PrintPriceList.FormatPrice(Model.PriceEstimate)</dd>
+
+                    <dt class="col-sm-5"><smart-label asp-for="DepositAmount" /></dt>
+                    <dd class="col-sm-7">
+                        @PrintPriceList.FormatPrice(Model.DepositAmount) <span class="text-muted">(@Model.DepositPercent%)</span>
+                        @if (Model.PaidOn.HasValue)
+                        {
+                            <span class="badge badge-success ml-1">@T("Plugins.Split3D.PrintJob.Received")</span>
+                        }
+                    </dd>
+
+                    <dt class="col-sm-5"><smart-label asp-for="Outstanding" /></dt>
+                    <dd class="col-sm-7 font-weight-bold">@PrintPriceList.FormatPrice(Model.Outstanding)</dd>
+                </dl>
+
+                @if (Model.PayUrl.HasValue())
+                {
+                    <div class="alert alert-info">
+                        <div class="font-weight-bold mb-1">@T("Plugins.Split3D.PrintJob.PayLink")</div>
+                        <input type="text" class="form-control form-control-sm" readonly value="@Model.PayUrl"
+                               onclick="this.select();document.execCommand('copy');" />
+                        <div class="small mt-1">@T("Plugins.Split3D.PrintJob.PayLinkHint")</div>
+                    </div>
+                }
+
+                <form asp-action="SetStatus" method="post">
+                    <input type="hidden" name="id" value="@Model.Id" />
+                    <div class="form-group">
+                        <label>@T("Plugins.Split3D.PrintJob.StatusMessage")</label>
+                        <textarea name="message" rows="2" class="form-control"
+                                  placeholder="@T("Plugins.Split3D.PrintJob.StatusMessagePlaceholder")"></textarea>
+                    </div>
+                    <div class="form-group form-check">
+                        <input type="checkbox" class="form-check-input" id="notifyCustomer" name="notifyCustomer" value="true" checked />
+                        <input type="hidden" name="notifyCustomer" value="false" />
+                        <label class="form-check-label" for="notifyCustomer">@T("Plugins.Split3D.PrintJob.NotifyCustomer")</label>
+                    </div>
+
+                    <div class="d-flex flex-wrap">
+                        @if (nextStep.Item1.HasValue)
+                        {
+                            <button type="submit" name="statusId" value="@nextStep.Item1" class="btn btn-primary mr-1 mb-1">
+                                <i class="bi bi-check2-circle"></i>
+                                <span>@nextStep.Item2</span>
+                            </button>
+                        }
+                        @if (Model.StatusId != (int)PrintOrderStatus.Cancelled)
+                        {
+                            <button type="submit" name="statusId" value="@((int)PrintOrderStatus.Cancelled)" class="btn btn-outline-danger mb-1"
+                                    onclick="return confirm('@T("Admin.Common.AreYouSure")')">
+                                <i class="bi bi-x-circle"></i>
+                                <span>@T("Plugins.Split3D.PrintJob.Action.Cancel")</span>
+                            </button>
+                        }
+                    </div>
+
+                </form>
+
+                <hr />
+
+                @* Own form: a status picked here must not collide with the statusId of the buttons above. *@
+                <form asp-action="SetStatus" method="post">
+                    <input type="hidden" name="id" value="@Model.Id" />
+                    <input type="hidden" name="notifyCustomer" value="false" />
+                    <div class="form-group mb-0">
+                        <label>@T("Plugins.Split3D.PrintJob.SetStatusManually")</label>
+                        <div class="input-group">
+                            <select name="statusId" class="form-control">
+                                @foreach (var status in statuses)
+                                {
+                                    <option value="@status.Id" selected="@(status.Id == Model.StatusId)">@status.Name</option>
+                                }
+                            </select>
+                            <div class="input-group-append">
+                                <button type="submit" class="btn btn-secondary">@T("Admin.Common.Apply")</button>
+                            </div>
+                        </div>
+                        <span class="form-text text-muted">@T("Plugins.Split3D.PrintJob.SetStatusManually.Hint")</span>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <form asp-action="Edit" method="post" id="printjob-form" class="card">
+            <input type="hidden" asp-for="Id" />
+            <div class="card-header font-weight-bold"><i class="bi bi-cash-coin mr-1"></i> @T("Plugins.Split3D.PrintJob.Settlement")</div>
+            <div class="card-body">
+                <div class="form-group">
+                    <smart-label asp-for="FinalPrice" />
+                    <input asp-for="FinalPrice" class="form-control" type="number" step="1000" min="0" />
+                    <span class="form-text text-muted">@T("Plugins.Split3D.PrintJob.Fields.FinalPrice.Hint")</span>
+                </div>
+                <div class="form-group">
+                    <smart-label asp-for="ShippingFee" />
+                    <input asp-for="ShippingFee" class="form-control" type="number" step="1000" min="0" />
+                </div>
+                <div class="form-group mb-0">
+                    <smart-label asp-for="AdminNote" />
+                    <textarea asp-for="AdminNote" rows="5" class="form-control"></textarea>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>

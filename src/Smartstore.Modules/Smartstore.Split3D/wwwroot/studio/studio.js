@@ -637,6 +637,7 @@
                         : money.format(tier.price) + 'đ/g · ' + tier.label + ' · tổng ' + weight(sum)
                             + (models.length > 1 ? ' · ' + included().length + '/' + models.length + ' mô hình, ' + t.pieces + ' cái' : '');
                 }
+                orderState();
                 if (cta) {
                     var g = t.pieces ? Math.round(sum / t.pieces) : 0;
                     cta.href = cta.getAttribute('data-base') + '?tech=' + encodeURIComponent(tech().name) + '&mat=' + encodeURIComponent(mat().name)
@@ -1025,6 +1026,111 @@
                         analyze(fresh).then(function (ok) { if (ok) fillQuote(quoteForm, false); });
                     });
                 }
+            }
+
+            // ----- order the weighed models and pay the deposit -----
+
+            var orderBtn = root.querySelector('[data-tt-order]');
+            var orderUrl = root.getAttribute('data-tt-order-url');
+            var orderLabel = root.querySelector('[data-tt-order-label]');
+            var orderError = root.querySelector('[data-tt-order-error]');
+            var orderPost = root.querySelector('[data-tt-orderpost]');
+            var deposit = Math.min(100, Math.max(1, parseInt(root.getAttribute('data-tt-deposit'), 10) || 100));
+            var ordering = false;
+
+            function orderError_(msg) {
+                if (!orderError) return;
+                orderError.textContent = msg || '';
+                orderError.hidden = !msg;
+            }
+
+            // Only models the customer ticked and could be weighed can be ordered.
+            function orderable() {
+                return included().filter(function (m) { return m.file && gramsOf(m) > 0; });
+            }
+
+            function orderState() {
+                if (!orderBtn || ordering) return;
+                var list = orderable(), t = totals();
+                var ready = list.length > 0 && t.grams > 0;
+                orderBtn.disabled = !ready;
+                if (!orderLabel) return;
+                orderLabel.textContent = ready
+                    ? 'Đặt in · trả trước ' + money.format(Math.round(t.grams * (tierNow ? tierNow.price : 0) * deposit / 100)) + 'đ'
+                    : 'Thả file 3D để đặt in';
+            }
+
+            function fillText() {
+                return fillSel.options[fillSel.selectedIndex] ? fillSel.options[fillSel.selectedIndex].text : '';
+            }
+
+            function orderPayload(list) {
+                return list.map(function (m) {
+                    var r = autoWeight(m);
+                    return {
+                        name: m.file.name,
+                        grams: gramsOf(m),
+                        quantity: m.qty,
+                        size: sizeText(m),
+                        volume: Math.round(r.volume / 1000 * 10) / 10,
+                        fill: fillText(),
+                        manual: m.manual != null
+                    };
+                });
+            }
+
+            if (orderBtn && orderUrl) {
+                orderBtn.addEventListener('click', function () {
+                    if (ordering) return;
+                    var list = orderable();
+                    if (!list.length) return;
+
+                    var data = new FormData();
+                    data.append('models', JSON.stringify(orderPayload(list)));
+                    data.append('technology', tech().name);
+                    data.append('material', mat().name);
+                    data.append('fill', (tech().resin ? 'Kiểu in: ' : 'Độ đặc: ') + fillText());
+                    list.forEach(function (m) { data.append('modelFile', m.file, m.file.name); });
+
+                    var token = orderPost ? orderPost.querySelector('input[name="__RequestVerificationToken"]') : null;
+                    if (token) data.append('__RequestVerificationToken', token.value);
+
+                    ordering = true;
+                    orderError_('');
+                    orderBtn.disabled = true;
+                    orderBtn.classList.add('is-busy');
+                    if (orderLabel) orderLabel.textContent = 'Đang gửi file…';
+
+                    var xhr = new XMLHttpRequest();
+                    xhr.open('POST', orderUrl, true);
+                    xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+                    if (xhr.upload && orderLabel) {
+                        xhr.upload.addEventListener('progress', function (e) {
+                            if (!e.lengthComputable) return;
+                            orderLabel.textContent = 'Đang gửi file ' + Math.round(e.loaded / e.total * 100) + '%';
+                        });
+                    }
+                    xhr.addEventListener('load', function () {
+                        var res = null;
+                        try { res = JSON.parse(xhr.responseText); } catch (e) { }
+                        if (xhr.status === 200 && res && res.ok && res.url) {
+                            // Leave the page; no need to restore the button.
+                            location.href = res.url;
+                            return;
+                        }
+                        ordering = false;
+                        orderBtn.classList.remove('is-busy');
+                        orderError_((res && res.error) || 'Không gửi được đơn in. Hãy thử lại hoặc gửi yêu cầu báo giá.');
+                        orderState();
+                    });
+                    xhr.addEventListener('error', function () {
+                        ordering = false;
+                        orderBtn.classList.remove('is-busy');
+                        orderError_('Mất kết nối khi gửi file. Hãy thử lại.');
+                        orderState();
+                    });
+                    xhr.send(data);
+                });
             }
 
             // Preselect technology/material from the URL (?tech=Resin&mat=Standard).

@@ -1,11 +1,11 @@
-@model PrintQuoteModel
+@model PrintJobModel
 
-<datagrid id="printquotes-grid"
+<datagrid id="printjobs-grid"
           class="h-100"
           allow-resize="true"
           allow-row-selection="true"
           allow-column-reordering="true">
-    <datasource read="@Url.Action("QuoteList")" delete="@Url.Action("QuoteDelete")" />
+    <datasource read="@Url.Action("JobList")" delete="@Url.Action("JobDelete")" />
     <paging position="Bottom" page-index="1" show-size-chooser="true" />
     <toolbar>
         <toolbar-group>
@@ -22,54 +22,60 @@
         </toolbar-group>
     </toolbar>
     <search-panel>
-        <partial name="_Grid.PrintQuotes.Search" model="(PrintQuoteListModel)ViewBag.SearchModel" />
+        <partial name="_Grid.PrintJobs.Search" model="(PrintJobListModel)ViewBag.SearchModel" />
     </search-panel>
     <columns>
-        <column for="Id" width="70px" />
-        <column for="CreatedOn" width="150px" />
-        <column for="Name" hideable="false" width="220px">
+        <column for="Code" width="110px" hideable="false">
             <display-template>
                 <a :href="item.row.EditUrl" class="font-weight-medium">{{ item.value }}</a>
+            </display-template>
+        </column>
+        <column for="CreatedOn" width="150px" />
+        <column for="RecipientName" width="200px">
+            <display-template>
+                <a :href="item.row.EditUrl">{{ item.value }}</a>
                 <div class="small text-muted">{{ item.row.Phone }}</div>
             </display-template>
         </column>
-        <column for="StatusId" width="130px">
+        <column for="StatusId" width="160px">
             <display-template>
                 <span class="badge" :class="item.row.StatusBadge">{{ item.row.StatusName }}</span>
             </display-template>
         </column>
-        <column for="Technology" width="140px" />
-        <column for="Quantity" width="90px" />
-        <column for="EstimatedGrams" width="110px" />
-        <column for="EstimatedPrice" sortable="false" width="220px" />
-        <column for="FileName" sortable="false" width="200px">
+        <column for="Technology" width="130px" />
+        <column for="TotalGrams" width="110px">
+            <display-template>
+                {{ item.value }} g
+            </display-template>
+        </column>
+        <column for="Pieces" width="80px" />
+        <column for="PriceEstimate" width="140px" />
+        <column for="DepositAmount" width="140px" />
+        <column for="Outstanding" width="140px" />
+        <column for="DeliveryMethodId" width="140px" sortable="false">
+            <display-template>
+                {{ item.row.DeliveryMethodName }}
+            </display-template>
+        </column>
+        <column for="OrderId" width="130px" sortable="false">
+            <display-template>
+                <a v-if="item.row.OrderUrl" :href="item.row.OrderUrl">{{ item.row.OrderNumber }}</a>
+                <div class="small text-muted">{{ item.row.PaymentStatusName }}</div>
+            </display-template>
+        </column>
+        <column for="FileName" width="180px" sortable="false">
             <display-template>
                 <a v-if="item.row.DownloadUrl" :href="item.row.DownloadUrl"><i class="bi bi-download mr-1"></i>{{ item.value }}</a>
                 <a v-else-if="item.row.FileLink" :href="item.row.FileLink" target="_blank" rel="noopener"><i class="bi bi-link-45deg mr-1"></i>Link</a>
             </display-template>
         </column>
-        <column for="ContactCount" width="110px" sortable="false">
-            <display-template>
-                <span v-if="item.value > 0">{{ item.value }}</span>
-                <span v-else class="text-muted">0</span>
-            </display-template>
-        </column>
-        <column for="FollowUpOn" width="150px">
-            <display-template>
-                <span :class="item.row.IsDue ? 'text-danger font-weight-medium' : ''">{{ item.value }}</span>
-            </display-template>
-        </column>
-        <column for="PrintOrderId" width="130px" sortable="false">
-            <display-template>
-                <a v-if="item.row.PrintOrderUrl" :href="item.row.PrintOrderUrl">{{ item.row.PrintOrderCode }}</a>
-            </display-template>
-        </column>
+        <column for="Address" width="240px" sortable="false" visible="false" />
         <column for="Email" width="200px" visible="false" />
-        <column for="Material" width="180px" visible="false" />
-        <column for="LastContactOn" width="150px" visible="false" />
+        <column for="DesiredOn" width="140px" visible="false" />
     </columns>
     <row-commands>
         <a datarow-action="DataRowAction.Custom" :href="item.row.EditUrl">@T("Common.Edit")</a>
+        <a datarow-action="DataRowAction.Custom" v-if="item.row.OrderUrl" :href="item.row.OrderUrl">@T("Plugins.Split3D.PrintJob.OpenOrder")</a>
         <a datarow-action="DataRowAction.Delete">@T("Common.Delete")</a>
     </row-commands>
 </datagrid>

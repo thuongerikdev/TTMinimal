@@ -23,6 +23,8 @@ internal class Startup : StarterBase
         services.AddScoped<Split3DUpgradeService>();
         services.AddScoped<StudioStorefrontSetup>();
         services.AddScoped<PrintQuoteService>();
+        services.AddScoped<PrintQuoteFollowUpService>();
+        services.AddScoped<PrintOrderService>();
         services.AddScoped<BankQrService>();
         services.AddScoped<StudioMailService>();
 

@@ -1,0 +1,24 @@
+@model PrintJobListModel
+
+@{
+    var statuses = (List<(int Id, string Name)>)ViewBag.Statuses;
+}
+
+<div class="adminContent">
+    <div class="adminRow">
+        <div class="adminTitle"><smart-label asp-for="SearchTerm" /></div>
+        <div class="adminData"><input asp-for="SearchTerm" /></div>
+    </div>
+    <div class="adminRow">
+        <div class="adminTitle"><smart-label asp-for="SearchStatusId" /></div>
+        <div class="adminData">
+            <select asp-for="SearchStatusId" class="form-control">
+                <option value="">@T("Admin.Common.All")</option>
+                @foreach (var status in statuses)
+                {
+                    <option value="@status.Id">@status.Name</option>
+                }
+            </select>
+        </div>
+    </div>
+</div>

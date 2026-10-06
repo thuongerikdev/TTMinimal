@@ -1447,4 +1447,495 @@
     <LocaleResource Name="Upgrade.Fields.SendEmailNow.Hint">
         <Value>Sendet die Schlüssel-E-Mail mit dem neuen Schlüssel an den Kunden.</Value>
     </LocaleResource>
+
+    <LocaleResource Name="PrintJob.ListTitle">
+        <Value>Druckaufträge</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.Title">
+        <Value>Druckauftrag {0}</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.ToConfirmCount">
+        <Value>Warten auf Bestätigung</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.OpenCount">
+        <Value>In Produktion</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.Customer">
+        <Value>Kunde und Lieferung</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.Models">
+        <Value>Modelle und Preis</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.Workflow">
+        <Value>Arbeitsablauf</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.Settlement">
+        <Value>Endabrechnung</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.Received">
+        <Value>erhalten</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.PayLink">
+        <Value>Zahlungslink</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.PayLinkHint">
+        <Value>Diesen Link an den Kunden senden; er legt den Auftrag in den Warenkorb und öffnet die Kasse. Zum Kopieren in das Feld klicken.</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.StatusMessage">
+        <Value>Text für die Auftragsnotiz</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.StatusMessagePlaceholder">
+        <Value>Druckzeit, Sendungsnummer, vereinbarter Preis …</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.NotifyCustomer">
+        <Value>Kunde sieht diese Notiz</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.SetStatusManually">
+        <Value>Anderen Status setzen</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.SetStatusManually.Hint">
+        <Value>Korrigiert den Status, ohne den Kunden zu informieren.</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.StatusChanged">
+        <Value>Druckauftrag {0}: {1}</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.OpenOrder">
+        <Value>Auftrag öffnen</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.FromQuote">
+        <Value>Aus Angebotsanfrage</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.ModelName">
+        <Value>Modell</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.Grams">
+        <Value>Gewicht</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.Quantity">
+        <Value>Menge</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.Size">
+        <Value>Größe</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.PiecesUnit">
+        <Value>Stück</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.Pickup">
+        <Value>Abholung im Studio</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.Shipping">
+        <Value>Versand</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.Action.MarkPaid">
+        <Value>Zahlung erhalten</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.Action.Confirm">
+        <Value>Auftrag bestätigen</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.Action.StartPrinting">
+        <Value>Druck starten</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.Action.Ready">
+        <Value>Druck fertig</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.Action.Complete">
+        <Value>Übergeben</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.Action.Cancel">
+        <Value>Auftrag abbrechen</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.Status.Draft">
+        <Value>Nicht bezahlt</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.Status.AwaitingPayment">
+        <Value>Zahlung ausstehend</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.Status.Paid">
+        <Value>Bezahlt, zu bestätigen</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.Status.Confirmed">
+        <Value>Bestätigt</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.Status.Printing">
+        <Value>Wird gedruckt</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.Status.Ready">
+        <Value>Zur Übergabe bereit</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.Status.Completed">
+        <Value>Abgeschlossen</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.Status.Cancelled">
+        <Value>Abgebrochen</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.Fields.Code">
+        <Value>Auftragsnummer</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.Fields.Code.Hint">
+        <Value>Nummer, die der Kunde und die Warenkorbzeile zeigen.</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.Fields.CreatedOn">
+        <Value>Erstellt am</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.Fields.CreatedOn.Hint">
+        <Value>Wann der Kunde den Druck bestellt hat.</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.Fields.Status">
+        <Value>Status</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.Fields.Status.Hint">
+        <Value>Stand des Auftrags im Studio-Ablauf.</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.Fields.RecipientName">
+        <Value>Empfänger</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.Fields.RecipientName.Hint">
+        <Value>Name, an den der Druck übergeben wird.</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.Fields.Phone">
+        <Value>Telefon / Zalo</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.Fields.Phone.Hint">
+        <Value>Nummer für Bestätigung und Übergabe.</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.Fields.Email">
+        <Value>E-Mail</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.Fields.Email.Hint">
+        <Value>Erhält die Auftrags-E-Mails.</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.Fields.Technology">
+        <Value>Technologie</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.Fields.Technology.Hint">
+        <Value>Drucktechnologie und Material des Auftrags.</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.Fields.Material">
+        <Value>Material</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.Fields.Material.Hint">
+        <Value>Material und Farbe nach Kundenwahl.</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.Fields.Fill">
+        <Value>Füllung / Druckmodus</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.Fields.Fill.Hint">
+        <Value>Füllung, mit der das Gewicht berechnet wurde.</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.Fields.TotalGrams">
+        <Value>Gesamtgewicht</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.Fields.TotalGrams.Hint">
+        <Value>Gewicht aller Stücke, im Browser geschätzt.</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.Fields.Pieces">
+        <Value>Stück</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.Fields.Pieces.Hint">
+        <Value>Anzahl Stück über alle Modelle.</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.Fields.PricePerGram">
+        <Value>Preis pro Gramm</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.Fields.PricePerGram.Hint">
+        <Value>Staffelpreis, mit dem gerechnet wurde.</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.Fields.PriceEstimate">
+        <Value>Schätzung</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.Fields.PriceEstimate.Hint">
+        <Value>Gewicht × Preis pro Gramm, vor dem Slicen.</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.Fields.DepositAmount">
+        <Value>Gezahlte Anzahlung</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.Fields.DepositAmount.Hint">
+        <Value>Betrag, der mit dem Auftrag kassiert wurde.</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.Fields.FinalPrice">
+        <Value>Endpreis</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.Fields.FinalPrice.Hint">
+        <Value>Preis nach dem Slicen der Dateien. Leer lassen, um die Schätzung zu behalten.</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.Fields.ShippingFee">
+        <Value>Versandkosten</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.Fields.ShippingFee.Hint">
+        <Value>Wird mit dem Restbetrag kassiert.</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.Fields.Outstanding">
+        <Value>Noch zu kassieren</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.Fields.Outstanding.Hint">
+        <Value>Endpreis plus Versand minus Anzahlung.</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.Fields.DeliveryMethod">
+        <Value>Übergabe</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.Fields.DeliveryMethod.Hint">
+        <Value>Abholung im Studio oder Versand.</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.Fields.Address">
+        <Value>Adresse</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.Fields.Address.Hint">
+        <Value>Lieferadresse, bei Abholung die Studio-Adresse.</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.Fields.DesiredOn">
+        <Value>Benötigt bis</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.Fields.DesiredOn.Hint">
+        <Value>Datum, zu dem der Kunde den Druck braucht.</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.Fields.Note">
+        <Value>Kundennotiz</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.Fields.Note.Hint">
+        <Value>Was der Kunde bei der Bestellung geschrieben hat.</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.Fields.AdminNote">
+        <Value>Interne Notiz</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.Fields.AdminNote.Hint">
+        <Value>Nur im Backend sichtbar.</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.Fields.Order">
+        <Value>Auftrag</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.Fields.Order.Hint">
+        <Value>Der Auftrag, mit dem die Anzahlung kassiert wurde.</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.Fields.File">
+        <Value>Modelldatei</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.Fields.File.Hint">
+        <Value>Vom Kunden gesendete Dateien, gespeichert in App_Data/Tenants/Default/PrintOrders.</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintOrder.Fields.RecipientName">
+        <Value>Name</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintOrder.Fields.RecipientName.Hint">
+        <Value>Name, an den der Druck übergeben wird.</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintOrder.Fields.Phone">
+        <Value>Telefon / Zalo</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintOrder.Fields.Phone.Hint">
+        <Value>Das Studio bestätigt den Auftrag über diese Nummer.</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintOrder.Fields.Email">
+        <Value>E-Mail</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintOrder.Fields.Email.Hint">
+        <Value>Erhält die Auftragsbestätigung.</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintOrder.Fields.DeliveryMethod">
+        <Value>Übergabe</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintOrder.Fields.DeliveryMethod.Hint">
+        <Value>Abholung im Studio oder Versand.</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintOrder.Fields.AddressLine">
+        <Value>Adresse</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintOrder.Fields.AddressLine.Hint">
+        <Value>Straße, Ortsteil und Bezirk.</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintOrder.Fields.City">
+        <Value>Provinz / Stadt</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintOrder.Fields.City.Hint">
+        <Value>Provinz oder Stadt der Lieferadresse.</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintOrder.Fields.DesiredOn">
+        <Value>Benötigt bis</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintOrder.Fields.DesiredOn.Hint">
+        <Value>Datum, zu dem der Druck fertig sein muss.</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintOrder.Fields.Note">
+        <Value>Notiz</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintOrder.Fields.Note.Hint">
+        <Value>Farbwünsche, Finish, Übergabezeit.</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintQuote.Status.Contacted">
+        <Value>Kontaktiert</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintQuote.Status.Ordered">
+        <Value>Beauftragt</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintQuote.DueCount">
+        <Value>Zu kontaktieren</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintQuote.ContactCustomer">
+        <Value>Kunden kontaktieren</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintQuote.Due">
+        <Value>fällig</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintQuote.Channel.Phone">
+        <Value>Anrufen</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintQuote.MessagePreview">
+        <Value>Nachricht zum Senden</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintQuote.MessageHint">
+        <Value>Aus der Nachrichtenvorlage erzeugt; SMS- und E-Mail-Buttons füllen diesen Text vor.</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintQuote.CopyMessage">
+        <Value>Kopieren</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintQuote.FollowUpIn">
+        <Value>Wiedervorlage in</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintQuote.FollowUpKeep">
+        <Value>Datum behalten</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintQuote.FollowUpNone">
+        <Value>keine Wiedervorlage</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintQuote.Days">
+        <Value>Tage</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintQuote.ContactMessagePlaceholder">
+        <Value>Was vereinbart wurde, was der Kunde geantwortet hat …</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintQuote.IsIncoming">
+        <Value>Der Kunde hat sich gemeldet</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintQuote.LogContact">
+        <Value>In Kontaktprotokoll eintragen</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintQuote.ContactLogged">
+        <Value>Protokolliert: {0}</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintQuote.FollowUpSet">
+        <Value>Wiedervorlage in {0} Tagen.</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintQuote.FollowUpCleared">
+        <Value>Wiedervorlage entfernt.</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintQuote.ContactLog">
+        <Value>Kontaktprotokoll</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintQuote.LoggedBy">
+        <Value>Erfasst von</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintQuote.Incoming">
+        <Value>eingehend</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintQuote.LastContact">
+        <Value>Letzter Kontakt: {0}</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintQuote.CreateOrder">
+        <Value>In Druckauftrag umwandeln</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintQuote.CreateOrderButton">
+        <Value>Druckauftrag erstellen</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintQuote.CreateOrderHint">
+        <Value>Erstellt einen Druckauftrag mit diesem Preis und einem Zahlungslink für den Kunden.</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintQuote.OrderCreated">
+        <Value>Druckauftrag {0} erstellt.</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintQuote.OrderCreatedLog">
+        <Value>Druckauftrag {0} erstellt, Preis {1}.</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintQuote.OrderExists">
+        <Value>Druckauftrag {0} wartet noch auf Zahlung.</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintQuote.PriceRequired">
+        <Value>Bitte zuerst den Angebotspreis eintragen.</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintQuote.Fields.ContactCount">
+        <Value>Kontakte</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintQuote.Fields.ContactCount.Hint">
+        <Value>Einträge im Kontaktprotokoll dieser Anfrage.</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintQuote.Fields.LastContactOn">
+        <Value>Letzter Kontakt</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintQuote.Fields.LastContactOn.Hint">
+        <Value>Wann der Kunde zuletzt erreicht wurde.</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintQuote.Fields.FollowUpOn">
+        <Value>Wiedervorlage am</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintQuote.Fields.FollowUpOn.Hint">
+        <Value>Überfällige Anfragen zählt das Menü-Badge.</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintQuote.Fields.Channel">
+        <Value>Kanal</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintQuote.Fields.Channel.Hint">
+        <Value>Wie der Kunde kontaktiert wurde.</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintQuote.Fields.ContactMessage">
+        <Value>Ergebnis / Nachricht</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintQuote.Fields.ContactMessage.Hint">
+        <Value>Wird im Kontaktprotokoll gespeichert.</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintQuote.Fields.DepositPercent">
+        <Value>Anzahlung %</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintQuote.Fields.DepositPercent.Hint">
+        <Value>Anteil des Preises, den der Kunde vorab zahlt.</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintQuote.Fields.PrintOrder">
+        <Value>Druckauftrag</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintQuote.Fields.PrintOrder.Hint">
+        <Value>Der aus dieser Anfrage erstellte Druckauftrag.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Studio.PrintOrders">
+        <Value>Druckaufträge</Value>
+    </LocaleResource>
+    <LocaleResource Name="Studio.Fields.DepositPercent">
+        <Value>Anzahlung</Value>
+    </LocaleResource>
+    <LocaleResource Name="Studio.Fields.DepositPercent.Hint">
+        <Value>Anteil der Schätzung, der mit dem Druckauftrag kassiert wird. 100 = Gesamtbetrag.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Studio.Fields.AllowPickup">
+        <Value>Abholung erlauben</Value>
+    </LocaleResource>
+    <LocaleResource Name="Studio.Fields.AllowPickup.Hint">
+        <Value>Erlaubt dem Kunden, den Druck im Studio abzuholen statt ihn zu versenden.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Studio.Fields.DepositNote">
+        <Value>Hinweis zur Anzahlung</Value>
+    </LocaleResource>
+    <LocaleResource Name="Studio.Fields.DepositNote.Hint">
+        <Value>Wird auf der Druckauftragsseite unter der Anzahlung gezeigt.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Studio.Fields.QuoteMessageTemplate">
+        <Value>Nachrichtenvorlage Angebot</Value>
+    </LocaleResource>
+    <LocaleResource Name="Studio.Fields.QuoteMessageTemplate.Hint">
+        <Value>Platzhalter: {Name}, {Id}, {Brand}, {Price}, {Phone}, {Link}.</Value>
+    </LocaleResource>
+
+    <LocaleResource Name="Completed.PrintTitle">
+        <Value>Nächste Schritte für Ihren Druck</Value>
+    </LocaleResource>
+    <LocaleResource Name="Completed.PrintJob">
+        <Value>Druckauftrag {0}.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Completed.PrintOutstanding">
+        <Value>Etwa {0} werden bei der Übergabe kassiert.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Completed.PrintStep2">
+        <Value>Wir prüfen Ihre Dateien, bestätigen den Auftrag und starten den Druck (meist innerhalb der Arbeitszeit).</Value>
+    </LocaleResource>
+    <LocaleResource Name="Completed.PrintStep3">
+        <Value>Wir melden uns, sobald der Druck fertig ist, und klären Abholung oder Versand.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Completed.PrintTrack">
+        <Value>Auftrag verfolgen</Value>
+    </LocaleResource>
 </Language>

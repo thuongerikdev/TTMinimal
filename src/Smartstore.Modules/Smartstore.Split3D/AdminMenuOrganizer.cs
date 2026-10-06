@@ -14,7 +14,7 @@ internal static class AdminMenuOrganizer
 
     // Daily work screens, shown as top-level links in this order (right after "Dashboard").
     private static readonly string[] _topLevelIds =
-        ["orders", "split3d-licenses", "split3d-devices", "tt-studio-quotes", "products", "customers"];
+        ["orders", "tt-studio-jobs", "split3d-licenses", "split3d-devices", "tt-studio-quotes", "products", "customers"];
 
     // Groups moved into "Configuration", in this order. A null entry inserts a divider.
     private static readonly string[] _configurationIds =

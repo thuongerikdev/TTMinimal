@@ -123,5 +123,27 @@
             <div class="adminTitle"><smart-label asp-for="QuoteMaxFileSizeMb" /></div>
             <div class="adminData"><input asp-for="QuoteMaxFileSizeMb" /><span asp-validation-for="QuoteMaxFileSizeMb"></span></div>
         </div>
+        <div class="adminRow">
+            <div class="adminTitle"><smart-label asp-for="QuoteMessageTemplate" /></div>
+            <div class="adminData"><textarea asp-for="QuoteMessageTemplate" rows="4"></textarea></div>
+        </div>
+
+        <div class="adminRow">
+            <div class="admin-config-group">
+                <div class="title">@T("Plugins.Split3D.Studio.PrintOrders")</div>
+            </div>
+        </div>
+        <div class="adminRow">
+            <div class="adminTitle"><smart-label asp-for="DepositPercent" /></div>
+            <div class="adminData"><input asp-for="DepositPercent" sm-postfix="%" /><span asp-validation-for="DepositPercent"></span></div>
+        </div>
+        <div class="adminRow">
+            <div class="adminTitle"><smart-label asp-for="AllowPickup" /></div>
+            <div class="adminData"><input asp-for="AllowPickup" /></div>
+        </div>
+        <div class="adminRow">
+            <div class="adminTitle"><smart-label asp-for="DepositNote" /></div>
+            <div class="adminData"><textarea asp-for="DepositNote" rows="2"></textarea></div>
+        </div>
     </div>
 </form>

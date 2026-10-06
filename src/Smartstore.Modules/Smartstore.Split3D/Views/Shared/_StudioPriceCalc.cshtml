@@ -3,6 +3,8 @@
 
 @{
     var quoteUrl = (string)ViewData["QuoteUrl"];
+    var orderUrl = Url.Action("Add", "PrintOrder", new { area = string.Empty });
+    var depositPercent = Math.Clamp(StudioSettings.DepositPercent, 1, 100);
     var json = System.Text.Json.JsonSerializer.Serialize(Model.Select(x => new
     {
         name = x.Name,
@@ -20,7 +22,8 @@
 }
 
 @* Price configurator. Inputs are text fields on purpose: Smartstore wraps every input[type=number] into its own stepper widget. *@
-<div class="tt-config" data-tt-config="@json" data-tt-mesh-src="@Url.Content(StudioAssets.MeshScript)">
+<div class="tt-config" data-tt-config="@json" data-tt-mesh-src="@Url.Content(StudioAssets.MeshScript)"
+     data-tt-order-url="@orderUrl" data-tt-deposit="@depositPercent">
     <div class="tt-techs" role="group" aria-label="Kiểu in và loại nhựa">
         @for (var i = 0; i < Model.Count; i++)
         {
@@ -164,11 +167,24 @@
                 <strong data-tt-total>—</strong>
                 <em data-tt-unit></em>
             </div>
-            <a class="tt-button tt-button--dark" href="@quoteUrl" data-base="@quoteUrl" data-tt-cta>
-                <span>Gửi file báo giá</span>
-                @StudioIcons.Get("arrow", "tt-arrow")
-            </a>
+            <div class="tt-total-actions">
+                <button type="button" class="tt-button tt-button--dark" data-tt-order disabled>
+                    <span data-tt-order-label>Đặt in &amp; thanh toán</span>
+                    @StudioIcons.Get("arrow", "tt-arrow")
+                </button>
+                <a class="tt-button tt-button--ghost" href="@quoteUrl" data-base="@quoteUrl" data-tt-cta>
+                    <span>Gửi file báo giá</span>
+                </a>
+            </div>
         </div>
+
+        @* Posting the weighed models needs the antiforgery token of this page. *@
+        <form class="d-none" data-tt-orderpost asp-antiforgery="true"></form>
+        <div class="tt-order-hint" data-tt-order-hint>
+            Đặt in: thanh toán trước @depositPercent% để studio vào hàng in, phần còn lại trả khi nhận hàng.
+            Studio kiểm tra file rồi xác nhận đơn trước khi in.
+        </div>
+        <p class="tt-meter-error" data-tt-order-error hidden></p>
 
         @if (ViewData["PriceNote"] is string note && note.HasValue())
         {

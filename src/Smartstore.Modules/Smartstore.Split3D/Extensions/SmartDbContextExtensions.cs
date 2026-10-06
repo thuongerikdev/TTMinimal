@@ -1,4 +1,4 @@
-using Smartstore.Core.Data;
+﻿using Smartstore.Core.Data;
 
 namespace Smartstore.Split3D;
 
@@ -21,4 +21,10 @@ public static class SmartDbContextExtensions
 
     public static DbSet<PrintQuoteRequest> PrintQuoteRequests(this SmartDbContext db)
         => db.Set<PrintQuoteRequest>();
+
+    public static DbSet<PrintQuoteContact> PrintQuoteContacts(this SmartDbContext db)
+        => db.Set<PrintQuoteContact>();
+
+    public static DbSet<PrintOrder> PrintOrders(this SmartDbContext db)
+        => db.Set<PrintOrder>();
 }

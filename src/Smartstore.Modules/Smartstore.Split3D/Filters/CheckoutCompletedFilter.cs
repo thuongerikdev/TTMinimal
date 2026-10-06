@@ -66,6 +66,28 @@ public class CheckoutCompletedFilter : IAsyncActionFilter
             {
                 model.BankQrSvg = _bankQrService.Value.GenerateSvg(_settings, order);
             }
+
+            // Print jobs: the next steps are "we check your file and confirm", not "you get a key".
+            var jobs = await _db.Value.PrintOrders()
+                .AsNoTracking()
+                .Where(x => x.OrderId == order.Id)
+                .ToListAsync();
+
+            if (jobs.Count > 0)
+            {
+                var printProductId = await _db.Value.Products
+                    .Where(x => x.Sku == PrintOrderService.PrintProductSku && !x.Deleted)
+                    .Select(x => x.Id)
+                    .FirstOrDefaultAsync();
+                var productIds = await _db.Value.OrderItems
+                    .Where(x => x.OrderId == order.Id)
+                    .Select(x => x.ProductId)
+                    .ToListAsync();
+
+                model.PrintJobCodes = jobs.Select(x => x.Code).Where(x => x.HasValue()).ToList();
+                model.PrintOnly = productIds.Count > 0 && productIds.All(x => x == printProductId);
+                model.Outstanding = jobs.Sum(x => x.Outstanding);
+            }
         }
 
         _widgetProvider.Value.RegisterWidget("checkout_completed_top",

@@ -20,9 +20,10 @@ namespace Smartstore.Split3D.Services;
 /// </summary>
 public class StudioStorefrontSetup
 {
-    public const int CurrentVersion = 4;
+    public const int CurrentVersion = 5;
     public const string ThemeName = "TTMinimal";
     public const string PrintServiceRouteName = "TTPrintService";
+    public const string PrintOrderRouteName = "TTPrintOrder";
     public const string DesignServiceRouteName = "TTDesignService";
     public const string ToolsRouteName = "TTTools";
 
@@ -36,6 +37,7 @@ public class StudioStorefrontSetup
     private readonly StudioSettings _studioSettings;
     private readonly Split3DSettings _split3DSettings;
     private readonly IUrlService _urlService;
+    private readonly PrintOrderService _printOrderService;
 
     public StudioStorefrontSetup(
         SmartDbContext db,
@@ -43,7 +45,8 @@ public class StudioStorefrontSetup
         IThemeRegistry themeRegistry,
         StudioSettings studioSettings,
         Split3DSettings split3DSettings,
-        IUrlService urlService)
+        IUrlService urlService,
+        PrintOrderService printOrderService)
     {
         _db = db;
         _services = services;
@@ -51,6 +54,7 @@ public class StudioStorefrontSetup
         _studioSettings = studioSettings;
         _split3DSettings = split3DSettings;
         _urlService = urlService;
+        _printOrderService = printOrderService;
     }
 
     public ILogger Logger { get; set; } = NullLogger.Instance;
@@ -74,6 +78,7 @@ public class StudioStorefrontSetup
         await ApplyCatalogAsync();
         await ApplyToolsCategoryAsync(cancelToken);
         await StudioCustomProducts.ApplyAsync(_db, _urlService, cancelToken);
+        await _printOrderService.EnsurePrintProductAsync(cancelToken);
         await ApplyMainMenuAsync(cancelToken);
         await ApplyShippingAsync(cancelToken);
         await ApplyCheckoutAsync(cancelToken);

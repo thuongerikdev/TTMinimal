@@ -61,6 +61,90 @@ public class PrintQuoteModel : EntityModelBase
     public string IpAddress { get; set; }
     public string EditUrl { get; set; }
     public string DownloadUrl { get; set; }
+
+    [LocalizedDisplay("*ContactCount")]
+    public int ContactCount { get; set; }
+
+    [LocalizedDisplay("*LastContactOn")]
+    public DateTime? LastContactOn { get; set; }
+
+    [LocalizedDisplay("*FollowUpOn")]
+    public DateTime? FollowUpOn { get; set; }
+
+    /// <summary>
+    /// The follow-up date has passed, so the request needs attention.
+    /// </summary>
+    public bool IsDue { get; set; }
+
+    /// <summary>
+    /// The print job created from this request, 0 if there is none.
+    /// </summary>
+    [LocalizedDisplay("*PrintOrder")]
+    public int PrintOrderId { get; set; }
+
+    public string PrintOrderCode { get; set; }
+    public string PrintOrderUrl { get; set; }
+    public string PrintOrderStatusName { get; set; }
+
+    /// <summary>
+    /// Payment link the customer uses to accept the quote.
+    /// </summary>
+    public string PayUrl { get; set; }
+
+    /// <summary>
+    /// Ready-made message for Zalo, SMS, Messenger or email, built from the studio template.
+    /// </summary>
+    public string Message { get; set; }
+
+    public string TelUrl { get; set; }
+    public string ZaloUrl { get; set; }
+    public string SmsUrl { get; set; }
+    public string MailUrl { get; set; }
+    public string MessengerUrl { get; set; }
+
+    public List<PrintQuoteContactModel> ContactLog { get; set; } = [];
+}
+
+/// <summary>
+/// One entry of the contact log of a quote request.
+/// </summary>
+public class PrintQuoteContactModel : EntityModelBase
+{
+    public DateTime CreatedOn { get; set; }
+    public int ChannelId { get; set; }
+    public string ChannelName { get; set; }
+    public string ChannelIcon { get; set; }
+    public bool IsIncoming { get; set; }
+    public string Message { get; set; }
+    public string UserName { get; set; }
+}
+
+/// <summary>
+/// What the studio enters when logging a contact by hand, or when turning a request into a print job.
+/// </summary>
+[LocalizedDisplay("Plugins.Split3D.PrintQuote.Fields.")]
+public class PrintQuoteActionModel : ModelBase
+{
+    public int Id { get; set; }
+
+    [LocalizedDisplay("*Channel")]
+    public int ChannelId { get; set; }
+
+    public bool IsIncoming { get; set; }
+
+    [LocalizedDisplay("*ContactMessage")]
+    public string Message { get; set; }
+
+    /// <summary>
+    /// Days until the next follow-up, 0 clears the date, null leaves it alone.
+    /// </summary>
+    public int? FollowUpDays { get; set; }
+
+    [LocalizedDisplay("*QuotedPrice")]
+    public decimal Price { get; set; }
+
+    [LocalizedDisplay("*DepositPercent")]
+    public int DepositPercent { get; set; }
 }
 
 public class PrintQuoteListModel : ModelBase
@@ -73,6 +157,11 @@ public class PrintQuoteListModel : ModelBase
 
     public int NewCount { get; set; }
     public int OpenCount { get; set; }
+
+    /// <summary>
+    /// New requests plus those whose follow-up date has passed.
+    /// </summary>
+    public int DueCount { get; set; }
 }
 
 [LocalizedDisplay("Plugins.Split3D.Studio.Fields.")]
@@ -126,6 +215,19 @@ public class StudioConfigurationModel : ModelBase
     [LocalizedDisplay("*QuoteMaxFileSizeMb")]
     [Range(1, 500)]
     public int QuoteMaxFileSizeMb { get; set; }
+
+    [LocalizedDisplay("*DepositPercent")]
+    [Range(1, 100)]
+    public int DepositPercent { get; set; }
+
+    [LocalizedDisplay("*AllowPickup")]
+    public bool AllowPickup { get; set; }
+
+    [LocalizedDisplay("*DepositNote")]
+    public string DepositNote { get; set; }
+
+    [LocalizedDisplay("*QuoteMessageTemplate")]
+    public string QuoteMessageTemplate { get; set; }
 
     public int LayoutVersion { get; set; }
     public int CurrentLayoutVersion { get; set; }

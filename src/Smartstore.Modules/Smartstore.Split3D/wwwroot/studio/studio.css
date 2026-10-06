@@ -735,6 +735,36 @@ textarea.tt-input { resize: vertical; min-height: 110px; }
     .tt-split .w > span { transform: none; }
 }
 
+/* Order a print straight from the calculator */
+.tt-total-actions { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.tt-button--ghost { background: var(--cream); }
+.tt-button[disabled] { opacity: .45; cursor: not-allowed; box-shadow: none; transform: none; }
+.tt-button.is-busy { cursor: progress; }
+.tt-order-hint { margin-top: 14px; font-size: 13px; font-weight: 600; line-height: 1.5; padding: 10px 12px; background: var(--yellow); border: 2px solid var(--ink); border-radius: 12px; }
+.tt-order-hint[hidden] { display: none; }
+
+/* Print order page: delivery form plus the summary of what is being paid */
+.tt-order { display: grid; grid-template-columns: 1.3fr .7fr; gap: 30px; align-items: start; }
+.tt-order .tt-form-foot { margin: 14px 0 0 !important; font-size: 13px; }
+.tt-ordercard { background: var(--mint) !important; }
+.tt-orderlist { list-style: none; padding: 0; margin: 0 0 14px; display: grid; gap: 8px; }
+.tt-orderlist li { display: flex; justify-content: space-between; gap: 10px; font-size: 13px; padding-bottom: 8px; border-bottom: 1px dashed rgba(32, 32, 31, .35); }
+.tt-orderlist li:last-child { border-bottom: 0; padding-bottom: 0; }
+.tt-orderlist b { display: block; font-size: 14px; }
+.tt-orderlist small { display: block; font-weight: 600; opacity: .7; }
+.tt-orderlist em { font-style: normal; font-weight: 800; white-space: nowrap; }
+.tt-ordersum { display: grid; grid-template-columns: 1fr auto; gap: 6px 12px; margin: 0; font-size: 13px; }
+.tt-ordersum dt { font-weight: 700; opacity: .75; }
+.tt-ordersum dd { margin: 0; text-align: right; font-weight: 800; }
+.tt-ordersum .is-key { font-size: 15px; font-weight: 900; opacity: 1; padding-top: 6px; border-top: 2px dashed var(--ink); }
+.tt-orderfile { display: flex; gap: 8px; align-items: flex-start; margin: 14px 0 0 !important; font-size: 12px; font-weight: 700; }
+.tt-note-box { display: flex; gap: 10px; align-items: flex-start; margin-bottom: 20px; padding: 12px 14px; font-size: 13px; font-weight: 600; background: var(--lilac); border: 2px solid var(--ink); border-radius: 12px; }
+.tt-note-box svg { flex: none; margin-top: 2px; }
+
+@media (max-width: 900px) {
+    .tt-order { grid-template-columns: 1fr; }
+}
+
 /* Personalized products: list dialog for the text field */
 .tt-textlist-tools { display: flex; align-items: center; flex-wrap: wrap; gap: 6px 12px; margin-top: 8px; }
 .tt-textlist-btn { display: inline-flex; align-items: center; gap: 7px; padding: 6px 12px; border: 2px solid var(--ink); border-radius: 10px; background: var(--mint); color: var(--ink); font-size: 13px; font-weight: 800; cursor: pointer; box-shadow: 2px 2px 0 var(--ink); transition: transform .12s, box-shadow .12s; }

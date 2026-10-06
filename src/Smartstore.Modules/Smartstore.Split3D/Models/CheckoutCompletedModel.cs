@@ -23,4 +23,19 @@ public class CheckoutCompletedModel
     /// The order is paid on a payment provider page (e.g. PayOS) that can be (re)started by the customer.
     /// </summary>
     public bool CanPayOnline { get; set; }
+
+    /// <summary>
+    /// Print jobs paid with this order, see <see cref="Services.PrintOrderService"/>.
+    /// </summary>
+    public List<string> PrintJobCodes { get; set; } = [];
+
+    /// <summary>
+    /// The order contains nothing but print jobs, so the next steps are about printing, not about keys.
+    /// </summary>
+    public bool PrintOnly { get; set; }
+
+    /// <summary>
+    /// Amount the studio collects when the print is handed over.
+    /// </summary>
+    public decimal Outstanding { get; set; }
 }

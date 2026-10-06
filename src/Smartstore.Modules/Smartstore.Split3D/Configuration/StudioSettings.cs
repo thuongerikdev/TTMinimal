@@ -1,4 +1,4 @@
-namespace Smartstore.Split3D.Configuration;
+﻿namespace Smartstore.Split3D.Configuration;
 
 /// <summary>
 /// Settings of the TT Minimal studio storefront: contact details, 3D printing price list and quote requests.
@@ -60,9 +60,40 @@ public class StudioSettings : ISettings
     public int QuoteMaxFileSizeMb { get; set; } = 100;
 
     /// <summary>
+    /// Share of the estimated price a print job is paid with up front, in percent. 100 = the whole amount.
+    /// The rest is collected when the print is handed over.
+    /// </summary>
+    public int DepositPercent { get; set; } = 50;
+
+    /// <summary>
+    /// Whether the customer may pick the print up at the studio instead of having it delivered.
+    /// </summary>
+    public bool AllowPickup { get; set; } = true;
+
+    /// <summary>
+    /// Hint below the deposit on the order page, e.g. how the rest is settled.
+    /// </summary>
+    public string DepositNote { get; set; } = DefaultDepositNote;
+
+    /// <summary>
+    /// Template of the message the studio sends a quote request by Zalo, SMS or Messenger.
+    /// Placeholders: {Name}, {Id}, {Brand}, {Price}, {Phone}, {Link}.
+    /// </summary>
+    public string QuoteMessageTemplate { get; set; } = DefaultQuoteMessageTemplate;
+
+    /// <summary>
     /// Version of the storefront layout (theme, menus, trimmed forms) applied by <see cref="Services.StudioStorefrontSetup"/>.
     /// </summary>
     public int LayoutVersion { get; set; }
+
+    public const string DefaultDepositNote =
+        "Số tiền đặt cọc giữ chỗ in; phần còn lại thanh toán khi nhận hàng. Nếu file slice thực tế nhẹ hơn, " +
+        "studio tính lại theo khối lượng thật và hoàn phần chênh.";
+
+    public const string DefaultQuoteMessageTemplate =
+        "Chào {Name}, {Brand} đã nhận yêu cầu in 3D #{Id} của bạn. " +
+        "Báo giá: {Price}. Bạn cho mình biết màu và thời gian cần hàng để chốt đơn nhé. " +
+        "Đặt in và thanh toán tại: {Link}";
 
     public const string DefaultPrintPriceTable =
         "# Kiểu in | Vật liệu (cách nhau dấu phẩy, tỉ trọng g/cm³ trong ngoặc) | Từ gram | Giá/gram\n" +

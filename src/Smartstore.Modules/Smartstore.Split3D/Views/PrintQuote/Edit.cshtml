@@ -3,6 +3,8 @@
 @{
     ViewBag.Title = T("Plugins.Split3D.PrintQuote.Title", Model.Id).Value;
     var statuses = (List<(int Id, string Name)>)ViewBag.Statuses;
+    var channels = (List<(int Id, string Name)>)ViewBag.Channels;
+    var hasPhone = Model.Phone.HasValue();
 }
 
 <div class="section-header">
@@ -110,6 +112,141 @@
     </div>
 
     <div class="col-lg-5 mb-4">
+        @* Contact the customer: every button opens the channel and logs the attempt in one click. *@
+        <div class="card mb-3">
+            <div class="card-header font-weight-bold">
+                <i class="bi bi-chat-dots mr-1"></i> @T("Plugins.Split3D.PrintQuote.ContactCustomer")
+                @if (Model.ContactCount > 0)
+                {
+                    <span class="badge badge-secondary ml-1" data-tt-contact-count>@Model.ContactCount</span>
+                }
+                @if (Model.IsDue)
+                {
+                    <span class="badge badge-danger ml-1">@T("Plugins.Split3D.PrintQuote.Due")</span>
+                }
+            </div>
+            <div class="card-body">
+                <div class="tt-contact-actions mb-3" data-tt-contact="@Url.Action("LogContact")" data-tt-id="@Model.Id">
+                    @if (hasPhone)
+                    {
+                        <a class="btn btn-primary btn-sm mr-1 mb-1" href="@Model.TelUrl" data-tt-channel="@((int)PrintContactChannel.Phone)">
+                            <i class="bi bi-telephone"></i> <span>@T("Plugins.Split3D.PrintQuote.Channel.Phone")</span>
+                        </a>
+                        <a class="btn btn-info btn-sm mr-1 mb-1" href="@Model.ZaloUrl" target="_blank" rel="noopener" data-tt-channel="@((int)PrintContactChannel.Zalo)">
+                            <i class="bi bi-chat-dots"></i> <span>Zalo</span>
+                        </a>
+                        <a class="btn btn-secondary btn-sm mr-1 mb-1" href="@Model.SmsUrl" data-tt-channel="@((int)PrintContactChannel.Sms)">
+                            <i class="bi bi-chat-text"></i> <span>SMS</span>
+                        </a>
+                    }
+                    @if (Model.MessengerUrl.HasValue())
+                    {
+                        <a class="btn btn-secondary btn-sm mr-1 mb-1" href="@Model.MessengerUrl" target="_blank" rel="noopener" data-tt-channel="@((int)PrintContactChannel.Facebook)">
+                            <i class="bi bi-messenger"></i> <span>Messenger</span>
+                        </a>
+                    }
+                    @if (Model.MailUrl.HasValue())
+                    {
+                        <a class="btn btn-secondary btn-sm mr-1 mb-1" href="@Model.MailUrl" data-tt-channel="@((int)PrintContactChannel.Email)">
+                            <i class="bi bi-envelope"></i> <span>Email</span>
+                        </a>
+                    }
+                </div>
+
+                <div class="form-group">
+                    <label>@T("Plugins.Split3D.PrintQuote.MessagePreview")</label>
+                    <textarea rows="4" class="form-control" data-tt-message>@Model.Message</textarea>
+                    <div class="d-flex justify-content-between mt-1">
+                        <span class="form-text text-muted mt-0">@T("Plugins.Split3D.PrintQuote.MessageHint")</span>
+                        <button type="button" class="btn btn-sm btn-light" data-tt-copy>
+                            <i class="bi bi-clipboard"></i> <span>@T("Plugins.Split3D.PrintQuote.CopyMessage")</span>
+                        </button>
+                    </div>
+                </div>
+
+                <form asp-action="LogContact" method="post" class="border-top pt-3">
+                    <input type="hidden" name="Id" value="@Model.Id" />
+                    <div class="form-row">
+                        <div class="col-5 form-group">
+                            <label>@T("Plugins.Split3D.PrintQuote.Fields.Channel")</label>
+                            <select name="ChannelId" class="form-control form-control-sm">
+                                @foreach (var channel in channels)
+                                {
+                                    <option value="@channel.Id" selected="@(channel.Id == (int)PrintContactChannel.Phone)">@channel.Name</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="col-7 form-group">
+                            <label>@T("Plugins.Split3D.PrintQuote.FollowUpIn")</label>
+                            <select name="FollowUpDays" class="form-control form-control-sm">
+                                <option value="">@T("Plugins.Split3D.PrintQuote.FollowUpKeep")</option>
+                                <option value="1">1 @T("Plugins.Split3D.PrintQuote.Days")</option>
+                                <option value="2">2 @T("Plugins.Split3D.PrintQuote.Days")</option>
+                                <option value="3">3 @T("Plugins.Split3D.PrintQuote.Days")</option>
+                                <option value="7">7 @T("Plugins.Split3D.PrintQuote.Days")</option>
+                                <option value="0">@T("Plugins.Split3D.PrintQuote.FollowUpNone")</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>@T("Plugins.Split3D.PrintQuote.Fields.ContactMessage")</label>
+                        <textarea name="Message" rows="2" class="form-control form-control-sm"
+                                  placeholder="@T("Plugins.Split3D.PrintQuote.ContactMessagePlaceholder")"></textarea>
+                    </div>
+                    <div class="form-group form-check">
+                        <input type="checkbox" class="form-check-input" id="isIncoming" name="IsIncoming" value="true" />
+                        <input type="hidden" name="IsIncoming" value="false" />
+                        <label class="form-check-label" for="isIncoming">@T("Plugins.Split3D.PrintQuote.IsIncoming")</label>
+                    </div>
+                    <button type="submit" class="btn btn-sm btn-secondary">
+                        <i class="bi bi-journal-plus"></i> <span>@T("Plugins.Split3D.PrintQuote.LogContact")</span>
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        @* Turn the request into a print job the customer pays for. *@
+        <div class="card mb-3">
+            <div class="card-header font-weight-bold"><i class="bi bi-box-seam mr-1"></i> @T("Plugins.Split3D.PrintQuote.CreateOrder")</div>
+            <div class="card-body">
+                @if (Model.PrintOrderUrl.HasValue())
+                {
+                    <p class="mb-2">
+                        <a href="@Model.PrintOrderUrl" class="font-weight-medium">@Model.PrintOrderCode</a>
+                        <span class="text-muted">· @Model.PrintOrderStatusName</span>
+                    </p>
+                }
+                @if (Model.PayUrl.HasValue())
+                {
+                    <div class="form-group">
+                        <label>@T("Plugins.Split3D.PrintJob.PayLink")</label>
+                        <input type="text" class="form-control form-control-sm" readonly value="@Model.PayUrl"
+                               onclick="this.select();document.execCommand('copy');" />
+                        <span class="form-text text-muted">@T("Plugins.Split3D.PrintJob.PayLinkHint")</span>
+                    </div>
+                }
+                <form asp-action="CreateOrder" method="post">
+                    <input type="hidden" name="Id" value="@Model.Id" />
+                    <div class="form-row">
+                        <div class="col-7 form-group">
+                            <label>@T("Plugins.Split3D.PrintQuote.Fields.QuotedPrice")</label>
+                            <input type="number" name="Price" class="form-control form-control-sm" step="1000" min="0"
+                                   value="@(Model.QuotedPrice ?? 0)" />
+                        </div>
+                        <div class="col-5 form-group">
+                            <label>@T("Plugins.Split3D.PrintQuote.Fields.DepositPercent")</label>
+                            <input type="number" name="DepositPercent" class="form-control form-control-sm" min="1" max="100"
+                                   value="@ViewBag.DepositPercent" />
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-sm btn-primary">
+                        <i class="bi bi-plus-circle"></i> <span>@T("Plugins.Split3D.PrintQuote.CreateOrderButton")</span>
+                    </button>
+                    <span class="form-text text-muted">@T("Plugins.Split3D.PrintQuote.CreateOrderHint")</span>
+                </form>
+            </div>
+        </div>
+
         <form asp-action="Edit" method="post" id="printquote-form" class="card">
             <input type="hidden" asp-for="Id" />
             <div class="card-header font-weight-bold"><i class="bi bi-pencil-square mr-1"></i> @T("Plugins.Split3D.PrintQuote.Processing")</div>
@@ -127,6 +264,16 @@
                     <smart-label asp-for="QuotedPrice" />
                     <input asp-for="QuotedPrice" class="form-control" type="number" step="1000" min="0" />
                 </div>
+                <div class="form-group">
+                    <smart-label asp-for="FollowUpOn" />
+                    <input asp-for="FollowUpOn" class="form-control" type="date" />
+                    @if (Model.LastContactOn.HasValue)
+                    {
+                        <span class="form-text text-muted">
+                            @T("Plugins.Split3D.PrintQuote.LastContact", Model.LastContactOn.Value.ToString("dd/MM/yyyy HH:mm"))
+                        </span>
+                    }
+                </div>
                 <div class="form-group mb-0">
                     <smart-label asp-for="AdminNote" />
                     <textarea asp-for="AdminNote" rows="6" class="form-control"></textarea>
@@ -135,3 +282,41 @@
         </form>
     </div>
 </div>
+
+@if (Model.ContactLog.Count > 0)
+{
+    <div class="row">
+        <div class="col-12 mb-4">
+            <div class="card">
+                <div class="card-header font-weight-bold"><i class="bi bi-journal-text mr-1"></i> @T("Plugins.Split3D.PrintQuote.ContactLog")</div>
+                <table class="table table-sm mb-0">
+                    <thead>
+                        <tr>
+                            <th style="width:160px">@T("Plugins.Split3D.PrintQuote.Fields.CreatedOn")</th>
+                            <th style="width:150px">@T("Plugins.Split3D.PrintQuote.Fields.Channel")</th>
+                            <th>@T("Plugins.Split3D.PrintQuote.Fields.ContactMessage")</th>
+                            <th style="width:180px">@T("Plugins.Split3D.PrintQuote.LoggedBy")</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var entry in Model.ContactLog)
+                        {
+                            <tr>
+                                <td>@entry.CreatedOn.ToString("dd/MM/yyyy HH:mm")</td>
+                                <td>
+                                    <i class="bi @entry.ChannelIcon mr-1"></i>@entry.ChannelName
+                                    @if (entry.IsIncoming)
+                                    {
+                                        <span class="badge badge-light ml-1">@T("Plugins.Split3D.PrintQuote.Incoming")</span>
+                                    }
+                                </td>
+                                <td style="white-space:pre-wrap">@entry.Message</td>
+                                <td class="text-muted small">@entry.UserName</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+}

@@ -19,7 +19,9 @@ public class AdminBadgesController : AdminController
     }
 
     [HttpGet]
-    public async Task<IActionResult> Index([FromServices] Split3DOrderQuery orderQuery)
+    public async Task<IActionResult> Index(
+        [FromServices] Split3DOrderQuery orderQuery,
+        [FromServices] PrintQuoteFollowUpService followUpService)
     {
         var cancelToken = HttpContext.RequestAborted;
         var pending = (int)OrderStatus.Pending;
@@ -31,7 +33,10 @@ public class AdminBadgesController : AdminController
         {
             ["orders"] = await _db.Orders.CountAsync(x => !x.Deleted && x.OrderStatusId == pending, cancelToken),
             ["split3d-licenses"] = keyOrders,
-            ["tt-studio-quotes"] = await _db.PrintQuoteRequests().CountAsync(x => x.StatusId == (int)PrintQuoteStatus.New, cancelToken)
+            // New requests plus those whose follow-up date has passed: everything that needs a call today.
+            ["tt-studio-quotes"] = await followUpService.CountDueAsync(cancelToken),
+            // Print jobs that are paid and wait for the studio to confirm them.
+            ["tt-studio-jobs"] = await _db.PrintOrders().CountAsync(x => x.StatusId == (int)PrintOrderStatus.Paid, cancelToken)
         };
 
         Response.Headers.CacheControl = "no-store";
