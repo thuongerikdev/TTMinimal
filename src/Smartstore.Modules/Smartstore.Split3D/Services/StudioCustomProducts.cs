@@ -65,6 +65,51 @@ public static class StudioCustomProducts
         ["TT-KEYCAP"] = ("Danh sách keycap cần in", "keycap", false)
     };
 
+    /// <summary>
+    /// Name of the optional text attribute that holds the 3D designer's choices (font, shape, holes…) as a readable summary.
+    /// </summary>
+    public const string DesignAttributeName = "Thiết kế";
+
+    /// <summary>
+    /// Returns the product's design attribute (<see cref="DesignAttributeName"/>, multiline text, optional), adding it
+    /// on first use so products created before the designer get it too. The storefront hides its input.
+    /// </summary>
+    public static async Task<ProductVariantAttribute> EnsureDesignAttributeAsync(SmartDbContext db, int productId, CancellationToken cancelToken = default)
+    {
+        var attribute = await db.ProductVariantAttributes
+            .Include(x => x.ProductAttribute)
+            .Where(x => x.ProductId == productId && x.ProductAttribute.Name == DesignAttributeName)
+            .FirstOrDefaultAsync(cancelToken);
+        if (attribute != null)
+        {
+            return attribute;
+        }
+
+        var productAttribute = await db.ProductAttributes.FirstOrDefaultAsync(x => x.Name == DesignAttributeName, cancelToken);
+        if (productAttribute == null)
+        {
+            productAttribute = new ProductAttribute { Name = DesignAttributeName };
+            db.ProductAttributes.Add(productAttribute);
+            await db.SaveChangesAsync(cancelToken);
+        }
+
+        var lastOrder = await db.ProductVariantAttributes
+            .Where(x => x.ProductId == productId)
+            .MaxAsync(x => (int?)x.DisplayOrder, cancelToken) ?? 0;
+
+        attribute = new ProductVariantAttribute
+        {
+            ProductId = productId,
+            ProductAttributeId = productAttribute.Id,
+            AttributeControlTypeId = (int)AttributeControlType.MultilineTextbox,
+            IsRequired = false,
+            DisplayOrder = lastOrder + 1
+        };
+        db.ProductVariantAttributes.Add(attribute);
+        await db.SaveChangesAsync(cancelToken);
+        return attribute;
+    }
+
     private static Option[] ColorOptions(int preselected)
         => _colors.Select((c, i) => new Option(c.Name, 0, c.Color, i == preselected)).ToArray();
 

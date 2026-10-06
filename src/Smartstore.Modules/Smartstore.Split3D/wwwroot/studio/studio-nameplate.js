@@ -1,18 +1,116 @@
-/* TT Minimal name plate preview: raised text on a rounded plate, drawn with WebGL. The text is rasterized with the
-   page's own font (Vietnamese diacritics included) and turned into 3D: marching squares on the glyph mask give the
-   side walls, the mask itself (alpha test) is the top face, so no triangulation and no font files are needed.
-   No dependencies; loaded on demand by studio.js on the name plate product page. */
+/* TT Minimal name plate preview: a plate with raised / engraved / flush text, drawn with WebGL.
+   Everything is 2D masks first: the plate shape (with holes) and the relief (text lines, icons, border) are
+   painted on canvases with the chosen font; marching squares on each mask give the side walls, the masks
+   themselves (alpha test) are the top and bottom faces. So any font and shape works, Vietnamese diacritics
+   included, without triangulation or font files. No dependencies; loaded by studio.js on the name plate page. */
 (function () {
     'use strict';
 
-    var FONT_FAMILY = '"Be Vietnam Pro", Arial, sans-serif';
-    var PLATE_T = 3;       // plate thickness, mm
-    var RELIEF = 1.6;      // raised text height, mm
-    var BEVEL = 0.7;       // chamfer on the plate's top edge, mm
-    var RATIO = 0.3;       // plate height / length
-    var MAX_PX = 1400;     // raster width of the text (contour detail)
+    // Google Fonts with Vietnamese glyphs; loaded on demand (one stylesheet, the font files only when used).
+    var FONTS = [
+        { key: 'be', name: 'Be Vietnam Pro', family: 'Be Vietnam Pro', weight: 900 },
+        { key: 'baloo', name: 'Baloo 2', family: 'Baloo 2', weight: 800 },
+        { key: 'nunito', name: 'Nunito', family: 'Nunito', weight: 900 },
+        { key: 'montserrat', name: 'Montserrat', family: 'Montserrat', weight: 800 },
+        { key: 'comfortaa', name: 'Comfortaa', family: 'Comfortaa', weight: 700 },
+        { key: 'bungee', name: 'Bungee', family: 'Bungee', weight: 400 },
+        { key: 'slab', name: 'Roboto Slab', family: 'Roboto Slab', weight: 800 },
+        { key: 'playfair', name: 'Playfair Display', family: 'Playfair Display', weight: 800 },
+        { key: 'lobster', name: 'Lobster', family: 'Lobster', weight: 400 },
+        { key: 'pacifico', name: 'Pacifico', family: 'Pacifico', weight: 400 },
+        { key: 'dancing', name: 'Dancing Script', family: 'Dancing Script', weight: 700 },
+        { key: 'patrick', name: 'Patrick Hand', family: 'Patrick Hand', weight: 400 }
+    ];
+
+    var SHAPES = [
+        { key: 'rounded', name: 'Bo góc' },
+        { key: 'rect', name: 'Vuông góc' },
+        { key: 'pill', name: 'Viên thuốc' },
+        { key: 'oval', name: 'Oval' },
+        { key: 'tag', name: 'Thẻ treo' },
+        { key: 'outline', name: 'Ôm theo chữ' }
+    ];
+
+    // Icons as filled paths in a unit box (y down). Composite cut-outs are drawn on their own canvas.
+    function star(c, n, ro, ri) {
+        for (var i = 0; i < n * 2; i++) {
+            var a = -Math.PI / 2 + i * Math.PI / n, r = i % 2 ? ri : ro;
+            c[i ? 'lineTo' : 'moveTo'](0.5 + Math.cos(a) * r, 0.54 + Math.sin(a) * r);
+        }
+        c.closePath();
+    }
+    function circle(c, x, y, r) { c.moveTo(x + r, y); c.arc(x, y, r, 0, Math.PI * 2); }
+    function poly(c, pts) { pts.forEach(function (p, i) { c[i ? 'lineTo' : 'moveTo'](p[0], p[1]); }); c.closePath(); }
+
+    var ICONS = [
+        { key: 'heart', name: 'Tim', draw: function (c) {
+            c.moveTo(0.5, 0.92);
+            c.bezierCurveTo(0.12, 0.66, 0, 0.42, 0.06, 0.26);
+            c.bezierCurveTo(0.14, 0.06, 0.42, 0.04, 0.5, 0.26);
+            c.bezierCurveTo(0.58, 0.04, 0.86, 0.06, 0.94, 0.26);
+            c.bezierCurveTo(1, 0.42, 0.88, 0.66, 0.5, 0.92);
+        } },
+        { key: 'star', name: 'Sao', draw: function (c) { star(c, 5, 0.5, 0.21); } },
+        { key: 'flower', name: 'Hoa', draw: function (c) {
+            for (var i = 0; i < 5; i++) { var a = -Math.PI / 2 + i * Math.PI * 2 / 5; circle(c, 0.5 + Math.cos(a) * 0.26, 0.52 + Math.sin(a) * 0.26, 0.21); }
+            circle(c, 0.5, 0.52, 0.2);
+        } },
+        { key: 'paw', name: 'Chân mèo', draw: function (c) {
+            c.ellipse(0.5, 0.68, 0.24, 0.2, 0, 0, Math.PI * 2);
+            [[0.2, 0.42, 0.1], [0.38, 0.22, 0.11], [0.62, 0.22, 0.11], [0.8, 0.42, 0.1]].forEach(function (t) { circle(c, t[0], t[1], t[2]); });
+        } },
+        { key: 'cat', name: 'Mèo', draw: function (c) {
+            poly(c, [[0.12, 0.08], [0.42, 0.34], [0.58, 0.34], [0.88, 0.08], [0.9, 0.55], [0.5, 0.6], [0.1, 0.55]]);
+            c.ellipse(0.5, 0.6, 0.4, 0.32, 0, 0, Math.PI * 2);
+        } },
+        { key: 'crown', name: 'Vương miện', draw: function (c) {
+            poly(c, [[0.06, 0.82], [0.06, 0.28], [0.3, 0.52], [0.5, 0.14], [0.7, 0.52], [0.94, 0.28], [0.94, 0.82]]);
+        } },
+        { key: 'moon', name: 'Trăng', cut: function (c) { c.beginPath(); circle(c, 0.66, 0.38, 0.36); c.fill(); }, draw: function (c) { circle(c, 0.48, 0.52, 0.44); } },
+        { key: 'sun', name: 'Mặt trời', draw: function (c) {
+            circle(c, 0.5, 0.5, 0.22);
+            for (var i = 0; i < 8; i++) {
+                var a = i * Math.PI / 4, ca = Math.cos(a), sa = Math.sin(a), px = -sa * 0.06, py = ca * 0.06;
+                poly(c, [[0.5 + ca * 0.3 + px, 0.5 + sa * 0.3 + py], [0.5 + ca * 0.49, 0.5 + sa * 0.49], [0.5 + ca * 0.3 - px, 0.5 + sa * 0.3 - py]]);
+            }
+        } },
+        { key: 'note', name: 'Nốt nhạc', draw: function (c) {
+            c.ellipse(0.32, 0.8, 0.18, 0.13, -0.4, 0, Math.PI * 2);
+            poly(c, [[0.42, 0.78], [0.42, 0.06], [0.5, 0.06], [0.5, 0.78]]);
+            poly(c, [[0.5, 0.06], [0.84, 0.24], [0.84, 0.42], [0.5, 0.26]]);
+        } },
+        { key: 'bolt', name: 'Tia sét', draw: function (c) {
+            poly(c, [[0.6, 0.02], [0.16, 0.58], [0.46, 0.58], [0.36, 0.98], [0.84, 0.38], [0.54, 0.38], [0.68, 0.02]]);
+        } },
+        { key: 'leaf', name: 'Lá', cut: function (c) { c.lineWidth = 0.05; c.beginPath(); c.moveTo(0.16, 0.84); c.lineTo(0.7, 0.3); c.stroke(); }, draw: function (c) {
+            c.moveTo(0.1, 0.9); c.quadraticCurveTo(0.02, 0.12, 0.92, 0.08); c.quadraticCurveTo(0.96, 0.92, 0.1, 0.9);
+        } },
+        { key: 'ball', name: 'Bóng', cut: function (c) { c.lineWidth = 0.05; c.beginPath(); circle(c, 0.5, 0.5, 0.3); c.moveTo(0.06, 0.5); c.lineTo(0.94, 0.5); c.moveTo(0.5, 0.06); c.lineTo(0.5, 0.94); c.stroke(); }, draw: function (c) { circle(c, 0.5, 0.5, 0.46); } }
+    ];
+
+    var DEFAULTS = {
+        text: '', line2: '', font: 'be', upper: false, spacing: 0, textScale: 1,
+        base: '#ffffff', color: '#20201f',
+        length: 100, heightPct: 30, thickness: 3, shape: 'rounded', radius: 5, margin: 4,
+        style: 'raised', relief: 1.6, border: false, hole: 'none', icon: '', iconSide: 'left', stand: false
+    };
+
+    var MAX_PX = 1300;     // raster width of the masks (contour detail)
+    var HOLE_R = 2;        // hole radius, mm
     var FOV = 30 * Math.PI / 180;
-    var YAW = -0.32, PITCH = 0.95;
+    var TILT = 75 * Math.PI / 180;  // standing plate leans back 15°
+
+    var fontsLinked = false;
+    function ensureFonts() {
+        if (fontsLinked) return;
+        fontsLinked = true;
+        var link = document.createElement('link');
+        link.rel = 'stylesheet';
+        link.href = 'https://fonts.googleapis.com/css2?' + FONTS.map(function (f) { return 'family=' + f.family.replace(/ /g, '+') + ':wght@' + f.weight; }).join('&') + '&display=swap';
+        document.head.appendChild(link);
+    }
+    function fontOf(key) { return FONTS.filter(function (f) { return f.key === key; })[0] || FONTS[0]; }
+    function iconOf(key) { return ICONS.filter(function (i) { return i.key === key; })[0] || null; }
 
     // Any CSS color to [r, g, b] in 0..1.
     function rgb(color) {
@@ -25,76 +123,175 @@
         return [m[0] / 255, m[1] / 255, m[2] / 255];
     }
 
-    // ---------- Geometry: interleaved buffers of position (3) + normal (3) ----------
+    // ---------- Masks ----------
 
-    function Buf() { this.a = []; }
-    Buf.prototype.v = function (x, y, z, nx, ny, nz) { this.a.push(x, y, z, nx, ny, nz); };
-    Buf.prototype.quad = function (p, q, r, s) { this.v.apply(this, p); this.v.apply(this, q); this.v.apply(this, r); this.v.apply(this, p); this.v.apply(this, r); this.v.apply(this, s); };
-
-    // Rounded rectangle outline, counter-clockwise, with outward normals; inset keeps the corner centers.
-    function outline(L, H, r, inset) {
-        var hw = L / 2 - r, hh = H / 2 - r, rr = r - inset, seg = 10, pts = [];
-        [[hw, hh, 0], [-hw, hh, 0.5], [-hw, -hh, 1], [hw, -hh, 1.5]].forEach(function (c) {
-            for (var k = 0; k <= seg; k++) {
-                var a = (c[2] + k / seg * 0.5) * Math.PI, nx = Math.cos(a), ny = Math.sin(a);
-                pts.push([c[0] + nx * rr, c[1] + ny * rr, nx, ny]);
-            }
-        });
-        return pts;
-    }
-
-    function plate(L, H) {
-        var r = Math.min(H * 0.22, 6), outer = outline(L, H, r, 0), inner = outline(L, H, r, BEVEL), b = new Buf();
-        var zb = PLATE_T - BEVEL, k = Math.SQRT1_2;
-        for (var i = 0; i < outer.length; i++) {
-            var j = (i + 1) % outer.length, o1 = outer[i], o2 = outer[j], i1 = inner[i], i2 = inner[j];
-            b.quad([o1[0], o1[1], 0, o1[2], o1[3], 0], [o2[0], o2[1], 0, o2[2], o2[3], 0], [o2[0], o2[1], zb, o2[2], o2[3], 0], [o1[0], o1[1], zb, o1[2], o1[3], 0]);
-            b.quad([o1[0], o1[1], zb, o1[2] * k, o1[3] * k, k], [o2[0], o2[1], zb, o2[2] * k, o2[3] * k, k], [i2[0], i2[1], PLATE_T, o2[2] * k, o2[3] * k, k], [i1[0], i1[1], PLATE_T, o1[2] * k, o1[3] * k, k]);
-            b.v(0, 0, PLATE_T, 0, 0, 1); b.v(i1[0], i1[1], PLATE_T, 0, 0, 1); b.v(i2[0], i2[1], PLATE_T, 0, 0, 1);
-            b.v(0, 0, 0, 0, 0, -1); b.v(o2[0], o2[1], 0, 0, 0, -1); b.v(o1[0], o1[1], 0, 0, 0, -1);
+    // Plate outline (centered, y down, mm) as a path on ctx.
+    function shapePath(c, shape, L, H, r, inset) {
+        var x = -L / 2 + inset, y = -H / 2 + inset, w = L - 2 * inset, h = H - 2 * inset;
+        c.beginPath();
+        if (shape === 'oval') c.ellipse(0, 0, w / 2, h / 2, 0, 0, Math.PI * 2);
+        else if (shape === 'pill') roundRect(c, x, y, w, h, h / 2);
+        else if (shape === 'rect') c.rect(x, y, w, h);
+        else if (shape === 'tag') {
+            var cut = Math.min(h * 0.38, w * 0.2), rr = Math.max(0.5, Math.min(r, h / 3) - inset * 0.3);
+            c.moveTo(x + cut, y); c.lineTo(x + w - rr, y); c.arcTo(x + w, y, x + w, y + rr, rr); c.lineTo(x + w, y + h - rr);
+            c.arcTo(x + w, y + h, x + w - rr, y + h, rr); c.lineTo(x + cut, y + h); c.lineTo(x, y + h - cut); c.lineTo(x, y + cut); c.closePath();
         }
-        return new Float32Array(b.a);
+        else roundRect(c, x, y, w, h, Math.max(0, Math.min(r - inset, w / 2, h / 2)));
+    }
+    function roundRect(c, x, y, w, h, r) {
+        r = Math.max(0, Math.min(r, w / 2, h / 2));
+        c.moveTo(x + r, y); c.arcTo(x + w, y, x + w, y + h, r); c.arcTo(x + w, y + h, x, y + h, r);
+        c.arcTo(x, y + h, x, y, r); c.arcTo(x, y, x + w, y, r); c.closePath();
     }
 
-    // The text as a coverage mask, scaled to fit the plate with a margin; R = mask pixels per mm.
-    function rasterize(text, L, H) {
-        var margin = Math.max(4, H * 0.17), aw = L - 2 * margin, ah = H - 2 * margin, ref = 100;
-        var c = document.createElement('canvas'), ctx = c.getContext('2d', { willReadFrequently: true });
-        ctx.font = '900 ' + ref + 'px ' + FONT_FAMILY;
+    function canvas(w, h) { var c = document.createElement('canvas'); c.width = w; c.height = h; return c; }
+
+    function measure(ctx, text, font, px, spacing) {
+        ctx.font = font.weight + ' ' + px + 'px "' + font.family + '", Arial, sans-serif';
+        if ('letterSpacing' in ctx) ctx.letterSpacing = (spacing * px) + 'px';
         var m = ctx.measureText(text);
-        var left = m.actualBoundingBoxLeft || 0, right = m.actualBoundingBoxRight || m.width;
-        var asc = m.actualBoundingBoxAscent || ref * 0.75, desc = m.actualBoundingBoxDescent || ref * 0.25;
-        var bw = left + right, bh = asc + desc;
-        if (!(bw > 0.5 && bh > 0.5)) return null;
-
-        var mm = Math.min(aw / bw, ah / bh), R = Math.min(14, MAX_PX / (bw * mm)), k = mm * R, pad = 3;
-        c.width = Math.ceil(bw * k) + 2 * pad;
-        c.height = Math.ceil(bh * k) + 2 * pad;
-        ctx.font = '900 ' + (ref * k) + 'px ' + FONT_FAMILY;
-        ctx.textBaseline = 'alphabetic';
-        ctx.textAlign = 'left';
-        ctx.fillStyle = '#fff';
-        ctx.fillText(text, pad + left * k, pad + asc * k);
-
-        var data = ctx.getImageData(0, 0, c.width, c.height).data, f = new Float32Array(c.width * c.height);
-        for (var i = 0; i < f.length; i++) f[i] = data[i * 4 + 3] / 255;
-        return { canvas: c, f: f, w: c.width, h: c.height, R: R, width: bw * mm, height: bh * mm };
+        var l = m.actualBoundingBoxLeft || 0, r = m.actualBoundingBoxRight || m.width;
+        var a = m.actualBoundingBoxAscent || px * 0.75, d = m.actualBoundingBoxDescent || px * 0.25;
+        return { l: l, w: Math.max(0, l + r), a: a, h: Math.max(0, a + d) };
     }
 
-    // Marching squares (iso 0.5) over the mask: every contour segment becomes a wall quad. Cell edges are shared
-    // by neighbouring cells, so normals summed per edge give smooth shading along the curves.
+    // Builds the plate and relief masks for a spec. R = mask pixels per mm; frame = mask size in mm (centered).
+    function masks(s) {
+        var font = fontOf(s.font), L = s.length, H = Math.max(8, L * s.heightPct / 100), m = s.margin;
+        var R = Math.min(9, MAX_PX / (L + 4)), w = Math.ceil((L + 4) * R), h = Math.ceil((H + 4) * R);
+        var FW = w / R, FH = h / R;
+        var relief = canvas(w, h), rc = relief.getContext('2d');
+        var base = canvas(w, h), bc = base.getContext('2d');
+        // mm, y down, origin at the plate center.
+        rc.setTransform(R, 0, 0, R, FW / 2 * R, FH / 2 * R);
+        bc.setTransform(R, 0, 0, R, FW / 2 * R, FH / 2 * R);
+        rc.fillStyle = bc.fillStyle = rc.strokeStyle = '#fff';
+
+        var vi = 'vi';
+        var line1 = s.upper ? s.text.toLocaleUpperCase(vi) : s.text, line2 = s.upper ? s.line2.toLocaleUpperCase(vi) : s.line2;
+        var icon = iconOf(s.icon), nIcons = icon ? (s.iconSide === 'both' ? 2 : 1) : 0;
+
+        // Content in reference pixels: text block (two centered lines) with icons beside it.
+        var ref = 100, mc = canvas(4, 4).getContext('2d');
+        var t1 = line1 ? measure(mc, line1, font, ref, s.spacing) : null;
+        var t2 = line2 ? measure(mc, line2, font, ref * 0.42, s.spacing) : null;
+        var gap = t1 && t2 ? ref * 0.14 : 0;
+        var tw = Math.max(t1 ? t1.w : 0, t2 ? t2.w : 0), th = (t1 ? t1.h : 0) + gap + (t2 ? t2.h : 0);
+        var iconSize = icon ? (th ? th * (t2 ? 0.8 : 0.95) : ref) : 0, iconGap = icon && tw ? iconSize * 0.2 : 0;
+        var cw = tw + nIcons * (iconSize + iconGap), ch = Math.max(th, iconSize);
+
+        // Room for the content: margins, and the holes beside or above it.
+        var holeSide = 2 * HOLE_R + 2.5, aw = L - 2 * m, ah = H - 2 * m, cx = 0, cy = 0;
+        if (s.hole === 'left') { aw -= holeSide; cx = holeSide / 2; }
+        else if (s.hole === 'top2') aw -= 2 * holeSide;
+        else if (s.hole === 'top1') { ah -= holeSide; cy = holeSide / 2; }
+        if (s.border && s.shape !== 'outline') { aw -= 3; ah -= 3; }
+
+        var k = cw > 0 && ch > 0 && aw > 0 && ah > 0 ? Math.min(aw / cw, ah / ch) * s.textScale : 0;  // mm per reference px
+        var left = cx - cw * k / 2;
+        if (k > 0) {
+            var tl = left + (icon && s.iconSide !== 'right' ? (iconSize + iconGap) * k : 0), tt = cy - th * k / 2;
+            // Text is drawn in pixels (canvas fonts do not scale well below 1px).
+            rc.save();
+            rc.setTransform(1, 0, 0, 1, 0, 0);
+            var X = function (x) { return (x + FW / 2) * R; }, Y = function (y) { return (y + FH / 2) * R; };
+            rc.textBaseline = 'alphabetic';
+            rc.textAlign = 'left';
+            if (t1) {
+                measure(rc, line1, font, ref * k * R, s.spacing);
+                rc.fillText(line1, X(tl + ((tw - t1.w) / 2 + t1.l) * k), Y(tt + t1.a * k));
+            }
+            if (t2) {
+                measure(rc, line2, font, ref * 0.42 * k * R, s.spacing);
+                rc.fillText(line2, X(tl + ((tw - t2.w) / 2 + t2.l) * k), Y(tt + ((t1 ? t1.h : 0) + gap + t2.a) * k));
+            }
+            rc.restore();
+
+            if (icon) {
+                var size = iconSize * k, ic = canvas(Math.max(2, Math.ceil(size * R)), Math.max(2, Math.ceil(size * R))), icc = ic.getContext('2d');
+                icc.setTransform(ic.width, 0, 0, ic.height, 0, 0);
+                icc.fillStyle = icc.strokeStyle = '#fff';
+                icc.beginPath(); icon.draw(icc); icc.fill();
+                if (icon.cut) { icc.globalCompositeOperation = 'destination-out'; icon.cut(icc); }
+                var put = function (x) { rc.drawImage(ic, x, cy - size / 2, size, size); };
+                if (s.iconSide !== 'right') put(left);
+                if (s.iconSide !== 'left') put(left + cw * k - size);
+            }
+        }
+
+        // Plate: the shape, or the content grown by the margin ("outline").
+        if (s.shape === 'outline') {
+            bc.save();
+            bc.setTransform(1, 0, 0, 1, 0, 0);
+            var dr = m * R;
+            [[1, 30], [0.66, 20], [0.33, 10]].forEach(function (ring) {
+                for (var i = 0; i < ring[1]; i++) {
+                    var a = i * Math.PI * 2 / ring[1];
+                    bc.drawImage(relief, Math.cos(a) * dr * ring[0], Math.sin(a) * dr * ring[0]);
+                }
+            });
+            bc.drawImage(relief, 0, 0);
+            bc.restore();
+            if (k <= 0) { shapePath(bc, 'pill', Math.min(L, H * 2), H, H / 2, 0); bc.fill(); }
+        } else {
+            shapePath(bc, s.shape, L, H, s.radius, 0);
+            bc.fill();
+            if (s.border) {
+                var bi = Math.min(m * 0.4, 2) + 0.6;
+                rc.lineWidth = 1.2;
+                shapePath(rc, s.shape, L, H, s.radius, bi);
+                rc.stroke();
+            }
+        }
+
+        // Holes: a boss so the hole always has material around it, then the cut through plate and relief.
+        var holes = [];
+        if (s.hole === 'left') holes.push(s.shape === 'outline' && k > 0 ? [left - m - HOLE_R * 0.4, cy] : [-L / 2 + 2.5 + HOLE_R, 0]);
+        else if (s.hole === 'top1') holes.push([0, -H / 2 + 2.5 + HOLE_R]);
+        else if (s.hole === 'top2') holes.push([-L / 2 + 2.5 + HOLE_R + (s.shape === 'oval' || s.shape === 'pill' ? H * 0.18 : 0), -H / 2 + 2.5 + HOLE_R], [L / 2 - 2.5 - HOLE_R - (s.shape === 'oval' || s.shape === 'pill' ? H * 0.18 : 0), -H / 2 + 2.5 + HOLE_R]);
+        holes.forEach(function (p) { bc.beginPath(); circle(bc, p[0], p[1], HOLE_R + 2.5); bc.fill(); });
+        bc.globalCompositeOperation = rc.globalCompositeOperation = 'destination-out';
+        holes.forEach(function (p) {
+            bc.beginPath(); circle(bc, p[0], p[1], HOLE_R); bc.fill();
+            rc.beginPath(); circle(rc, p[0], p[1], HOLE_R + 1); rc.fill();
+        });
+        // The relief never sticks out of the plate.
+        rc.globalCompositeOperation = 'destination-in';
+        rc.setTransform(1, 0, 0, 1, 0, 0);
+        rc.drawImage(base, 0, 0);
+
+        var fb = bc.getImageData(0, 0, w, h).data, fr = rc.getImageData(0, 0, w, h).data;
+        var n = w * h, B = new Float32Array(n), Rf = new Float32Array(n), tex = new Uint8Array(n * 4), any = false;
+        var minX = w, maxX = -1, minY = h, maxY = -1;
+        for (var i = 0, x = 0, y = 0; i < n; i++) {
+            var b = fb[i * 4 + 3], r = fr[i * 4 + 3];
+            B[i] = b / 255; Rf[i] = r / 255;
+            tex[i * 4] = b; tex[i * 4 + 1] = r; tex[i * 4 + 3] = 255;
+            if (r > 127) any = true;
+            if (b > 127) { if (x < minX) minX = x; if (x > maxX) maxX = x; if (y < minY) minY = y; if (y > maxY) maxY = y; }
+            if (++x === w) { x = 0; y++; }
+        }
+        return {
+            w: w, h: h, R: R, FW: FW, FH: FH, base: B, relief: Rf, tex: tex, hasRelief: any, baseCanvas: base, reliefCanvas: relief,
+            size: maxX < 0 ? [L, H] : [(maxX - minX + 1) / R, (maxY - minY + 1) / R]
+        };
+    }
+
+    // ---------- Geometry: interleaved position (3) + normal (3) ----------
+
+    // Marching squares (iso 0.5) over a mask: every contour segment becomes a wall quad from z0 to z1. Cell edges
+    // are shared by neighbouring cells, so normals summed per edge give smooth shading along the curves.
     // Pairs of cell edges (0 top, 1 right, 2 bottom, 3 left) per corner case; 5 and 10 are decided by the center.
     var CASES = [null, [3, 0], [0, 1], [3, 1], [1, 2], null, [0, 2], [3, 2], [2, 3], [0, 2], null, [1, 2], [1, 3], [0, 1], [3, 0], null];
 
-    function walls(r) {
-        var f = r.f, w = r.w, h = r.h, t = 0.5, segs = [], acc = new Map();
+    function walls(M, f, z0, z1, flip) {
+        var w = M.w, h = M.h, t = 0.5, segs = [], acc = new Map();
         var px = new Float64Array(4), py = new Float64Array(4), id = new Float64Array(4);
-
         function add(key, nx, ny) {
-            var n = acc.get(key);
-            if (n) { n[0] += nx; n[1] += ny; } else acc.set(key, [nx, ny]);
+            var v = acc.get(key);
+            if (v) { v[0] += nx; v[1] += ny; } else acc.set(key, [nx, ny]);
         }
-
         for (var j = 0; j < h - 1; j++) {
             for (var i = 0; i < w - 1; i++) {
                 var o = j * w + i, a = f[o], b = f[o + 1], c = f[o + w + 1], d = f[o + w];
@@ -109,7 +306,6 @@
                 px[1] = i + 1; py[1] = j + (t - b) / (c - b); id[1] = (o + 1) * 2 + 1;
                 px[2] = i + (t - d) / (c - d); py[2] = j + 1; id[2] = (o + w) * 2;
                 px[3] = i; py[3] = j + (t - a) / (d - a); id[3] = o * 2 + 1;
-
                 // Outward = down the coverage gradient.
                 var gx = (b + c - a - d) / 2, gy = (d + c - a - b) / 2;
                 for (var p = 0; p < pairs.length; p += 2) {
@@ -121,13 +317,12 @@
                 }
             }
         }
-
-        // Mask pixel (x + 0.5, y + 0.5) is the sample, the mask is centered on the plate; y goes up in mm.
-        var out = new Float32Array(segs.length / 6 * 36), z0 = PLATE_T - 0.05, z1 = PLATE_T + RELIEF, n = 0;
+        // Mask pixel (x + 0.5, y + 0.5) is the sample; y goes up in mm.
+        var out = new Float32Array(segs.length / 6 * 36), q = 0, sg = flip ? -1 : 1;
         function vert(x, y, key, z) {
-            var nn = acc.get(key), l = Math.hypot(nn[0], nn[1]) || 1;
-            out[n++] = (x + 0.5 - w / 2) / r.R; out[n++] = (h / 2 - y - 0.5) / r.R; out[n++] = z;
-            out[n++] = nn[0] / l; out[n++] = -nn[1] / l; out[n++] = 0;
+            var nn = acc.get(key), l = (Math.hypot(nn[0], nn[1]) || 1) * sg;
+            out[q++] = (x + 0.5) / M.R - M.FW / 2; out[q++] = M.FH / 2 - (y + 0.5) / M.R; out[q++] = z;
+            out[q++] = nn[0] / l; out[q++] = -nn[1] / l; out[q++] = 0;
         }
         for (var s = 0; s < segs.length; s += 6) {
             vert(segs[s], segs[s + 1], segs[s + 2], z0); vert(segs[s + 3], segs[s + 4], segs[s + 5], z0); vert(segs[s + 3], segs[s + 4], segs[s + 5], z1);
@@ -136,26 +331,46 @@
         return out;
     }
 
+    function frameQuad(M, z, nz) {
+        var x = M.FW / 2, y = M.FH / 2;
+        return new Float32Array([-x, -y, z, 0, 0, nz, x, -y, z, 0, 0, nz, x, y, z, 0, 0, nz, -x, -y, z, 0, 0, nz, x, y, z, 0, 0, nz, -x, y, z, 0, 0, nz]);
+    }
+
+    function box(x0, x1, y0, y1, z0, z1) {
+        var a = [];
+        function q(p1, p2, p3, p4, n) { [p1, p2, p3, p1, p3, p4].forEach(function (p) { a.push(p[0], p[1], p[2], n[0], n[1], n[2]); }); }
+        q([x0, y0, z1], [x1, y0, z1], [x1, y1, z1], [x0, y1, z1], [0, 0, 1]);
+        q([x0, y0, z0], [x1, y0, z0], [x1, y1, z0], [x0, y1, z0], [0, 0, -1]);
+        q([x0, y0, z0], [x1, y0, z0], [x1, y0, z1], [x0, y0, z1], [0, -1, 0]);
+        q([x0, y1, z0], [x1, y1, z0], [x1, y1, z1], [x0, y1, z1], [0, 1, 0]);
+        q([x0, y0, z0], [x0, y1, z0], [x0, y1, z1], [x0, y0, z1], [-1, 0, 0]);
+        q([x1, y0, z0], [x1, y1, z0], [x1, y1, z1], [x1, y0, z1], [1, 0, 0]);
+        return new Float32Array(a);
+    }
+
     // ---------- WebGL ----------
 
-    var VS = 'attribute vec3 aPos; attribute vec3 aNor; uniform mat4 uMVP; uniform vec4 uTexRect;' +
+    var VS = 'attribute vec3 aPos; attribute vec3 aNor; uniform mat4 uMVP; uniform mat3 uRot; uniform vec3 uTrans; uniform vec4 uTexRect;' +
         'varying vec3 vN; varying vec3 vP; varying vec2 vUV;' +
-        'void main() { vN = aNor; vP = aPos; vUV = (aPos.xy - uTexRect.xy) / uTexRect.zw; gl_Position = uMVP * vec4(aPos, 1.0); }';
+        'void main() { vec3 p = uRot * aPos + uTrans; vN = uRot * aNor; vP = p; vUV = (aPos.xy - uTexRect.xy) / uTexRect.zw; gl_Position = uMVP * vec4(p, 1.0); }';
 
-    // Key light from the upper left of the viewer, sky fill from above, a small highlight; the text top face
-    // discards everything outside the glyph mask.
-    var FS = 'precision mediump float; uniform vec3 uColor; uniform vec3 uLight; uniform vec3 uEye; uniform sampler2D uTex; uniform float uUseTex;' +
+    // uMode: 0 solid, 1 inside the plate mask, 2 inside the relief mask, 3 plate without relief (engraved / flush).
+    var FS = 'precision mediump float; uniform vec3 uColor; uniform vec3 uLight; uniform vec3 uEye; uniform sampler2D uTex; uniform float uMode;' +
         'varying vec3 vN; varying vec3 vP; varying vec2 vUV;' +
-        'void main() { if (uUseTex > 0.5 && texture2D(uTex, vec2(vUV.x, 1.0 - vUV.y)).a < 0.5) discard;' +
+        'void main() { vec4 m = texture2D(uTex, vec2(vUV.x, 1.0 - vUV.y));' +
+        ' if (uMode > 0.5 && uMode < 1.5 && m.r < 0.5) discard;' +
+        ' if (uMode > 1.5 && uMode < 2.5 && m.g < 0.5) discard;' +
+        ' if (uMode > 2.5 && (m.r < 0.5 || m.g >= 0.5)) discard;' +
         ' vec3 n = normalize(vN); vec3 v = normalize(uEye - vP); float diff = max(dot(n, uLight), 0.0);' +
         ' float spec = pow(max(dot(n, normalize(uLight + v)), 0.0), 36.0); float sky = 0.5 + 0.5 * n.z;' +
-        ' gl_FragColor = vec4(uColor * (0.3 + 0.55 * diff + 0.2 * sky) + vec3(0.09 * spec), 1.0); }';
+        ' gl_FragColor = vec4(uColor * (0.34 + 0.52 * diff + 0.18 * sky) + vec3(0.09 * spec), 1.0); }';
 
-    function createGL(canvas) {
+    var PARTS = ['baseWalls', 'baseTop', 'baseBottom', 'reliefWalls', 'reliefTop', 'foot'];
+
+    function createGL(cv) {
         var gl = null;
-        try { gl = canvas.getContext('webgl', { antialias: true, alpha: true, premultipliedAlpha: true }) || canvas.getContext('experimental-webgl'); } catch (e) { gl = null; }
+        try { gl = cv.getContext('webgl', { antialias: true, alpha: true, premultipliedAlpha: true }) || cv.getContext('experimental-webgl'); } catch (e) { gl = null; }
         if (!gl) return null;
-
         function shader(type, src) {
             var s = gl.createShader(type);
             gl.shaderSource(s, src); gl.compileShader(s);
@@ -168,9 +383,10 @@
         if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) return null;
         gl.useProgram(prog);
 
-        var g = { gl: gl, plate: gl.createBuffer(), walls: gl.createBuffer(), top: gl.createBuffer(), tex: gl.createTexture(), counts: {} };
+        var g = { gl: gl, tex: gl.createTexture(), counts: {} };
+        PARTS.forEach(function (p) { g[p] = gl.createBuffer(); g.counts[p] = 0; });
         ['aPos', 'aNor'].forEach(function (n) { g[n] = gl.getAttribLocation(prog, n); });
-        ['uMVP', 'uTexRect', 'uColor', 'uLight', 'uEye', 'uTex', 'uUseTex'].forEach(function (n) { g[n] = gl.getUniformLocation(prog, n); });
+        ['uMVP', 'uRot', 'uTrans', 'uTexRect', 'uColor', 'uLight', 'uEye', 'uTex', 'uMode'].forEach(function (n) { g[n] = gl.getUniformLocation(prog, n); });
         gl.bindTexture(gl.TEXTURE_2D, g.tex);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
@@ -183,57 +399,60 @@
     function upload(g, name, data) {
         var gl = g.gl;
         gl.bindBuffer(gl.ARRAY_BUFFER, g[name]);
-        gl.bufferData(gl.ARRAY_BUFFER, data, gl.STATIC_DRAW);
-        g.counts[name] = data.length / 6;
+        gl.bufferData(gl.ARRAY_BUFFER, data || new Float32Array(0), gl.STATIC_DRAW);
+        g.counts[name] = data ? data.length / 6 : 0;
     }
-
-    // ---------- Math ----------
 
     function sub(a, b) { return [a[0] - b[0], a[1] - b[1], a[2] - b[2]]; }
     function dot(a, b) { return a[0] * b[0] + a[1] * b[1] + a[2] * b[2]; }
     function cross(a, b) { return [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]]; }
     function unit(a) { var l = Math.hypot(a[0], a[1], a[2]) || 1; return [a[0] / l, a[1] / l, a[2] / l]; }
 
+    // Fields that change the mesh; colors only repaint.
+    var GEOMETRY = ['text', 'line2', 'font', 'upper', 'spacing', 'textScale', 'length', 'heightPct', 'thickness', 'shape', 'radius', 'margin', 'style', 'relief', 'border', 'hole', 'icon', 'iconSide', 'stand'];
+
     // ---------- View: drag to rotate, Ctrl + wheel (or any wheel while opts.wheel() is true) to zoom ----------
 
-    function View(canvas, opts) {
-        this.canvas = canvas;
+    function View(cv, opts) {
+        this.canvas = cv;
         this.opts = opts || {};
-        this.gl = createGL(canvas);
-        this.spec = { text: '', base: '#ffffff', color: '#20201f', length: 100 };
+        this.gl = createGL(cv);
+        this.spec = Object.assign({}, DEFAULTS);
+        this.key = null;
         this.dims = null;
-        this.mask = null;
-        this.zoom = 1;
         this.seq = 0;
         this.reset(true);
 
         var self = this, drag = null;
-        canvas.addEventListener('pointerdown', function (e) {
+        cv.addEventListener('pointerdown', function (e) {
             if (e.button !== 0) return;
             self.stopSway();
             drag = { x: e.clientX, y: e.clientY, yaw: self.yaw, pitch: self.pitch };
-            canvas.setPointerCapture(e.pointerId);
+            cv.setPointerCapture(e.pointerId);
         });
-        canvas.addEventListener('pointermove', function (e) {
+        cv.addEventListener('pointermove', function (e) {
             if (!drag) return;
             self.yaw = drag.yaw - (e.clientX - drag.x) * 0.01;
-            self.pitch = Math.max(-0.15, Math.min(1.52, drag.pitch + (e.clientY - drag.y) * 0.01));
+            self.pitch = Math.max(-0.4, Math.min(1.52, drag.pitch + (e.clientY - drag.y) * 0.01));
             self.request();
         });
-        ['pointerup', 'pointercancel'].forEach(function (t) { canvas.addEventListener(t, function () { drag = null; }); });
-        canvas.addEventListener('dblclick', function () { self.reset(); });
-        canvas.addEventListener('wheel', function (e) {
+        ['pointerup', 'pointercancel'].forEach(function (t) { cv.addEventListener(t, function () { drag = null; }); });
+        cv.addEventListener('dblclick', function () { self.reset(); });
+        cv.addEventListener('wheel', function (e) {
             if (!(e.ctrlKey || e.metaKey || (self.opts.wheel && self.opts.wheel()))) return;
             e.preventDefault();
             self.stopSway();
             self.zoom = Math.max(0.6, Math.min(6, self.zoom * Math.exp(-e.deltaY * 0.0015)));
             self.request();
         }, { passive: false });
-        if ('ResizeObserver' in window) new ResizeObserver(function () { self.request(); }).observe(canvas);
+        if ('ResizeObserver' in window) new ResizeObserver(function () { self.request(); }).observe(cv);
     }
 
+    View.prototype.home = function () { return this.spec.stand ? { yaw: -0.4, pitch: 0.28 } : { yaw: -0.32, pitch: 0.95 }; };
+
     View.prototype.reset = function (quiet) {
-        this.yaw = YAW; this.pitch = PITCH; this.zoom = 1;
+        var h = this.home();
+        this.yaw = h.yaw; this.pitch = h.pitch; this.zoom = 1;
         if (!quiet) this.request();
         this.startSway();
     };
@@ -248,7 +467,7 @@
             if (!t0) t0 = now;
             var r = self.canvas.getBoundingClientRect();
             if (r.bottom > 0 && r.top < window.innerHeight && r.width) {
-                self.yaw = YAW + 0.38 * Math.sin((now - t0) * 0.0007);
+                self.yaw = self.home().yaw + 0.38 * Math.sin((now - t0) * 0.0007);
                 self.draw();
             }
             requestAnimationFrame(tick);
@@ -258,23 +477,28 @@
     View.prototype.stopSway = function () { this.swaying = false; };
 
     /**
-     * Shows a plate: { text, base (CSS color of the plate), color (CSS color of the text), length (mm) }.
-     * Colors apply at once; text and length rebuild the mesh after the font is ready.
+     * Shows a plate; spec fields as in TTNameplate.DEFAULTS (colors are CSS colors, sizes in mm, heightPct in % of
+     * the length). Missing fields keep their last value. Resolves with the outer size { length, height, depth }.
      */
     View.prototype.set = function (spec) {
-        var old = this.spec, self = this;
-        this.spec = {
-            text: String(spec.text == null ? old.text : spec.text).replace(/\s+/g, ' ').trim(),
-            base: spec.base || old.base,
-            color: spec.color || old.color,
-            length: +spec.length > 0 ? +spec.length : old.length
-        };
-        if (this.dims && this.spec.text === old.text && this.spec.length === old.length) { this.request(); return Promise.resolve(this.dims); }
+        var self = this, next = Object.assign({}, this.spec);
+        Object.keys(spec || {}).forEach(function (k) { if (spec[k] != null && k in DEFAULTS) next[k] = spec[k]; });
+        next.text = String(next.text).replace(/\s+/g, ' ').trim();
+        next.line2 = String(next.line2).replace(/\s+/g, ' ').trim();
+        var standChanged = next.stand !== this.spec.stand;
+        this.spec = next;
+        if (standChanged) this.reset(true);
+        var key = JSON.stringify(GEOMETRY.map(function (k) { return next[k]; }));
+        if (key === this.key && this.dims) { this.request(); return Promise.resolve(this.dims); }
 
-        var seq = ++this.seq, text = this.spec.text, font = '900 40px ' + FONT_FAMILY;
-        var ready = document.fonts && document.fonts.load ? document.fonts.load(font, text || 'A').catch(function () { }) : Promise.resolve();
+        var seq = ++this.seq, font = fontOf(next.font), sample = (next.text + next.line2) || 'A';
+        if (next.font !== 'be') ensureFonts();
+        var ready = document.fonts && document.fonts.load
+            ? document.fonts.load(font.weight + ' 40px "' + font.family + '"', sample).catch(function () { })
+            : Promise.resolve();
         return ready.then(function () {
             if (seq !== self.seq) return self.dims;
+            self.key = key;
             self.build();
             self.request();
             return self.dims;
@@ -282,26 +506,27 @@
     };
 
     View.prototype.build = function () {
-        var L = this.spec.length, H = Math.round(L * RATIO), mask = this.spec.text ? rasterize(this.spec.text, L, H) : null;
-        this.mask = mask;
-        this.dims = { length: L, height: H, depth: +(PLATE_T + (mask ? RELIEF : 0)).toFixed(1), textWidth: mask ? mask.width : 0, textHeight: mask ? mask.height : 0 };
-        this.radius = Math.hypot(L / 2, H / 2);
+        var s = this.spec, M = masks(s), T = s.thickness, rel = Math.min(s.relief, s.style === 'engraved' ? T - 0.6 : 5);
+        this.M = M;
+        this.dims = { length: Math.round(M.size[0] * 10) / 10, height: Math.round(M.size[1] * 10) / 10, depth: Math.round((T + (s.style === 'raised' && M.hasRelief ? rel : 0)) * 10) / 10 };
+        this.radius = Math.hypot(M.FW / 2, M.FH / 2);
         var g = this.gl;
         if (!g) return;
         var gl = g.gl;
-        upload(g, 'plate', plate(L, H));
-        if (mask) {
-            upload(g, 'walls', walls(mask));
-            var x = mask.w / 2 / mask.R, y = mask.h / 2 / mask.R;
-            upload(g, 'top', new Float32Array([-x, -y, PLATE_T + RELIEF, 0, 0, 1, x, -y, PLATE_T + RELIEF, 0, 0, 1, x, y, PLATE_T + RELIEF, 0, 0, 1,
-                -x, -y, PLATE_T + RELIEF, 0, 0, 1, x, y, PLATE_T + RELIEF, 0, 0, 1, -x, y, PLATE_T + RELIEF, 0, 0, 1]));
-            this.texRect = [-x, -y, 2 * x, 2 * y];
-            gl.bindTexture(gl.TEXTURE_2D, g.tex);
-            gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, false);
-            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, mask.canvas);
-        } else {
-            g.counts.walls = g.counts.top = 0;
-        }
+        upload(g, 'baseWalls', walls(M, M.base, 0, T, false));
+        upload(g, 'baseTop', frameQuad(M, T, 1));
+        upload(g, 'baseBottom', frameQuad(M, 0, -1));
+        if (!M.hasRelief) { upload(g, 'reliefWalls', null); upload(g, 'reliefTop', null); }
+        else if (s.style === 'raised') { upload(g, 'reliefWalls', walls(M, M.relief, T - 0.05, T + rel, false)); upload(g, 'reliefTop', frameQuad(M, T + rel, 1)); }
+        else if (s.style === 'engraved') { upload(g, 'reliefWalls', walls(M, M.relief, T - rel, T, true)); upload(g, 'reliefTop', frameQuad(M, T - rel, 1)); }
+        else { upload(g, 'reliefWalls', null); upload(g, 'reliefTop', frameQuad(M, T, 1)); }
+        // Standing: a slotted foot behind the plate's lower edge.
+        var H = M.size[1], L = M.size[0];
+        upload(g, 'foot', s.stand ? box(-L * 0.36, L * 0.36, -T * 1.6, H * 0.42, 0, Math.max(2.4, T * 0.9)) : null);
+        this.texRect = [-M.FW / 2, -M.FH / 2, M.FW, M.FH];
+        gl.bindTexture(gl.TEXTURE_2D, g.tex);
+        gl.pixelStorei(gl.UNPACK_ALIGNMENT, 1);
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, M.w, M.h, 0, gl.RGBA, gl.UNSIGNED_BYTE, M.tex);
     };
 
     View.prototype.request = function () {
@@ -319,23 +544,32 @@
     };
 
     View.prototype.drawGL = function (aspect) {
-        var g = this.gl, gl = g.gl, self = this;
+        var g = this.gl, gl = g.gl, s = this.spec, M = this.M;
+        // Standing: tilt around X so the face looks at the viewer (-Y), lower edge on the ground.
+        var plateRot = [1, 0, 0, 0, 1, 0, 0, 0, 1], plateTrans = [0, 0, 0], target = [0, 0, s.thickness / 2];
+        if (s.stand) {
+            var c = Math.cos(TILT), sn = Math.sin(TILT), half = M.size[1] / 2;
+            plateRot = [1, 0, 0, 0, c, sn, 0, -sn, c];   // column-major
+            plateTrans = [0, 0, half * sn];
+            target = [0, 0, half * sn];
+        }
+
         // Distance that fits the plate across, and its tilted, swaying outline from top to bottom.
         var tanH = Math.tan(FOV / 2), d = this.radius * Math.max(0.9 / aspect, 0.85) / tanH / this.zoom;
         var cp = Math.cos(this.pitch), sp = Math.sin(this.pitch), cy = Math.cos(this.yaw), sy = Math.sin(this.yaw);
-        var target = [0, 0, PLATE_T / 2], eye = [d * cp * sy, -d * cp * cy, PLATE_T / 2 + d * sp];
-        var f = unit(sub(target, eye)), s = unit(cross(f, [0, 0, 1])), u = cross(s, f);
-        var near = Math.max(1, d - this.radius * 1.5), far = d + this.radius * 1.5, ff = 1 / tanH;
-        // Projection * view, column-major.
+        var eye = [target[0] + d * cp * sy, target[1] - d * cp * cy, target[2] + d * sp];
+        var f = unit(sub(target, eye)), r = unit(cross(f, [0, 0, 1])), u = cross(r, f);
+        var near = Math.max(1, d - this.radius * 1.6), far = d + this.radius * 1.6, ff = 1 / tanH;
         var A = (far + near) / (near - far), B = 2 * far * near / (near - far);
-        var se = -dot(s, eye), ue = -dot(u, eye), fe = dot(f, eye);
+        var re = -dot(r, eye), ue = -dot(u, eye), fe = dot(f, eye);
         var mvp = [
-            ff / aspect * s[0], ff * u[0], -A * f[0], f[0],
-            ff / aspect * s[1], ff * u[1], -A * f[1], f[1],
-            ff / aspect * s[2], ff * u[2], -A * f[2], f[2],
-            ff / aspect * se, ff * ue, A * fe + B, -fe
+            ff / aspect * r[0], ff * u[0], -A * f[0], f[0],
+            ff / aspect * r[1], ff * u[1], -A * f[1], f[1],
+            ff / aspect * r[2], ff * u[2], -A * f[2], f[2],
+            ff / aspect * re, ff * ue, A * fe + B, -fe
         ];
-        var light = unit([-0.35 * s[0] + 0.75 * u[0] - 0.55 * f[0], -0.35 * s[1] + 0.75 * u[1] - 0.55 * f[1], -0.35 * s[2] + 0.75 * u[2] - 0.55 * f[2]]);
+        // Key light from the upper left of the viewer, mostly frontal so a standing plate is lit as well as a lying one.
+        var light = unit([-0.3 * r[0] + 0.5 * u[0] - 0.8 * f[0], -0.3 * r[1] + 0.5 * u[1] - 0.8 * f[1], -0.3 * r[2] + 0.5 * u[2] - 0.8 * f[2]]);
 
         gl.viewport(0, 0, this.canvas.width, this.canvas.height);
         gl.clearColor(0, 0, 0, 0);
@@ -344,13 +578,15 @@
         gl.uniformMatrix4fv(g.uMVP, false, mvp);
         gl.uniform3fv(g.uLight, light);
         gl.uniform3fv(g.uEye, eye);
-        gl.uniform4fv(g.uTexRect, this.texRect || [0, 0, 1, 1]);
+        gl.uniform4fv(g.uTexRect, this.texRect);
 
-        function part(name, color, tex) {
+        function part(name, color, mode, rot, trans) {
             if (!g.counts[name]) return;
             var c = rgb(color);
             gl.uniform3f(g.uColor, c[0], c[1], c[2]);
-            gl.uniform1f(g.uUseTex, tex ? 1 : 0);
+            gl.uniform1f(g.uMode, mode);
+            gl.uniformMatrix3fv(g.uRot, false, rot);
+            gl.uniform3fv(g.uTrans, trans);
             gl.bindBuffer(gl.ARRAY_BUFFER, g[name]);
             gl.enableVertexAttribArray(g.aPos);
             gl.vertexAttribPointer(g.aPos, 3, gl.FLOAT, false, 24, 0);
@@ -358,32 +594,29 @@
             gl.vertexAttribPointer(g.aNor, 3, gl.FLOAT, false, 24, 12);
             gl.drawArrays(gl.TRIANGLES, 0, g.counts[name]);
         }
-        part('plate', self.spec.base);
-        part('walls', self.spec.color);
-        part('top', self.spec.color, true);
+        var cut = s.style !== 'raised' && M.hasRelief;
+        part('baseWalls', s.base, 0, plateRot, plateTrans);
+        part('baseTop', s.base, cut ? 3 : 1, plateRot, plateTrans);
+        part('baseBottom', s.base, 1, plateRot, plateTrans);
+        part('reliefWalls', s.style === 'raised' ? s.color : s.base, 0, plateRot, plateTrans);
+        part('reliefTop', s.color, 2, plateRot, plateTrans);
+        part('foot', s.base, 0, [1, 0, 0, 0, 1, 0, 0, 0, 1], [0, 0, 0]);
     };
 
     // Fallback without WebGL: the plate seen from the front.
     View.prototype.draw2D = function (w, h, dpr) {
-        var ctx = this.canvas.getContext('2d'), D = this.dims, k = Math.min(w * 0.86 / D.length, h * 0.7 / D.height);
+        var ctx = this.canvas.getContext('2d'), M = this.M, k = Math.min(w * 0.9 / M.FW, h * 0.8 / M.FH);
         ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
         ctx.clearRect(0, 0, w, h);
-        var pw = D.length * k, ph = D.height * k, x = (w - pw) / 2, y = (h - ph) / 2, r = Math.min(D.height * 0.22, 6) * k;
-        ctx.beginPath();
-        if (ctx.roundRect) ctx.roundRect(x, y, pw, ph, r); else ctx.rect(x, y, pw, ph);
-        ctx.fillStyle = this.spec.base; ctx.fill();
-        ctx.lineWidth = 2; ctx.strokeStyle = '#20201f'; ctx.stroke();
-        if (this.mask) {
-            var m = this.mask, s = k / m.R;
-            var tint = document.createElement('canvas');
-            tint.width = m.w; tint.height = m.h;
-            var tc = tint.getContext('2d');
-            tc.drawImage(m.canvas, 0, 0);
+        var dw = M.FW * k, dh = M.FH * k, x = (w - dw) / 2, y = (h - dh) / 2, spec = this.spec;
+        [[M.baseCanvas, spec.base], [M.reliefCanvas, spec.color]].forEach(function (p) {
+            var t = canvas(M.w, M.h), tc = t.getContext('2d');
+            tc.drawImage(p[0], 0, 0);
             tc.globalCompositeOperation = 'source-in';
-            tc.fillStyle = this.spec.color; tc.fillRect(0, 0, m.w, m.h);
-            ctx.drawImage(tint, w / 2 - m.w * s / 2, h / 2 - m.h * s / 2, m.w * s, m.h * s);
-        }
+            tc.fillStyle = p[1]; tc.fillRect(0, 0, M.w, M.h);
+            ctx.drawImage(t, x, y, dw, dh);
+        });
     };
 
-    window.TTNameplate = { View: View };
+    window.TTNameplate = { View: View, FONTS: FONTS, SHAPES: SHAPES, ICONS: ICONS, DEFAULTS: DEFAULTS, ensureFonts: ensureFonts, fontOf: fontOf, iconOf: iconOf };
 })();

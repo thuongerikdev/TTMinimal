@@ -1915,18 +1915,21 @@
             return (o && o.color) || fallback;
         }
 
+        // Design options of the panel (shared by the page text and every row of the list), see DESIGN_TYPES.
+        var design = null;
+
         function plateSpec(r) {
-            return {
-                text: r.text,
-                base: colorOf(baseAttr, r.colors[attrs.indexOf(baseAttr)], '#ffffff'),
-                color: colorOf(textAttr, r.colors[attrs.indexOf(textAttr)], '#20201f'),
-                length: plateLength()
-            };
+            var s = Object.assign({}, design || {});
+            s.text = r.text;
+            s.base = colorOf(baseAttr, r.colors[attrs.indexOf(baseAttr)], '#ffffff');
+            s.color = colorOf(textAttr, r.colors[attrs.indexOf(textAttr)], '#20201f');
+            s.length = plateLength();
+            return s;
         }
 
         function pageRow() { var f = getField(); return { text: f ? f.value.trim() : '', colors: [] }; }
 
-        function sizeText(d) { return d ? d.length + ' × ' + d.height + ' × ' + String(d.depth).replace('.', ',') + ' mm' : ''; }
+        function sizeText(d) { return d ? [d.length, d.height, d.depth].map(function (v) { return String(v).replace('.', ','); }).join(' × ') + ' mm' : ''; }
 
         // Rows join the preview once they have a text; typing in a row always shows it.
         function pickRow(tr, force) {
@@ -1944,6 +1947,10 @@
         function renderPreview() {
             if (picked && !picked.isConnected) picked = null;
             var r = picked ? readRow(picked) : pageRow(), spec = plateSpec(r);
+            // The plate length (size option) is part of the summary and of the height label.
+            writeDesign();
+            var hOut = np.panel && np.panel.querySelector('[data-out="heightPct"]');
+            if (hOut && design) hOut.textContent = FORMATS.heightPct(design.heightPct);
             var no = picked ? Array.prototype.indexOf.call(tbody.rows, picked) + 1 : 0;
 
             if (np.card) {
@@ -1990,17 +1997,200 @@
             }, function () { });
         }
 
+        // ----- Design panel: product type presets, text, plate and extras. The choices travel with the order as a
+        // readable summary in the hidden "Thiết kế" attribute (cfg.designControl). -----
+
+        var DESIGN_TYPES = [
+            { key: 'desk', name: 'Bảng tên để bàn', hint: 'Có chân đứng', set: { shape: 'rounded', stand: true, hole: 'none', border: false, heightPct: 30, thickness: 4 } },
+            { key: 'keychain', name: 'Móc khoá', hint: 'Đế ôm chữ, lỗ móc', set: { shape: 'outline', stand: false, hole: 'left', border: false, heightPct: 32, margin: 3, thickness: 3 } },
+            { key: 'door', name: 'Bảng treo cửa', hint: 'Viền nổi, 2 lỗ treo', set: { shape: 'rounded', stand: false, hole: 'top2', border: true, heightPct: 40, thickness: 3 } },
+            { key: 'badge', name: 'Tag tên cài áo', hint: 'Mỏng, bo tròn', set: { shape: 'pill', stand: false, hole: 'none', border: false, heightPct: 28, thickness: 2.5 } },
+            { key: 'luggage', name: 'Thẻ treo hành lý', hint: 'Góc vát, lỗ dây', set: { shape: 'tag', stand: false, hole: 'left', border: true, heightPct: 45, thickness: 3 } },
+            { key: 'free', name: 'Tự thiết kế', hint: 'Đế phẳng, tuỳ chỉnh hết', set: { shape: 'rounded', stand: false, hole: 'none', border: false, heightPct: 30, thickness: 3 } }
+        ];
+        var STYLES = [['raised', 'Chữ nổi'], ['engraved', 'Chữ chìm'], ['flush', 'Phẳng (in màu)']];
+        var HOLES = [['none', 'Không'], ['left', 'Bên trái'], ['top1', '1 lỗ trên'], ['top2', '2 lỗ trên']];
+        var SIDES = [['left', 'Trái'], ['right', 'Phải'], ['both', 'Hai bên']];
+
+        function nameOf(list, key) { var x = list.filter(function (i) { return (i.key || i[0]) === key; })[0]; return x ? (x.name || x[1]) : key; }
+        function mm(v) { return String(Math.round(v * 10) / 10).replace('.', ',') + ' mm'; }
+
+        function freshDesign(P) {
+            var d = Object.assign({}, P.DEFAULTS, { type: 'desk' });
+            ['text', 'base', 'color', 'length'].forEach(function (k) { delete d[k]; });
+            return Object.assign(d, DESIGN_TYPES[0].set);
+        }
+
+        // "Loại: Móc khoá · Phông: Pacifico · Chữ nổi 1,6 mm · Đế: Ôm theo chữ, cao 30 mm, dày 3 mm, lề 3 mm · Lỗ móc: bên trái"
+        function designSummary(P) {
+            var d = design, L = plateLength(), parts = ['Loại: ' + nameOf(DESIGN_TYPES, d.type)];
+            parts.push('Phông: ' + P.fontOf(d.font).name + (d.upper ? ' (IN HOA)' : ''));
+            if (d.line2) parts.push('Dòng 2: ' + d.line2);
+            parts.push(nameOf(STYLES, d.style) + (d.style === 'flush' ? '' : ' ' + mm(d.relief)));
+            if (d.textScale !== 1) parts.push('Cỡ chữ ' + Math.round(d.textScale * 100) + '%');
+            if (d.spacing) parts.push('Giãn chữ ' + Math.round(d.spacing * 100) + '%');
+            parts.push('Đế: ' + nameOf(P.SHAPES, d.shape) + ', cao ' + mm(L * d.heightPct / 100) + ', dày ' + mm(d.thickness) + ', lề ' + mm(d.margin)
+                + (d.shape === 'rounded' || d.shape === 'tag' ? ', bo góc ' + mm(d.radius) : ''));
+            if (d.border) parts.push('Viền nổi');
+            if (d.hole !== 'none') parts.push('Lỗ móc: ' + nameOf(HOLES, d.hole).toLowerCase());
+            if (d.icon) parts.push('Biểu tượng: ' + P.iconOf(d.icon).name + ' (' + nameOf(SIDES, d.iconSide).toLowerCase() + ')');
+            if (d.stand) parts.push('Có chân đứng');
+            return parts.join(' · ');
+        }
+
+        function writeDesign() {
+            if (!design || !np.lib) return;
+            var el = cfg.designControl && document.getElementById(cfg.designControl);
+            if (el) {
+                el.value = designSummary(np.lib);
+                var group = el.closest('.form-group');
+                if (group) group.hidden = true;
+            }
+        }
+
+        function seg(key, items, value) {
+            return '<div class="tt-np-seg" role="group">' + items.map(function (i) {
+                return '<button type="button" data-set="' + key + '" data-val="' + i[0] + '" aria-pressed="' + (String(value) === String(i[0])) + '">' + i[1] + '</button>';
+            }).join('') + '</div>';
+        }
+
+        function slider(key, label, min, max, step, value, fmt) {
+            return '<label class="tt-np-range"><span>' + label + ' <b data-out="' + key + '">' + fmt(value) + '</b></span>'
+                + '<input type="range" class="skip-pd-ajax-update" data-range="' + key + '" min="' + min + '" max="' + max + '" step="' + step + '" value="' + value + '" /></label>';
+        }
+
+        var FORMATS = {
+            textScale: function (v) { return Math.round(v * 100) + '%'; },
+            spacing: function (v) { return Math.round(v * 100) + '%'; },
+            relief: mm, thickness: mm, margin: mm, radius: mm,
+            heightPct: function (v) { return mm(plateLength() * v / 100); }
+        };
+
+        function panelHtml(P) {
+            var d = design;
+            var fonts = P.FONTS.map(function (f) {
+                return '<button type="button" class="tt-np-font" data-set="font" data-val="' + f.key + '" aria-pressed="' + (d.font === f.key) + '" style="font-family:\'' + f.family + '\';font-weight:' + f.weight + '">' + escAttr(f.name) + '</button>';
+            }).join('');
+            var shapes = seg('shape', P.SHAPES.map(function (s) { return [s.key, s.name]; }), d.shape);
+            var icons = '<button type="button" class="tt-np-icon" data-set="icon" data-val="" aria-pressed="' + !d.icon + '" title="Không">∅</button>'
+                + P.ICONS.map(function (i) { return '<button type="button" class="tt-np-icon" data-set="icon" data-val="' + i.key + '" aria-pressed="' + (d.icon === i.key) + '" title="' + i.name + '"><canvas data-icon="' + i.key + '" width="44" height="44"></canvas></button>'; }).join('');
+            var types = DESIGN_TYPES.map(function (t) {
+                return '<button type="button" class="tt-np-type" data-type="' + t.key + '" aria-pressed="' + (d.type === t.key) + '"><b>' + t.name + '</b><small>' + t.hint + '</small></button>';
+            }).join('');
+
+            return '<div class="tt-np-tabs" role="tablist">'
+                + ['Loại', 'Chữ', 'Đế', 'Thêm'].map(function (t, i) { return '<button type="button" role="tab" data-tab="' + i + '" aria-selected="' + (np.tab === i) + '">' + t + '</button>'; }).join('')
+                + '</div>'
+                + '<div class="tt-np-pane" data-pane="0"' + (np.tab === 0 ? '' : ' hidden') + '><div class="tt-np-types">' + types + '</div>'
+                + '<p class="tt-np-note">Chọn loại để có sẵn kiểu đế phù hợp, sau đó chỉnh tiếp ở các tab Chữ · Đế · Thêm.</p></div>'
+                + '<div class="tt-np-pane" data-pane="1"' + (np.tab === 1 ? '' : ' hidden') + '>'
+                + '<label class="tt-np-field"><span>Dòng chữ thứ 2 <small>(chức vụ, số điện thoại… không bắt buộc)</small></span>'
+                + '<input type="text" class="tt-input skip-pd-ajax-update" maxlength="40" data-text="line2" value="' + escAttr(d.line2) + '" placeholder="VD: Trưởng phòng kinh doanh" /></label>'
+                + '<div class="tt-np-label">Phông chữ</div><div class="tt-np-fonts">' + fonts + '</div>'
+                + '<div class="tt-np-label">Kiểu chữ</div>' + seg('style', STYLES, d.style)
+                + '<div class="tt-np-grid">'
+                + slider('relief', d.style === 'engraved' ? 'Độ sâu' : 'Độ nổi', 0.6, 3, 0.2, d.relief, mm)
+                + slider('textScale', 'Cỡ chữ', 0.5, 1, 0.05, d.textScale, FORMATS.textScale)
+                + slider('spacing', 'Giãn chữ', -0.05, 0.4, 0.01, d.spacing, FORMATS.spacing)
+                + '<label class="tt-np-check"><input type="checkbox" class="skip-pd-ajax-update" data-check="upper"' + (d.upper ? ' checked' : '') + ' /> VIẾT HOA TOÀN BỘ</label>'
+                + '</div></div>'
+                + '<div class="tt-np-pane" data-pane="2"' + (np.tab === 2 ? '' : ' hidden') + '>'
+                + '<div class="tt-np-label">Hình dạng đế</div>' + shapes
+                + '<div class="tt-np-grid">'
+                + slider('heightPct', 'Chiều cao đế', 15, 70, 1, d.heightPct, FORMATS.heightPct)
+                + slider('margin', 'Lề quanh chữ (thu hẹp / nới khuôn)', 1.5, 12, 0.5, d.margin, mm)
+                + slider('thickness', 'Độ dày đế', 2, 6, 0.5, d.thickness, mm)
+                + (d.shape === 'rounded' || d.shape === 'tag' ? slider('radius', 'Bo góc', 0, 15, 0.5, d.radius, mm) : '')
+                + '<label class="tt-np-check"><input type="checkbox" class="skip-pd-ajax-update" data-check="border"' + (d.border ? ' checked' : '') + (d.shape === 'outline' ? ' disabled' : '') + ' /> Viền nổi quanh bảng</label>'
+                + '</div><p class="tt-np-note">Chiều dài đế theo lựa chọn <b>Kích thước</b> của sản phẩm.</p></div>'
+                + '<div class="tt-np-pane" data-pane="3"' + (np.tab === 3 ? '' : ' hidden') + '>'
+                + '<div class="tt-np-label">Biểu tượng</div><div class="tt-np-icons">' + icons + '</div>'
+                + (d.icon ? '<div class="tt-np-label">Vị trí biểu tượng</div>' + seg('iconSide', SIDES, d.iconSide) : '')
+                + '<div class="tt-np-label">Lỗ móc / lỗ treo (Ø4 mm)</div>' + seg('hole', HOLES, d.hole)
+                + '<div class="tt-np-label">Kiểu đặt</div>' + seg('stand', [['false', 'Nằm / treo'], ['true', 'Đứng có chân đế']], d.stand)
+                + '</div>'
+                + '<div class="tt-np-panel-foot"><button type="button" class="tt-textlink" data-design-reset>Đặt lại thiết kế</button>'
+                + '<span>Lựa chọn thiết kế được gửi kèm đơn hàng.</span></div>';
+        }
+
+        function renderPanel() {
+            var P = np.lib, panel = np.panel;
+            if (!P || !panel) return;
+            var focus = document.activeElement && panel.contains(document.activeElement) ? document.activeElement.getAttribute('data-text') : null;
+            panel.innerHTML = panelHtml(P);
+            each('canvas[data-icon]', function (cv) {
+                var c = cv.getContext('2d'), icon = P.iconOf(cv.getAttribute('data-icon'));
+                c.setTransform(36, 0, 0, 36, 4, 4);
+                c.fillStyle = '#20201f';
+                c.beginPath(); icon.draw(c); c.fill();
+                if (icon.cut) { c.globalCompositeOperation = 'destination-out'; icon.cut(c); }
+            }, panel);
+            if (focus) { var f = panel.querySelector('[data-text="' + focus + '"]'); if (f) { f.focus(); f.setSelectionRange(f.value.length, f.value.length); } }
+        }
+
+        // Applies changes; structural ones (shape, icon, style…) redraw the panel, sliders only update their value.
+        function changeDesign(patch, redraw) {
+            Object.assign(design, patch);
+            if (redraw) renderPanel();
+            writeDesign();
+            schedulePreview();
+        }
+
+        function initPanel() {
+            var panel = np.panel;
+            panel.addEventListener('click', function (e) {
+                var t = e.target.closest('[data-tab]'), b = e.target.closest('[data-set]'), type = e.target.closest('[data-type]');
+                if (t) { np.tab = +t.getAttribute('data-tab'); renderPanel(); return; }
+                if (type) {
+                    var preset = DESIGN_TYPES.filter(function (x) { return x.key === type.getAttribute('data-type'); })[0];
+                    changeDesign(Object.assign({ type: preset.key }, preset.set), true);
+                    if (np.view) np.view.reset();
+                    return;
+                }
+                if (b) {
+                    var key = b.getAttribute('data-set'), val = b.getAttribute('data-val');
+                    var patch = {};
+                    patch[key] = val === 'true' ? true : val === 'false' ? false : val;
+                    if (key === 'shape' && val === 'outline') patch.border = false;
+                    changeDesign(patch, true);
+                    return;
+                }
+                if (e.target.closest('[data-design-reset]')) { design = freshDesign(np.lib); np.tab = 0; changeDesign({}, true); if (np.view) np.view.reset(); }
+            });
+            panel.addEventListener('input', function (e) {
+                var r = e.target.getAttribute('data-range'), tx = e.target.getAttribute('data-text');
+                if (r) {
+                    var patch = {};
+                    patch[r] = parseFloat(e.target.value);
+                    panel.querySelector('[data-out="' + r + '"]').textContent = (FORMATS[r] || mm)(patch[r]);
+                    changeDesign(patch, false);
+                }
+                else if (tx) {
+                    var p2 = {};
+                    p2[tx] = e.target.value;
+                    changeDesign(p2, false);
+                }
+            });
+            // The panel sits inside the product form: Enter must not submit it.
+            panel.addEventListener('keydown', function (e) { if (e.key === 'Enter' && e.target.matches('input')) e.preventDefault(); });
+            panel.addEventListener('change', function (e) {
+                var c = e.target.getAttribute('data-check');
+                if (c) { var patch = {}; patch[c] = e.target.checked; changeDesign(patch, false); }
+            });
+        }
+
         function initPreview() {
-            np = { ready: loadLib(cfg.previewSrc, 'TTNameplate', 'Không tải được bản xem trước 3D') };
+            np = { ready: loadLib(cfg.previewSrc, 'TTNameplate', 'Không tải được bản xem trước 3D'), tab: 0 };
             var host = document.querySelector('.pd-data-col-inner');
             if (host) {
                 var card = np.card = document.createElement('div');
                 card.className = 'tt-viewer tt-np';
                 card.innerHTML = '<div class="tt-viewer-head"><span class="tt-viewer-tag">3D</span><b data-np-title>Xem trước bảng tên</b>'
                     + '<button type="button" class="tt-viewer-max" aria-pressed="false"><span>Phóng to</span></button></div>'
-                    + '<div class="tt-viewer-stage tt-np-stage"><canvas role="img" aria-label="Xem trước 3D bảng tên, kéo để xoay"></canvas>'
+                    + '<div class="tt-np-main"><div class="tt-viewer-stage tt-np-stage"><canvas role="img" aria-label="Xem trước 3D bảng tên, kéo để xoay"></canvas>'
                     + '<span class="tt-np-empty" data-np-empty>Nhập tên muốn in để xem trước 3D</span><span class="tt-viewer-size" data-np-size></span></div>'
-                    + '<div class="tt-np-list" data-np-list hidden></div>'
+                    + '<div class="tt-np-list" data-np-list hidden></div></div>'
+                    + '<div class="tt-np-panel" data-np-panel></div>'
                     + '<div class="tt-viewer-foot"><span>Kéo để xoay · Ctrl + lăn chuột để phóng to · ảnh minh hoạ, studio gửi file xem trước trước khi in</span>'
                     + '<button type="button" class="tt-textlink" data-np-reset>Góc nhìn ban đầu</button></div>';
                 host.insertBefore(card, host.firstChild);
@@ -2008,9 +2198,16 @@
                 np.empty = card.querySelector('[data-np-empty]');
                 np.size = card.querySelector('[data-np-size]');
                 np.list = card.querySelector('[data-np-list]');
+                np.panel = card.querySelector('[data-np-panel]');
+                initPanel();
 
-                var maxBtn = card.querySelector('.tt-viewer-max');
+                // Full screen: the card moves to <body> (the product columns create their own stacking context, so a
+                // fixed card inside them stays under the info column) and comes back to its placeholder afterwards.
+                var maxBtn = card.querySelector('.tt-viewer-max'), placeholder = document.createComment('tt-np');
                 var maximize = function (on) {
+                    if (on === card.classList.contains('is-max')) return;
+                    if (on) { card.parentNode.insertBefore(placeholder, card); document.body.appendChild(card); }
+                    else if (placeholder.parentNode) { placeholder.parentNode.insertBefore(card, placeholder); placeholder.remove(); }
                     card.classList.toggle('is-max', on);
                     document.documentElement.classList.toggle('tt-noscroll', on);
                     maxBtn.setAttribute('aria-pressed', on ? 'true' : 'false');
@@ -2030,7 +2227,14 @@
             }
 
             np.ready.then(function (P) {
-                if (np.card) np.view = new P.View(np.card.querySelector('canvas'), { wheel: function () { return np.card.classList.contains('is-max'); } });
+                np.lib = P;
+                design = freshDesign(P);
+                P.ensureFonts();
+                if (np.card) {
+                    np.view = new P.View(np.card.querySelector('canvas'), { wheel: function () { return np.card.classList.contains('is-max'); } });
+                    renderPanel();
+                }
+                writeDesign();
                 schedulePreview();
             }, function (err) {
                 if (np.card) { np.empty.textContent = err.message; np.empty.hidden = false; }
@@ -2043,7 +2247,8 @@
         }
 
         if (cfg.previewSrc) initPreview();
-        if (window.jQuery) window.jQuery('#main-update-container').on('updated', function () { mountTools(); schedulePreview(); });
+        // After Smartstore re-renders the attributes: buttons back under the text field, summary back in the hidden field.
+        if (window.jQuery) window.jQuery('#main-update-container').on('updated', function () { mountTools(); if (np) { writeDesign(); renderPanel(); } schedulePreview(); });
 
         tools.querySelector('[data-tl-open]').addEventListener('click', open);
         tools.addEventListener('click', excelClick);

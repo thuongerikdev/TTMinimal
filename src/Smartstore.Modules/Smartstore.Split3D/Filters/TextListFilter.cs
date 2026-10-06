@@ -44,6 +44,14 @@ public class TextListFilter : IAsyncActionFilter
 
                 if (attribute != null)
                 {
+                    // The 3D designer writes its choices into a hidden text attribute, so they reach cart and order.
+                    var design = list.Preview ? await StudioCustomProducts.EnsureDesignAttributeAsync(_db, productId) : null;
+                    var designControl = design != null ? ProductVariantQueryItem.CreateKey(productId, 0, design.ProductAttributeId, design.Id) : null;
+                    if (designControl != null)
+                    {
+                        _widgetProvider.Value.RegisterWidget("end", new HtmlWidget($"<style>.form-group.choice:has(#{designControl}) {{ display: none; }}</style>"));
+                    }
+
                     var url = (context.Controller as Controller)?.Url;
                     var json = JsonSerializer.Serialize(new
                     {
@@ -52,7 +60,8 @@ public class TextListFilter : IAsyncActionFilter
                         item = list.Item,
                         cartUrl = url?.RouteUrl("ShoppingCart"),
                         xlsxSrc = url?.Content(StudioAssets.XlsxScript),
-                        previewSrc = list.Preview ? url?.Content(StudioAssets.NameplateScript) : null
+                        previewSrc = list.Preview ? url?.Content(StudioAssets.NameplateScript) : null,
+                        designControl
                     });
 
                     // "<" is escaped by the serializer, so the JSON cannot close the script element.
