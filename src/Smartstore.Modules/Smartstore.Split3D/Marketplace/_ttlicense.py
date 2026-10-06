@@ -51,6 +51,8 @@ MAX_TOKEN = 8192
 UPDATE_MAX_SIZE = 64 * 1024 * 1024
 SHA256_PREFIX = bytes.fromhex('3031300d060960864801650304020105000420')
 FATAL_CODES = {'invalid_key', 'unknown_key', 'wrong_product', 'blocked', 'expired', 'deactivated'}
+# Fatal answers that the background check still re-checks now and then: the shop may renew or upgrade the key.
+RECHECK_CODES = {'expired'}
 
 HERE = Path(__file__).resolve().parent
 OP = f'ttlic_{UID}'
@@ -395,11 +397,63 @@ def _valid_update(info):
     return {'version': version, 'url': url, 'hash': digest, 'size': size}
 
 
+def _adopt_token(result, token):
+    """After a plan upgrade the shop re-signs the key (same key id, new expiry) and sends it along with the
+    answer. Returns the key to keep: the new one when it is genuine, valid and the same key, else `token`."""
+    new = result.get('token')
+    if not isinstance(new, str) or new == token:
+        return token
+    try:
+        new = normalize_token(new)
+    except ValueError:
+        return token
+    old = verify(token)[2]
+    valid, _, data = verify(new)
+    if not valid or not old or data.get('id') != old.get('id'):
+        return token
+    if stored_token() in (None, token):
+        save_token(new)
+    return new
+
+
+def _lease_devices(lease):
+    if not lease:
+        return None
+    try:
+        value = _signed_payload(lease).get('max_devices')
+    except Exception:
+        return None
+    return value if type(value) is int else None
+
+
+def _plan_change(previous, old_token, token, lease):
+    """What the shop changed in the plan of the SAME key (expiry and/or device limit), or None."""
+    old_key, new_key = verify(old_token)[2], verify(token)[2]
+    if not old_key or not new_key or old_key.get('id') != new_key.get('id'):
+        return None
+    same_key = previous.get('token_id') in (token_id(old_token), token_id(token))
+    old_devices = _lease_devices(previous.get('lease')) if same_key else None
+    new_devices = _lease_devices(lease)
+    expires_changed = old_key.get('expires') != new_key.get('expires')
+    devices_changed = old_devices is not None and new_devices is not None and old_devices != new_devices
+    if not expires_changed and not devices_changed:
+        return None
+    return {'old_expires': old_key.get('expires'), 'new_expires': new_key.get('expires'),
+            'old_devices': old_devices, 'new_devices': new_devices, 'at': int(time.time())}
+
+
 def _store_result(result, token):
     now = int(time.time())
     if result.get('ok') and result.get('lease'):
+        previous = read_state()
+        old_token = token
+        token = _adopt_token(result, token)
+        # A plan change is announced once by a popup (see _show_popups); until shown it survives later checks.
+        notice = _plan_change(previous, old_token, token, result['lease'])
+        if notice is None and previous.get('token_id') in (token_id(old_token), token_id(token)):
+            notice = previous.get('notice')
         write_state({'lease': result['lease'], 'token_id': token_id(token), 'checked': now, 'seen': now,
-                     'code': 'ok', 'update': _valid_update(result.get('update'))})
+                     'code': 'ok', 'update': _valid_update(result.get('update')), 'notice': notice})
         return True
     if result.get('code') in FATAL_CODES:
         write_state({'lease': None, 'token_id': token_id(token), 'checked': now, 'seen': now,
@@ -418,7 +472,7 @@ def activate(token):
     result = _post('activate', _body(token))
     if result.get('ok') and result.get('lease'):
         save_token(token)
-        _store_result(result, token)
+        _store_result(result, token)  # may replace the key with an upgraded one
         return True, 'Kích hoạt thành công'
     return False, message_for(result)
 
@@ -475,7 +529,7 @@ def refresh_now(force=False):
     state = read_state()
     if state.get('token_id') != token_id(token):
         state = {}
-    if state.get('code') in FATAL_CODES:
+    if state.get('code') in FATAL_CODES - RECHECK_CODES:
         return False
     if not force:
         age = time.time() - state.get('checked', 0)
@@ -503,6 +557,8 @@ def _tick():
         if not _job_finish():
             refresh_now()
         _sync_core()
+        if _JOB['thread'] is None:
+            _show_popups()
     except Exception as error:
         print(f'{ADDON_NAME} license check:', error)
     return TICK_BUSY if _JOB['thread'] is not None else TICK_IDLE
@@ -581,8 +637,9 @@ def _activate(operator, token):
     except ValueError as error:
         operator.report({'ERROR'}, str(error))
         return {'CANCELLED'}
-    valid, message, _ = verify(token)
-    if not valid:
+    valid, message, data = verify(token)
+    expired = bool(data) and isinstance(data.get('expires'), int) and time.time() >= data['expires']
+    if not valid and not expired:
         operator.report({'ERROR'}, message)
         return {'CANCELLED'}
     try:
@@ -710,6 +767,116 @@ def _install_update(path, repo, version):
     return None  # run once
 
 
+# ---------------------------------------------------------------- popups
+
+# A new version is announced once per Blender session (so at every start until it is installed);
+# a plan change (upgrade/downgrade by the shop) only once. The panel always shows the current state.
+_POPUP = {'update_shown': None, 'kind': None, 'data': None, 'opened': 0.0}
+POPUP_MAX_SECONDS = 600  # a dialog left open longer no longer blocks the next one
+
+
+def _popup_target():
+    if bpy.app.background:
+        return None
+    wm = getattr(bpy.context, 'window_manager', None)
+    if not wm or not wm.windows or wm.windows[0].screen is None:
+        return None
+    window = wm.windows[0]
+    for area in sorted(window.screen.areas, key=lambda a: (a.type != 'VIEW_3D', -a.width * a.height)):
+        region = next((r for r in area.regions if r.type == 'WINDOW'), None)
+        if region is not None:
+            return window, area, region
+    return None
+
+
+def _open_popup(kind, data):
+    target = _popup_target()
+    if target is None:
+        return False
+    _POPUP['kind'], _POPUP['data'] = kind, data
+    _POPUP['opened'] = time.time()
+    window, area, region = target
+    try:
+        with bpy.context.temp_override(window=window, area=area, region=region, screen=window.screen):
+            operator = getattr(bpy.ops, OP)
+            result = operator.notice('INVOKE_DEFAULT')
+    except Exception as error:
+        print(f'{ADDON_NAME} popup:', error)
+        return False
+    return bool(result & {'RUNNING_MODAL', 'FINISHED'})
+
+
+def _show_popups():
+    if time.time() - _POPUP['opened'] < POPUP_MAX_SECONDS:
+        return  # one dialog at a time: the next one waits until this one is closed
+    notice = read_state().get('notice')
+    if isinstance(notice, dict):
+        if _open_popup('plan', notice):
+            state = read_state()
+            state.pop('notice', None)
+            write_state(state)
+        return
+    info = available_update()
+    if info and _POPUP['update_shown'] != info['version'] and status()[0]:
+        if _open_popup('update', info):
+            _POPUP['update_shown'] = info['version']
+
+
+def _format_expiry(value):
+    return time.strftime('%d/%m/%Y', time.localtime(value)) if value else 'Vĩnh viễn'
+
+
+def _plan_title(data):
+    old, new = data.get('old_expires'), data.get('new_expires')
+    longer = (old and not new) or (old and new and new > old)
+    more = data.get('old_devices') is not None and (data.get('new_devices') or 0) > data['old_devices']
+    shorter = (new and not old) or (old and new and new < old)
+    return 'Key đã được nâng cấp' if (longer or more) and not shorter else 'Gói key đã thay đổi'
+
+
+def _op_notice_invoke(self, context, event):
+    data = _POPUP['data'] or {}
+    if _POPUP['kind'] == 'update':
+        title, confirm = f'Có bản cập nhật {ADDON_NAME}', 'Cập nhật ngay'
+    else:
+        title, confirm = _plan_title(data), 'OK'
+    try:
+        return context.window_manager.invoke_props_dialog(self, width=460, title=title, confirm_text=confirm)
+    except TypeError:  # Blender < 4.1 has no title/confirm_text
+        return context.window_manager.invoke_props_dialog(self, width=460)
+
+
+def _op_notice_draw(self, context):
+    data = _POPUP['data'] or {}
+    col = self.layout.column(align=True)
+    if _POPUP['kind'] == 'update':
+        col.label(text=f"Có bản mới {data.get('version', '?')} (đang dùng {addon_version()})", icon='IMPORT')
+        col.separator()
+        col.label(text='Bấm Cập nhật ngay để tải và cài đè bản đang dùng (không cần gỡ addon).')
+        col.label(text='Thông báo này hiện mỗi lần mở Blender cho tới khi bạn cập nhật.')
+        return
+    col.label(text=ADDON_NAME, icon='CHECKMARK')
+    col.separator()
+    if data.get('old_expires') != data.get('new_expires'):
+        col.label(text=f"Hạn sử dụng: {_format_expiry(data.get('old_expires'))}  →  {_format_expiry(data.get('new_expires'))}", icon='TIME')
+    if data.get('old_devices') is not None and data.get('new_devices') is not None and data['old_devices'] != data['new_devices']:
+        col.label(text=f"Số máy: {data['old_devices']}  →  {data['new_devices']}", icon='DESKTOP')
+    col.separator()
+    col.label(text='Thông tin trong bảng TT Minimal đã được cập nhật.')
+    col.label(text='Không cần cài lại addon hay nhập key mới.')
+
+
+def _op_notice_cancel(self, context):
+    _POPUP['opened'] = 0.0
+
+
+def _op_notice_execute(self, context):
+    _POPUP['opened'] = 0.0
+    if _POPUP['kind'] == 'update' and available_update():
+        return _op_update_execute(self, context)
+    return {'FINISHED'}
+
+
 def _op_sign_out_execute(self, context):
     token = stored_token()
     if token and online_allowed():
@@ -816,6 +983,10 @@ def _build_ui():
             'bl_idname': f'{OP}.update', 'bl_label': 'Cập nhật addon',
             'bl_description': 'Tải bản mới từ shop và cài đè bản đang dùng', 'bl_options': {'INTERNAL'},
             'execute': _op_update_execute}),
+        type(f'TTLIC_OT_{UID}_notice', (bpy.types.Operator,), {
+            'bl_idname': f'{OP}.notice', 'bl_label': ADDON_NAME, 'bl_options': {'INTERNAL'},
+            'invoke': _op_notice_invoke, 'draw': _op_notice_draw, 'execute': _op_notice_execute,
+            'cancel': _op_notice_cancel}),
         type(f'TTLIC_OT_{UID}_sign_out', (bpy.types.Operator,), {
             'bl_idname': f'{OP}.sign_out', 'bl_label': 'Đăng xuất key',
             'bl_description': 'Gỡ key khỏi máy này để dùng trên máy khác', 'bl_options': {'INTERNAL'},

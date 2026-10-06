@@ -6,7 +6,7 @@ namespace Smartstore.Split3D.Filters;
 
 /// <summary>
 /// Gives the admin area the TT Minimal "Pop Studio" look by adding the studio admin stylesheet,
-/// the brand font and the tt favicon to every full admin page (registered in Startup).
+/// the brand font and the tt favicon to every full admin page (registered in Startup), plus the menu badge script.
 /// </summary>
 public class AdminStyleFilter : IResultFilter
 {
@@ -38,6 +38,11 @@ public class AdminStyleFilter : IResultFilter
             "<meta name=\"theme-color\" content=\"#20201f\" />";
 
         _widgetProvider.Value.RegisterWidget("head_links", new HtmlWidget(html));
+
+        // Menu badges (new orders, key orders waiting, new print requests).
+        var badgesUrl = url.Action("Index", "AdminBadges", new { area = "Admin" });
+        _widgetProvider.Value.RegisterWidget("end",
+            new HtmlWidget($"<script src=\"{url.Content(StudioAssets.AdminScript)}\" data-badges-url=\"{badgesUrl}\" defer></script>"));
     }
 
     public void OnResultExecuted(ResultExecutedContext context)

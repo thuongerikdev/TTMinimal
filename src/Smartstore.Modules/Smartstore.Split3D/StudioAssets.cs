@@ -5,7 +5,7 @@ namespace Smartstore.Split3D;
 /// </summary>
 public static class StudioAssets
 {
-    public const string Version = "26";
+    public const string Version = "27";
 
     public const string StyleSheet = "~/Modules/Smartstore.Split3D/studio/studio.css?v=" + Version;
 
@@ -25,6 +25,11 @@ public static class StudioAssets
     /// "Pop Studio" skin for the admin area (see <see cref="Filters.AdminStyleFilter"/>).
     /// </summary>
     public const string AdminStyleSheet = "~/Modules/Smartstore.Split3D/studio/admin.css?v=" + Version;
+
+    /// <summary>
+    /// Count badges on the admin top menu (polls <see cref="Controllers.AdminBadgesController"/>).
+    /// </summary>
+    public const string AdminScript = "~/Modules/Smartstore.Split3D/studio/admin.js?v=" + Version;
 
     public const string Favicon = "~/Modules/Smartstore.Split3D/studio/favicon.svg?v=" + Version;
 
