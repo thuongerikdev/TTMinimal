@@ -917,6 +917,39 @@ public class OrderController : AdminController
         return RedirectToAction(nameof(List));
     }
 
+    [HttpPost]
+    [Permission(Permissions.Order.Delete)]
+    public async Task<IActionResult> OrderDelete(GridSelection selection)
+    {
+        var success = false;
+        var count = 0;
+        var orders = await _db.Orders.GetManyAsync(selection.GetEntityIds(), true);
+
+        if (orders.Count > 0)
+        {
+            try
+            {
+                foreach (var order in orders)
+                {
+                    var msg = T("ActivityLog.DeleteOrder", order.GetOrderNumber());
+
+                    await _orderProcessingService.DeleteOrderAsync(order);
+
+                    Services.ActivityLogger.LogActivity(KnownActivityLogTypes.DeleteOrder, msg);
+                    count++;
+                }
+
+                success = true;
+            }
+            catch (Exception ex)
+            {
+                NotifyError(ex);
+            }
+        }
+
+        return Json(new { Success = success, Count = count });
+    }
+
     [Permission(Permissions.Order.Read)]
     public IActionResult Print(int orderId, bool pdf = false)
     {

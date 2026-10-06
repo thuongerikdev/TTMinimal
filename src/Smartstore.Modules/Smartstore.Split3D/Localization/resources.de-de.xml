@@ -64,6 +64,15 @@
     <LocaleResource Name="Addon.UnmapConfirm">
         <Value>Produkt vom Addon entfernen? Das Produkt bleibt erhalten, Käufer erhalten aber keine Schlüssel mehr dafür.</Value>
     </LocaleResource>
+    <LocaleResource Name="Addon.DeleteConfirm">
+        <Value>Addon "{0}" löschen? Die Produktzuordnungen werden entfernt und die Paketprodukte werden depubliziert. Bereits ausgestellte Schlüssel bleiben unberührt.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Addon.DeleteLocked">
+        <Value>Dieses Addon kann nicht gelöscht werden, weil dafür bereits Schlüssel ausgestellt wurden. Deaktivieren Sie es stattdessen.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Addon.Deleted">
+        <Value>Addon "{0}" wurde gelöscht. {1} Paketprodukt(e) wurden depubliziert.</Value>
+    </LocaleResource>
     <LocaleResource Name="Addon.CreateProducts">
         <Value>Paketprodukte anlegen</Value>
     </LocaleResource>
@@ -1266,6 +1275,12 @@
     </LocaleResource>
     <LocaleResource Name="Mail.Fields.SendEmail.Hint">
         <Value>Sobald für eine bezahlte Bestellung Schlüssel ausgestellt sind, wird die Schlüssel-E-Mail eingereiht.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.Fields.CombineOrderEmails">
+        <Value>Schlüsselkäufe erhalten nur eine E-Mail</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.Fields.CombineOrderEmails.Hint">
+        <Value>Bestellungen nur mit Schlüsselprodukten: Der Kunde erhält eine E-Mail mit allen Schlüsseln und Download-Buttons, sobald die Bestellung bezahlt ist. Die Smartstore-E-Mails "Bestellung eingegangen" und "Bestellung abgeschlossen" werden nicht automatisch gesendet (sie bleiben in der Warteschlange und können manuell gesendet werden). Bestellungen mit anderen Produkten erhalten ihre Bestell-E-Mails wie gewohnt.</Value>
     </LocaleResource>
     <LocaleResource Name="Mail.Fields.AttachInstaller">
         <Value>ZIP-Datei zusätzlich anhängen</Value>

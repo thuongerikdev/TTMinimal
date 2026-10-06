@@ -44,6 +44,9 @@ public class StudioMailModel : ModelBase
     [LocalizedDisplay("*SendEmail")]
     public bool SendEmail { get; set; }
 
+    [LocalizedDisplay("*CombineOrderEmails")]
+    public bool CombineOrderEmails { get; set; }
+
     [LocalizedDisplay("*AttachInstaller")]
     public bool AttachInstaller { get; set; }
 

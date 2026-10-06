@@ -25,7 +25,10 @@ public partial class StudioMailService
     public const string LicenseTemplateName = "Split3D.LicenseKey.CustomerNotification";
 
     public const string LicenseModelName = "License";
-    public const string DefaultLicenseSubject = "[{{ Store.Name }}] Key kích hoạt {{ License.Addon }}";
+    public const string DefaultLicenseSubject =
+        "[{{ Store.Name }}] {% if License.KeyCount > 1 %}{{ License.KeyCount }} key kích hoạt cho đơn #{{ License.OrderNumber }}{% else %}Key kích hoạt {{ License.Addon }}{% endif %}";
+
+    private const string PreviousDefaultLicenseSubject = "[{{ Store.Name }}] Key kích hoạt {{ License.Addon }}";
     public const string DefaultLicenseTo = "{{ License.Email }}";
 
     private const string LicenseBodyResource = "Smartstore.Split3D.Mail.LicenseKey.liquid";
@@ -36,7 +39,8 @@ public partial class StudioMailService
     /// </summary>
     private static readonly string[] _previousDefaultBodyHashes =
     [
-        "0405845b2608e3b6fa00d2b1bd37955f464dfacf642dada95bfd9ba70c6959bf"
+        "0405845b2608e3b6fa00d2b1bd37955f464dfacf642dada95bfd9ba70c6959bf",
+        "9e6ca9f9e77998738f70e58009b10d254aebee2a42bfc94f581a3462575bfc1f"
     ];
     private static readonly CultureInfo _vnCulture = CultureInfo.GetCultureInfo("vi-VN");
 
@@ -89,9 +93,21 @@ public partial class StudioMailService
         var template = await _db.MessageTemplates.FirstOrDefaultAsync(x => x.Name == LicenseTemplateName, cancelToken);
         if (template != null)
         {
+            var upgraded = false;
             if (_previousDefaultBodyHashes.Contains(HashBody(template.Body)))
             {
                 template.Body = GetDefaultLicenseBody();
+                upgraded = true;
+            }
+
+            if (template.Subject == PreviousDefaultLicenseSubject)
+            {
+                template.Subject = DefaultLicenseSubject;
+                upgraded = true;
+            }
+
+            if (upgraded)
+            {
                 await _db.SaveChangesAsync(cancelToken);
             }
 
@@ -138,10 +154,26 @@ public partial class StudioMailService
     /// when <see cref="Split3DSettings.AttachInstaller"/> is on.
     /// </summary>
     /// <returns><c>false</c> if the template is inactive or no email account is configured.</returns>
-    public async Task<bool> QueueLicenseEmailAsync(Split3DLicense license, CancellationToken cancelToken = default)
+    public Task<bool> QueueLicenseEmailAsync(Split3DLicense license, CancellationToken cancelToken = default)
     {
         Guard.NotNull(license);
+        return QueueLicenseEmailAsync([license], cancelToken);
+    }
 
+    /// <summary>
+    /// Sends one key email for several keys of the same customer (e.g. all keys of an order), see
+    /// <see cref="QueueLicenseEmailAsync(Split3DLicense, CancellationToken)"/>. The first key provides
+    /// customer and order; every key is listed in <c>License.Keys</c>.
+    /// </summary>
+    public async Task<bool> QueueLicenseEmailAsync(IReadOnlyList<Split3DLicense> licenses, CancellationToken cancelToken = default)
+    {
+        Guard.NotNull(licenses);
+        if (licenses.Count == 0)
+        {
+            throw new ArgumentException("At least one license is required.", nameof(licenses));
+        }
+
+        var license = licenses[0];
         var template = await GetOrCreateLicenseTemplateAsync(cancelToken);
         if (!template.IsActive)
         {
@@ -159,8 +191,17 @@ public partial class StudioMailService
             ? await _db.Orders.AsNoTracking().FirstOrDefaultAsync(x => x.Id == license.OrderId, cancelToken)
             : null;
 
-        var installer = license.AddonId > 0 ? await _repoService.GetLatestPackageAsync(license.AddonId, cancelToken) : null;
-        var part = await CreateLicensePartAsync(license, order, installer?.Package, cancelToken);
+        var installers = new Dictionary<int, (Smartstore.Core.Content.Media.Download Download, Split3DPackageInfo Package)?>();
+        foreach (var addonId in licenses.Select(x => x.AddonId).Where(x => x > 0).Distinct())
+        {
+            installers[addonId] = await _repoService.GetLatestPackageAsync(addonId, cancelToken);
+            if (installers[addonId] == null)
+            {
+                Logger.Warn($"Split3D: no installer file uploaded for addon {addonId}; the key email has no download.");
+            }
+        }
+
+        var part = await CreateLicensePartAsync(licenses, order, installers.ToDictionary(x => x.Key, x => x.Value?.Package), cancelToken);
 
         var storeId = order?.StoreId > 0 ? order.StoreId : _storeContext.CurrentStore.Id;
         var messageContext = new MessageContext
@@ -177,44 +218,79 @@ public partial class StudioMailService
             return false;
         }
 
-        if (_settings.AttachInstaller && installer is { } entry && entry.Download.MediaFileId is int mediaFileId)
+        if (_settings.AttachInstaller)
         {
-            result.Email.Attachments.Add(new QueuedEmailAttachment
+            foreach (var entry in installers.Values)
             {
-                StorageLocation = EmailAttachmentStorageLocation.FileReference,
-                MediaFileId = mediaFileId,
-                Name = entry.Package.FileName,
-                MimeType = entry.Download.MediaFile?.MimeType.NullEmpty() ?? "application/zip"
-            });
-        }
-        else if (installer == null && license.AddonId > 0)
-        {
-            Logger.Warn($"Split3D: no installer file uploaded for addon {license.AddonId}; the key email has no download.");
+                if (entry is { } e && e.Download.MediaFileId is int mediaFileId)
+                {
+                    result.Email.Attachments.Add(new QueuedEmailAttachment
+                    {
+                        StorageLocation = EmailAttachmentStorageLocation.FileReference,
+                        MediaFileId = mediaFileId,
+                        Name = e.Package.FileName,
+                        MimeType = e.Download.MediaFile?.MimeType.NullEmpty() ?? "application/zip"
+                    });
+                }
+            }
         }
 
-        license.EmailSent = true;
+        foreach (var item in licenses)
+        {
+            item.EmailSent = true;
+        }
+
         await _messageFactory.QueueMessageAsync(messageContext, result.Email);
 
         return true;
     }
 
     /// <summary>
-    /// Creates the <c>License</c> model part of the key email.
+    /// Creates the <c>License</c> model part of the key email. Its own fields describe the first key
+    /// (single-key templates keep working); <c>Keys</c> lists all keys and <c>KeyCount</c> counts them.
     /// </summary>
     public async Task<NamedModelPart> CreateLicensePartAsync(
-        Split3DLicense license,
+        IReadOnlyList<Split3DLicense> licenses,
         Order order,
-        Split3DPackageInfo installer,
+        IDictionary<int, Split3DPackageInfo> installers,
         CancellationToken cancelToken = default)
     {
-        var addonName = license.AddonId > 0
-            ? await _db.Split3DAddons().Where(x => x.Id == license.AddonId).Select(x => x.Name).FirstOrDefaultAsync(cancelToken)
-            : null;
+        Guard.NotNull(licenses);
+        if (licenses.Count == 0)
+        {
+            throw new ArgumentException("At least one license is required.", nameof(licenses));
+        }
+
+        var addonIds = licenses.Select(x => x.AddonId).Where(x => x > 0).Distinct().ToArray();
+        var addonNames = await _db.Split3DAddons()
+            .Where(x => addonIds.Contains(x.Id))
+            .ToDictionaryAsync(x => x.Id, x => x.Name, cancelToken);
 
         var store = order != null ? _storeContext.GetStoreById(order.StoreId) ?? _storeContext.CurrentStore : _storeContext.CurrentStore;
         var baseUrl = store.GetBaseUrl().TrimEnd('/');
 
-        var part = new NamedModelPart(LicenseModelName)
+        var keys = licenses
+            .Select(x => CreateKeyModel(x, addonNames.GetValueOrDefault(x.AddonId), (installers != null && installers.TryGetValue(x.AddonId, out var installer) ? installer : null), baseUrl))
+            .ToList();
+
+        var part = new NamedModelPart(LicenseModelName);
+        foreach (var entry in keys[0])
+        {
+            part[entry.Key] = entry.Value;
+        }
+
+        part["OrderNumber"] = order?.GetOrderNumber();
+        part["OrderUrl"] = order != null ? $"{baseUrl}/order/details/{order.Id}" : null;
+        part["MyKeysUrl"] = $"{baseUrl}/split3dkeys";
+        part["Keys"] = keys;
+        part["KeyCount"] = keys.Count;
+
+        return part;
+    }
+
+    private Dictionary<string, object> CreateKeyModel(Split3DLicense license, string addonName, Split3DPackageInfo installer, string baseUrl)
+    {
+        var model = new Dictionary<string, object>
         {
             ["CustomerName"] = license.CustomerName,
             ["Email"] = license.Email,
@@ -230,15 +306,12 @@ public partial class StudioMailService
             ["HasPrice"] = license.Price > 0,
             ["MaxDevices"] = Math.Max(1, license.MaxDevices ?? _settings.DefaultMaxDevices),
             ["Key"] = license.Token,
-            ["KeyId"] = license.LicenseId.NullEmpty()?.Truncate(8) ?? license.Id.ToString(CultureInfo.InvariantCulture),
-            ["OrderNumber"] = order?.GetOrderNumber(),
-            ["OrderUrl"] = order != null ? $"{baseUrl}/order/details/{order.Id}" : null,
-            ["MyKeysUrl"] = $"{baseUrl}/split3dkeys"
+            ["KeyId"] = license.LicenseId.NullEmpty()?.Truncate(8) ?? license.Id.ToString(CultureInfo.InvariantCulture)
         };
 
         if (installer != null)
         {
-            part["Installer"] = new Dictionary<string, object>
+            model["Installer"] = new Dictionary<string, object>
             {
                 ["FileName"] = installer.FileName,
                 ["Version"] = installer.Version,
@@ -248,7 +321,7 @@ public partial class StudioMailService
             };
         }
 
-        return part;
+        return model;
     }
 
     /// <summary>
@@ -260,7 +333,7 @@ public partial class StudioMailService
         var baseUrl = _storeContext.CurrentStore.GetBaseUrl().TrimEnd('/');
         var expires = DateTime.UtcNow.AddDays(365);
 
-        return new NamedModelPart(LicenseModelName)
+        var part = new NamedModelPart(LicenseModelName)
         {
             ["CustomerName"] = "Nguyễn Văn An",
             ["Email"] = "khachhang@example.com",
@@ -288,6 +361,11 @@ public partial class StudioMailService
                 ["DownloadUrl"] = $"{baseUrl}/split3dkeys"
             }
         };
+
+        part["Keys"] = new List<Dictionary<string, object>> { new(part) };
+        part["KeyCount"] = 1;
+
+        return part;
     }
 
     private async Task<Customer> FindCustomerAsync(Split3DLicense license, Order order, CancellationToken cancelToken)

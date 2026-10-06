@@ -1,3 +1,4 @@
+using Smartstore.Core.Data;
 using Smartstore.Core.Messaging;
 using Smartstore.Core.Messaging.Events;
 using Smartstore.Events;
@@ -25,6 +26,58 @@ public class MailEvents : IConsumer
 
         model["Theme"] = StudioMailService.CreateThemePart(mail);
         model["Studio"] = StudioMailService.CreateStudioPart(mail, studio, ctx.BaseUri?.ToString() ?? ctx.Store?.GetBaseUrl());
+    }
+
+    /// <summary>
+    /// Orders with only key products get a single email (the key email, sent when the order is paid):
+    /// Smartstore's own "order placed" / "order completed" customer emails stay in the queue as "send manually".
+    /// </summary>
+    public async Task HandleEventAsync(
+        MessageQueuingEvent message,
+        Split3DSettings settings,
+        Split3DLicenseService licenseService,
+        SmartDbContext db,
+        CancellationToken cancelToken)
+    {
+        var templateName = message.MessageContext?.MessageTemplate?.Name;
+        if (!settings.CombineOrderEmails
+            || message.QueuedEmail == null
+            || message.MessageContext.TestMode
+            || !(templateName == MessageTemplateNames.OrderPlacedCustomer || templateName == MessageTemplateNames.OrderCompletedCustomer))
+        {
+            return;
+        }
+
+        var orderId = GetOrderId(message.MessageModel);
+        if (orderId == 0)
+        {
+            return;
+        }
+
+        var planProductIds = (await licenseService.GetProductPlansAsync(cancelToken)).Keys.ToArray();
+        var productIds = await db.OrderItems
+            .Where(x => x.OrderId == orderId)
+            .Select(x => x.ProductId)
+            .ToListAsync(cancelToken);
+
+        if (productIds.Count > 0 && productIds.All(planProductIds.Contains))
+        {
+            message.QueuedEmail.SendManually = true;
+        }
+    }
+
+    private static int GetOrderId(TemplateModel model)
+    {
+        try
+        {
+            return model != null && model.TryGetValue("Order", out var order) && order != null
+                ? Convert.ToInt32(((dynamic)order).Id)
+                : 0;
+        }
+        catch
+        {
+            return 0;
+        }
     }
 
     public async Task HandleEventAsync(PreviewModelResolveEvent message, StudioMailService mailService)

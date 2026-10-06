@@ -148,6 +148,42 @@ public partial class Split3DAddonController : AdminController
 
     [HttpPost]
     [Permission(Permissions.Configuration.Module.Update)]
+    public async Task<IActionResult> Delete(int id)
+    {
+        var addon = await _db.Split3DAddons().FindByIdAsync(id);
+        if (addon == null)
+        {
+            return NotFound();
+        }
+
+        // Issued keys carry the addon id; deleting the addon would leave them unattributable.
+        if (await _db.Split3DLicenses().AnyAsync(x => x.AddonId == addon.Id))
+        {
+            NotifyError(T("Plugins.Split3D.Addon.DeleteLocked"));
+            return RedirectToAction(nameof(Edit), new { id = addon.Id });
+        }
+
+        var mappings = await _db.Split3DAddonProducts().Where(x => x.AddonId == addon.Id).ToListAsync();
+        var productIds = mappings.Select(x => x.ProductId).Distinct().ToArray();
+
+        // The plan products can no longer grant a key, so take them off the storefront
+        // instead of selling something that cannot be delivered.
+        var products = await _db.Products.Where(x => productIds.Contains(x.Id) && x.Published).ToListAsync();
+        products.Each(x => x.Published = false);
+
+        _db.Split3DAddonProducts().RemoveRange(mappings);
+        _db.Split3DAddons().Remove(addon);
+        await _db.SaveChangesAsync();
+
+        await _setup.RefreshContentAsync();
+
+        NotifySuccess(T("Plugins.Split3D.Addon.Deleted", addon.Name, products.Count));
+
+        return RedirectToAction(nameof(List));
+    }
+
+    [HttpPost]
+    [Permission(Permissions.Configuration.Module.Update)]
     public async Task<IActionResult> CreatePlanProducts(CreatePlanProductsModel model)
     {
         var addon = await _db.Split3DAddons().FindByIdAsync(model.AddonId);

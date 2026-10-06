@@ -15,7 +15,7 @@
           sticky-footer="false"
           preserve-grid-state="true" preserve-command-state="true"
           allow-column-reordering="true">
-    <datasource read="@Url.Action("OrderList", "Order", new { productId, customerId })" />
+    <datasource read="@Url.Action("OrderList", "Order", new { productId, customerId })" delete="@Url.Action("OrderDelete", "Order")" />
     <paging position="Bottom" show-size-chooser="true" />
     <sorting allow-unsort="true" allow-multisort="false">
         <sort by="CreatedOn" by-entity-member="CreatedOnUtc" descending="true" />
@@ -47,6 +47,12 @@
         <zone name="datagrid_toolbar_alpha"></zone>
         <toolbar-group class="omega"></toolbar-group>
         <zone name="datagrid_toolbar_omega"></zone>
+        <toolbar-group>
+            <button datagrid-action="DataGridToolAction.DeleteSelectedRows" type="button" class="btn btn-danger no-anims btn-flat">
+                <bootstrap-icon name="trash" />
+                <span>@T("Admin.Common.Delete.Selected")</span>
+            </button>
+        </toolbar-group>
         <toolbar-group class="dropdown">
             <button datagrid-action="DataGridToolAction.ReactToSelection" class="btn btn-plain dropdown-toggle no-chevron" data-toggle="dropdown" data-boundary="window">
                 <bootstrap-icon name="three-dots" class="bi-fw" />
@@ -208,6 +214,15 @@
             <i class="fa fa-fw fa-times"></i>
             <span class="order-process-title">@T("Admin.Orders.Fields.Void")</span>
         </a>
+
+        if (isRowCommand)
+        {
+            <div class="dropdown-divider"></div>
+            <a href="#" class="dropdown-item text-danger" v-on:click.prevent="item.deleteRows(item.row)">
+                <i class="far fa-fw fa-trash-can"></i>
+                <span>@T("Common.Delete")</span>
+            </a>
+        }
     }
 }
 

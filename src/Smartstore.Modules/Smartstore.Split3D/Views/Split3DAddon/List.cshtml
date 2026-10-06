@@ -60,7 +60,16 @@
                                 <i class="fa fa-times text-muted"></i>
                             }
                         </td>
-                        <td class="text-right"><a href="@Url.Action("Edit", new { id = a.Id })" class="btn btn-sm btn-secondary">@T("Common.Edit")</a></td>
+                        <td class="text-right text-nowrap">
+                            <a href="@Url.Action("Edit", new { id = a.Id })" class="btn btn-sm btn-secondary">@T("Common.Edit")</a>
+                            <form asp-action="Delete" asp-route-id="@a.Id" method="post" class="d-inline">
+                                <button type="submit" class="btn btn-sm btn-outline-danger confirm2"
+                                        data-confirm-message="@T("Plugins.Split3D.Addon.DeleteConfirm", a.Name)">
+                                    <i class="far fa-trash-can"></i>
+                                    <span>@T("Common.Delete")</span>
+                                </button>
+                            </form>
+                        </td>
                     </tr>
                 }
             </tbody>

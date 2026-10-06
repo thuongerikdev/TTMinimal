@@ -20,6 +20,12 @@ public class Split3DSettings : ISettings
     public bool AttachInstaller { get; set; }
 
     /// <summary>
+    /// For orders that contain only key products, the customer gets just the key email: Smartstore's
+    /// "order placed" and "order completed" customer emails are kept in the queue as "send manually" instead of being sent.
+    /// </summary>
+    public bool CombineOrderEmails { get; set; } = true;
+
+    /// <summary>
     /// The "product" value embedded in the signed payload. Must match what the addon expects.
     /// </summary>
     public string ProductCode { get; set; } = "split3d-custom-109";

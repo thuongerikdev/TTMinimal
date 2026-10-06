@@ -262,21 +262,19 @@ public class Split3DLicenseService
 
             if (_settings.SendEmail)
             {
-                foreach (var license in result)
+                // One email with all keys of the order, not one per key.
+                try
                 {
-                    try
+                    if (!await _mailService.QueueLicenseEmailAsync(result, cancelToken))
                     {
-                        if (!await QueueEmailAsync(license, cancelToken))
-                        {
-                            _db.OrderNotes.Add(order, $"Split3D: key email to {license.Email} was not sent (message template inactive or no email account).");
-                        }
+                        _db.OrderNotes.Add(order, $"Split3D: key email to {email} was not sent (message template inactive or no email account).");
                     }
-                    catch (Exception ex)
-                    {
-                        // The key is issued and visible in the order note; a failed email must not lose it.
-                        Logger.Error(ex, $"Split3D: key email for license {license.Id} failed.");
-                        _db.OrderNotes.Add(order, $"Split3D: key email to {license.Email} failed: {ex.Message}");
-                    }
+                }
+                catch (Exception ex)
+                {
+                    // The keys are issued and visible in the order note; a failed email must not lose them.
+                    Logger.Error(ex, $"Split3D: key email for order {order.Id} failed.");
+                    _db.OrderNotes.Add(order, $"Split3D: key email to {email} failed: {ex.Message}");
                 }
 
                 await _db.SaveChangesAsync(cancelToken);

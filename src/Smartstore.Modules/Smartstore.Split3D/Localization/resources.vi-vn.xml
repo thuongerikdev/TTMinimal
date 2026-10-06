@@ -64,6 +64,15 @@
     <LocaleResource Name="Addon.UnmapConfirm">
         <Value>Gỡ sản phẩm khỏi addon? Sản phẩm vẫn còn nhưng người mua sẽ không được cấp key nữa.</Value>
     </LocaleResource>
+    <LocaleResource Name="Addon.DeleteConfirm">
+        <Value>Xoá addon "{0}"? Các liên kết sản phẩm sẽ bị gỡ và những sản phẩm theo gói sẽ được ẩn khỏi cửa hàng. Các key đã cấp không bị ảnh hưởng.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Addon.DeleteLocked">
+        <Value>Không thể xoá addon này vì đã có key được cấp cho nó. Hãy tắt hoạt động thay vì xoá.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Addon.Deleted">
+        <Value>Đã xoá addon "{0}". Đã ẩn {1} sản phẩm theo gói.</Value>
+    </LocaleResource>
     <LocaleResource Name="Addon.CreateProducts">
         <Value>Tạo sản phẩm theo gói</Value>
     </LocaleResource>
@@ -3930,6 +3939,12 @@
     </LocaleResource>
     <LocaleResource Name="Mail.Fields.SendEmail.Hint">
         <Value>Sau khi key được cấp cho đơn đã thanh toán, email key được đưa vào hàng đợi ngay.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.Fields.CombineOrderEmails">
+        <Value>Mua key chỉ nhận 1 email</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.Fields.CombineOrderEmails.Hint">
+        <Value>Đơn chỉ gồm sản phẩm key: khách chỉ nhận một email duy nhất chứa tất cả key + nút tải, gửi khi đơn được thanh toán. Email "Đơn hàng mới" và "Đơn hàng hoàn tất" mặc định của Smartstore không gửi tự động (vẫn nằm trong Hàng đợi email, có thể gửi tay). Đơn có sản phẩm khác vẫn nhận email đơn hàng như bình thường.</Value>
     </LocaleResource>
     <LocaleResource Name="Mail.Fields.AttachInstaller">
         <Value>Đính kèm thêm file .zip vào email</Value>

@@ -16,6 +16,16 @@
             <i class="fa fa-check"></i>
             <span>@T("Admin.Common.Save")</span>
         </button>
+        @if (!isNew)
+        {
+            <form asp-action="Delete" asp-route-id="@Model.Id" method="post" class="d-inline">
+                <button type="submit" class="btn btn-danger confirm2"
+                        data-confirm-message="@T("Plugins.Split3D.Addon.DeleteConfirm", Model.Name)">
+                    <i class="far fa-trash-can"></i>
+                    <span>@T("Admin.Common.Delete")</span>
+                </button>
+            </form>
+        }
     </div>
 </div>
 

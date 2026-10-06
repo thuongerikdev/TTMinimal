@@ -64,6 +64,15 @@
     <LocaleResource Name="Addon.UnmapConfirm">
         <Value>Remove this product from the addon? The product itself is kept, but buyers will no longer receive keys for it.</Value>
     </LocaleResource>
+    <LocaleResource Name="Addon.DeleteConfirm">
+        <Value>Delete the addon "{0}"? Its product mappings are removed and the plan products are unpublished. Already issued keys are not affected.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Addon.DeleteLocked">
+        <Value>This addon cannot be deleted because keys have already been issued for it. Deactivate it instead.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Addon.Deleted">
+        <Value>Addon "{0}" was deleted. {1} plan product(s) were unpublished.</Value>
+    </LocaleResource>
     <LocaleResource Name="Addon.CreateProducts">
         <Value>Create plan products</Value>
     </LocaleResource>
@@ -1266,6 +1275,12 @@
     </LocaleResource>
     <LocaleResource Name="Mail.Fields.SendEmail.Hint">
         <Value>As soon as keys are issued for a paid order, the key email is queued.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.Fields.CombineOrderEmails">
+        <Value>Key purchases get a single email</Value>
+    </LocaleResource>
+    <LocaleResource Name="Mail.Fields.CombineOrderEmails.Hint">
+        <Value>Orders with only key products: the customer gets one email with all keys and download buttons, sent when the order is paid. Smartstore's "order placed" and "order completed" emails are not sent automatically (they stay in the email queue and can be sent manually). Orders with other products keep their order emails.</Value>
     </LocaleResource>
     <LocaleResource Name="Mail.Fields.AttachInstaller">
         <Value>Also attach the .zip to the email</Value>

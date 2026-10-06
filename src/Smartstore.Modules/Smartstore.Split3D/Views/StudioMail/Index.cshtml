@@ -99,6 +99,13 @@
                             </span>
                         </label>
                         <label class="tt-mail-switch">
+                            <input asp-for="CombineOrderEmails" />
+                            <span>
+                                <strong>@T("Plugins.Split3D.Mail.Fields.CombineOrderEmails")</strong>
+                                <small>@T("Plugins.Split3D.Mail.Fields.CombineOrderEmails.Hint")</small>
+                            </span>
+                        </label>
+                        <label class="tt-mail-switch">
                             <input asp-for="AttachInstaller" />
                             <span>
                                 <strong>@T("Plugins.Split3D.Mail.Fields.AttachInstaller")</strong>

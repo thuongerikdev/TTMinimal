@@ -1,32 +1,36 @@
 {% extends 'master' %}
 
 {% block 'body' %}
-<span class="eyebrow">Key kích hoạt</span>
+<span class="eyebrow">{% if License.KeyCount > 1 %}{{ License.KeyCount }} key kích hoạt{% else %}Key kích hoạt{% endif %}</span>
 
-<h1>Chào {{ License.CustomerName }}, key của bạn đã sẵn sàng!</h1>
+<h1>Chào {{ License.CustomerName }}, {% if License.KeyCount > 1 %}các key của bạn đã sẵn sàng!{% else %}key của bạn đã sẵn sàng!{% endif %}</h1>
 <p class="lead">
-  Cảm ơn bạn đã chọn <b>{{ License.Addon }}</b>. Dưới đây là key kích hoạt và hướng dẫn để bắt đầu chỉ trong 3 bước.
+  {% if License.OrderNumber %}Cảm ơn bạn đã đặt hàng (đơn #{{ License.OrderNumber }}). {% else %}Cảm ơn bạn đã tin chọn chúng mình. {% endif %}
+  Dưới đây là {% if License.KeyCount > 1 %}toàn bộ key, file cài đặt{% else %}key kích hoạt, file cài đặt{% endif %} và hướng dẫn để bắt đầu chỉ trong 3 bước.
 </p>
+
+{% for k in License.Keys %}
+{% if License.KeyCount > 1 %}<h2>Key {{ forloop.index }}/{{ License.KeyCount }} &middot; {{ k.Addon }}</h2>{% endif %}
 
 <table class="facts" role="presentation">
   <tr>
     <td class="fact">
       <span class="fact-label">Sản phẩm</span>
-      <span class="fact-value">{{ License.Addon }}</span>
+      <span class="fact-value">{{ k.Addon }}</span>
     </td>
     <td class="fact">
       <span class="fact-label">Gói</span>
-      <span class="fact-value">{{ License.Plan }}</span>
+      <span class="fact-value">{{ k.Plan }}</span>
     </td>
   </tr>
   <tr>
     <td class="fact fact-last">
       <span class="fact-label">Hạn sử dụng</span>
-      <span class="fact-value">{{ License.ExpiresOn }}</span>
+      <span class="fact-value">{{ k.ExpiresOn }}</span>
     </td>
     <td class="fact fact-last">
       <span class="fact-label">Số máy dùng cùng lúc</span>
-      <span class="fact-value">{{ License.MaxDevices }} máy</span>
+      <span class="fact-value">{{ k.MaxDevices }} máy</span>
     </td>
   </tr>
 </table>
@@ -34,26 +38,27 @@
 <table class="keybox" role="presentation">
   <tr>
     <td class="keybox-cell">
-      <p class="keybox-label">Key của bạn &middot; #{{ License.KeyId }}</p>
-      <span class="keybox-code">{{ License.Key }}</span>
+      <p class="keybox-label">Key của bạn &middot; #{{ k.KeyId }}</p>
+      <span class="keybox-code">{{ k.Key }}</span>
     </td>
   </tr>
 </table>
 <p class="keybox-hint">Sao chép toàn bộ đoạn key ở trên, kể cả khi trình đọc email tự xuống dòng.</p>
 
-{% if License.Installer %}
+{% if k.Installer %}
 <table class="download" role="presentation">
   <tr>
     <td class="download-cell">
       <p class="download-label">File cài đặt</p>
-      <p class="download-name">{{ License.Installer.FileName }}</p>
-      <p class="download-meta">Phiên bản {{ License.Installer.Version }} &middot; {{ License.Installer.Size }} &middot; luôn là bản mới nhất</p>
-      <a class="btn btn-primary btn-lg" href="{{ License.Installer.DownloadUrl }}" target="_blank">&#11015;&nbsp; Tải file cài đặt</a>
+      <p class="download-name">{{ k.Installer.FileName }}</p>
+      <p class="download-meta">Phiên bản {{ k.Installer.Version }} &middot; {{ k.Installer.Size }} &middot; luôn là bản mới nhất</p>
+      <a class="btn btn-primary btn-lg" href="{{ k.Installer.DownloadUrl }}" target="_blank">&#11015;&nbsp; Tải file cài đặt</a>
       <p class="download-hint">Bấm là tải ngay, không cần đăng nhập. Đường dẫn dành riêng cho key của bạn, vui lòng không chia sẻ.</p>
     </td>
   </tr>
 </table>
 {% endif %}
+{% endfor %}
 
 <h2>Kích hoạt trong 3 bước</h2>
 <table class="steps" role="presentation">
@@ -62,7 +67,7 @@
     <td class="step-text">
       <b>Cài addon.</b>
       {% if License.Installer %}
-        Bấm <a href="{{ License.Installer.DownloadUrl }}">Tải file cài đặt</a> ở trên{% if License.Installer.Attached %} (file cũng được đính kèm trong email này){% endif %}.
+        Bấm <b>Tải file cài đặt</b> ở trên{% if License.Installer.Attached %} (file cũng được đính kèm trong email này){% endif %}.
       {% else %}
         Tải file cài đặt trong trang <a href="{{ License.MyKeysUrl }}">Key của tôi</a>.
       {% endif %}
@@ -72,7 +77,7 @@
   <tr>
     <td class="step-no-cell"><span class="step-no">2</span></td>
     <td class="step-text">
-      <b>Mở bảng {{ License.Addon }}</b> ở thanh bên của Viewport (phím <b>N</b>).
+      <b>Mở bảng addon</b> ở thanh bên của Viewport (phím <b>N</b>).
     </td>
   </tr>
   <tr>
@@ -90,9 +95,8 @@
 <table class="note" role="presentation">
   <tr>
     <td class="note-cell">
-      Key gắn với email <b>{{ License.Email }}</b> và dùng được trên tối đa {{ License.MaxDevices }} máy cùng lúc.
-      Đổi máy? Đăng xuất máy cũ trong trang Key của tôi. Vui lòng không chia sẻ key cho người khác.
-      {% if License.OrderNumber %}<br />Đơn hàng #{{ License.OrderNumber }} &middot; cấp ngày {{ License.IssuedOn }}{% if License.HasPrice %} &middot; {{ License.Price }}{% endif %}{% endif %}
+      Key gắn với email <b>{{ License.Email }}</b>. Đổi máy? Đăng xuất máy cũ trong trang Key của tôi. Vui lòng không chia sẻ key cho người khác.
+      {% if License.OrderNumber %}<br />Đơn hàng #{{ License.OrderNumber }} &middot; cấp ngày {{ License.IssuedOn }}{% if License.OrderUrl %} &middot; <a href="{{ License.OrderUrl }}">Xem chi tiết đơn</a>{% endif %}{% endif %}
     </td>
   </tr>
 </table>
