@@ -71,6 +71,12 @@ internal class Startup : StarterBase
                 .ForAction("Category")
                 .WhenNonAjaxGet();
 
+            // Admin products: grouped overview instead of the flat grid.
+            o.Filters.AddEndpointFilter<ProductListRedirectFilter, SmartController>()
+                .ForController("Product")
+                .ForAction("List")
+                .WhenNonAjaxGet();
+
             o.Filters.AddEndpointFilter<AdminStyleFilter, SmartController>()
                 .WhenNonAjaxGet();
         });

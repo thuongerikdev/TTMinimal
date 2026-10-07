@@ -403,6 +403,35 @@ a:focus-visible, button:focus-visible, summary:focus-visible {
     &:hover { transform: translateY(-4px); box-shadow: 6px 9px 0 $tt-ink; }
 }
 
+// Grid hover: the core drops a panel (swatches, options, cart buttons) below the card (smartstore.articlelist.js
+// overlaps it 2px into the card). Draw card + panel as one outlined block: open card bottom, panel with the same
+// 2px outline, white background and the hard shadow carried down.
+.artlist-grid > .art.active {
+    border-bottom-color: transparent !important;
+    border-bottom-left-radius: 0 !important;
+    border-bottom-right-radius: 0 !important;
+    box-shadow: 6px 0 0 $tt-ink;
+}
+
+.artlist-grid .art-drop {
+    inset-inline: -2px;
+    padding-top: 2px;
+    background: #fff;
+    border: 2px solid $tt-ink;
+    border-top: 0;
+    border-radius: 0 0 18px 18px;
+    box-shadow: 6px 6px 0 $tt-ink, 6px 0 0 $tt-ink;
+    clip-path: inset(0 -12px -12px -12px);
+
+    .art.active & { border-color: $tt-ink; }
+
+    > .art-btn-group {
+        margin-top: .5rem;
+        border-top: 2px solid $tt-ink;
+        border-radius: 0 0 16px 16px;
+    }
+}
+
 .art-picture-block {
     border-radius: 12px;
     overflow: hidden;
