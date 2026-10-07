@@ -2069,8 +2069,8 @@
         function panelHtml(P) {
             var d = design;
             var fonts = P.FONTS.map(function (f) {
-                return '<button type="button" class="tt-np-font" data-set="font" data-val="' + f.key + '" aria-pressed="' + (d.font === f.key) + '" title="' + escAttr(f.name) + (f.noVi ? ' — chưa có dấu tiếng Việt' : '') + '" style="font-family:\'' + f.family + '\';font-weight:' + f.weight + '">'
-                    + escAttr(f.name) + (f.noVi ? '<small>không dấu</small>' : '') + '</button>';
+                return '<button type="button" class="tt-np-font" data-set="font" data-val="' + f.key + '" aria-pressed="' + (d.font === f.key) + '" title="' + escAttr(f.name) + '" style="font-family:\'' + f.family + '\';font-weight:' + f.weight + '">'
+                    + escAttr(f.name) + '</button>';
             }).join('');
             var shapes = seg('shape', P.SHAPES.map(function (s) { return [s.key, s.name]; }), d.shape);
             var icons = '<button type="button" class="tt-np-icon" data-set="icon" data-val="" aria-pressed="' + !d.icon + '" title="Không">∅</button>'

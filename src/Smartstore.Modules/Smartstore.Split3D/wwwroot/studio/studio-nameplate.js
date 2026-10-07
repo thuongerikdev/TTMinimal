@@ -1,18 +1,20 @@
 /* TT Minimal name plate preview: a plate with raised / engraved / flush text, drawn with WebGL.
    Everything is 2D masks first: the plate shape (with holes) and the relief (text lines, icons, border) are
    painted on canvases with the chosen font; marching squares on each mask give the side walls, the masks
-   themselves (alpha test) are the top and bottom faces. So any font and shape works, Vietnamese diacritics
-   included, without triangulation or font files. No dependencies; loaded by studio.js on the name plate page. */
+   themselves (alpha test) are the top and bottom faces. So any font and shape works, without triangulation.
+   Vietnamese marks missing from a font are painted next to its letters. No dependencies; loaded by studio.js on
+   the name plate page. */
 (function () {
     'use strict';
 
-    // The studio's fonts. From Google Fonts: Pacifico (with Vietnamese), Yellowtail and Titan One (no Vietnamese
-    // accents). Every other font comes as a file from studio/fonts (see addFonts); a file named like a Google font
-    // replaces it, e.g. a Vietnamese version of Titan One.
+    // The studio's fonts. Yellowtail, Pacifico and Titan One ship as files in studio/fonts; the Google Fonts entries
+    // below are only the fallback when those files are missing. Every other font comes as a file from studio/fonts
+    // (see addFonts); a file named like a font here replaces it. Vietnamese marks a font lacks are drawn by
+    // vietPlan / markOps, so every font takes Vietnamese names.
     var FONTS = [
-        { key: 'yellowtail', name: 'Yellowtail', family: 'Yellowtail', weight: 400, google: true, noVi: true },
+        { key: 'yellowtail', name: 'Yellowtail', family: 'Yellowtail', weight: 400, google: true },
         { key: 'pacifico', name: 'Pacifico', family: 'Pacifico', weight: 400, google: true },
-        { key: 'titanone', name: 'Titan One', family: 'Titan One', weight: 400, google: true, noVi: true }
+        { key: 'titanone', name: 'Titan One', family: 'Titan One', weight: 400, google: true }
     ];
 
     // Order of the studio's font list; fonts not named here follow alphabetically.
@@ -178,13 +180,213 @@
 
     function canvas(w, h) { var c = document.createElement('canvas'); c.width = w; c.height = h; return c; }
 
+    function fontCss(font, px) { return font.weight + ' ' + px + 'px "' + font.family + '"'; }
+
+    // ---------- Vietnamese in any font ----------
+    // Decorative fonts mostly have the plain letters and a few accented ones (á, â, ă, đ…) but not the Vietnamese
+    // stacks (ấ, ợ, ử, ỵ…), and the browser would take those letters from another font. Instead, such a letter is
+    // drawn as the closest letter the font has (â for ấ, o for ở) and the missing marks are painted on it, sized,
+    // placed and slanted after the letter's own ink (top, stroke width, right edge, slant).
+
+    var VI_MARKS = { 0x300: 'grave', 0x301: 'acute', 0x303: 'tilde', 0x309: 'hook', 0x323: 'dot', 0x302: 'circ', 0x306: 'breve', 0x31b: 'horn' };
+
+    // Whether the font itself has a glyph for ch: with a missing glyph the width follows the fallback font.
+    var glyphCache = {};
+    function hasGlyph(font, ch) {
+        var key = font.family + '\n' + ch;
+        if (key in glyphCache) return glyphCache[key];
+        var c = hasGlyph.ctx || (hasGlyph.ctx = canvas(4, 4).getContext('2d'));
+        if ('letterSpacing' in c) c.letterSpacing = '0px';
+        c.font = fontCss(font, 100) + ', monospace';
+        var a = c.measureText(ch).width;
+        c.font = fontCss(font, 100) + ', serif';
+        var ok = Math.abs(a - c.measureText(ch).width) < 0.01;
+        // Before the font file is in, everything is a fallback: do not remember that.
+        if (ok || !document.fonts || document.fonts.check(fontCss(font, 100), ch)) glyphCache[key] = ok;
+        return ok;
+    }
+
+    // How to draw a letter the font lacks: { base, marks } or null (the font has it, or it is no Vietnamese letter).
+    function vietPlan(font, ch) {
+        if (ch.charCodeAt(0) < 0xc0 || hasGlyph(font, ch)) return null;
+        var base, marks = [];
+        if (ch === 'đ' || ch === 'Đ') { base = ch === 'đ' ? 'd' : 'D'; marks = ['bar']; }
+        else {
+            var d = ch.normalize('NFD');
+            base = d.charAt(0);
+            for (var i = 1; i < d.length; i++) {
+                if (!VI_MARKS[d.charCodeAt(i)]) return null;
+                marks.push(d.charAt(i));
+            }
+            if (!marks.length) return null;
+            // Keep the marks the font has in a letter of its own: â of ấ, ơ of ở, ă of ặ. Not ò of ờ: the horn
+            // needs the bare letter to find its corner.
+            var horn = marks.indexOf('̛') >= 0;
+            for (i = 0; i < marks.length && marks.length > 1; i++) {
+                if (horn && marks[i] !== '̛') continue;
+                var part = (base + marks[i]).normalize('NFC');
+                if (part.length === 1 && hasGlyph(font, part)) { base = part; marks.splice(i, 1); break; }
+            }
+            marks = marks.map(function (m) { return VI_MARKS[m.charCodeAt(0)]; });
+            // No mark on top of the dot of i.
+            if (base === 'i' && marks.some(function (m) { return m !== 'dot' && m !== 'horn'; }) && hasGlyph(font, 'ı')) base = 'ı';
+        }
+        return hasGlyph(font, base) ? { base: base, marks: marks } : null;
+    }
+
+    // Ink of one glyph in em units, relative to its origin on the baseline (y down): box, stroke width, slant,
+    // center of its top and bottom, the top right corner (horn) and the stem a bar crosses (đ, Đ).
+    var inkCache = {};
+    function glyphInk(font, ch) {
+        var key = font.family + '\n' + ch;
+        if (inkCache[key]) return inkCache[key];
+        var S = 160, W = S * 3, H = S * 2, ox = S, oy = Math.round(S * 1.4);
+        var c = canvas(W, H).getContext('2d', { willReadFrequently: true });
+        c.font = fontCss(font, S) + ', sans-serif';
+        c.textBaseline = 'alphabetic';
+        c.fillStyle = '#000';
+        c.fillText(ch, ox, oy);
+        var data = c.getImageData(0, 0, W, H).data, rows = [], top = -1, bottom = -1;
+        for (var y = 0; y < H; y++) {
+            var runs = [], start = -1;
+            for (var x = 0; x <= W; x++) {
+                var on = x < W && data[(y * W + x) * 4 + 3] > 127;
+                if (on && start < 0) start = x;
+                else if (!on && start >= 0) { runs.push([start, x]); start = -1; }
+            }
+            rows.push(runs);
+            if (runs.length) { if (top < 0) top = y; bottom = y; }
+        }
+        var ink;
+        if (top < 0) ink = { top: -0.5, bottom: 0, left: 0, right: 0.4, stroke: 0.08, slant: 0, topX: 0.2, bottomX: 0.2, hornX: 0.4, hornY: -0.4, barX: 0.2, barY: -0.4 };
+        else {
+            var h = bottom - top + 1;
+            var span = function (y0, y1, pick) {
+                var lo = W, hi = -1;
+                for (var yy = Math.max(top, Math.round(y0)); yy <= Math.min(bottom, Math.round(y1)); yy++) {
+                    rows[yy].forEach(function (r) { lo = Math.min(lo, r[0]); hi = Math.max(hi, r[1]); });
+                }
+                return hi < 0 ? null : pick === 'l' ? lo : pick === 'r' ? hi : (lo + hi) / 2;
+            };
+            var left = W, right = 0, widths = [];
+            rows.forEach(function (runs, yy) {
+                runs.forEach(function (r) {
+                    left = Math.min(left, r[0]); right = Math.max(right, r[1]);
+                    if (yy > top + h * 0.25 && yy < bottom - h * 0.25) widths.push(r[1] - r[0]);
+                });
+            });
+            widths.sort(function (a, b) { return a - b; });
+            var stroke = widths.length ? widths[Math.floor(widths.length * 0.35)] : S * 0.08;
+            // Slant from the top against the middle of the body; the bottom center follows it (tails of script
+            // letters would pull a measured one aside).
+            var midY = top + h * 0.5, topX = span(top, top + h * 0.15), midX = span(top + h * 0.3, bottom - h * 0.3);
+            if (midX == null) midX = topX;
+            var slant = Math.max(0, Math.min(0.45, (topX - midX) / Math.max(1, midY - top - h * 0.075)));
+            var bottomX = midX - (bottom - midY) * slant;
+            // Horn: the rightmost ink in the upper part. Bar: the ascender of d, or the stem of D halfway up.
+            var hornY = top + h * 0.12, hornX = span(top, top + h * 0.3, 'r');
+            var lower = ch === 'd', barY = lower ? top + h * 0.2 : top + h * 0.5;
+            var barX = lower ? span(top, top + h * 0.12) : (rows[Math.round(barY)][0] ? (rows[Math.round(barY)][0][0] + rows[Math.round(barY)][0][1]) / 2 : left + stroke / 2);
+            var em = function (v, o) { return (v - o) / S; };
+            ink = {
+                top: em(top, oy), bottom: em(bottom + 1, oy), left: em(left, ox), right: em(right, ox),
+                stroke: stroke / S, slant: slant, topX: em(topX, ox), bottomX: em(bottomX, ox),
+                hornX: em(hornX, ox), hornY: em(hornY, oy), barX: em(barX, ox), barY: em(barY, oy), upperBar: !lower
+            };
+        }
+        // Remember only once the font is in (see hasGlyph).
+        if (!document.fonts || document.fonts.check(fontCss(font, S), ch)) inkCache[key] = ink;
+        return ink;
+    }
+
+    // The marks of a plan as paths in pixels, relative to the glyph origin; box = [x0, y0, x1, y1] of the ink.
+    function markOps(g, marks, px) {
+        var t = Math.max(0.05, Math.min(0.13, g.stroke * 0.8)) * px, gap = 0.05 * px + t * 0.4;
+        var ops = [], cur = g.top * px, slant = g.slant, shift = marks.indexOf('horn') >= 0 ? -0.04 * px : 0;   // tone marks clear the horn
+        var at = function (y) { return g.topX * px + (g.top * px - y) * slant; };   // x of the slanted top axis
+        marks.forEach(function (m) {
+            var op;
+            if (m === 'dot') {
+                var r = Math.max(t * 0.62, 0.035 * px), dy = g.bottom * px + gap + r, dx = g.bottomX * px - (dy - g.bottom * px) * slant;
+                op = { fill: true, box: [dx - r, dy - r, dx + r, dy + r], path: function (c) { c.moveTo(dx + r, dy); c.arc(dx, dy, r, 0, Math.PI * 2); } };
+            } else if (m === 'horn') {
+                // Out to the right of the letter's top right corner, then up.
+                var hx = g.hornX * px - t * 0.5, hy = g.hornY * px + 0.04 * px, ex = g.hornX * px + 0.1 * px, ey = hy - 0.13 * px;
+                op = { box: [hx - t, ey - t, ex + 0.03 * px + t, hy + t], path: function (c) { c.moveTo(hx, hy); c.quadraticCurveTo(ex + 0.03 * px, hy, ex, ey); } };
+            } else if (m === 'bar') {
+                var by = g.barY * px, bx0 = g.barX * px - (g.upperBar ? 0.11 : 0.1) * px, bx1 = g.barX * px + (g.upperBar ? 0.13 : 0.1) * px, bt = t * 0.85;
+                op = { width: bt, box: [bx0 - bt, by - bt, bx1 + bt, by + bt], path: function (c) { c.moveTo(bx0, by); c.lineTo(bx1, by); } };
+            } else {
+                // Marks above the letter, stacked upwards.
+                var mh = { acute: 0.17, grave: 0.17, hook: 0.2, tilde: 0.09, circ: 0.12, breve: 0.1 }[m] * px;
+                var y0 = cur - gap - t / 2, y1 = y0 - mh, cx = at((y0 + y1) / 2) + shift, k = slant * mh;
+                var draw = {
+                    acute: function (c) { c.moveTo(cx - 0.045 * px - k / 2, y0); c.lineTo(cx + 0.055 * px + k / 2, y1); },
+                    grave: function (c) { c.moveTo(cx + 0.045 * px - k / 2, y0); c.lineTo(cx - 0.055 * px + k / 2, y1); },
+                    circ: function (c) { c.moveTo(cx - 0.11 * px - k / 2, y0); c.lineTo(cx + k / 2, y1); c.lineTo(cx + 0.11 * px - k / 2, y0); },
+                    breve: function (c) { c.moveTo(cx - 0.1 * px + k / 2, y1); c.quadraticCurveTo(cx - k / 2, y0 + mh * 0.7, cx + 0.1 * px + k / 2, y1); },
+                    tilde: function (c) { c.moveTo(cx - 0.11 * px - k / 2, y0); c.bezierCurveTo(cx - 0.06 * px, y1 - mh * 0.6, cx + 0.03 * px, y0 + mh * 0.6, cx + 0.11 * px + k / 2, y1); },
+                    hook: function (c) {
+                        c.moveTo(cx - 0.065 * px + k * 0.75, y1 + mh * 0.3);
+                        c.bezierCurveTo(cx - 0.05 * px + k, y1 - mh * 0.12, cx + 0.085 * px + k, y1 - mh * 0.08, cx + 0.07 * px + k * 0.6, y1 + mh * 0.38);
+                        c.quadraticCurveTo(cx + 0.055 * px + k * 0.4, y1 + mh * 0.58, cx + k * 0.15, y1 + mh * 0.62);
+                        c.lineTo(cx - k / 2, y0);
+                    }
+                }[m];
+                var wx = 0.13 * px + k;
+                op = { box: [cx - wx - t, y1 - t, cx + wx + t, y0 + t], path: draw };
+                cur = y1 - t / 2;
+            }
+            ops.push(op);
+        });
+        ops.forEach(function (op) { op.width = op.width || t; });
+        return ops;
+    }
+
+    // Lays out one line of text: the letters to draw with the font and the marks to paint over them.
     function measure(ctx, text, font, px, spacing) {
-        ctx.font = font.weight + ' ' + px + 'px "' + font.family + '", Arial, sans-serif';
+        var parts = [], drawn = '';
+        Array.from(String(text).normalize('NFC')).forEach(function (ch) {
+            var p = vietPlan(font, ch);
+            if (p) parts.push({ at: drawn, base: p.base, marks: p.marks });
+            drawn += p ? p.base : ch;
+        });
+        ctx.font = fontCss(font, px) + ', Arial, sans-serif';
         if ('letterSpacing' in ctx) ctx.letterSpacing = (spacing * px) + 'px';
-        var m = ctx.measureText(text);
-        var l = m.actualBoundingBoxLeft || 0, r = m.actualBoundingBoxRight || m.width;
-        var a = m.actualBoundingBoxAscent || px * 0.75, d = m.actualBoundingBoxDescent || px * 0.25;
-        return { l: l, w: Math.max(0, l + r), a: a, h: Math.max(0, a + d) };
+        var m = ctx.measureText(drawn);
+        var x0 = -(m.actualBoundingBoxLeft || 0), x1 = m.actualBoundingBoxRight || m.width;
+        var y0 = -(m.actualBoundingBoxAscent || px * 0.75), y1 = m.actualBoundingBoxDescent || px * 0.25;
+        var marks = [];
+        parts.forEach(function (p) {
+            var dx = p.at ? ctx.measureText(p.at).width : 0;
+            markOps(glyphInk(font, p.base), p.marks, px).forEach(function (op) {
+                op.dx = dx;
+                x0 = Math.min(x0, dx + op.box[0]); x1 = Math.max(x1, dx + op.box[2]);
+                y0 = Math.min(y0, op.box[1]); y1 = Math.max(y1, op.box[3]);
+                marks.push(op);
+            });
+        });
+        return {
+            l: -x0, w: Math.max(0, x1 - x0), a: -y0, h: Math.max(0, y1 - y0),
+            // Draws the line with its origin (left end of the baseline) at x, y; uses the font set by measure.
+            draw: function (c, x, y) {
+                c.fillText(drawn, x, y);
+                if (!marks.length) return;
+                c.save();
+                c.strokeStyle = c.fillStyle;
+                c.lineCap = c.lineJoin = 'round';
+                marks.forEach(function (op) {
+                    c.beginPath();
+                    c.save();
+                    c.translate(x + op.dx, y);
+                    op.path(c);
+                    c.restore();
+                    if (op.fill) c.fill();
+                    else { c.lineWidth = op.width; c.stroke(); }
+                });
+                c.restore();
+            }
+        };
     }
 
     // Joins every separate piece of the plate (hole bosses, letters or icons far apart) to the largest piece with a
@@ -288,12 +490,10 @@
             rc.textBaseline = 'alphabetic';
             rc.textAlign = 'left';
             if (t1) {
-                measure(rc, line1, font, ref * k * R, s.spacing);
-                rc.fillText(line1, X(tl + ((tw - t1.w) / 2 + t1.l) * k), Y(tt + t1.a * k));
+                measure(rc, line1, font, ref * k * R, s.spacing).draw(rc, X(tl + ((tw - t1.w) / 2 + t1.l) * k), Y(tt + t1.a * k));
             }
             if (t2) {
-                measure(rc, line2, font, ref * 0.42 * k * R, s.spacing);
-                rc.fillText(line2, X(tl + ((tw - t2.w) / 2 + t2.l) * k), Y(tt + ((t1 ? t1.h : 0) + gap + t2.a) * k));
+                measure(rc, line2, font, ref * 0.42 * k * R, s.spacing).draw(rc, X(tl + ((tw - t2.w) / 2 + t2.l) * k), Y(tt + ((t1 ? t1.h : 0) + gap + t2.a) * k));
             }
             rc.restore();
 
