@@ -17,7 +17,7 @@ namespace Smartstore.Split3D.Controllers;
 [Route("cong-cu-3d")]
 public class ToolsController : PublicController
 {
-    private const int ThumbnailSize = 600;
+    private const int ThumbnailSize = MediaSettings.ThumbnailSizeLg;
 
     private readonly SmartDbContext _db;
     private readonly IShoppingCartService _cartService;

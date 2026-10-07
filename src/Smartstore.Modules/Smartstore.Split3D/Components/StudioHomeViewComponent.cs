@@ -20,7 +20,7 @@ namespace Smartstore.Split3D.Components;
 public class StudioHomeViewComponent : SmartViewComponent
 {
     const int MaxProducts = 24;
-    const int ThumbnailSize = 600;
+    const int ThumbnailSize = MediaSettings.ThumbnailSizeLg;
 
     private readonly SmartDbContext _db;
     private readonly IMediaService _mediaService;
