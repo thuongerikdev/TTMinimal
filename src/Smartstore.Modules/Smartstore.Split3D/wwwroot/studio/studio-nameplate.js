@@ -1750,7 +1750,30 @@
         this.spec = next;
         if (standChanged) this.reset(true);
         var key = geometryKey(next);
-        if (key === this.key && this.dims) { this.request(); return Promise.resolve(this.dims); }
+        if (key === this.key && this.dims) { this.scaleXY = 1; this.request(); return Promise.resolve(this.dims); }
+
+        // Only the length changed (the length slider being dragged): rebuilding a plate takes far longer than a
+        // frame, so the plate already built is stretched to the new length right away, and the real build follows
+        // once the length rests.
+        if (this.dims && this.M && !this.cap && this.builtLength && !this.restBuild
+            && geometryKey(Object.assign({}, next, { length: this.builtLength })) === this.key) {
+            var k = next.length / this.builtLength, built = this.builtDims;
+            this.scaleXY = k;
+            ++this.seq;
+            clearTimeout(this.fineTimer);
+            clearTimeout(this.stretchTimer);
+            this.stretchTimer = setTimeout(function () {
+                self.restBuild = true;
+                self.changedAt = 0;
+                var done = self.set({});
+                self.restBuild = false;
+                done.then(function (d) { if (self.onDims) self.onDims(d); });
+            }, 300);
+            this.request();
+            this.dims = { length: Math.round(built.length * k * 10) / 10, height: Math.round(built.height * k * 10) / 10, depth: built.depth };
+            return Promise.resolve(this.dims);
+        }
+        clearTimeout(this.stretchTimer);
 
         var seq = ++this.seq, font = fontOf(next.font), sample = (next.text + next.line2) || 'A';
         // Changes coming in quick succession (a slider being dragged, fast typing) are built as a coarse draft; the
@@ -1799,6 +1822,10 @@
         if (Lv) rel = Math.min(rel, 1.2);
         this.dims = { length: Math.round(M.size[0] * 10) / 10, height: Math.round(M.size[1] * 10) / 10, depth: Math.round((T + Math.max(qh, s.style === 'raised' && M.hasRelief ? rel : 0)) * 10) / 10 };
         this.radius = Math.hypot(M.FW / 2, M.FH / 2);
+        // The plate as built: the length slider stretches it until the next build (see set).
+        this.builtLength = s.length;
+        this.builtDims = Object.assign({}, this.dims);
+        this.scaleXY = 1;
         var g = this.gl;
         if (!g) return;
         var gl = g.gl;
@@ -1894,21 +1921,23 @@
 
     View.prototype.drawGL = function (aspect) {
         var g = this.gl, gl = g.gl, s = this.spec, M = this.M;
+        // Stretch of the built plate while the length slider moves (1 otherwise).
+        var st = this.cap ? 1 : this.scaleXY || 1, radius = this.radius * st, footRot = [st, 0, 0, 0, st, 0, 0, 0, 1];
         // Standing: tilt around X so the face looks at the viewer (-Y), lower edge on the ground.
-        var plateRot = [1, 0, 0, 0, 1, 0, 0, 0, 1], plateTrans = [0, 0, 0], target = this.cap ? this.cap.target : [0, 0, s.thickness / 2];
+        var plateRot = [st, 0, 0, 0, st, 0, 0, 0, 1], plateTrans = [0, 0, 0], target = this.cap ? this.cap.target : [0, 0, s.thickness / 2];
         if (s.stand && !this.cap) {
-            var c = Math.cos(TILT), sn = Math.sin(TILT), half = M.size[1] / 2;
-            plateRot = [1, 0, 0, 0, c, sn, 0, -sn, c];   // column-major
+            var c = Math.cos(TILT), sn = Math.sin(TILT), half = M.size[1] / 2 * st;
+            plateRot = [st, 0, 0, 0, c * st, sn * st, 0, -sn, c];   // column-major
             plateTrans = [0, 0, half * sn];
             target = [0, 0, half * sn];
         }
 
         // Distance that fits the plate across, and its tilted, swaying outline from top to bottom.
-        var tanH = Math.tan(FOV / 2), d = this.radius * Math.max(0.9 / aspect, 0.85) / tanH / this.zoom;
+        var tanH = Math.tan(FOV / 2), d = radius * Math.max(0.9 / aspect, 0.85) / tanH / this.zoom;
         var cp = Math.cos(this.pitch), sp = Math.sin(this.pitch), cy = Math.cos(this.yaw), sy = Math.sin(this.yaw);
         var eye = [target[0] + d * cp * sy, target[1] - d * cp * cy, target[2] + d * sp];
         var f = unit(sub(target, eye)), r = unit(cross(f, [0, 0, 1])), u = cross(r, f);
-        var near = Math.max(1, d - this.radius * 1.6), far = d + this.radius * 1.6, ff = 1 / tanH;
+        var near = Math.max(1, d - radius * 1.6), far = d + radius * 1.6, ff = 1 / tanH;
         var A = (far + near) / (near - far), B = 2 * far * near / (near - far);
         var re = -dot(r, eye), ue = -dot(u, eye), fe = dot(f, eye);
         var mvp = [
@@ -1962,7 +1991,7 @@
         var painted = !!this.painted;
         part('reliefWalls', s.style === 'raised' ? s.color : s.base, 0, plateRot, plateTrans, null, null, painted && s.style === 'raised');
         part('reliefTop', s.color, 2, plateRot, plateTrans, null, null, painted);
-        part('foot', s.base, 0, [1, 0, 0, 0, 1, 0, 0, 0, 1], [0, 0, 0]);
+        part('foot', s.base, 0, footRot, [0, 0, 0]);
         for (var k = 1; k <= (this.tiers || 0); k++) {
             var tc = levelColor(s, k, this.tiers);
             part('tierWalls' + k, tc, 0, plateRot, plateTrans);
@@ -1977,7 +2006,7 @@
             part('pocketWalls', floor, 0, plateRot, plateTrans);
             part('pocketFloor', floor, 5, plateRot, plateTrans);
             // "Tách ô": the tiles float above their pockets (along the plate's up direction when standing).
-            var lift = s.explode ? Math.max(8, this.radius * 0.08) : 0;
+            var lift = s.explode ? Math.max(8, radius * 0.08) : 0;
             var tTrans = [plateTrans[0] + plateRot[6] * lift, plateTrans[1] + plateRot[7] * lift, plateTrans[2] + plateRot[8] * lift];
             var tcut = s.style !== 'raised';
             part('tileWalls', s.tileColor, 0, plateRot, tTrans, null, g.tex2);

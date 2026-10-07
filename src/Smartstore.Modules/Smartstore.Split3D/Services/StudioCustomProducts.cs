@@ -32,11 +32,17 @@ public static class StudioCustomProducts
     public const string ClassBoardSku = "TT-CLASSBOARD";
     public const string QrSku = "TT-QR";
 
-    // Class board: text printed in place, or removable tiles (press-fit or magnets) the class can rearrange.
+    // Class board: text printed in place, or removable press-fit tiles the class can rearrange.
     private static readonly Attribute TileAttribute = new("Kiểu ô", AttributeControlType.RadioList, true, null,
     [
-        new("Chữ in liền (cố định)", PreSelected: true), new("Ô rời tháo lắp – khớp ấn", 120000), new("Ô rời tháo lắp – nam châm", 250000)
+        new("Chữ in liền (cố định)", PreSelected: true), new(RemovableTilesOption, 120000)
     ]);
+
+    /// <summary>
+    /// Name of the removable tiles choice of "Kiểu ô". Its former press-fit / magnet variants are merged into it by
+    /// <see cref="ApplyBoardTemplatesAsync"/> (the magnet tiles are no longer offered).
+    /// </summary>
+    public const string RemovableTilesOption = "Ô rời tháo lắp";
 
     // Key width (price per size) and legend color of keycaps. Declared before _products: static fields are
     // initialized in text order.
@@ -527,6 +533,24 @@ public static class StudioCustomProducts
 
             await EnsureBoardPictureAsync(db, mediaService, product, board.Theme, cancelToken);
         }
+
+        // One kind of removable tiles only: the press-fit choice is renamed, the magnet choice removed.
+        var tileValues = await db.ProductVariantAttributeValues
+            .Where(x => x.ProductVariantAttribute.ProductAttribute.Name == TileAttribute.Name && x.Name.StartsWith("Ô rời tháo lắp –"))
+            .ToListAsync(cancelToken);
+        foreach (var value in tileValues)
+        {
+            if (value.Name.Contains("nam châm"))
+            {
+                db.ProductVariantAttributeValues.Remove(value);
+            }
+            else
+            {
+                value.Name = RemovableTilesOption;
+            }
+        }
+
+        await db.SaveChangesAsync(cancelToken);
 
         // The designer: the last board of the category, and its colors now come from the looks.
         var designer = await db.Products.FirstOrDefaultAsync(x => x.Sku == ClassBoardSku && !x.Deleted, cancelToken);

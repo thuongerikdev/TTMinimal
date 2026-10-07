@@ -155,9 +155,9 @@
     var BOARD_MODES = [['timetable', 'Thời khoá biểu'], ['seating', 'Sơ đồ lớp']];
     var HEADINGS = { timetable: 'Thời khoá biểu', seating: 'Sơ đồ lớp' };
     // Tile choice of the product (priced option "Kiểu ô"): text printed in place or removable tiles.
-    var TILE_MODES = [['fixed', 'Chữ in liền'], ['press', 'Ô rời – khớp ấn'], ['magnet', 'Ô rời – nam châm']];
+    var TILE_MODES = [['fixed', 'Chữ in liền'], ['press', 'Ô rời tháo lắp']];
     var TILE_RE = /^kieu o$/;
-    function tileModeOf(text) { var n = norm(text); return /nam cham/.test(n) ? 'magnet' : /khop an|roi/.test(n) ? 'press' : 'fixed'; }
+    function tileModeOf(text) { return /roi|thao lap/.test(norm(text)) ? 'press' : 'fixed'; }
     function tileMode(d, ctx) { var r = ctx.radio(TILE_RE); return r ? tileModeOf(r) : d.tileMode; }
 
     // Filament colors the studio prints boards in.
@@ -377,7 +377,7 @@
             if (d.stand) parts.push('Có chân đứng');
             var tm = tileMode(d, ctx);
             if (tm !== 'fixed') {
-                parts.push('Ô rời ' + (tm === 'magnet' ? 'nam châm' : 'khớp ấn') + ', màu ô ' + colorName(c.tile) + ', chữ ' + colorName(c.tileInk));
+                parts.push('Ô rời tháo lắp, màu ô ' + colorName(c.tile) + ', chữ ' + colorName(c.tileInk));
                 var spare = String(d.spare || '').split(/\r?\n/).map(function (x) { return x.trim(); }).filter(Boolean);
                 if (spare.length) parts.push('Ô thêm: ' + spare.join(', '));
             }
