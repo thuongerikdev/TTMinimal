@@ -358,7 +358,6 @@ html.tt-noscroll, html.tt-noscroll body { overflow: hidden; }
 .tt-shelf .tt-product-name { font-size: 14px; margin: 2px 0 5px; }
 .tt-shelf .tt-product-price { font-size: 15px; }
 .tt-shelf .tt-product-price del { font-size: 12px; }
-.tt-shelf .tt-product-custom { margin-top: 8px; padding: 6px 10px; font-size: 12px; border-radius: 9px; }
 .tt-shelf-nav { position: sticky; top: 90px; display: flex; flex-direction: column; gap: 8px; padding: 14px; background: var(--cream); border: 2px solid var(--ink); border-radius: 18px; box-shadow: 5px 5px 0 var(--ink); }
 .tt-shelf-title { font-size: 11px; font-weight: 900; letter-spacing: 1px; text-transform: uppercase; opacity: .7; padding: 2px 4px 6px; border-bottom: 2px dashed rgba(0, 0, 0, .2); margin-bottom: 2px; }
 .tt-shelf-item { display: flex; align-items: center; gap: 10px; width: 100%; padding: 10px 12px; text-align: left; font-size: 14px; font-weight: 800; color: var(--ink); background: transparent; border: 2px solid transparent; border-radius: 12px; cursor: pointer; transition: background .15s, border-color .15s, transform .15s; }
@@ -379,7 +378,6 @@ html.tt-noscroll, html.tt-noscroll body { overflow: hidden; }
 .tt-product-price { font-weight: 900; font-size: 18px; margin-top: auto; }
 .tt-product-price del { font-weight: 600; font-size: 13px; opacity: .6; margin-left: 6px; }
 .tt-badge--custom { background: var(--yellow); font-size: 11px; font-weight: 900; }
-.tt-product-custom { display: inline-flex; align-items: center; gap: 6px; align-self: flex-start; margin-top: 10px; padding: 7px 12px; font-size: 13px; font-weight: 900; color: var(--cream); background: var(--ink); border-radius: 10px; }
 
 /* ---------- Addon ---------- */
 
