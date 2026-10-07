@@ -136,7 +136,8 @@
                         </nav>
                     }
                     <div class="tt-shelf-main">
-                        <div class="tt-products" id="tt-product-grid">
+                        @* Two rows at first, "Xem thêm" reveals the next two (studio.js initPaging). *@
+                        <div class="tt-products" id="tt-product-grid" data-tt-page="@(serviceCats.Count > 0 ? 6 : 8)">
                             @for (var i = 0; i < Model.Products.Count; i++)
                             {
                                 var p = Model.Products[i];
@@ -172,15 +173,18 @@
                                 </a>
                             }
                         </div>
-                        @if (serviceCats.Count > 0)
-                        {
-                            var firstCat = serviceCats[0];
-                            <div class="tt-actions" style="margin-top:2rem">
+                        <div class="tt-actions tt-more-actions">
+                            <button type="button" class="tt-button tt-button--ghost" data-tt-show-more hidden>
+                                Xem thêm sản phẩm <small>(còn <span>0</span>)</small> ↓
+                            </button>
+                            @if (serviceCats.Count > 0)
+                            {
+                                var firstCat = serviceCats[0];
                                 <a class="tt-button" href="@firstCat.Url" data-tt-filter-more hidden>
                                     Xem tất cả <span>@firstCat.Name</span> →
                                 </a>
-                            </div>
-                        }
+                            }
+                        </div>
                     </div>
                 </div>
             </div>

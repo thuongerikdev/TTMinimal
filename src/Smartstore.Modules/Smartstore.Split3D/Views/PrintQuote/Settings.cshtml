@@ -167,5 +167,49 @@
             <div class="adminTitle"><smart-label asp-for="NameplatePercentPerCm" /></div>
             <div class="adminData"><input asp-for="NameplatePercentPerCm" sm-postfix="%" /><span asp-validation-for="NameplatePercentPerCm"></span></div>
         </div>
+
+        <div class="adminRow">
+            <div class="admin-config-group">
+                <div class="title">@T("Plugins.Split3D.Studio.ClassBoard")</div>
+            </div>
+        </div>
+        <div class="adminRow">
+            <div class="adminTitle"><smart-label asp-for="ClassBoardMinLength" /></div>
+            <div class="adminData"><input asp-for="ClassBoardMinLength" sm-postfix="cm" /><span asp-validation-for="ClassBoardMinLength"></span></div>
+        </div>
+        <div class="adminRow">
+            <div class="adminTitle"><smart-label asp-for="ClassBoardMaxLength" /></div>
+            <div class="adminData"><input asp-for="ClassBoardMaxLength" sm-postfix="cm" /><span asp-validation-for="ClassBoardMaxLength"></span></div>
+        </div>
+        <div class="adminRow">
+            <div class="adminTitle"><smart-label asp-for="ClassBoardBaseLength" /></div>
+            <div class="adminData"><input asp-for="ClassBoardBaseLength" sm-postfix="cm" /><span asp-validation-for="ClassBoardBaseLength"></span></div>
+        </div>
+        <div class="adminRow">
+            <div class="adminTitle"><smart-label asp-for="ClassBoardPercentPerCm" /></div>
+            <div class="adminData"><input asp-for="ClassBoardPercentPerCm" sm-postfix="%" /><span asp-validation-for="ClassBoardPercentPerCm"></span></div>
+        </div>
+
+        <div class="adminRow">
+            <div class="admin-config-group">
+                <div class="title">@T("Plugins.Split3D.Studio.Qr")</div>
+            </div>
+        </div>
+        <div class="adminRow">
+            <div class="adminTitle"><smart-label asp-for="QrMinLength" /></div>
+            <div class="adminData"><input asp-for="QrMinLength" sm-postfix="cm" /><span asp-validation-for="QrMinLength"></span></div>
+        </div>
+        <div class="adminRow">
+            <div class="adminTitle"><smart-label asp-for="QrMaxLength" /></div>
+            <div class="adminData"><input asp-for="QrMaxLength" sm-postfix="cm" /><span asp-validation-for="QrMaxLength"></span></div>
+        </div>
+        <div class="adminRow">
+            <div class="adminTitle"><smart-label asp-for="QrBaseLength" /></div>
+            <div class="adminData"><input asp-for="QrBaseLength" sm-postfix="cm" /><span asp-validation-for="QrBaseLength"></span></div>
+        </div>
+        <div class="adminRow">
+            <div class="adminTitle"><smart-label asp-for="QrPercentPerCm" /></div>
+            <div class="adminData"><input asp-for="QrPercentPerCm" sm-postfix="%" /><span asp-validation-for="QrPercentPerCm"></span></div>
+        </div>
     </div>
 </form>

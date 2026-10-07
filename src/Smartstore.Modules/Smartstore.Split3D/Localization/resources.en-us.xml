@@ -1943,6 +1943,60 @@
     <LocaleResource Name="Studio.Fields.NameplatePercentPerCm.Hint">
         <Value>Price change per cm away from the base length, in percent of the product price: price × (1 + (length − base) × percent / 100). 6.67% keeps the former prices (15 cm = 4/3, 20 cm = 5/3 of the price).</Value>
     </LocaleResource>
+    <LocaleResource Name="Studio.ClassBoard">
+        <Value>Timetable / seating chart: length and price</Value>
+    </LocaleResource>
+    <LocaleResource Name="Studio.Fields.ClassBoardMinLength">
+        <Value>Shortest length</Value>
+    </LocaleResource>
+    <LocaleResource Name="Studio.Fields.ClassBoardMinLength.Hint">
+        <Value>Smallest length the customer can pick with the slider on the class board page.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Studio.Fields.ClassBoardMaxLength">
+        <Value>Longest length</Value>
+    </LocaleResource>
+    <LocaleResource Name="Studio.Fields.ClassBoardMaxLength.Hint">
+        <Value>Largest length the customer can pick with the slider on the class board page.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Studio.Fields.ClassBoardBaseLength">
+        <Value>Base length</Value>
+    </LocaleResource>
+    <LocaleResource Name="Studio.Fields.ClassBoardBaseLength.Hint">
+        <Value>Length the class board price stands for. Longer or shorter boards are priced from it.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Studio.Fields.ClassBoardPercentPerCm">
+        <Value>Price per cm</Value>
+    </LocaleResource>
+    <LocaleResource Name="Studio.Fields.ClassBoardPercentPerCm.Hint">
+        <Value>Price change per cm away from the base length, in percent of the product price: price × (1 + (length − base) × percent / 100).</Value>
+    </LocaleResource>
+    <LocaleResource Name="Studio.Qr">
+        <Value>QR plate: length and price</Value>
+    </LocaleResource>
+    <LocaleResource Name="Studio.Fields.QrMinLength">
+        <Value>Shortest length</Value>
+    </LocaleResource>
+    <LocaleResource Name="Studio.Fields.QrMinLength.Hint">
+        <Value>Smallest length the customer can pick with the slider on the QR plate page.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Studio.Fields.QrMaxLength">
+        <Value>Longest length</Value>
+    </LocaleResource>
+    <LocaleResource Name="Studio.Fields.QrMaxLength.Hint">
+        <Value>Largest length the customer can pick with the slider on the QR plate page.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Studio.Fields.QrBaseLength">
+        <Value>Base length</Value>
+    </LocaleResource>
+    <LocaleResource Name="Studio.Fields.QrBaseLength.Hint">
+        <Value>Length the QR plate price stands for. Longer or shorter plates are priced from it.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Studio.Fields.QrPercentPerCm">
+        <Value>Price per cm</Value>
+    </LocaleResource>
+    <LocaleResource Name="Studio.Fields.QrPercentPerCm.Hint">
+        <Value>Price change per cm away from the base length, in percent of the product price.</Value>
+    </LocaleResource>
     <LocaleResource Name="Studio.Fields.QuoteMessageTemplate">
         <Value>Quote message template</Value>
     </LocaleResource>

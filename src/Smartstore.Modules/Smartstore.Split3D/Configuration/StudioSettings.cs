@@ -92,6 +92,46 @@ public class StudioSettings : ISettings
     public decimal NameplatePercentPerCm { get; set; } = 6.67m;
 
     /// <summary>
+    /// Shortest class board (timetable / seating chart) the customer can pick with the length slider, in cm.
+    /// </summary>
+    public decimal ClassBoardMinLength { get; set; } = 20;
+
+    /// <summary>
+    /// Longest class board the customer can pick with the length slider, in cm.
+    /// </summary>
+    public decimal ClassBoardMaxLength { get; set; } = 60;
+
+    /// <summary>
+    /// Length the class board price stands for, in cm.
+    /// </summary>
+    public decimal ClassBoardBaseLength { get; set; } = 30;
+
+    /// <summary>
+    /// Class board price change per cm longer or shorter than <see cref="ClassBoardBaseLength"/>, in percent of the price.
+    /// </summary>
+    public decimal ClassBoardPercentPerCm { get; set; } = 5;
+
+    /// <summary>
+    /// Shortest QR plate the customer can pick with the length slider, in cm.
+    /// </summary>
+    public decimal QrMinLength { get; set; } = 5;
+
+    /// <summary>
+    /// Longest QR plate the customer can pick with the length slider, in cm.
+    /// </summary>
+    public decimal QrMaxLength { get; set; } = 25;
+
+    /// <summary>
+    /// Length the QR plate price stands for, in cm.
+    /// </summary>
+    public decimal QrBaseLength { get; set; } = 10;
+
+    /// <summary>
+    /// QR plate price change per cm longer or shorter than <see cref="QrBaseLength"/>, in percent of the price.
+    /// </summary>
+    public decimal QrPercentPerCm { get; set; } = 8;
+
+    /// <summary>
     /// Hint below the deposit on the order page, e.g. how the rest is settled.
     /// </summary>
     public string DepositNote { get; set; } = DefaultDepositNote;

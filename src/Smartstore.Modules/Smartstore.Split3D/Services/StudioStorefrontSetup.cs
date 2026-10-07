@@ -20,7 +20,7 @@ namespace Smartstore.Split3D.Services;
 /// </summary>
 public class StudioStorefrontSetup
 {
-    public const int CurrentVersion = 5;
+    public const int CurrentVersion = 7;
     public const string ThemeName = "TTMinimal";
     public const string PrintServiceRouteName = "TTPrintService";
     public const string PrintOrderRouteName = "TTPrintOrder";
@@ -78,6 +78,7 @@ public class StudioStorefrontSetup
         await ApplyCatalogAsync();
         await ApplyToolsCategoryAsync(cancelToken);
         await StudioCustomProducts.ApplyAsync(_db, _urlService, cancelToken);
+        await StudioCustomProducts.UpgradeAsync(_db, cancelToken);
         await _printOrderService.EnsurePrintProductAsync(cancelToken);
         await ApplyMainMenuAsync(cancelToken);
         await ApplyShippingAsync(cancelToken);

@@ -1943,6 +1943,60 @@
     <LocaleResource Name="Studio.Fields.NameplatePercentPerCm.Hint">
         <Value>Preisänderung je cm Abweichung von der Basislänge, in Prozent des Produktpreises: Preis × (1 + (Länge − Basis) × Prozent / 100). 6,67 % entspricht den bisherigen Preisen (15 cm = 4/3, 20 cm = 5/3 des Preises).</Value>
     </LocaleResource>
+    <LocaleResource Name="Studio.ClassBoard">
+        <Value>Stundenplan / Sitzplan: Länge und Preis</Value>
+    </LocaleResource>
+    <LocaleResource Name="Studio.Fields.ClassBoardMinLength">
+        <Value>Kleinste Länge</Value>
+    </LocaleResource>
+    <LocaleResource Name="Studio.Fields.ClassBoardMinLength.Hint">
+        <Value>Kleinste Länge, die der Kunde auf der Seite der Klassentafel mit dem Schieberegler wählen kann.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Studio.Fields.ClassBoardMaxLength">
+        <Value>Größte Länge</Value>
+    </LocaleResource>
+    <LocaleResource Name="Studio.Fields.ClassBoardMaxLength.Hint">
+        <Value>Größte Länge, die der Kunde auf der Seite der Klassentafel mit dem Schieberegler wählen kann.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Studio.Fields.ClassBoardBaseLength">
+        <Value>Basislänge</Value>
+    </LocaleResource>
+    <LocaleResource Name="Studio.Fields.ClassBoardBaseLength.Hint">
+        <Value>Länge, für die der Preis der Klassentafel gilt. Längere oder kürzere Tafeln werden davon ausgehend berechnet.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Studio.Fields.ClassBoardPercentPerCm">
+        <Value>Preis pro cm</Value>
+    </LocaleResource>
+    <LocaleResource Name="Studio.Fields.ClassBoardPercentPerCm.Hint">
+        <Value>Preisänderung je cm Abweichung von der Basislänge, in Prozent des Produktpreises: Preis × (1 + (Länge − Basis) × Prozent / 100).</Value>
+    </LocaleResource>
+    <LocaleResource Name="Studio.Qr">
+        <Value>QR-Schild: Länge und Preis</Value>
+    </LocaleResource>
+    <LocaleResource Name="Studio.Fields.QrMinLength">
+        <Value>Kleinste Länge</Value>
+    </LocaleResource>
+    <LocaleResource Name="Studio.Fields.QrMinLength.Hint">
+        <Value>Kleinste Länge, die der Kunde auf der Seite des QR-Schilds mit dem Schieberegler wählen kann.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Studio.Fields.QrMaxLength">
+        <Value>Größte Länge</Value>
+    </LocaleResource>
+    <LocaleResource Name="Studio.Fields.QrMaxLength.Hint">
+        <Value>Größte Länge, die der Kunde auf der Seite des QR-Schilds mit dem Schieberegler wählen kann.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Studio.Fields.QrBaseLength">
+        <Value>Basislänge</Value>
+    </LocaleResource>
+    <LocaleResource Name="Studio.Fields.QrBaseLength.Hint">
+        <Value>Länge, für die der Preis des QR-Schilds gilt.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Studio.Fields.QrPercentPerCm">
+        <Value>Preis pro cm</Value>
+    </LocaleResource>
+    <LocaleResource Name="Studio.Fields.QrPercentPerCm.Hint">
+        <Value>Preisänderung je cm Abweichung von der Basislänge, in Prozent des Produktpreises.</Value>
+    </LocaleResource>
     <LocaleResource Name="Studio.Fields.QuoteMessageTemplate">
         <Value>Nachrichtenvorlage Angebot</Value>
     </LocaleResource>

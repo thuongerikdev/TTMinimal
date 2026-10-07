@@ -26,8 +26,8 @@ public class NameplateLengthPriceCalculator : IPriceCalculator
 
         var product = context.Product;
         if (product?.Sku == null
-            || !StudioCustomProducts.TextListProducts.TryGetValue(product.Sku, out var list)
-            || !list.Preview)
+            || !StudioCustomProducts.DesignProducts.TryGetValue(product.Sku, out var design)
+            || !design.Length)
         {
             return;
         }
@@ -46,7 +46,7 @@ public class NameplateLengthPriceCalculator : IPriceCalculator
             .Select(x => x?.ToString())
             .FirstOrDefault(x => !string.IsNullOrWhiteSpace(x));
 
-        var factor = StudioCustomProducts.LengthFactor(StudioCustomProducts.ParseLength(raw, _settings), _settings);
+        var factor = StudioCustomProducts.LengthFactor(StudioCustomProducts.ParseLength(raw, design.Kind, _settings), design.Kind, _settings);
         if (factor == 1m)
         {
             return;

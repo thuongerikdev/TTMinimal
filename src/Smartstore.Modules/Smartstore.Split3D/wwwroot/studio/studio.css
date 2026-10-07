@@ -329,7 +329,10 @@ html.tt-noscroll, html.tt-noscroll body { overflow: hidden; }
 .tt-products { display: grid; grid-template-columns: repeat(4, 1fr); gap: 22px; }
 .tt-product { display: flex; flex-direction: column; padding: 12px 12px 16px; border: 2px solid var(--ink); border-radius: 18px; box-shadow: 5px 5px 0 var(--ink); transition: transform .2s var(--ease), box-shadow .2s; }
 .tt-product:hover { transform: translate(-2px, -3px); box-shadow: 7px 8px 0 var(--ink); }
-.tt-product.is-hidden { display: none; }
+.tt-product.is-hidden, .tt-product.is-more { display: none; }
+.tt-more-actions { justify-content: center; margin-top: 2rem; }
+.tt-more-actions:not(:has(> :not([hidden]))) { display: none; }
+.tt-more-actions small { font-size: .8em; font-weight: 700; opacity: .7; }
 .tt-product.is-pop { animation: tt-pop .35s var(--ease) both; animation-delay: var(--pd, 0s); }
 @keyframes tt-pop { from { opacity: 0; transform: translateY(14px) scale(.97); } }
 
@@ -872,6 +875,18 @@ textarea.tt-input { resize: vertical; min-height: 110px; }
 .tt-np-field { display: flex; flex-direction: column; gap: 4px; margin: 0; font-size: 13px; font-weight: 800; }
 .tt-np-field small { font-weight: 600; opacity: .65; }
 .tt-np-field .tt-input { width: 100%; min-height: 38px; padding: 6px 12px; font-size: 14px; }
+/* Class board editor: timetable cells and the list of pupils */
+.tt-np-field textarea.tt-input { min-height: 0; resize: vertical; line-height: 1.45; }
+.tt-np-tablewrap { overflow-x: auto; border: 2px solid var(--ink); border-radius: 10px; background: #fff; }
+.tt-np-table { width: 100%; min-width: 420px; border-collapse: collapse; font-size: 12px; }
+.tt-np-table th { padding: 4px 6px; background: var(--yellow); border-bottom: 1.5px solid var(--ink); font-weight: 900; text-align: center; white-space: nowrap; }
+.tt-np-table tbody th { width: 34px; background: var(--cream); border-bottom: 1px solid rgba(32, 32, 31, .15); border-right: 1.5px solid var(--ink); }
+.tt-np-table td { padding: 2px; border-bottom: 1px solid rgba(32, 32, 31, .15); border-left: 1px solid rgba(32, 32, 31, .1); }
+.tt-np-table input { width: 100%; min-width: 54px; padding: 4px 6px; border: 1px solid transparent; border-radius: 6px; background: transparent; color: var(--ink); font-size: 12px; font-weight: 700; }
+.tt-np-table input:focus { outline: none; border-color: var(--ink); background: var(--cream); }
+.tt-np-action { display: block; width: 100%; margin-top: 10px; padding: 8px 12px; border: 2px solid var(--ink); border-radius: 10px; background: var(--yellow); color: var(--ink); font-size: 13px; font-weight: 900; cursor: pointer; box-shadow: 2px 2px 0 var(--ink); }
+.tt-np-action:hover { background: var(--mint); }
+.tt-qr-status { font-weight: 800; opacity: 1 !important; }
 .tt-np-note { margin: 10px 0 0 !important; font-size: 12px; opacity: .7; }
 .tt-np-panel-foot { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 6px 12px; margin-top: 14px; padding-top: 10px; border-top: 1px dashed rgba(32, 32, 31, .3); font-size: 12px; }
 .tt-np-panel-foot span { opacity: .65; }

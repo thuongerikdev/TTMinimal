@@ -319,6 +319,14 @@ public class PrintQuoteController : AdminController
             NameplateMaxLength = _settings.NameplateMaxLength,
             NameplateBaseLength = _settings.NameplateBaseLength,
             NameplatePercentPerCm = _settings.NameplatePercentPerCm,
+            ClassBoardMinLength = _settings.ClassBoardMinLength,
+            ClassBoardMaxLength = _settings.ClassBoardMaxLength,
+            ClassBoardBaseLength = _settings.ClassBoardBaseLength,
+            ClassBoardPercentPerCm = _settings.ClassBoardPercentPerCm,
+            QrMinLength = _settings.QrMinLength,
+            QrMaxLength = _settings.QrMaxLength,
+            QrBaseLength = _settings.QrBaseLength,
+            QrPercentPerCm = _settings.QrPercentPerCm,
             QuoteMessageTemplate = _settings.QuoteMessageTemplate,
             FdmWeightFactor = _settings.FdmWeightFactor,
             ResinWeightFactor = _settings.ResinWeightFactor,
@@ -340,6 +348,16 @@ public class PrintQuoteController : AdminController
         if (model.NameplateMinLength > model.NameplateMaxLength)
         {
             ModelState.AddModelError(nameof(model.NameplateMaxLength), T("Plugins.Split3D.Studio.NameplateLengthRangeInvalid"));
+        }
+
+        if (model.ClassBoardMinLength > model.ClassBoardMaxLength)
+        {
+            ModelState.AddModelError(nameof(model.ClassBoardMaxLength), T("Plugins.Split3D.Studio.NameplateLengthRangeInvalid"));
+        }
+
+        if (model.QrMinLength > model.QrMaxLength)
+        {
+            ModelState.AddModelError(nameof(model.QrMaxLength), T("Plugins.Split3D.Studio.NameplateLengthRangeInvalid"));
         }
 
         if (!ModelState.IsValid)
@@ -369,6 +387,14 @@ public class PrintQuoteController : AdminController
         _settings.NameplateMaxLength = model.NameplateMaxLength;
         _settings.NameplateBaseLength = Math.Clamp(model.NameplateBaseLength, model.NameplateMinLength, model.NameplateMaxLength);
         _settings.NameplatePercentPerCm = model.NameplatePercentPerCm;
+        _settings.ClassBoardMinLength = model.ClassBoardMinLength;
+        _settings.ClassBoardMaxLength = model.ClassBoardMaxLength;
+        _settings.ClassBoardBaseLength = Math.Clamp(model.ClassBoardBaseLength, model.ClassBoardMinLength, model.ClassBoardMaxLength);
+        _settings.ClassBoardPercentPerCm = model.ClassBoardPercentPerCm;
+        _settings.QrMinLength = model.QrMinLength;
+        _settings.QrMaxLength = model.QrMaxLength;
+        _settings.QrBaseLength = Math.Clamp(model.QrBaseLength, model.QrMinLength, model.QrMaxLength);
+        _settings.QrPercentPerCm = model.QrPercentPerCm;
         _settings.QuoteMessageTemplate = model.QuoteMessageTemplate?.Trim().NullEmpty() ?? StudioSettings.DefaultQuoteMessageTemplate;
         _settings.FdmWeightFactor = model.FdmWeightFactor;
         _settings.ResinWeightFactor = model.ResinWeightFactor;

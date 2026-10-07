@@ -8,10 +8,10 @@ using Smartstore.Core.Widgets;
 namespace Smartstore.Split3D.Filters;
 
 /// <summary>
-/// On the product page of a personalized product (<see cref="StudioCustomProducts.TextListProducts"/>), lets the customer
-/// order a whole list at once: studio.js reads the JSON config added here and opens a table dialog (one row per text
-/// with its own colors, quantity and note) that adds every row to the cart as its own line. Name plates also get a
-/// live 3D preview of the typed text and of any row of the list.
+/// On the product page of a product with the 3D designer (<see cref="StudioCustomProducts.DesignProducts"/>: name
+/// plate, class board, keycap) adds the JSON config studio.js reads: the live 3D preview with its design panel (kind),
+/// the hidden design summary and length attributes, the shop's fonts, and for list products a table dialog to order a
+/// whole list at once (one row per text with its own colors, quantity and note, each row its own cart line).
 /// Registered for Product/ProductDetails, see Startup.
 /// </summary>
 public class TextListFilter : IAsyncActionFilter
@@ -64,7 +64,7 @@ public class TextListFilter : IAsyncActionFilter
                 .Select(x => x.Sku)
                 .FirstOrDefaultAsync();
 
-            if (sku != null && StudioCustomProducts.TextListProducts.TryGetValue(sku, out var list))
+            if (sku != null && StudioCustomProducts.DesignProducts.TryGetValue(sku, out var list))
             {
                 var attribute = await _db.ProductVariantAttributes
                     .Where(x => x.ProductId == productId
@@ -77,7 +77,7 @@ public class TextListFilter : IAsyncActionFilter
                 if (attribute != null)
                 {
                     // The 3D designer writes its choices into a hidden text attribute, so they reach cart and order.
-                    var design = list.Preview ? await StudioCustomProducts.EnsureDesignAttributeAsync(_db, productId) : null;
+                    var design = await StudioCustomProducts.EnsureDesignAttributeAsync(_db, productId);
                     var designControl = design != null ? ProductVariantQueryItem.CreateKey(productId, 0, design.ProductAttributeId, design.Id) : null;
                     if (designControl != null)
                     {
@@ -86,18 +86,19 @@ public class TextListFilter : IAsyncActionFilter
 
                     // Free length (slider) instead of fixed sizes, priced by NameplateLengthPriceCalculator.
                     object length = null;
-                    if (list.Preview)
+                    if (list.Length)
                     {
+                        var range = StudioCustomProducts.LengthRange(list.Kind, _studioSettings);
                         var lengthAttribute = await StudioCustomProducts.EnsureLengthAttributeAsync(_db, productId);
                         var lengthControl = ProductVariantQueryItem.CreateKey(productId, 0, lengthAttribute.ProductAttributeId, lengthAttribute.Id);
                         _widgetProvider.Value.RegisterWidget("end", new HtmlWidget($"<style>.form-group.choice:has(#{lengthControl}) {{ display: none; }}</style>"));
                         length = new
                         {
                             control = lengthControl,
-                            min = Math.Min(_studioSettings.NameplateMinLength, _studioSettings.NameplateMaxLength),
-                            max = Math.Max(_studioSettings.NameplateMinLength, _studioSettings.NameplateMaxLength),
-                            @base = _studioSettings.NameplateBaseLength,
-                            percent = _studioSettings.NameplatePercentPerCm,
+                            min = range.Min,
+                            max = range.Max,
+                            @base = range.Base,
+                            percent = range.PercentPerCm,
                             price = await _db.Products.Where(x => x.Id == productId).Select(x => x.Price).FirstOrDefaultAsync()
                         };
                     }
@@ -110,10 +111,14 @@ public class TextListFilter : IAsyncActionFilter
                         item = list.Item,
                         cartUrl = url?.RouteUrl("ShoppingCart"),
                         xlsxSrc = url?.Content(StudioAssets.XlsxScript),
-                        previewSrc = list.Preview ? url?.Content(StudioAssets.NameplateScript) : null,
+                        kind = list.Kind,
+                        list = list.List,
+                        previewSrc = url?.Content(StudioAssets.NameplateScript),
+                        designsSrc = url?.Content(StudioAssets.DesignsScript),
                         designControl,
                         length,
-                        fonts = list.Preview ? ShopFonts(url) : null
+                        fonts = ShopFonts(url),
+                        qrUrl = list.Kind == "qr" ? url?.Content("~/studio/qr") : null
                     });
 
                     // "<" is escaped by the serializer, so the JSON cannot close the script element.

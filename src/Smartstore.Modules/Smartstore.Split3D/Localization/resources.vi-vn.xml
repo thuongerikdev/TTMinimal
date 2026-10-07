@@ -4607,6 +4607,60 @@
     <LocaleResource Name="Studio.Fields.NameplatePercentPerCm.Hint">
         <Value>Giá tăng / giảm cho mỗi cm dài hơn / ngắn hơn chiều dài gốc, tính theo % giá sản phẩm: giá × (1 + (dài − gốc) × % / 100). 6,67% giữ đúng giá cũ (15 cm = 4/3, 20 cm = 5/3 giá).</Value>
     </LocaleResource>
+    <LocaleResource Name="Studio.ClassBoard">
+        <Value>Thời khoá biểu / sơ đồ lớp: chiều dài và giá</Value>
+    </LocaleResource>
+    <LocaleResource Name="Studio.Fields.ClassBoardMinLength">
+        <Value>Dài tối thiểu</Value>
+    </LocaleResource>
+    <LocaleResource Name="Studio.Fields.ClassBoardMinLength.Hint">
+        <Value>Chiều dài nhỏ nhất khách kéo được trên trang thời khoá biểu / sơ đồ lớp.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Studio.Fields.ClassBoardMaxLength">
+        <Value>Dài tối đa</Value>
+    </LocaleResource>
+    <LocaleResource Name="Studio.Fields.ClassBoardMaxLength.Hint">
+        <Value>Chiều dài lớn nhất khách kéo được trên trang thời khoá biểu / sơ đồ lớp.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Studio.Fields.ClassBoardBaseLength">
+        <Value>Chiều dài gốc</Value>
+    </LocaleResource>
+    <LocaleResource Name="Studio.Fields.ClassBoardBaseLength.Hint">
+        <Value>Chiều dài ứng với giá sản phẩm. Bảng dài / ngắn hơn tính giá từ mức này.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Studio.Fields.ClassBoardPercentPerCm">
+        <Value>Giá mỗi cm</Value>
+    </LocaleResource>
+    <LocaleResource Name="Studio.Fields.ClassBoardPercentPerCm.Hint">
+        <Value>Giá tăng / giảm cho mỗi cm dài hơn / ngắn hơn chiều dài gốc, theo % giá sản phẩm: giá × (1 + (dài − gốc) × % / 100).</Value>
+    </LocaleResource>
+    <LocaleResource Name="Studio.Qr">
+        <Value>Mã QR in 3D: chiều dài và giá</Value>
+    </LocaleResource>
+    <LocaleResource Name="Studio.Fields.QrMinLength">
+        <Value>Dài tối thiểu</Value>
+    </LocaleResource>
+    <LocaleResource Name="Studio.Fields.QrMinLength.Hint">
+        <Value>Chiều dài nhỏ nhất khách kéo được trên trang mã QR.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Studio.Fields.QrMaxLength">
+        <Value>Dài tối đa</Value>
+    </LocaleResource>
+    <LocaleResource Name="Studio.Fields.QrMaxLength.Hint">
+        <Value>Chiều dài lớn nhất khách kéo được trên trang mã QR.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Studio.Fields.QrBaseLength">
+        <Value>Chiều dài gốc</Value>
+    </LocaleResource>
+    <LocaleResource Name="Studio.Fields.QrBaseLength.Hint">
+        <Value>Chiều dài ứng với giá sản phẩm mã QR.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Studio.Fields.QrPercentPerCm">
+        <Value>Giá mỗi cm</Value>
+    </LocaleResource>
+    <LocaleResource Name="Studio.Fields.QrPercentPerCm.Hint">
+        <Value>Giá tăng / giảm cho mỗi cm dài hơn / ngắn hơn chiều dài gốc, theo % giá sản phẩm.</Value>
+    </LocaleResource>
     <LocaleResource Name="Studio.Fields.QuoteMessageTemplate">
         <Value>Mẫu tin nhắn báo giá</Value>
     </LocaleResource>

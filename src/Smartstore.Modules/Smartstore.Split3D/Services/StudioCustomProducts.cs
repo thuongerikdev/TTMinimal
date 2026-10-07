@@ -7,9 +7,10 @@ using Smartstore.Core.Seo;
 namespace Smartstore.Split3D.Services;
 
 /// <summary>
-/// Personalized products the customer configures before ordering (name plate, keycaps): text the customer types
-/// plus color / size options. Created once by <see cref="StudioStorefrontSetup"/>; prices and options are edited
-/// in the catalog afterwards and are never overwritten.
+/// Personalized products the customer configures before ordering (name plate, class board, keycaps): text the
+/// customer types plus color / size options. Created once by <see cref="StudioStorefrontSetup"/>; prices and options
+/// are edited in the catalog afterwards and are never overwritten (<see cref="UpgradeAsync"/> only adds options that
+/// a newer version of the designer needs).
 /// </summary>
 public static class StudioCustomProducts
 {
@@ -26,6 +27,29 @@ public static class StudioCustomProducts
     private sealed record Attribute(string Name, AttributeControlType ControlType, bool IsRequired, string TextPrompt, Option[] Options);
 
     private sealed record Spec(string Sku, string Name, string Slug, decimal Price, string ShortDescription, string FullDescription, Attribute[] Attributes);
+
+    public const string ClassBoardSku = "TT-CLASSBOARD";
+    public const string QrSku = "TT-QR";
+
+    // Class board: text printed in place, or removable tiles (press-fit or magnets) the class can rearrange.
+    private static readonly Attribute TileAttribute = new("Kiểu ô", AttributeControlType.RadioList, true, null,
+    [
+        new("Chữ in liền (cố định)", PreSelected: true), new("Ô rời tháo lắp – khớp ấn", 120000), new("Ô rời tháo lắp – nam châm", 250000)
+    ]);
+
+    // Key width (price per size) and legend color of keycaps. Declared before _products: static fields are
+    // initialized in text order.
+    private static readonly Attribute KeySizeAttribute = new("Kích cỡ phím", AttributeControlType.RadioList, true, null,
+    [
+        new("1u (phím chữ, số)", PreSelected: true), new("1,25u (Ctrl, Alt, Win)", 5000), new("1,5u (Tab, \\)", 8000),
+        new("1,75u (Caps Lock)", 10000), new("2u (Backspace)", 15000), new("2,25u (Enter, Shift trái)", 18000),
+        new("2,75u (Shift phải)", 25000), new("6,25u (phím cách)", 60000)
+    ]);
+
+    private static readonly Attribute LegendColorAttribute = new("Màu ký tự", AttributeControlType.Boxes, true, null, ColorOptions(1));
+
+    // Profiles the keycap designer draws, added to the profile choice of existing keycaps.
+    private static readonly Option[] _extraProfiles = [new("DSA"), new("SA", 5000)];
 
     private static readonly Spec[] _products =
     [
@@ -45,22 +69,69 @@ public static class StudioCustomProducts
                 new("Ký tự / hình trên keycap", AttributeControlType.TextBox, true, "VD: ESC, logo mèo, chữ T", []),
                 new("Profile", AttributeControlType.RadioList, true, null,
                 [
-                    new("OEM", PreSelected: true), new("Cherry"), new("XDA"), new("Artisan (tượng nhỏ)", 35000)
+                    new("OEM", PreSelected: true), new("Cherry"), new("XDA"), new("DSA"), new("SA", 5000), new("Artisan (tượng nhỏ)", 35000)
                 ]),
-                new("Màu", AttributeControlType.Boxes, true, null, ColorOptions(0))
+                new("Màu", AttributeControlType.Boxes, true, null, ColorOptions(0)),
+                KeySizeAttribute,
+                LegendColorAttribute
+            ]),
+        new(ClassBoardSku, "Thời khoá biểu & sơ đồ lớp in 3D", "thoi-khoa-bieu-so-do-lop-in-3d", 350000,
+            "Bảng thời khoá biểu hoặc sơ đồ chỗ ngồi của lớp, in 3D chữ nổi: tự nhập môn học / tên học sinh, xem trước 3D.",
+            "<p>Một sản phẩm cho cả hai: <b>thời khoá biểu</b> (số ngày, số tiết sáng / chiều, tên môn từng ô) hoặc <b>sơ đồ lớp</b> "
+            + "(số hàng, dãy, chỗ mỗi bàn, bàn giáo viên, tên học sinh). Chọn phông, màu, kiểu đế, lỗ treo hoặc chân đứng — xem trước 3D ngay "
+            + "trên trang, studio gửi file xem trước rồi mới in. Giá theo chiều dài bảng.</p>",
+            [
+                new("Tên lớp / tiêu đề", AttributeControlType.TextBox, true, "Tiêu đề trên bảng (VD: Thời khoá biểu lớp 6A1)", []),
+                new("Màu nền", AttributeControlType.Boxes, true, null, ColorOptions(0)),
+                new("Màu chữ", AttributeControlType.Boxes, true, null, ColorOptions(1)),
+                TileAttribute,
+                new(LengthAttributeName, AttributeControlType.TextBox, false, null, [])
+            ]),
+        new(QrSku, "Mã QR in 3D theo yêu cầu", "ma-qr-in-3d-theo-yeu-cau", 120000,
+            "Bảng mã QR in 3D: WiFi, chuyển khoản ngân hàng (VietQR), link menu / website, Zalo — để bàn, treo tường hoặc móc khoá.",
+            "<p>Nhập nội dung (link, WiFi, số tài khoản, Zalo…), chọn kiểu mã, chữ dưới mã, màu, kích thước, chân đứng hoặc lỗ treo — "
+            + "xem trước 3D ngay trên trang và quét thử từ màn hình. Mã đậm trên nền sáng để điện thoại quét được. Giá theo chiều dài.</p>",
+            [
+                new("Chữ trên bảng", AttributeControlType.TextBox, false, "Chữ dưới mã QR (VD: Quét để kết nối WiFi)", []),
+                new("Màu nền", AttributeControlType.Boxes, true, null, ColorOptions(0)),
+                new("Màu chữ", AttributeControlType.Boxes, true, null, ColorOptions(1)),
+                new(LengthAttributeName, AttributeControlType.TextBox, false, null, [])
             ])
     ];
 
     /// <summary>
-    /// Products whose text field can be filled from a list (one row per piece), see <see cref="Filters.TextListFilter"/>.
-    /// Key is the SKU; Title heads the list dialog, Item names one row ("bảng tên"), Preview shows the text as a 3D
-    /// name plate (studio-nameplate.js) on the product page and in the list dialog.
+    /// A product with the 3D designer, see <see cref="Filters.TextListFilter"/>. Kind selects the 3D model and the
+    /// design panel (studio-nameplate.js, studio-designs.js): "nameplate", "classboard" or "keycap". List: the text
+    /// field can be filled from a list (one row per piece; Title heads the list dialog, Item names one row).
+    /// Length: free length slider priced by <see cref="NameplateLengthPriceCalculator"/>.
     /// </summary>
-    public static readonly IReadOnlyDictionary<string, (string Title, string Item, bool Preview)> TextListProducts = new Dictionary<string, (string, string, bool)>(StringComparer.OrdinalIgnoreCase)
+    public sealed record DesignProduct(string Kind, string Title, string Item, bool List, bool Length);
+
+    /// <summary>
+    /// Products with the 3D designer, by SKU.
+    /// </summary>
+    public static readonly IReadOnlyDictionary<string, DesignProduct> DesignProducts = new Dictionary<string, DesignProduct>(StringComparer.OrdinalIgnoreCase)
     {
-        ["TT-NAMEPLATE"] = ("Danh sách tên cần in", "bảng tên", true),
-        ["TT-KEYCAP"] = ("Danh sách keycap cần in", "keycap", false)
+        ["TT-NAMEPLATE"] = new("nameplate", "Danh sách tên cần in", "bảng tên", true, true),
+        ["TT-KEYCAP"] = new("keycap", "Danh sách keycap cần in", "keycap", true, false),
+        [ClassBoardSku] = new("classboard", "Danh sách bảng cần in", "bảng", false, true),
+        [QrSku] = new("qr", "Danh sách mã QR cần in", "bảng QR", false, true)
     };
+
+    /// <summary>
+    /// Length range and price of a kind with a length slider: shortest, longest and base length (cm) and the price
+    /// change per cm in percent.
+    /// </summary>
+    public static (decimal Min, decimal Max, decimal Base, decimal PercentPerCm) LengthRange(string kind, StudioSettings settings)
+    {
+        var (a, b, baseLength, percent) = kind switch
+        {
+            "classboard" => (settings.ClassBoardMinLength, settings.ClassBoardMaxLength, settings.ClassBoardBaseLength, settings.ClassBoardPercentPerCm),
+            "qr" => (settings.QrMinLength, settings.QrMaxLength, settings.QrBaseLength, settings.QrPercentPerCm),
+            _ => (settings.NameplateMinLength, settings.NameplateMaxLength, settings.NameplateBaseLength, settings.NameplatePercentPerCm)
+        };
+        return (Math.Min(a, b), Math.Max(a, b), baseLength, percent);
+    }
 
     /// <summary>
     /// Name of the text attribute that holds the plate length in cm, picked with the slider on the product page and
@@ -81,27 +152,29 @@ public static class StudioCustomProducts
         => EnsureAttributeAsync(db, productId, LengthAttributeName, AttributeControlType.TextBox, true, cancelToken);
 
     /// <summary>
-    /// The length in cm a customer entered, limited to the range of the settings; the base length when empty or invalid.
+    /// The length in cm a customer entered, limited to the range of the kind; the base length when empty or invalid.
     /// </summary>
-    public static decimal ParseLength(string value, StudioSettings settings)
+    public static decimal ParseLength(string value, string kind, StudioSettings settings)
     {
-        var min = Math.Min(settings.NameplateMinLength, settings.NameplateMaxLength);
-        var max = Math.Max(settings.NameplateMinLength, settings.NameplateMaxLength);
+        var range = LengthRange(kind, settings);
         var text = value?.Trim().Replace(',', '.');
         if (!decimal.TryParse(text, System.Globalization.NumberStyles.Number, System.Globalization.CultureInfo.InvariantCulture, out var length))
         {
-            length = settings.NameplateBaseLength;
+            length = range.Base;
         }
 
         // Half centimetres, like the slider.
-        return Math.Clamp(Math.Round(length * 2, MidpointRounding.AwayFromZero) / 2, min, max);
+        return Math.Clamp(Math.Round(length * 2, MidpointRounding.AwayFromZero) / 2, range.Min, range.Max);
     }
 
     /// <summary>
-    /// Price factor of a plate length: 1 + (length − base) × percent per cm / 100, never below 0.2.
+    /// Price factor of a length: 1 + (length − base) × percent per cm / 100, never below 0.2.
     /// </summary>
-    public static decimal LengthFactor(decimal length, StudioSettings settings)
-        => Math.Max(0.2m, 1 + (length - settings.NameplateBaseLength) * settings.NameplatePercentPerCm / 100);
+    public static decimal LengthFactor(decimal length, string kind, StudioSettings settings)
+    {
+        var range = LengthRange(kind, settings);
+        return Math.Max(0.2m, 1 + (length - range.Base) * range.PercentPerCm / 100);
+    }
 
     /// <summary>
     /// Name of the optional text attribute that holds the 3D designer's choices (font, shape, holes…) as a readable summary.
@@ -347,6 +420,114 @@ public static class StudioCustomProducts
     /// <summary>
     /// Whether the product takes text from the customer (a "customize" product).
     /// </summary>
+    /// <summary>
+    /// Adds what a newer designer needs to products created before it: the key size, legend color and the DSA / SA
+    /// profiles of the keycap, the tile choice of the class board. Existing options, prices and names are left alone.
+    /// </summary>
+    public static async Task UpgradeAsync(SmartDbContext db, CancellationToken cancelToken = default)
+    {
+        var boardId = await db.Products.Where(x => x.Sku == ClassBoardSku).Select(x => (int?)x.Id).FirstOrDefaultAsync(cancelToken);
+        if (boardId != null)
+        {
+            var boardAttributes = await db.ProductVariantAttributes
+                .Include(x => x.ProductAttribute)
+                .Where(x => x.ProductId == boardId.Value)
+                .ToListAsync(cancelToken);
+            if (!boardAttributes.Any(x => x.ProductAttribute.Name == TileAttribute.Name))
+            {
+                // Right after the colors: the attributes behind them move one place down.
+                var colors = boardAttributes.Where(x => x.ProductAttribute.Name.StartsWith("Màu")).Select(x => x.DisplayOrder).DefaultIfEmpty(0).Max();
+                foreach (var later in boardAttributes.Where(x => x.DisplayOrder > colors))
+                {
+                    later.DisplayOrder++;
+                }
+
+                await db.SaveChangesAsync(cancelToken);
+                await AddAttributeAsync(db, boardId.Value, TileAttribute, colors + 1, cancelToken);
+            }
+        }
+
+        var keycapId = await db.Products.Where(x => x.Sku == "TT-KEYCAP").Select(x => (int?)x.Id).FirstOrDefaultAsync(cancelToken);
+        if (keycapId == null)
+        {
+            return;
+        }
+
+        var mapped = await db.ProductVariantAttributes
+            .Include(x => x.ProductAttribute)
+            .Include(x => x.ProductVariantAttributeValues)
+            .Where(x => x.ProductId == keycapId.Value)
+            .ToListAsync(cancelToken);
+        var order = mapped.Count > 0 ? mapped.Max(x => x.DisplayOrder) : 0;
+
+        foreach (var attr in new[] { KeySizeAttribute, LegendColorAttribute })
+        {
+            if (!mapped.Any(x => x.ProductAttribute.Name == attr.Name))
+            {
+                await AddAttributeAsync(db, keycapId.Value, attr, ++order, cancelToken);
+            }
+        }
+
+        var profile = mapped.FirstOrDefault(x => x.ProductAttribute.Name == "Profile");
+        if (profile != null)
+        {
+            var valueOrder = profile.ProductVariantAttributeValues.Count > 0 ? profile.ProductVariantAttributeValues.Max(x => x.DisplayOrder) : 0;
+            foreach (var option in _extraProfiles.Where(o => !profile.ProductVariantAttributeValues.Any(v => v.Name == o.Name)))
+            {
+                db.ProductVariantAttributeValues.Add(new ProductVariantAttributeValue
+                {
+                    ProductVariantAttributeId = profile.Id,
+                    Name = option.Name,
+                    PriceAdjustment = option.PriceAdjustment,
+                    DisplayOrder = ++valueOrder,
+                    Quantity = 1
+                });
+            }
+
+            await db.SaveChangesAsync(cancelToken);
+        }
+    }
+
+    private static async Task AddAttributeAsync(SmartDbContext db, int productId, Attribute attr, int displayOrder, CancellationToken cancelToken)
+    {
+        var productAttribute = await db.ProductAttributes.Where(x => x.Name == attr.Name).OrderBy(x => x.Id).FirstOrDefaultAsync(cancelToken);
+        if (productAttribute == null)
+        {
+            productAttribute = new ProductAttribute { Name = attr.Name };
+            db.ProductAttributes.Add(productAttribute);
+            await db.SaveChangesAsync(cancelToken);
+        }
+
+        var variantAttribute = new ProductVariantAttribute
+        {
+            ProductId = productId,
+            ProductAttributeId = productAttribute.Id,
+            AttributeControlTypeId = (int)attr.ControlType,
+            IsRequired = attr.IsRequired,
+            TextPrompt = attr.TextPrompt,
+            DisplayOrder = displayOrder
+        };
+        db.ProductVariantAttributes.Add(variantAttribute);
+        await db.SaveChangesAsync(cancelToken);
+
+        var valueOrder = 0;
+        foreach (var option in attr.Options)
+        {
+            db.ProductVariantAttributeValues.Add(new ProductVariantAttributeValue
+            {
+                ProductVariantAttributeId = variantAttribute.Id,
+                Name = option.Name,
+                Color = option.Color,
+                PriceAdjustment = option.PriceAdjustment,
+                IsPreSelected = option.PreSelected,
+                DisplayOrder = ++valueOrder,
+                Quantity = 1
+            });
+        }
+
+        await db.SaveChangesAsync(cancelToken);
+    }
+
     public static bool IsCustomizable(AttributeControlType controlType)
         => controlType is AttributeControlType.TextBox or AttributeControlType.MultilineTextbox or AttributeControlType.FileUpload;
 }

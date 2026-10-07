@@ -242,6 +242,38 @@ public class StudioConfigurationModel : ModelBase
     [Range(0, 100)]
     public decimal NameplatePercentPerCm { get; set; }
 
+    [LocalizedDisplay("*ClassBoardMinLength")]
+    [Range(1, 300)]
+    public decimal ClassBoardMinLength { get; set; }
+
+    [LocalizedDisplay("*ClassBoardMaxLength")]
+    [Range(1, 300)]
+    public decimal ClassBoardMaxLength { get; set; }
+
+    [LocalizedDisplay("*ClassBoardBaseLength")]
+    [Range(1, 300)]
+    public decimal ClassBoardBaseLength { get; set; }
+
+    [LocalizedDisplay("*ClassBoardPercentPerCm")]
+    [Range(0, 100)]
+    public decimal ClassBoardPercentPerCm { get; set; }
+
+    [LocalizedDisplay("*QrMinLength")]
+    [Range(1, 200)]
+    public decimal QrMinLength { get; set; }
+
+    [LocalizedDisplay("*QrMaxLength")]
+    [Range(1, 200)]
+    public decimal QrMaxLength { get; set; }
+
+    [LocalizedDisplay("*QrBaseLength")]
+    [Range(1, 200)]
+    public decimal QrBaseLength { get; set; }
+
+    [LocalizedDisplay("*QrPercentPerCm")]
+    [Range(0, 100)]
+    public decimal QrPercentPerCm { get; set; }
+
     [LocalizedDisplay("*QuoteMessageTemplate")]
     public string QuoteMessageTemplate { get; set; }
 
