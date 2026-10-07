@@ -41,7 +41,8 @@ public class NameplateLengthPriceCalculator : IPriceCalculator
 
         var raw = context.SelectedAttributes
             .Where(x => x.ProductId == product.Id)
-            .SelectMany(x => x.Selection.GetAttributeValues(lengthAttribute.Id))
+            // GetAttributeValues returns null (not empty) when the attribute is not in the selection.
+            .SelectMany(x => x.Selection?.GetAttributeValues(lengthAttribute.Id) ?? [])
             .Select(x => x?.ToString())
             .FirstOrDefault(x => !string.IsNullOrWhiteSpace(x));
 

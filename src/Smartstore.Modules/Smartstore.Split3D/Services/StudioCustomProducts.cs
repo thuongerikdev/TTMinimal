@@ -77,46 +77,8 @@ public static class StudioCustomProducts
     /// Returns the product's length attribute (<see cref="LengthAttributeName"/>), adding it on first use. Adding it
     /// removes the product's former fixed-size choice, whose price adjustments would otherwise add up with the length price.
     /// </summary>
-    public static async Task<ProductVariantAttribute> EnsureLengthAttributeAsync(SmartDbContext db, int productId, CancellationToken cancelToken = default)
-    {
-        var attributes = await db.ProductVariantAttributes
-            .Include(x => x.ProductAttribute)
-            .Where(x => x.ProductId == productId)
-            .ToListAsync(cancelToken);
-
-        var attribute = attributes.FirstOrDefault(x => x.ProductAttribute.Name == LengthAttributeName);
-        if (attribute != null)
-        {
-            return attribute;
-        }
-
-        var sizes = attributes.FirstOrDefault(x => x.ProductAttribute.Name == FormerSizeAttributeName && x.AttributeControlType == AttributeControlType.RadioList);
-
-        var productAttribute = await db.ProductAttributes.FirstOrDefaultAsync(x => x.Name == LengthAttributeName, cancelToken);
-        if (productAttribute == null)
-        {
-            productAttribute = new ProductAttribute { Name = LengthAttributeName };
-            db.ProductAttributes.Add(productAttribute);
-            await db.SaveChangesAsync(cancelToken);
-        }
-
-        attribute = new ProductVariantAttribute
-        {
-            ProductId = productId,
-            ProductAttributeId = productAttribute.Id,
-            AttributeControlTypeId = (int)AttributeControlType.TextBox,
-            IsRequired = false,
-            DisplayOrder = sizes?.DisplayOrder ?? (attributes.Count > 0 ? attributes.Max(x => x.DisplayOrder) + 1 : 1)
-        };
-        db.ProductVariantAttributes.Add(attribute);
-        if (sizes != null)
-        {
-            db.ProductVariantAttributes.Remove(sizes);
-        }
-
-        await db.SaveChangesAsync(cancelToken);
-        return attribute;
-    }
+    public static Task<ProductVariantAttribute> EnsureLengthAttributeAsync(SmartDbContext db, int productId, CancellationToken cancelToken = default)
+        => EnsureAttributeAsync(db, productId, LengthAttributeName, AttributeControlType.TextBox, true, cancelToken);
 
     /// <summary>
     /// The length in cm a customer entered, limited to the range of the settings; the base length when empty or invalid.
@@ -150,40 +112,122 @@ public static class StudioCustomProducts
     /// Returns the product's design attribute (<see cref="DesignAttributeName"/>, multiline text, optional), adding it
     /// on first use so products created before the designer get it too. The storefront hides its input.
     /// </summary>
-    public static async Task<ProductVariantAttribute> EnsureDesignAttributeAsync(SmartDbContext db, int productId, CancellationToken cancelToken = default)
+    public static Task<ProductVariantAttribute> EnsureDesignAttributeAsync(SmartDbContext db, int productId, CancellationToken cancelToken = default)
+        => EnsureAttributeAsync(db, productId, DesignAttributeName, AttributeControlType.MultilineTextbox, false, cancelToken);
+
+    // Product pages opened at the same moment must not add the same attribute twice.
+    private static readonly SemaphoreSlim _ensureLock = new(1, 1);
+
+    /// <summary>
+    /// Returns the product's attribute named <paramref name="name"/>, adding it on first use (and then removing the
+    /// former fixed sizes if <paramref name="replaceFormerSizes"/>). Duplicates left by concurrent first visits are
+    /// removed, keeping the oldest.
+    /// </summary>
+    private static async Task<ProductVariantAttribute> EnsureAttributeAsync(
+        SmartDbContext db,
+        int productId,
+        string name,
+        AttributeControlType controlType,
+        bool replaceFormerSizes,
+        CancellationToken cancelToken)
     {
-        var attribute = await db.ProductVariantAttributes
+        // Fast path without the lock: the attribute exists exactly once.
+        var found = await db.ProductVariantAttributes
             .Include(x => x.ProductAttribute)
-            .Where(x => x.ProductId == productId && x.ProductAttribute.Name == DesignAttributeName)
-            .FirstOrDefaultAsync(cancelToken);
-        if (attribute != null)
+            .Where(x => x.ProductId == productId && x.ProductAttribute.Name == name)
+            .OrderBy(x => x.Id)
+            .ToListAsync(cancelToken);
+        if (found.Count == 1)
         {
+            return found[0];
+        }
+
+        await _ensureLock.WaitAsync(cancelToken);
+        try
+        {
+            var attributes = await db.ProductVariantAttributes
+                .Include(x => x.ProductAttribute)
+                .Where(x => x.ProductId == productId)
+                .OrderBy(x => x.Id)
+                .ToListAsync(cancelToken);
+
+            var matches = attributes.Where(x => x.ProductAttribute.Name == name).ToList();
+            if (matches.Count > 0)
+            {
+                if (matches.Count > 1)
+                {
+                    db.ProductVariantAttributes.RemoveRange(matches.Skip(1));
+                    await db.SaveChangesAsync(cancelToken);
+                    await RemoveUnusedDuplicatesAsync(db, name, matches[0].ProductAttributeId, cancelToken);
+                }
+
+                return matches[0];
+            }
+
+            var productAttribute = await db.ProductAttributes
+                .Where(x => x.Name == name)
+                .OrderBy(x => x.Id)
+                .FirstOrDefaultAsync(cancelToken);
+            if (productAttribute == null)
+            {
+                productAttribute = new ProductAttribute { Name = name };
+                db.ProductAttributes.Add(productAttribute);
+                await db.SaveChangesAsync(cancelToken);
+            }
+
+            var sizes = replaceFormerSizes
+                ? attributes.FirstOrDefault(x => x.ProductAttribute.Name == FormerSizeAttributeName && x.AttributeControlType == AttributeControlType.RadioList)
+                : null;
+
+            var attribute = new ProductVariantAttribute
+            {
+                ProductId = productId,
+                ProductAttributeId = productAttribute.Id,
+                AttributeControlTypeId = (int)controlType,
+                IsRequired = false,
+                DisplayOrder = sizes?.DisplayOrder ?? (attributes.Count > 0 ? attributes.Max(x => x.DisplayOrder) + 1 : 1)
+            };
+            db.ProductVariantAttributes.Add(attribute);
+            if (sizes != null)
+            {
+                db.ProductVariantAttributes.Remove(sizes);
+            }
+
+            await db.SaveChangesAsync(cancelToken);
+            await RemoveUnusedDuplicatesAsync(db, name, productAttribute.Id, cancelToken);
             return attribute;
         }
-
-        var productAttribute = await db.ProductAttributes.FirstOrDefaultAsync(x => x.Name == DesignAttributeName, cancelToken);
-        if (productAttribute == null)
+        catch (DbUpdateConcurrencyException)
         {
-            productAttribute = new ProductAttribute { Name = DesignAttributeName };
-            db.ProductAttributes.Add(productAttribute);
+            // Another server instance changed the attributes at the same time: use what is stored now.
+            foreach (var entry in db.ChangeTracker.Entries().Where(x => x.Entity is ProductVariantAttribute or ProductAttribute).ToList())
+            {
+                entry.State = EntityState.Detached;
+            }
+
+            return await db.ProductVariantAttributes
+                .Include(x => x.ProductAttribute)
+                .Where(x => x.ProductId == productId && x.ProductAttribute.Name == name)
+                .OrderBy(x => x.Id)
+                .FirstAsync(cancelToken);
+        }
+        finally
+        {
+            _ensureLock.Release();
+        }
+    }
+
+    // Removes attributes of the same name that no product uses any more (left by concurrent first visits).
+    private static async Task RemoveUnusedDuplicatesAsync(SmartDbContext db, string name, int keepId, CancellationToken cancelToken)
+    {
+        var unused = await db.ProductAttributes
+            .Where(x => x.Name == name && x.Id != keepId && !db.ProductVariantAttributes.Any(m => m.ProductAttributeId == x.Id))
+            .ToListAsync(cancelToken);
+        if (unused.Count > 0)
+        {
+            db.ProductAttributes.RemoveRange(unused);
             await db.SaveChangesAsync(cancelToken);
         }
-
-        var lastOrder = await db.ProductVariantAttributes
-            .Where(x => x.ProductId == productId)
-            .MaxAsync(x => (int?)x.DisplayOrder, cancelToken) ?? 0;
-
-        attribute = new ProductVariantAttribute
-        {
-            ProductId = productId,
-            ProductAttributeId = productAttribute.Id,
-            AttributeControlTypeId = (int)AttributeControlType.MultilineTextbox,
-            IsRequired = false,
-            DisplayOrder = lastOrder + 1
-        };
-        db.ProductVariantAttributes.Add(attribute);
-        await db.SaveChangesAsync(cancelToken);
-        return attribute;
     }
 
     private static Option[] ColorOptions(int preselected)

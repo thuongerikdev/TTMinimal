@@ -2275,7 +2275,13 @@
             var f = lengthField();
             if (!f || f.value === String(lengthCm)) return;
             f.value = String(lengthCm);
-            if (refresh && window.jQuery) window.jQuery(f).trigger('change');
+            if (!refresh) return;
+            // Smartstore marks text attributes "skip-pd-ajax-update" (text never changes the price); the length does,
+            // so for this one change the class is lifted and Smartstore reloads the price with the new length.
+            var skip = f.classList.contains('skip-pd-ajax-update');
+            f.classList.remove('skip-pd-ajax-update');
+            f.dispatchEvent(new Event('change', { bubbles: true }));
+            if (skip) f.classList.add('skip-pd-ajax-update');
         }
 
         function mountLength() {
