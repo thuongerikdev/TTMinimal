@@ -55,6 +55,23 @@ public class TextListFilter : IAsyncActionFilter
             .ToArray();
     }
 
+    // Page of the class board designer, linked from the ready-made boards ("Tự thiết kế").
+    private async Task<string> DesignerUrlAsync(IUrlHelper url)
+    {
+        if (url == null)
+        {
+            return null;
+        }
+
+        var slug = await _db.Products
+            .Where(x => x.Sku == StudioCustomProducts.ClassBoardSku && x.Published && !x.Deleted)
+            .SelectMany(x => _db.UrlRecords.Where(u => u.EntityName == "Product" && u.EntityId == x.Id && u.IsActive && u.LanguageId == 0))
+            .Select(u => u.Slug)
+            .FirstOrDefaultAsync();
+
+        return slug != null ? url.Content("~/" + slug) : null;
+    }
+
     public async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
     {
         if (context.ActionArguments.TryGetValue("productId", out var value) && value is int productId)
@@ -118,7 +135,9 @@ public class TextListFilter : IAsyncActionFilter
                         designControl,
                         length,
                         fonts = ShopFonts(url),
-                        qrUrl = list.Kind == "qr" ? url?.Content("~/studio/qr") : null
+                        qrUrl = list.Kind == "qr" ? url?.Content("~/studio/qr") : null,
+                        theme = list.Theme,
+                        customUrl = list.Theme != null ? await DesignerUrlAsync(url) : null
                     });
 
                     // "<" is escaped by the serializer, so the JSON cannot close the script element.

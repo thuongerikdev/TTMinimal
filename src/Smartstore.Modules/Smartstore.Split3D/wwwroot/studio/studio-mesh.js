@@ -9,7 +9,10 @@
         var dv = new DataView(buf);
         if (buf.byteLength >= 84) {
             var n = dv.getUint32(80, true);
-            if (84 + n * 50 === buf.byteLength) {
+            // Exact size, or trailing padding some exporters append (an ASCII file always holds "facet").
+            var binary = 84 + n * 50 === buf.byteLength
+                || (n > 0 && 84 + n * 50 <= buf.byteLength && !/facet/i.test(new TextDecoder().decode(new Uint8Array(buf, 0, Math.min(buf.byteLength, 1024)))));
+            if (binary) {
                 var tris = new Float32Array(n * 9);
                 for (var i = 0, o = 84; i < n; i++, o += 50) {
                     for (var k = 0; k < 9; k++) tris[i * 9 + k] = dv.getFloat32(o + 12 + k * 4, true);

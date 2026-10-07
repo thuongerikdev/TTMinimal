@@ -11,7 +11,7 @@ public sealed record DesignCategory(string Key, string Title, string Description
         new("nhan-vat", "Nhân vật & figure", "Dựng nhân vật từ ảnh hoặc bản phác: chibi, mascot, figure sưu tầm, tượng chân dung.", "Chibi · Mascot · Figure · Tượng", "puzzle", "mint"),
         new("do-vat", "Đồ vật & sản phẩm", "Thiết kế đồ gia dụng, phụ kiện, vỏ hộp, linh kiện kỹ thuật theo kích thước thật.", "Vỏ hộp · Giá đỡ · Linh kiện · Phụ kiện", "cube", "yellow"),
         new("boi-canh", "Bối cảnh & diorama", "Mô hình sa bàn, kiến trúc thu nhỏ, bối cảnh cho figure, quà lưu niệm.", "Diorama · Sa bàn · Kiến trúc mini", "layers", "lilac"),
-        new("ca-nhan-hoa", "Logo, bảng tên & quà tặng", "Logo nổi, bảng tên, keycap, móc khoá, quà tặng khắc tên riêng.", "Bảng tên · Keycap · Móc khoá · Logo 3D", "pencil", "mint"),
+        new("ca-nhan-hoa", "Logo, bảng tên & quà tặng", "Logo nổi, bảng tên, mã QR, móc khoá, quà tặng khắc tên riêng.", "Bảng tên · Mã QR · Móc khoá · Logo 3D", "pencil", "mint"),
         new("sua-file", "Sửa & tối ưu file in", "Sửa lỗi lưới, làm rỗng, chia mảnh vừa bàn in, thêm khớp nối, giảm support.", "Sửa lỗi · Chia mảnh · Làm rỗng", "wrench", "yellow"),
         new("render", "Render hình ảnh 3D", "Ảnh render sản phẩm, bối cảnh, ảnh quảng cáo từ mô hình 3D.", "Ảnh sản phẩm · Ảnh quảng cáo", "spark", "pink")
     ];

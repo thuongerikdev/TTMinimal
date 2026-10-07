@@ -37,6 +37,10 @@
                 + '<textarea class="tt-input skip-pd-ajax-update" rows="' + (rows || 6) + '" data-text="' + key + '" placeholder="' + esc(placeholder || '') + '">' + esc(value) + '</textarea></label>';
         },
         label: function (t) { return '<div class="tt-np-label">' + t + '</div>'; },
+        // Numbered step of the quick design ("1 Chọn loại").
+        step: function (n, t) { return '<div class="tt-np-step"><i>' + n + '</i>' + t + '</div>'; },
+        // Slot the page fills with the text field (see ctx.mountText).
+        textSlot: function (hint) { return '<div class="tt-np-textslot" data-np-text' + (hint ? ' data-placeholder="' + esc(hint) + '"' : '') + '></div>'; },
         note: function (t) { return '<p class="tt-np-note">' + t + '</p>'; },
         grid: function (html) { return '<div class="tt-np-grid">' + html + '</div>'; },
         fonts: function (P, d, kind) {
@@ -62,12 +66,12 @@
 
     // Fields of a plate spec (name plate and class board) taken from the design.
     function plateFields(d) {
-        return omit(d, ['type', 'mode', 'days', 'am', 'pm', 'cells', 'rows', 'groups', 'seats', 'teacher', 'names', 'line', 'tileMode', 'spare',
+        return omit(d, ['type', 'mode', 'days', 'am', 'pm', 'cells', 'rows', 'groups', 'seats', 'teacher', 'names', 'line', 'tileMode', 'spare', 'heading', 'colors', 'locked', 'showContent',
             'qType', 'qText', 'ssid', 'password', 'security', 'hidden', 'bank', 'account', 'amount', 'ecc', 'qrStyle', 'quiet', 'qrScale', 'caption', 'matrix', 'qrError']);
     }
 
     function plateSummary(d, P, L) {
-        return 'Đế: ' + nameOf(P.SHAPES, d.shape) + ', cao ' + mm(L * d.heightPct / 100) + ', dày ' + mm(d.thickness) + ', lề ' + mm(d.margin)
+        return 'Đế: ' + nameOf(P.SHAPES.concat([{ key: 'scallop', name: 'Viền gợn sóng' }]), d.shape) + ', cao ' + mm(L * d.heightPct / 100) + ', dày ' + mm(d.thickness) + ', lề ' + mm(d.margin)
             + (d.shape === 'rounded' || d.shape === 'tag' ? ', bo góc ' + mm(d.radius) : '');
     }
 
@@ -76,7 +80,14 @@
     var nameplate = {
         item: 'bảng tên',
         empty: 'Nhập tên muốn in để xem trước 3D',
-        tabs: ['Loại', 'Chữ', 'Đế', 'Thêm'],
+        // Quick design: type, font and text are all most customers need; the tabs below hold the advanced options.
+        quick: function (d, P) {
+            return ui.step(1, 'Chọn loại') + ui.types(this.types, d)
+                + ui.step(2, 'Chọn phông chữ') + ui.fonts(P, d, 'nameplate')
+                + ui.step(3, 'Nhập tên muốn in') + ui.textSlot();
+        },
+        advanced: 'Kiểu chữ nổi / chìm, dòng chữ thứ 2, hình dạng đế, lỗ móc, biểu tượng, chân đứng',
+        tabs: ['Chữ', 'Đế', 'Thêm'],
         types: [
             { key: 'desk', name: 'Bảng tên để bàn', hint: 'Có chân đứng', set: { shape: 'rounded', stand: true, hole: 'none', border: false, heightPct: 30, thickness: 4 } },
             { key: 'keychain', name: 'Móc khoá', hint: 'Đế ôm chữ, lỗ móc', set: { shape: 'outline', stand: false, hole: 'left', border: false, heightPct: 32, margin: 3, thickness: 3 } },
@@ -91,17 +102,15 @@
         onSet: function (key, val, patch) { if (key === 'shape' && val === 'outline') patch.border = false; },
         pane: function (i, d, P, ctx) {
             var f = this.formats;
-            if (i === 0) return ui.types(this.types, d) + ui.note('Chọn loại để có sẵn kiểu đế phù hợp, sau đó chỉnh tiếp ở các tab Chữ · Đế · Thêm.');
-            if (i === 1) {
+            if (i === 0) {
                 return ui.text('line2', 'Dòng chữ thứ 2', d.line2, 'VD: Trưởng phòng kinh doanh', 40, '(chức vụ, số điện thoại… không bắt buộc)')
-                    + ui.label('Phông chữ') + ui.fonts(P, d, 'nameplate')
                     + ui.label('Kiểu chữ') + ui.seg('style', STYLES, d.style)
                     + ui.grid(ui.slider('relief', d.style === 'engraved' ? 'Độ sâu' : 'Độ nổi', 0.6, 3, 0.2, d.relief, mm)
                         + ui.slider('textScale', 'Cỡ chữ', 0.5, 1, 0.05, d.textScale, pct)
                         + ui.slider('spacing', 'Giãn chữ', -0.05, 0.4, 0.01, d.spacing, pct)
                         + ui.check('upper', 'VIẾT HOA TOÀN BỘ', d.upper));
             }
-            if (i === 2) {
+            if (i === 1) {
                 return ui.label('Hình dạng đế') + ui.seg('shape', P.SHAPES.map(function (s) { return [s.key, s.name]; }), d.shape)
                     + ui.grid(ui.slider('heightPct', 'Chiều cao đế', 15, 70, 1, d.heightPct, function (v) { return f.heightPct(v, ctx); })
                         + ui.slider('margin', 'Lề quanh chữ (thu hẹp / nới khuôn)', 1.5, 12, 0.5, d.margin, mm)
@@ -142,33 +151,143 @@
     var DAYS = [['5', 'Thứ 2 – 6'], ['6', 'Thứ 2 – 7'], ['7', 'Cả tuần']];
     var DAY_NAMES = ['Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ 7', 'CN'];
     var TEACHER = [['left', 'Bên trái'], ['right', 'Bên phải'], ['none', 'Không vẽ']];
-    var BOARD_SHAPES = ['rounded', 'rect', 'pill', 'oval'];
+    var PERIODS = [0, 1, 2, 3, 4, 5].map(function (n) { return [String(n), n ? String(n) : 'Không']; });
+    var BOARD_MODES = [['timetable', 'Thời khoá biểu'], ['seating', 'Sơ đồ lớp']];
+    var HEADINGS = { timetable: 'Thời khoá biểu', seating: 'Sơ đồ lớp' };
     // Tile choice of the product (priced option "Kiểu ô"): text printed in place or removable tiles.
     var TILE_MODES = [['fixed', 'Chữ in liền'], ['press', 'Ô rời – khớp ấn'], ['magnet', 'Ô rời – nam châm']];
     var TILE_RE = /^kieu o$/;
-    var TILE_COLORS = [['#ffffff', 'Trắng'], ['#20201f', 'Đen'], ['#ff67bc', 'Hồng'], ['#80e5cb', 'Mint'], ['#ffe348', 'Vàng']];
     function tileModeOf(text) { var n = norm(text); return /nam cham/.test(n) ? 'magnet' : /khop an|roi/.test(n) ? 'press' : 'fixed'; }
     function tileMode(d, ctx) { var r = ctx.radio(TILE_RE); return r ? tileModeOf(r) : d.tileMode; }
 
+    // Filament colors the studio prints boards in.
+    var BOARD_COLORS = [
+        ['#ffffff', 'Trắng'], ['#fff4dc', 'Kem'], ['#9e9e9a', 'Xám'], ['#20201f', 'Đen'], ['#1d1d24', 'Đen tím'],
+        ['#ff67bc', 'Hồng'], ['#9b6bf2', 'Tím'], ['#ede4ff', 'Tím nhạt'], ['#2f6fe4', 'Xanh dương'], ['#5ac8fa', 'Xanh trời'],
+        ['#80e5cb', 'Mint'], ['#6cc644', 'Xanh lá'], ['#dff3d2', 'Xanh lá nhạt'], ['#ffc93c', 'Vàng'], ['#ff7a1a', 'Cam'], ['#e5484d', 'Đỏ'],
+        ['#f2f2ef', 'Trắng ngà'], ['#e0e0dc', 'Xám nhạt'], ['#3a3a46', 'Xám đậm'], ['#eef2f8', 'Xanh xám nhạt'], ['#1f4fb5', 'Xanh đậm'], ['#5b34b8', 'Tím đậm'], ['#2f7d1e', 'Xanh lá đậm']
+    ];
+    function colorName(hex) { return hex ? nameOf(BOARD_COLORS, hex) : 'không'; }
+
+    // Board looks (mẫu). colors: plate (base), frame (null: none), days (accent), session labels (am, pm), heading and
+    // name (ink), printed cells (cell, cellInk), removable tiles (tile, tileInk), stickers (deco1, deco2).
+    // head: heading on a pill ('banner') or plain; day: day headers as pills, numbers in circles or text.
+    var THEMES = [
+        { key: 'pastel', name: 'Pastel tím', hint: 'Viền gợn sóng, tim & sao', shape: 'scallop', head: 'banner', headFont: 'titanone', day: 'text', deco: ['heart', 'star'],
+            colors: { base: '#ffffff', frame: '#9b6bf2', accent: '#9b6bf2', am: '#9b6bf2', pm: '#ff67bc', ink: '#9b6bf2', cell: '#ede4ff', cellInk: '#5b34b8', tile: '#2f6fe4', tileInk: '#ffffff', deco1: '#ff67bc', deco2: '#ffc93c' } },
+        { key: 'gamer', name: 'Gamer', hint: 'Trắng – đen – cam', shape: 'rounded', head: 'plain', headFont: 'be', day: 'circle', deco: ['gear', 'bolt'],
+            colors: { base: '#f2f2ef', frame: '#20201f', accent: '#20201f', am: '#20201f', pm: '#ff7a1a', ink: '#20201f', cell: '#e0e0dc', cellInk: '#20201f', tile: '#ff7a1a', tileInk: '#ffffff', deco1: '#20201f', deco2: '#ff7a1a' } },
+        { key: 'panda', name: 'Gấu trúc', hint: 'Xanh lá tre, gấu trúc', shape: 'rounded', head: 'plain', headFont: 'titanone', day: 'pill', deco: ['panda', 'leaf'],
+            colors: { base: '#ffffff', frame: '#6cc644', accent: '#6cc644', am: '#6cc644', pm: '#6cc644', ink: '#2f7d1e', cell: '#dff3d2', cellInk: '#2f7d1e', tile: '#6cc644', tileInk: '#ffffff', deco1: '#20201f', deco2: '#6cc644' } },
+        { key: 'space', name: 'Vũ trụ', hint: 'Nền đen, sao & tên lửa', shape: 'rounded', head: 'plain', headFont: 'titanone', day: 'text', deco: ['rocket', 'planet'], scatter: true,
+            colors: { base: '#1d1d24', frame: null, accent: '#ede4ff', am: '#9b6bf2', pm: '#ff7a1a', ink: '#ede4ff', cell: '#3a3a46', cellInk: '#ffffff', tile: '#9b6bf2', tileInk: '#ffffff', deco1: '#e5484d', deco2: '#ffc93c' } },
+        { key: 'classic', name: 'Cổ điển', hint: 'Số ngày tròn, Sáng xanh – Chiều đỏ', shape: 'rounded', head: 'plain', headFont: 'be', day: 'circle', deco: [],
+            colors: { base: '#ffffff', frame: null, accent: '#ff7a1a', am: '#2f6fe4', pm: '#e5484d', ink: '#20201f', cell: '#eef2f8', cellInk: '#1f4fb5', tile: '#2f6fe4', tileInk: '#ffffff' } }
+    ];
+    function themeOf(key) { return THEMES.filter(function (t) { return t.key === key; })[0] || THEMES[0]; }
+    // Text color that reads on a fill.
+    function inkOn(hex) {
+        var c = String(hex || '#ffffff').replace('#', ''), v = [0, 2, 4].map(function (i) { return parseInt(c.substr(i, 2), 16) || 0; });
+        return 0.299 * v[0] + 0.587 * v[1] + 0.114 * v[2] > 165 ? '#20201f' : '#ffffff';
+    }
+    // Colors the renderer paints the board with (TTNameplate boardLook).
+    function boardTheme(d) {
+        var t = themeOf(d.theme), c = d.colors;
+        return {
+            frame: c.frame || null, head: t.head, headFont: t.headFont, headColor: t.head === 'banner' ? c.accent : c.ink, headInk: inkOn(c.accent), nameInk: c.ink,
+            day: t.day, dayColor: c.accent, dayInk: inkOn(c.accent), am: c.am, pm: c.pm, amInk: inkOn(c.am), pmInk: inkOn(c.pm),
+            cell: c.cell, cellInk: c.cellInk, scatter: t.scatter ? [c.ink, c.pm, c.deco2 || c.accent] : null,
+            deco: (t.deco || []).map(function (icon, i) { return { icon: icon, color: c['deco' + (i + 1)] || c.accent }; })
+        };
+    }
+    // Small drawing of a look for its card.
+    function miniBoard(t) {
+        var c = t.colors, cells = '';
+        for (var i = 0; i < 12; i++) cells += '<i></i>';
+        return '<span class="tt-np-mini' + (t.shape === 'scallop' ? ' is-wavy' : '') + '" style="--b:' + c.base + ';--f:' + (c.frame || c.base) + ';--a:' + c.accent + ';--m:' + c.am + ';--p:' + c.pm + ';--c:' + c.cell + ';--k:' + c.ink + '">'
+            + '<span class="tt-np-mini-h"></span><span class="tt-np-mini-s"><i></i><i></i></span><span class="tt-np-mini-g">' + cells + '</span></span>';
+    }
+    function swatches(key, value, none) {
+        return '<div class="tt-np-swatches">' + (none ? '<button type="button" class="tt-np-sw is-none" data-set="' + key + '" data-val="none" aria-pressed="' + !value + '" title="Không có"></button>' : '')
+            + BOARD_COLORS.map(function (c) {
+                return '<button type="button" class="tt-np-sw" data-set="' + key + '" data-val="' + c[0] + '" aria-pressed="' + (value === c[0]) + '" title="' + c[1] + '" style="--sw:' + c[0] + '"></button>';
+            }).join('') + '</div>';
+    }
+    var COLOR_ROLES = [['base', 'Nền bảng'], ['frame', 'Viền khung', true], ['ink', 'Tiêu đề & tên'], ['accent', 'Hàng ngày (Thứ 2…)'], ['am', 'Nhãn buổi sáng'],
+        ['pm', 'Nhãn buổi chiều'], ['cell', 'Ô môn học / chỗ ngồi'], ['cellInk', 'Chữ trong ô']];
+
     var classboard = {
         item: 'bảng',
-        empty: 'Nhập tên lớp / tiêu đề để xem trước 3D',
-        tabs: ['Loại', 'Nội dung', 'Chữ', 'Đế'],
-        types: [
-            { key: 'tkb', name: 'Thời khoá biểu', hint: 'Treo tường, 2 lỗ treo', set: { mode: 'timetable', stand: false, hole: 'top2', border: true, heightPct: 70 } },
-            { key: 'sodo', name: 'Sơ đồ lớp', hint: 'Chỗ ngồi học sinh, treo tường', set: { mode: 'seating', stand: false, hole: 'top2', border: true, heightPct: 70 } },
-            { key: 'tkb-desk', name: 'Thời khoá biểu để bàn', hint: 'Có chân đứng', set: { mode: 'timetable', stand: true, hole: 'none', border: true, heightPct: 62 } },
-            { key: 'sodo-desk', name: 'Sơ đồ lớp để bàn GV', hint: 'Có chân đứng', set: { mode: 'seating', stand: true, hole: 'none', border: true, heightPct: 62 } }
-        ],
-        fresh: function (P) {
-            var d = Object.assign(omit(P.DEFAULTS, ['text', 'base', 'color', 'length', 'board']), {
-                kind: 'classboard', type: 'tkb', font: 'be', margin: 6, thickness: 3, shape: 'rounded', radius: 4, relief: 1, style: 'raised',
-                mode: 'timetable', days: 6, am: 5, pm: 0, cells: { am: [], pm: [] },
+        empty: 'Nhập tên để xem trước 3D',
+        textHint: 'VD: Vũ Lan Anh · Lớp 6A1',
+        // Quick design: the look, the board kind, the name, the content. A board of a fixed look (a ready-made board
+        // of the "Thời khoá biểu" category) only asks for the name; its content is optional.
+        quick: function (d, P, ctx) {
+            if (d.locked) {
+                return ui.step(1, 'Nhập tên muốn in lên bảng') + ui.textSlot(this.textHint)
+                    + ui.note('Bảng in đúng mẫu trong ảnh, có sẵn khung ô trống. Muốn in sẵn tên môn học vào từng ô thì điền ở dưới (không bắt buộc).')
+                    + '<div class="tt-np-more' + (d.showContent ? ' is-open' : '') + '"><button type="button" class="tt-np-more-btn" data-set="showContent" data-val="' + !d.showContent + '" aria-expanded="' + !!d.showContent + '">'
+                    + (d.showContent ? 'Ẩn phần nội dung' : '+ Điền sẵn môn học vào bảng') + '</button>'
+                    + (d.showContent ? this.content(d, ctx) : '') + '</div>'
+                    + (ctx.customUrl ? ui.note('Muốn đổi màu, bố cục hay làm sơ đồ lớp? <a href="' + esc(ctx.customUrl) + '">Tự thiết kế bảng của bạn →</a>') : '');
+            }
+            return ui.step(1, 'Chọn mẫu') + '<div class="tt-np-themes">' + THEMES.map(function (t) {
+                return '<button type="button" class="tt-np-theme" data-set="theme" data-val="' + t.key + '" aria-pressed="' + (d.theme === t.key) + '">' + miniBoard(t)
+                    + '<b>' + t.name + '</b><small>' + t.hint + '</small></button>';
+            }).join('') + '</div>'
+                + ui.step(2, 'Loại bảng') + ui.seg('mode', BOARD_MODES, d.mode)
+                + ui.step(3, 'Tên trên bảng') + ui.textSlot(this.textHint)
+                + ui.text('heading', 'Dòng tiêu đề', d.heading, HEADINGS[d.mode], 40, '(để trống nếu không cần)')
+                + ui.step(4, d.mode === 'seating' ? 'Chỗ ngồi & tên học sinh' : 'Môn học từng tiết') + this.content(d, ctx);
+        },
+        advanced: 'Đổi màu từng phần, ô rời tháo lắp, phông chữ, kích thước, lỗ treo / chân đứng',
+        advancedFor: function (d) { return !d.locked; },
+        tabs: ['Màu sắc', 'Kiểu ô', 'Chữ', 'Kích thước & treo'],
+        // Timetable or seating content, shared by the quick design of both board kinds.
+        content: function (d) {
+            if (d.mode === 'seating') {
+                var seats = d.rows * d.groups * d.seats, filled = String(d.names || '').split(/\r?\n/).filter(function (n) { return n.trim(); }).length;
+                return ui.grid(ui.slider('rows', 'Số hàng bàn', 1, 8, 1, d.rows, String)
+                        + ui.slider('groups', 'Số dãy bàn', 1, 5, 1, d.groups, String)
+                        + ui.slider('seats', 'Chỗ mỗi bàn', 1, 3, 1, d.seats, String))
+                    + ui.label('Bàn giáo viên') + ui.seg('teacher', TEACHER, d.teacher)
+                    + ui.area('names', 'Danh sách học sinh', d.names, 'Nguyễn Văn An\nTrần Thị Bình\n…', 7,
+                        '(mỗi dòng 1 bạn, từ bàn đầu, trái sang phải; dòng trống = chỗ trống)')
+                    + ui.note('<b data-seat-count>' + filled + '</b> học sinh · ' + seats + ' chỗ. Copy cả cột tên trong Excel rồi dán vào ô trên là xong.');
+            }
+            var html = ui.label('Học các ngày') + ui.seg('days', DAYS, d.days, true)
+                + ui.label('Số tiết buổi sáng') + ui.seg('am', PERIODS, d.am, true)
+                + ui.label('Số tiết buổi chiều') + ui.seg('pm', PERIODS, d.pm, true);
+            ['am', 'pm'].forEach(function (s) {
+                if (!d[s]) return;
+                html += ui.label(s === 'am' ? 'Buổi sáng' : 'Buổi chiều') + '<div class="tt-np-tablewrap"><table class="tt-np-table"><thead><tr><th>Tiết</th>'
+                    + DAY_NAMES.slice(0, d.days).map(function (n) { return '<th>' + n + '</th>'; }).join('') + '</tr></thead><tbody>'
+                    + d.cells[s].map(function (row, r) {
+                        return '<tr><th>' + (r + 1) + '</th>' + row.slice(0, d.days).map(function (v, c) {
+                            return '<td><input type="text" class="skip-pd-ajax-update" maxlength="24" data-cell="' + s + '|' + r + '|' + c + '" value="' + esc(v) + '" placeholder="…" aria-label="' + DAY_NAMES[c] + ' tiết ' + (r + 1) + '" /></td>';
+                        }).join('') + '</tr>';
+                    }).join('') + '</tbody></table></div>';
+            });
+            return html + ui.note('Có thể để trống rồi tự viết sau. Gõ tên môn vào từng ô, hoặc copy cả bảng trong Excel rồi dán vào ô đầu tiên.');
+        },
+        fresh: function (P, ctx) {
+            var locked = ctx && ctx.theme ? themeOf(ctx.theme) : null;
+            var d = Object.assign(omit(P.DEFAULTS, ['text', 'base', 'color', 'length', 'board', 'theme', 'tileInk']), {
+                kind: 'classboard', font: 'be', margin: 6, thickness: 3, shape: 'rounded', radius: 6, relief: 1, style: 'raised',
+                mode: 'timetable', heading: HEADINGS.timetable, days: 6, am: 5, pm: 4, cells: { am: [], pm: [] },
                 rows: 5, groups: 4, seats: 2, teacher: 'left', names: '', line: 0.8,
-                tileMode: 'fixed', tileColor: '#ffffff', spare: '', explode: false
-            }, this.types[0].set);
+                tileMode: 'fixed', spare: '', explode: false, stand: false, hole: 'top2', border: false, heightPct: 74,
+                locked: !!locked, showContent: false
+            });
+            this.applyTheme(d, locked || THEMES[0]);
             this.normalize(d);
             return d;
+        },
+        applyTheme: function (d, t) {
+            d.theme = t.key;
+            d.colors = Object.assign({}, t.colors);
+            d.shape = t.shape || 'rounded';
+            d.margin = t.scatter ? 9 : 6;
         },
         // Keeps the timetable arrays as large as the chosen days and periods (cells typed before are kept).
         normalize: function (d) {
@@ -179,64 +298,50 @@
             });
         },
         formats: { heightPct: function (v, ctx) { return mm(ctx.plateLength() * v / 100); }, line: mm },
-        // Board kind or stand changed outside the presets: the type follows, so the summary names the right board.
         onSet: function (key, val, patch, d, ctx) {
             // The tile choice is a priced product option: pick it there (the price follows).
             if (key === 'tileMode') ctx.pickRadio(TILE_RE, function (text) { return tileModeOf(text) === val; });
-            if (key !== 'mode' && key !== 'stand') return;
-            var mode = key === 'mode' ? val : d.mode, stand = key === 'stand' ? patch.stand : d.stand;
-            patch.type = (mode === 'seating' ? 'sodo' : 'tkb') + (stand ? '-desk' : '');
+            if (key === 'theme') {
+                var look = {};
+                this.applyTheme(look, themeOf(val));
+                Object.assign(patch, look);
+            }
+            // A heading still at its default follows the board kind.
+            if (key === 'mode' && (!d.heading || d.heading === HEADINGS[d.mode])) patch.heading = HEADINGS[val];
+            // "color:base" → one color of the look.
+            if (key.indexOf('color:') === 0) {
+                patch.colors = Object.assign({}, d.colors);
+                patch.colors[key.slice(6)] = val === 'none' ? null : val;
+                delete patch[key];
+            }
         },
         pane: function (i, d, P, ctx) {
-            var f = this.formats;
-            if (i === 0) return ui.types(this.types, d) + ui.note('Một sản phẩm cho cả hai: bảng <b>thời khoá biểu</b> hoặc <b>sơ đồ chỗ ngồi</b> của lớp. Tiêu đề (VD: Lớp 6A1) nhập ở ô bên cạnh giá; nội dung bảng nhập ở tab <b>Nội dung</b>.');
+            var f = this.formats, c = d.colors;
+            if (i === 0) {
+                return COLOR_ROLES.map(function (r) { return ui.label(r[1]) + swatches('color:' + r[0], c[r[0]], r[2]); }).join('')
+                    + ui.note('Mỗi phần in một màu nhựa riêng. Chọn lại mẫu ở bước 1 để về màu gốc của mẫu.');
+            }
             if (i === 1) {
                 var tm = tileMode(d, ctx);
-                var html = ui.label('Loại bảng') + ui.seg('mode', [['timetable', 'Thời khoá biểu'], ['seating', 'Sơ đồ lớp']], d.mode)
-                    + ui.label('Kiểu ô') + ui.seg('tileMode', TILE_MODES, tm)
-                    + (tm === 'fixed' ? ui.note('Chữ in liền vào bảng. Muốn đổi môn / đổi chỗ được thì chọn <b>ô rời</b>: mỗi ô là một miếng vuông riêng có chữ, cắm vào hốc trên bảng, rút ra lắp lại được (giá theo lựa chọn Kiểu ô).')
-                        : ui.label('Màu ô rời') + ui.seg('tileColor', TILE_COLORS, d.tileColor)
+                return ui.label('Kiểu ô') + ui.seg('tileMode', TILE_MODES, tm)
+                    + (tm === 'fixed' ? ui.note('Chữ in liền vào từng ô trên bảng. Muốn đổi môn / đổi chỗ được thì chọn <b>ô rời</b>: mỗi ô là một miếng riêng có chữ, cắm vào hốc trên bảng, rút ra lắp lại được (giá theo lựa chọn Kiểu ô).')
+                        : ui.label('Màu ô rời') + swatches('color:tile', c.tile) + ui.label('Chữ trên ô rời') + swatches('color:tileInk', c.tileInk)
                             + ui.grid(ui.check('explode', 'Xem các ô tách khỏi bảng', d.explode))
-                            + ui.area('spare', 'Ô thêm để thay đổi', d.spare, 'Tin học\nÂm nhạc\n…', 3, '(mỗi dòng 1 ô, in kèm để thay khi đổi môn / đổi chỗ; không bắt buộc)'))
-                    + ui.text('line2', 'Dòng phụ dưới tiêu đề', d.line2, 'VD: Năm học 2026 – 2027 · GVCN: Cô Lan', 70, '(không bắt buộc)');
-                if (d.mode === 'seating') {
-                    var seats = d.rows * d.groups * d.seats, filled = String(d.names || '').split(/\r?\n/).filter(function (n) { return n.trim(); }).length;
-                    return html + ui.grid(ui.slider('rows', 'Số hàng bàn', 1, 8, 1, d.rows, String)
-                            + ui.slider('groups', 'Số dãy bàn', 1, 5, 1, d.groups, String)
-                            + ui.slider('seats', 'Chỗ mỗi bàn', 1, 3, 1, d.seats, String))
-                        + ui.label('Bàn giáo viên') + ui.seg('teacher', TEACHER, d.teacher)
-                        + ui.area('names', 'Danh sách học sinh', d.names, 'Nguyễn Văn An\nTrần Thị Bình\n…', 8,
-                            '(mỗi dòng 1 bạn, theo thứ tự từ bàn đầu, trái sang phải; dòng trống = chỗ trống)')
-                        + ui.note('<b data-seat-count>' + filled + '</b> học sinh · ' + seats + ' chỗ. Có thể copy cả cột tên trong Excel rồi dán vào ô trên.');
-                }
-                html += ui.label('Số ngày') + ui.seg('days', DAYS, d.days, true)
-                    + ui.grid(ui.slider('am', 'Số tiết buổi sáng', 0, 5, 1, d.am, String, true) + ui.slider('pm', 'Số tiết buổi chiều', 0, 5, 1, d.pm, String, true));
-                ['am', 'pm'].forEach(function (s) {
-                    if (!d[s]) return;
-                    html += ui.label(s === 'am' ? 'Buổi sáng' : 'Buổi chiều') + '<div class="tt-np-tablewrap"><table class="tt-np-table"><thead><tr><th>Tiết</th>'
-                        + DAY_NAMES.slice(0, d.days).map(function (n) { return '<th>' + n + '</th>'; }).join('') + '</tr></thead><tbody>'
-                        + d.cells[s].map(function (row, r) {
-                            return '<tr><th>' + (r + 1) + '</th>' + row.slice(0, d.days).map(function (v, c) {
-                                return '<td><input type="text" class="skip-pd-ajax-update" maxlength="24" data-cell="' + s + '|' + r + '|' + c + '" value="' + esc(v) + '" aria-label="' + DAY_NAMES[c] + ' tiết ' + (r + 1) + '" /></td>';
-                            }).join('') + '</tr>';
-                        }).join('') + '</tbody></table></div>';
-                });
-                return html + ui.note('Gõ tên môn vào từng ô, hoặc copy cả bảng trong Excel rồi dán vào ô đầu tiên.');
+                            + ui.area('spare', 'Ô thêm để thay đổi', d.spare, 'Tin học\nÂm nhạc\n…', 3, '(mỗi dòng 1 ô, in kèm để thay khi đổi môn / đổi chỗ; không bắt buộc)'));
             }
             if (i === 2) {
-                return ui.label('Phông chữ') + ui.fonts(P, d, 'classboard')
-                    + ui.label('Kiểu chữ & đường kẻ') + ui.seg('style', STYLES, d.style)
+                return ui.text('line2', 'Dòng phụ dưới tên', d.line2, 'VD: Năm học 2026 – 2027 · GVCN: Cô Lan', 70, '(không bắt buộc)')
+                    + ui.label('Phông chữ trong ô') + ui.fonts(P, d, 'classboard')
+                    + ui.label('Kiểu chữ') + ui.seg('style', STYLES, d.style)
                     + ui.grid(ui.slider('relief', d.style === 'engraved' ? 'Độ sâu' : 'Độ nổi', 0.4, 2.4, 0.2, d.relief, mm)
-                        + ui.slider('line', 'Độ dày đường kẻ', 0.4, 2, 0.1, d.line, mm)
                         + ui.slider('textScale', 'Cỡ chữ trong ô', 0.5, 1, 0.05, d.textScale, pct)
                         + ui.check('upper', 'VIẾT HOA TOÀN BỘ', d.upper));
             }
-            return ui.label('Hình dạng đế') + ui.seg('shape', P.SHAPES.filter(function (s) { return BOARD_SHAPES.indexOf(s.key) >= 0; }).map(function (s) { return [s.key, s.name]; }), d.shape)
+            return ui.label('Viền bảng') + ui.seg('shape', [['rounded', 'Bo góc'], ['scallop', 'Gợn sóng'], ['rect', 'Vuông góc']], d.shape)
                 + ui.grid(ui.slider('heightPct', 'Chiều cao bảng', 40, 100, 1, d.heightPct, function (v) { return f.heightPct(v, ctx); })
                     + ui.slider('margin', 'Lề quanh nội dung', 3, 15, 0.5, d.margin, mm)
                     + ui.slider('thickness', 'Độ dày đế', 2, 6, 0.5, d.thickness, mm)
-                    + (d.shape === 'rounded' ? ui.slider('radius', 'Bo góc', 0, 20, 0.5, d.radius, mm) : '')
-                    + ui.check('border', 'Viền nổi quanh bảng', d.border))
+                    + (d.shape === 'rect' ? '' : ui.slider('radius', 'Bo góc', 0, 20, 0.5, d.radius, mm)))
                 + ui.label('Lỗ treo (Ø4 mm)') + ui.seg('hole', [['none', 'Không'], ['top1', '1 lỗ trên'], ['top2', '2 lỗ trên']], d.hole)
                 + ui.label('Kiểu đặt') + ui.seg('stand', STANDS, d.stand)
                 + ui.note('Chiều dài bảng kéo ở mục <b>Chiều dài</b> cạnh giá sản phẩm.');
@@ -258,17 +363,22 @@
             return true;
         },
         summary: function (d, P, ctx) {
-            var parts = ['Loại: ' + nameOf(this.types, d.type)];
+            var t = themeOf(d.theme), c = d.colors, changed = Object.keys(t.colors).some(function (k) { return (t.colors[k] || null) !== (c[k] || null); });
+            var parts = ['Mẫu: ' + t.name + (changed ? ' (đã đổi màu)' : ''), 'Loại: ' + nameOf(BOARD_MODES, d.mode) + (d.stand ? ' để bàn' : '')];
+            if (d.heading) parts.push('Tiêu đề: ' + d.heading);
             if (d.line2) parts.push('Dòng phụ: ' + d.line2);
-            parts.push('Phông: ' + P.fontOf(d.font).name + (d.upper ? ' (IN HOA)' : ''), nameOf(STYLES, d.style) + (d.style === 'flush' ? '' : ' ' + mm(d.relief)) + ', kẻ ' + mm(d.line));
+            if (changed || !d.locked) {
+                parts.push('Màu: nền ' + colorName(c.base) + ', viền ' + colorName(c.frame) + ', chữ ' + colorName(c.ink) + ', ngày ' + colorName(c.accent)
+                    + ', sáng ' + colorName(c.am) + ', chiều ' + colorName(c.pm) + ', ô ' + colorName(c.cell) + ' / chữ ô ' + colorName(c.cellInk));
+            }
+            parts.push('Phông ô: ' + P.fontOf(d.font).name + (d.upper ? ' (IN HOA)' : ''), nameOf(STYLES, d.style) + (d.style === 'flush' ? '' : ' ' + mm(d.relief)));
             parts.push(plateSummary(d, P, ctx.plateLength()));
-            if (d.border) parts.push('Viền nổi');
             if (d.hole !== 'none') parts.push('Lỗ treo: ' + nameOf(HOLES, d.hole).toLowerCase());
             if (d.stand) parts.push('Có chân đứng');
             var tm = tileMode(d, ctx);
             if (tm !== 'fixed') {
-                parts.push('Ô rời ' + (tm === 'magnet' ? 'nam châm' : 'khớp ấn') + ', màu ô ' + nameOf(TILE_COLORS, d.tileColor));
-                var spare = String(d.spare || '').split(/\r?\n/).map(function (t) { return t.trim(); }).filter(Boolean);
+                parts.push('Ô rời ' + (tm === 'magnet' ? 'nam châm' : 'khớp ấn') + ', màu ô ' + colorName(c.tile) + ', chữ ' + colorName(c.tileInk));
+                var spare = String(d.spare || '').split(/\r?\n/).map(function (x) { return x.trim(); }).filter(Boolean);
                 if (spare.length) parts.push('Ô thêm: ' + spare.join(', '));
             }
             var lines = [parts.join(' · ')];
@@ -281,21 +391,26 @@
                     lines.push('Hàng ' + (r + 1) + ': ' + row.join(', '));
                 }
             } else {
+                var any = false;
                 ['am', 'pm'].forEach(function (s) {
                     if (!d[s]) return;
-                    for (var c = 0; c < d.days; c++) {
-                        lines.push((s === 'am' ? 'Sáng ' : 'Chiều ') + DAY_NAMES[c] + ': ' + d.cells[s].map(function (row) { return (row[c] || '').trim() || '–'; }).join(', '));
+                    for (var col = 0; col < d.days; col++) {
+                        var subjects = d.cells[s].map(function (rw) { return (rw[col] || '').trim(); });
+                        if (subjects.some(Boolean)) any = true;
+                        lines.push((s === 'am' ? 'Sáng ' : 'Chiều ') + DAY_NAMES[col] + ': ' + subjects.map(function (x) { return x || '–'; }).join(', '));
                     }
                 });
+                // An empty timetable: only its size matters.
+                if (!any) lines = [lines[0], 'Thời khoá biểu trống: ' + d.days + ' ngày, ' + d.am + ' tiết sáng, ' + d.pm + ' tiết chiều'];
             }
             return lines.join('\n');
         },
         spec: function (d, row, ctx) {
+            var c = d.colors, tm = tileMode(d, ctx);
             return Object.assign(plateFields(d), {
-                kind: 'classboard', text: row.text, length: ctx.plateLength(),
-                base: ctx.color('base', row, '#ffffff'), color: ctx.color('text', row, '#20201f'),
-                tileColor: d.tileColor, explode: !!d.explode && tileMode(d, ctx) !== 'fixed',
-                board: { mode: d.mode, days: d.days, am: d.am, pm: d.pm, cells: d.cells, rows: d.rows, groups: d.groups, seats: d.seats, teacher: d.teacher, names: d.names, line: d.line, tiles: tileMode(d, ctx) !== 'fixed' }
+                kind: 'classboard', text: row.text, length: ctx.plateLength(), base: c.base, color: c.ink, border: false,
+                tileColor: c.tile, tileInk: c.tileInk, explode: !!d.explode && tm !== 'fixed', theme: boardTheme(d),
+                board: { mode: d.mode, heading: d.heading, days: d.days, am: d.am, pm: d.pm, cells: d.cells, rows: d.rows, groups: d.groups, seats: d.seats, teacher: d.teacher, names: d.names, line: d.line, tiles: tm !== 'fixed' }
             });
         }
     };
@@ -380,63 +495,96 @@
 
     var QR_TYPES = [['url', 'Link'], ['wifi', 'WiFi'], ['bank', 'Chuyển khoản'], ['zalo', 'Zalo'], ['phone', 'Điện thoại'], ['text', 'Văn bản']];
     var QR_CONTENT = ['qType', 'qText', 'ssid', 'password', 'security', 'hidden', 'bank', 'account', 'amount', 'ecc', 'icon'];
+    var QR_DOTS = [['square', 'Vuông'], ['round', 'Bo tròn'], ['dots', 'Chấm tròn']];
+    // 3D styles of the code (qrLevels in studio-nameplate.js) and the values each one starts with.
+    var QR_RELIEFS = [
+        { key: 'flat', name: 'Phẳng', hint: 'Nổi đều, dễ quét nhất', set: { relief: 0.8 } },
+        { key: 'pyramid', name: 'Kim tự tháp', hint: 'Bậc vuông, khối to thì cao', set: { qrHeight: 6, tiers: 8, multi: false } },
+        { key: 'terrace', name: 'Ruộng bậc thang', hint: 'Bậc tròn, nhiều tông màu', set: { qrHeight: 6, tiers: 8, multi: true } },
+        { key: 'river', name: 'Dòng sông', hint: 'Bờ uốn lượn từng lớp', set: { qrHeight: 2, tiers: 4, bankWidth: 0.2, multi: true } },
+        { key: 'hills', name: 'Đồi', hint: 'Vòm tròn mềm mại', set: { qrHeight: 4, multi: false } }
+    ];
+
+    function qrContentFields(d) {
+        if (d.qType === 'wifi') {
+            return ui.text('ssid', 'Tên WiFi', d.ssid, 'VD: TT Minimal', 32)
+                + ui.text('password', 'Mật khẩu', d.password, '', 63)
+                + ui.label('Bảo mật') + ui.seg('security', [['WPA', 'WPA / WPA2'], ['WEP', 'WEP'], ['nopass', 'Không mật khẩu']], d.security)
+                + ui.grid(ui.check('hidden', 'WiFi ẩn', d.hidden));
+        }
+        if (d.qType === 'bank') {
+            return ui.text('bank', 'Ngân hàng', d.bank, 'VD: MB, Vietcombank, Techcombank', 40)
+                + ui.text('account', 'Số tài khoản', d.account, '', 30)
+                + ui.text('amount', 'Số tiền', d.amount, 'Để trống: người quét tự nhập', 12, '(VNĐ, không bắt buộc)')
+                + ui.text('qText', 'Nội dung chuyển khoản', d.qText, 'Không bắt buộc', 40);
+        }
+        if (d.qType === 'zalo' || d.qType === 'phone') return ui.text('qText', 'Số điện thoại', d.qText, 'VD: 0333 424 766', 20);
+        if (d.qType === 'url') return ui.text('qText', 'Đường link', d.qText, 'VD: facebook.com/TT.minimal', 300);
+        return ui.area('qText', 'Nội dung', d.qText, '', 4);
+    }
 
     var qr = {
         item: 'bảng QR',
-        empty: 'Nhập nội dung mã QR (tab Nội dung) để xem trước 3D',
-        tabs: ['Loại', 'Nội dung', 'Mã QR', 'Chữ & đế'],
+        empty: 'Nhập nội dung mã QR (bước 1) để xem trước 3D',
+        // Quick design: what the code holds, its 3D style and height. Everything else has a sensible default.
+        quick: function (d) {
+            var flat = d.qrRelief === 'flat';
+            return ui.step(1, 'Mã QR chứa gì?') + ui.seg('qType', QR_TYPES, d.qType) + qrContentFields(d) + this.statusLine(d)
+                + ui.step(2, 'Chọn kiểu 3D')
+                + '<div class="tt-np-types">' + QR_RELIEFS.map(function (r) {
+                    return '<button type="button" class="tt-np-type" data-set="qrRelief" data-val="' + r.key + '" aria-pressed="' + (d.qrRelief === r.key) + '"><b>' + r.name + '</b><small>' + r.hint + '</small></button>';
+                }).join('') + '</div>'
+                + ui.step(3, flat ? 'Độ nổi của mã' : 'Độ cao & màu')
+                + (flat
+                    ? ui.slider('relief', 'Độ nổi', 0.4, 2, 0.2, d.relief, mm)
+                    : ui.slider('qrHeight', 'Độ cao tối đa', 1, 10, 0.5, d.qrHeight, mm)
+                        + ui.label('Màu mã') + ui.seg('multi', [['false', 'Một màu'], ['true', 'Nhiều tông (đổi màu theo tầng)']], String(d.multi)))
+                + ui.note('Chữ dưới mã nhập ở ô <b>Chữ trên bảng</b>, kích thước chọn bằng thanh <b>chiều dài</b> cạnh giá.'
+                    + (flat ? '' : ' Kiểu 3D quét tốt nhất khi nhìn thẳng.'));
+        },
+        advanced: 'Để bàn / treo / móc khoá, kiểu điểm mã, biểu tượng giữa, số bậc, chữ & đế',
+        tabs: ['Kiểu đặt', 'Mã QR', 'Chữ & đế'],
         types: [
-            { key: 'wifi', name: 'Bảng WiFi để bàn', hint: 'Quét là vào mạng', set: { qType: 'wifi', stand: true, hole: 'none', shape: 'rounded' } },
-            { key: 'bank', name: 'Bảng chuyển khoản', hint: 'VietQR mọi ngân hàng', set: { qType: 'bank', stand: true, hole: 'none', shape: 'rounded' } },
-            { key: 'menu', name: 'Menu / website', hint: 'Link quán, fanpage', set: { qType: 'url', stand: true, hole: 'none', shape: 'rounded' } },
-            { key: 'wall', name: 'Bảng treo / dán tường', hint: '2 lỗ treo', set: { qType: 'url', stand: false, hole: 'top2', shape: 'rounded' } },
-            { key: 'keychain', name: 'Móc khoá QR', hint: 'Nhỏ, lỗ móc', set: { qType: 'zalo', stand: false, hole: 'left', shape: 'rounded', margin: 2.5 } }
+            { key: 'desk', name: 'Để bàn', hint: 'Có chân đứng', set: { stand: true, hole: 'none', shape: 'rounded', margin: 4 } },
+            { key: 'wall', name: 'Treo / dán tường', hint: '2 lỗ treo', set: { stand: false, hole: 'top2', shape: 'rounded', margin: 4 } },
+            { key: 'lay', name: 'Đặt nằm / dán', hint: 'Tấm phẳng, không lỗ', set: { stand: false, hole: 'none', shape: 'rounded', margin: 4 } },
+            { key: 'keychain', name: 'Móc khoá QR', hint: 'Nhỏ, lỗ móc', set: { stand: false, hole: 'left', shape: 'rounded', margin: 2.5 } }
         ],
         fresh: function (P) {
             return Object.assign(omit(P.DEFAULTS, ['text', 'base', 'color', 'length', 'board', 'qr']), {
-                kind: 'qr', type: 'wifi', font: 'be', style: 'raised', relief: 0.8, margin: 4, thickness: 3, radius: 4, border: false,
-                qType: 'wifi', qText: '', ssid: '', password: '', security: 'WPA', hidden: false, bank: '', account: '', amount: '',
-                ecc: 'M', qrStyle: 'square', quiet: 1, qrScale: 1, caption: 'bottom', icon: '', matrix: null, qrError: ''
+                kind: 'qr', type: 'desk', font: 'be', style: 'raised', relief: 0.8, margin: 4, thickness: 3, radius: 4, border: false,
+                qType: 'url', qText: '', ssid: '', password: '', security: 'WPA', hidden: false, bank: '', account: '', amount: '',
+                ecc: 'M', qrStyle: 'square', quiet: 1, qrScale: 1, caption: 'bottom', icon: '', matrix: null, qrError: '',
+                qrRelief: 'flat', qrHeight: 6, tiers: 8, bankWidth: 0.2, multi: false
             }, this.types[0].set);
         },
-        formats: { quiet: function (v) { return v + ' ô'; }, qrScale: pct },
-        pane: function (i, d, P, ctx) {
-            if (i === 0) return ui.types(this.types, d) + ui.note('Chọn loại rồi nhập nội dung ở tab <b>Nội dung</b>. Chữ hiện dưới mã (VD: Quét để kết nối WiFi) nhập ở ô cạnh giá.');
-            var status = '<p class="tt-np-note tt-qr-status" data-qr-status>' + this.status(d) + '</p>';
+        formats: { quiet: function (v) { return v + ' ô'; }, qrScale: pct, tiers: String, bankWidth: function (v) { return pct(v) + ' ô'; } },
+        // A 3D style starts from its own height / tiers / shades.
+        onSet: function (key, val, patch) {
+            if (key !== 'qrRelief') return;
+            var r = QR_RELIEFS.filter(function (x) { return x.key === val; })[0];
+            if (r) Object.assign(patch, r.set);
+        },
+        pane: function (i, d, P) {
+            if (i === 0) return ui.types(this.types, d);
             if (i === 1) {
-                var f = ui.label('Mã QR chứa') + ui.seg('qType', QR_TYPES, d.qType);
-                if (d.qType === 'wifi') {
-                    f += ui.text('ssid', 'Tên WiFi', d.ssid, 'VD: TT Minimal', 32)
-                        + ui.text('password', 'Mật khẩu', d.password, '', 63)
-                        + ui.label('Bảo mật') + ui.seg('security', [['WPA', 'WPA / WPA2'], ['WEP', 'WEP'], ['nopass', 'Không mật khẩu']], d.security)
-                        + ui.grid(ui.check('hidden', 'WiFi ẩn', d.hidden));
-                } else if (d.qType === 'bank') {
-                    f += ui.text('bank', 'Ngân hàng', d.bank, 'VD: MB, Vietcombank, Techcombank', 40)
-                        + ui.text('account', 'Số tài khoản', d.account, '', 30)
-                        + ui.text('amount', 'Số tiền', d.amount, 'Để trống: người quét tự nhập', 12, '(VNĐ, không bắt buộc)')
-                        + ui.text('qText', 'Nội dung chuyển khoản', d.qText, 'Không bắt buộc', 40);
-                } else if (d.qType === 'zalo' || d.qType === 'phone') {
-                    f += ui.text('qText', 'Số điện thoại', d.qText, 'VD: 0333 424 766', 20);
-                } else if (d.qType === 'url') {
-                    f += ui.text('qText', 'Đường link', d.qText, 'VD: facebook.com/TT.minimal', 300);
-                } else {
-                    f += ui.area('qText', 'Nội dung', d.qText, '', 4);
-                }
-                return f + status + '<button type="button" class="tt-np-action" data-action="top">Nhìn thẳng để quét thử bằng điện thoại</button>'
-                    + ui.note('Mã đậm trên nền sáng (chọn màu nền sáng, màu chữ đậm) thì điện thoại mới quét được.');
-            }
-            if (i === 2) {
-                return ui.label('Kiểu điểm mã') + ui.seg('qrStyle', [['square', 'Vuông'], ['round', 'Bo tròn'], ['dots', 'Chấm tròn']], d.qrStyle)
+                var r = d.qrRelief;
+                return ui.label('Kiểu điểm mã') + ui.seg('qrStyle', QR_DOTS, d.qrStyle)
+                    + (r === 'pyramid' || r === 'terrace' || r === 'river'
+                        ? ui.grid(ui.slider('tiers', r === 'river' ? 'Số lớp' : 'Số bậc tối đa', 2, r === 'river' ? 8 : 16, 1, d.tiers, String)
+                            + (r === 'river' ? ui.slider('bankWidth', 'Độ rộng bờ', 0.1, 0.4, 0.05, d.bankWidth, this.formats.bankWidth) : ''))
+                        : '')
                     + ui.label('Độ chịu lỗi') + ui.seg('ecc', [['L', 'Thấp – ít điểm'], ['M', 'Vừa'], ['Q', 'Khá'], ['H', 'Cao']], d.icon ? 'H' : d.ecc)
                     + ui.grid(ui.slider('qrScale', 'Cỡ mã trên bảng', 0.5, 1, 0.05, d.qrScale, pct) + ui.slider('quiet', 'Lề trắng quanh mã', 0, 4, 1, d.quiet, this.formats.quiet))
                     + ui.label('Biểu tượng giữa mã') + ui.icons(P, d)
-                    + ui.note('Có biểu tượng giữa thì mã tự dùng độ chịu lỗi Cao (mã dày điểm hơn). Mã càng nhiều điểm thì bảng càng phải to.') + status;
+                    + ui.note('Có biểu tượng giữa thì mã tự dùng độ chịu lỗi Cao (mã dày điểm hơn). Mã càng nhiều điểm thì bảng càng phải to.')
+                    + '<p class="tt-np-note tt-qr-status" data-qr-status>' + this.status(d) + '</p>';
             }
             return ui.label('Chữ') + ui.seg('caption', [['bottom', 'Dưới mã'], ['top', 'Trên mã'], ['none', 'Không chữ']], d.caption)
                 + (d.caption === 'none' ? '' : ui.text('line2', 'Dòng chữ nhỏ', d.line2, 'VD: Mật khẩu: 12345678', 50, '(không bắt buộc)'))
                 + ui.label('Phông chữ') + ui.fonts(P, d, 'qr')
-                + ui.label('Kiểu in') + ui.seg('style', STYLES, d.style)
-                + ui.grid(ui.slider('relief', d.style === 'engraved' ? 'Độ sâu' : 'Độ nổi', 0.4, 2, 0.2, d.relief, mm)
+                + ui.label('Kiểu in chữ') + ui.seg('style', STYLES, d.style)
+                + ui.grid((d.qrRelief === 'flat' ? ui.slider('relief', d.style === 'engraved' ? 'Độ sâu' : 'Độ nổi', 0.4, 2, 0.2, d.relief, mm) : '')
                     + ui.slider('textScale', 'Cỡ chữ', 0.5, 1, 0.05, d.textScale, pct)
                     + ui.check('upper', 'VIẾT HOA', d.upper))
                 + ui.label('Đế') + ui.seg('shape', [['rounded', 'Bo góc'], ['rect', 'Vuông góc'], ['oval', 'Oval']], d.shape)
@@ -446,6 +594,10 @@
                     + ui.check('border', 'Viền nổi', d.border))
                 + ui.label('Lỗ treo / móc (Ø4 mm)') + ui.seg('hole', HOLES, d.hole)
                 + ui.label('Kiểu đặt') + ui.seg('stand', STANDS, d.stand);
+        },
+        statusLine: function (d) {
+            return '<p class="tt-np-note tt-qr-status" data-qr-status>' + this.status(d) + '</p>'
+                + '<button type="button" class="tt-np-action" data-action="top">Nhìn thẳng để quét thử bằng điện thoại</button>';
         },
         status: function (d) {
             if (d.qrError) return '⚠ ' + esc(d.qrError);
@@ -476,13 +628,18 @@
                     });
             }, patch.init ? 0 : 350);
         },
-        summary: function (d, P, ctx) {
+        summary: function (d, P) {
             var content = {
                 wifi: 'WiFi «' + d.ssid + '»' + (d.security === 'nopass' ? ', không mật khẩu' : ', mật khẩu «' + d.password + '» (' + d.security + ')') + (d.hidden ? ', WiFi ẩn' : ''),
                 bank: 'Chuyển khoản ' + d.bank + ' – STK ' + d.account + (d.amount ? ', số tiền ' + d.amount : '') + (d.qText ? ', nội dung «' + d.qText + '»' : ''),
                 zalo: 'Zalo ' + d.qText, phone: 'Gọi ' + d.qText, url: 'Link ' + d.qText, text: 'Văn bản «' + d.qText + '»'
             }[d.qType];
-            var parts = ['Loại: ' + nameOf(this.types, d.type), 'Mã QR: ' + content, 'Kiểu điểm: ' + nameOf([['square', 'vuông'], ['round', 'bo tròn'], ['dots', 'chấm tròn']], d.qrStyle)
+            var relief = d.qrRelief === 'flat' ? 'phẳng, nổi ' + mm(d.relief)
+                : nameOf(QR_RELIEFS, d.qrRelief).toLowerCase() + ', cao ' + mm(d.qrHeight)
+                    + (d.qrRelief === 'pyramid' || d.qrRelief === 'terrace' ? ', tối đa ' + d.tiers + ' bậc' : '')
+                    + (d.qrRelief === 'river' ? ', ' + d.tiers + ' lớp, bờ ' + pct(d.bankWidth) + ' ô' : '')
+                    + (d.multi ? ', nhiều tông màu (đổi màu theo tầng)' : ', một màu');
+            var parts = ['Loại: ' + nameOf(this.types, d.type), 'Mã QR: ' + content, 'Kiểu 3D: ' + relief, 'Kiểu điểm: ' + nameOf(QR_DOTS, d.qrStyle).toLowerCase()
                 + ', chịu lỗi ' + (d.icon ? 'H' : d.ecc) + ', cỡ mã ' + pct(d.qrScale)];
             if (d.icon) parts.push('Biểu tượng giữa: ' + P.iconOf(d.icon).name);
             parts.push('Chữ ' + nameOf([['bottom', 'dưới mã'], ['top', 'trên mã'], ['none', 'không có']], d.caption) + (d.line2 ? ', dòng nhỏ: ' + d.line2 : ''));
@@ -497,7 +654,10 @@
             return Object.assign(plateFields(d), {
                 kind: 'qr', board: null, text: d.caption === 'none' ? '' : row.text, line2: d.caption === 'none' ? '' : d.line2, length: ctx.plateLength(),
                 base: ctx.color('base', row, '#ffffff'), color: ctx.color('text', row, '#20201f'),
-                qr: { rows: d.matrix || [], quiet: d.quiet, style: d.qrStyle, scale: d.qrScale, caption: d.caption }
+                qr: {
+                    rows: d.matrix || [], quiet: d.quiet, style: d.qrStyle, scale: d.qrScale, caption: d.caption,
+                    relief3d: d.qrRelief, height: d.qrHeight, tiers: d.tiers, bank: d.bankWidth, multi: d.multi
+                }
             });
         }
     };
@@ -508,7 +668,8 @@
 
     /**
      * Design panel of one product kind inside el. ctx: { P (renderer), plateLength(), color(role, row, fallback),
-     * radio(titleRegex) → checked option text, pickRadio(titleRegex, test) }. onChange(info) after every change;
+     * radio(titleRegex) → checked option text, pickRadio(titleRegex, test), mountText(slot) → puts the product's text
+     * field into the quick design }. onChange(info) after every change;
      * info.reset when the view should go back to its home angle.
      */
     function Panel(el, kindKey, ctx, onChange) {
@@ -518,7 +679,7 @@
         this.ctx = ctx;
         this.onChange = onChange || function () { };
         this.tab = 0;
-        this.d = this.kind.fresh(ctx.P);
+        this.d = this.kind.fresh(ctx.P, ctx);
         if (this.kind.after) this.kind.after(this, { init: true });
 
         function fmt(key) { var f = self.kind.formats && self.kind.formats[key]; return f ? function (v) { return f(v, ctx); } : key === 'textScale' || key === 'spacing' ? pct : /^(rows|groups|seats|am|pm)$/.test(key) ? String : mm; }
@@ -526,6 +687,7 @@
         el.addEventListener('click', function (e) {
             var t = e.target.closest('[data-tab]'), b = e.target.closest('[data-set]'), type = e.target.closest('[data-type]');
             if (t) { self.tab = +t.getAttribute('data-tab'); self.render(); return; }
+            if (e.target.closest('[data-adv]')) { self.adv = !self.adv; self.render(); return; }
             if (type) {
                 var preset = self.kind.types.filter(function (x) { return x.key === type.getAttribute('data-type'); })[0];
                 if (self.kind.apply) self.kind.apply(preset, ctx);
@@ -541,7 +703,7 @@
             }
             var action = e.target.closest('[data-action]');
             if (action) { self.onChange({ view: action.getAttribute('data-action') }); return; }
-            if (e.target.closest('[data-design-reset]')) { self.d = self.kind.fresh(ctx.P); self.tab = 0; self.set({ init: true }, true, { reset: true }); delete self.d.init; }
+            if (e.target.closest('[data-design-reset]')) { self.d = self.kind.fresh(ctx.P, ctx); self.tab = 0; self.set({ init: true }, true, { reset: true }); delete self.d.init; }
         });
         el.addEventListener('input', function (e) {
             var r = e.target.getAttribute('data-range'), tx = e.target.getAttribute('data-text'), patch = {};
@@ -586,10 +748,20 @@
     Panel.prototype.render = function () {
         var el = this.el, P = this.ctx.P, kind = this.kind, d = this.d, tab = this.tab;
         var active = document.activeElement && el.contains(document.activeElement) ? document.activeElement : null;
-        var focusSel = active && (active.getAttribute('data-text') ? '[data-text="' + active.getAttribute('data-text') + '"]' : active.getAttribute('data-cell') ? '[data-cell="' + active.getAttribute('data-cell') + '"]' : null);
-        el.innerHTML = '<div class="tt-np-tabs" role="tablist">'
+        var focusSel = active && (active.hasAttribute('data-np-quick') ? '[data-np-quick]' : active.getAttribute('data-text') ? '[data-text="' + active.getAttribute('data-text') + '"]' : active.getAttribute('data-cell') ? '[data-cell="' + active.getAttribute('data-cell') + '"]' : null);
+        var tabs = '<div class="tt-np-tabs" role="tablist">'
             + kind.tabs.map(function (t, i) { return '<button type="button" role="tab" data-tab="' + i + '" aria-selected="' + (tab === i) + '">' + t + '</button>'; }).join('')
-            + '</div><div class="tt-np-pane">' + kind.pane(tab, d, P, this.ctx) + '</div>'
+            + '</div><div class="tt-np-pane">' + kind.pane(tab, d, P, this.ctx) + '</div>';
+        // Kinds with a quick design show it first; their tabs fold away under "Tuỳ chỉnh nâng cao".
+        if (kind.quick && kind.advancedFor && !kind.advancedFor(d)) {
+            tabs = '<div class="tt-np-quick">' + kind.quick(d, P, this.ctx) + '</div>';
+        } else if (kind.quick) {
+            tabs = '<div class="tt-np-quick">' + kind.quick(d, P, this.ctx) + '</div>'
+                + '<div class="tt-np-adv' + (this.adv ? ' is-open' : '') + '"><button type="button" class="tt-np-adv-btn" data-adv aria-expanded="' + !!this.adv + '">'
+                + '<b>Tuỳ chỉnh nâng cao</b><small>' + (this.adv ? 'Không bắt buộc — để nguyên là studio làm theo mẫu chuẩn' : kind.advanced) + '</small><i aria-hidden="true"></i></button>'
+                + (this.adv ? '<div class="tt-np-adv-body">' + tabs + '</div>' : '') + '</div>';
+        }
+        el.innerHTML = tabs
             + '<div class="tt-np-panel-foot"><button type="button" class="tt-textlink" data-design-reset>Đặt lại thiết kế</button>'
             + '<span>Lựa chọn thiết kế được gửi kèm đơn hàng.</span></div>';
         Array.prototype.forEach.call(el.querySelectorAll('canvas[data-icon]'), function (cv) {
@@ -599,6 +771,8 @@
             c.beginPath(); icon.draw(c); c.fill();
             if (icon.cut) { c.globalCompositeOperation = 'destination-out'; icon.cut(c); }
         });
+        var slot = el.querySelector('[data-np-text]');
+        if (slot && this.ctx.mountText) this.ctx.mountText(slot);
         if (focusSel) {
             var f = el.querySelector(focusSel);
             if (f) { f.focus(); if (f.setSelectionRange) f.setSelectionRange(f.value.length, f.value.length); }

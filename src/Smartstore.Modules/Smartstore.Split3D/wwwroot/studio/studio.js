@@ -444,13 +444,17 @@
     }
 
     // Slicer-like estimate: walls (surface × wall thickness) are solid, the inside is filled by the infill ratio.
-    // tech.factor calibrates the result against real weights (Admin → Studio settings).
+    // tech.factor calibrates against real weights (Admin → Studio settings). For FDM it only scales the walls: it was
+    // tuned on small prints, which are nearly all wall, and scaling the infill too made large models far too light.
+    // Resin keeps it on the whole volume (supports grow with the part).
     function estimate(mesh, scale, tech, mat, fill) {
-        var s3 = scale[0] * scale[1] * scale[2];
+        var s3 = scale[0] * scale[1] * scale[2], factor = tech.factor || 1;
         var vol = mesh.volume * s3, area = mesh.area * Math.pow(s3, 2 / 3);
         var shell = Math.min(vol, area * (tech.resin ? RESIN_WALL_MM : FDM_WALL_MM));
-        var solid = tech.resin ? (fill >= 100 ? vol : shell) : shell + (vol - shell) * fill / 100;
-        return { volume: vol, grams: solid * mat.density / 1000 * (tech.factor || 1) };
+        var solid = tech.resin
+            ? (fill >= 100 ? vol : shell) * factor
+            : Math.min(vol, shell * factor + (vol - shell) * fill / 100);
+        return { volume: vol, grams: solid * mat.density / 1000 };
     }
 
     function flash(el) {
@@ -1564,13 +1568,56 @@
         tools.className = 'tt-textlist-tools';
         tools.innerHTML = '<button type="button" class="tt-textlist-btn" data-tl-open>' + LIST_ICON + '<span>Đặt nhiều ' + escAttr(cfg.item) + ' một lượt</span></button>'
             + EXCEL_TOOLS;
+        // Quick design (name plate): the text is typed inside the design panel. Its input mirrors the product's text
+        // attribute, whose own field is hidden; the "Đặt nhiều" buttons move along with it.
+        var quick = null;
+
         // Products without a list (class board) get no "Đặt nhiều" buttons.
         function mountTools() {
-            if (cfg.list === false) return;
             var f = getField();
+            if (f && quick) {
+                var group = f.closest('.form-group');
+                if (group) group.hidden = true;
+                if (quick.input !== document.activeElement) quick.input.value = f.value;
+                if (cfg.list !== false && tools.parentNode !== quick.el) quick.el.appendChild(tools);
+                return;
+            }
+            if (cfg.list === false) return;
             if (f && !tools.isConnected) f.parentNode.insertBefore(tools, f.nextSibling);
         }
         mountTools();
+
+        function mountQuickText(slot) {
+            if (!quick) {
+                var el = document.createElement('div');
+                el.className = 'tt-np-quicktext';
+                el.innerHTML = '<input type="text" class="tt-input skip-pd-ajax-update" maxlength="80" data-np-quick'
+                    + ' placeholder="VD: Nguyễn Văn An" aria-label="Tên muốn in" autocomplete="off" />';
+                quick = { el: el, input: el.firstChild };
+                quick.input.addEventListener('input', function () {
+                    var f = getField();
+                    quick.input.classList.remove('is-invalid');
+                    if (!f) return;
+                    f.value = quick.input.value;
+                    f.dispatchEvent(new Event('input', { bubbles: true }));
+                });
+            }
+            quick.input.placeholder = slot.getAttribute('data-placeholder') || 'VD: Nguyễn Văn An';
+            slot.appendChild(quick.el);
+            mountTools();
+        }
+
+        // The hidden text field cannot show its "required" message: an empty text stops the add to cart here instead.
+        document.addEventListener('click', function (e) {
+            if (!quick || !quick.el.isConnected || !e.target.closest('.btn-add-to-cart')) return;
+            var f = getField();
+            if (!f || f.value.trim()) return;
+            e.preventDefault();
+            e.stopImmediatePropagation();
+            quick.input.classList.add('is-invalid');
+            quick.input.scrollIntoView({ block: 'center', behavior: 'smooth' });
+            quick.input.focus({ preventScroll: true });
+        }, true);
 
         var dlg = null, tbody, totalEl, msgEl, sendBtn, lastFocus, busy = false;
 
@@ -1991,7 +2038,11 @@
         // Page context of the design panel (see TTDesigns.Panel).
         var designCtx = {
             qrUrl: cfg.qrUrl,
+            // Ready-made class board: its fixed look and the link to the board the customer designs freely.
+            theme: cfg.theme,
+            customUrl: cfg.customUrl,
             plateLength: plateLength,
+            mountText: mountQuickText,
             color: function (role, row, fallback) {
                 var a = role === 'base' ? baseAttr : textAttr;
                 return colorOf(a, a ? row.colors[attrs.indexOf(a)] : null, fallback);
@@ -2152,6 +2203,8 @@
                 if (np.card) {
                     np.empty.textContent = np.design.kind.empty;
                     np.view = new P.View(np.card.querySelector('canvas'), { wheel: function () { return np.card.classList.contains('is-max'); } });
+                    // The full-detail build after a slider drag can move the measured size a little.
+                    np.view.onDims = function (d) { np.size.textContent = sizeText(d); };
                     np.design.render();
                 }
                 writeDesign();

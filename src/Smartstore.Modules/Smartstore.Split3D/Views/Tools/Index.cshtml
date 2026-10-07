@@ -103,29 +103,25 @@
                             <button type="submit" class="tt-button tt-button--dark tt-tool-cta">
                                 @StudioIcons.Get("bag") <span>Mua ngay</span>
                             </button>
-                            <p class="tt-tool-note">@StudioIcons.Get("check") Mỗi gói là 1 key · thanh toán xong nhận key qua email và trang <em>Key của tôi</em>.</p>
+                            <p class="tt-tool-note">@StudioIcons.Get("check") <span>Mỗi gói là 1 key · thanh toán xong nhận key qua email và trang <em>Key của tôi</em>.</span></p>
                         </form>
                     </div>
                 </article>
             }
-            </div>
 
-            <div class="tt-soon">
-                <h2 class="tt-soon-title" data-tt-reveal>Sắp ra mắt</h2>
-                <div class="tt-soon-grid">
-                    @for (var i = 0; i < comingSoon.Length; i++)
-                    {
-                        var tool = comingSoon[i];
-                        <article class="tt-soon-card" data-tt-reveal style="--d:@((i * 0.08).ToString("0.00", CultureInfo.InvariantCulture))s">
-                            <span class="tt-soon-sticker">Coming soon</span>
-                            <span class="tt-soon-icon">@StudioIcons.Get(tool.Icon)</span>
-                            <span class="tt-pill">@tool.Kind</span>
-                            <h3>@tool.Name</h3>
-                            <p>@tool.Text</p>
-                            <a class="tt-textlink" asp-route="ContactUs">Báo tôi khi ra mắt @StudioIcons.Get("arrow", "tt-arrow")</a>
-                        </article>
-                    }
-                </div>
+            @* Coming soon cards share the row with the tools on sale. *@
+            @for (var i = 0; i < comingSoon.Length; i++)
+            {
+                var tool = comingSoon[i];
+                <article class="tt-soon-card" data-tt-reveal style="--d:@((i * 0.08).ToString("0.00", CultureInfo.InvariantCulture))s">
+                    <span class="tt-soon-sticker">Sắp ra mắt</span>
+                    <span class="tt-soon-icon">@StudioIcons.Get(tool.Icon)</span>
+                    <span class="tt-pill">@tool.Kind</span>
+                    <h3>@tool.Name</h3>
+                    <p>@tool.Text</p>
+                    <a class="tt-textlink" asp-route="ContactUs">Báo tôi khi ra mắt @StudioIcons.Get("arrow", "tt-arrow")</a>
+                </article>
+            }
             </div>
         </div>
     </section>

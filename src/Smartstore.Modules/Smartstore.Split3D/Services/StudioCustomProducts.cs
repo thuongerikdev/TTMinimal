@@ -1,6 +1,7 @@
 using Smartstore.Core.Catalog.Attributes;
 using Smartstore.Core.Catalog.Categories;
 using Smartstore.Core.Catalog.Products;
+using Smartstore.Core.Content.Media;
 using Smartstore.Core.Data;
 using Smartstore.Core.Seo;
 
@@ -62,19 +63,8 @@ public static class StudioCustomProducts
                 new("Màu chữ", AttributeControlType.Boxes, true, null, ColorOptions(1)),
                 new(LengthAttributeName, AttributeControlType.TextBox, false, null, [])
             ]),
-        new("TT-KEYCAP", "Keycap in 3D theo yêu cầu", "keycap-in-3d-theo-yeu-cau", 45000,
-            "Keycap in Resin cho bàn phím cơ: ký tự, logo hoặc hình nhỏ theo ý bạn.",
-            "<p>Keycap in Resin mịn, vừa switch MX. Nhập ký tự / mô tả hình muốn in, chọn profile và màu. Giá tính theo mỗi keycap — chọn số lượng khi đặt.</p>",
-            [
-                new("Ký tự / hình trên keycap", AttributeControlType.TextBox, true, "VD: ESC, logo mèo, chữ T", []),
-                new("Profile", AttributeControlType.RadioList, true, null,
-                [
-                    new("OEM", PreSelected: true), new("Cherry"), new("XDA"), new("DSA"), new("SA", 5000), new("Artisan (tượng nhỏ)", 35000)
-                ]),
-                new("Màu", AttributeControlType.Boxes, true, null, ColorOptions(0)),
-                KeySizeAttribute,
-                LegendColorAttribute
-            ]),
+        // TT-KEYCAP is no longer sold (2026-10-07): not created anymore. An existing one keeps its designer
+        // (DesignProducts) and options (UpgradeAsync) in case it is published again.
         new(ClassBoardSku, "Thời khoá biểu & sơ đồ lớp in 3D", "thoi-khoa-bieu-so-do-lop-in-3d", 350000,
             "Bảng thời khoá biểu hoặc sơ đồ chỗ ngồi của lớp, in 3D chữ nổi: tự nhập môn học / tên học sinh, xem trước 3D.",
             "<p>Một sản phẩm cho cả hai: <b>thời khoá biểu</b> (số ngày, số tiết sáng / chiều, tên môn từng ô) hoặc <b>sơ đồ lớp</b> "
@@ -105,7 +95,50 @@ public static class StudioCustomProducts
     /// field can be filled from a list (one row per piece; Title heads the list dialog, Item names one row).
     /// Length: free length slider priced by <see cref="NameplateLengthPriceCalculator"/>.
     /// </summary>
-    public sealed record DesignProduct(string Kind, string Title, string Item, bool List, bool Length);
+    /// <param name="Theme">
+    /// Fixed look of a ready-made class board (a theme key of studio-designs.js); the customer only types the name.
+    /// <c>null</c>: the customer designs the look.
+    /// </param>
+    public sealed record DesignProduct(string Kind, string Title, string Item, bool List, bool Length, string Theme = null);
+
+    /// <summary>
+    /// Name of the category of the ready-made class boards (<see cref="BoardTemplates"/>) and the class board designer.
+    /// </summary>
+    public const string BoardCategoryName = "Thời khoá biểu";
+    public const string BoardCategorySlug = "thoi-khoa-bieu";
+
+    /// <summary>
+    /// Category the board category is put under when it exists (the shop's "Bán hàng" next to "Chậu hoa").
+    /// </summary>
+    public const string BoardParentCategoryName = "Bán hàng";
+
+    /// <summary>
+    /// A ready-made class board: a fixed look of the designer (Theme), its product image (embedded resource
+    /// <c>Boards/{Theme}.jpg</c>, a render of the 3D preview) and a short description of the look.
+    /// </summary>
+    public sealed record BoardTemplate(string Sku, string Theme, string Name, string Slug, string Look);
+
+    /// <summary>
+    /// Ready-made class boards, after the boards customers ask for most. Created by <see cref="ApplyBoardTemplatesAsync"/>.
+    /// </summary>
+    public static readonly BoardTemplate[] BoardTemplates =
+    [
+        new("TT-TKB-PASTEL", "pastel", "Thời khoá biểu Pastel tím in 3D", "thoi-khoa-bieu-pastel-tim",
+            "viền gợn sóng màu tím, tiêu đề nổi trên nhãn tím, nhãn Sáng tím – Chiều hồng, sticker trái tim và ngôi sao"),
+        new("TT-TKB-GAMER", "gamer", "Thời khoá biểu Gamer in 3D", "thoi-khoa-bieu-gamer",
+            "khung đen trên nền trắng ngà, số ngày trong vòng tròn, nhãn Sáng đen – Chiều cam, sticker bánh răng và tia sét"),
+        new("TT-TKB-PANDA", "panda", "Thời khoá biểu Gấu trúc in 3D", "thoi-khoa-bieu-gau-truc",
+            "khung xanh lá tre, hàng ngày dạng viên xanh, ô xanh nhạt, sticker gấu trúc và lá tre"),
+        new("TT-TKB-SPACE", "space", "Thời khoá biểu Vũ trụ in 3D", "thoi-khoa-bieu-vu-tru",
+            "nền đen điểm sao lấp lánh, nhãn Sáng tím – Chiều cam, sticker tên lửa và hành tinh"),
+        new("TT-TKB-CLASSIC", "classic", "Thời khoá biểu Cổ điển in 3D", "thoi-khoa-bieu-co-dien",
+            "nền trắng gọn gàng, số ngày trong vòng tròn cam, nhãn Sáng xanh – Chiều đỏ")
+    ];
+
+    /// <summary>
+    /// Base price of a ready-made class board (base length, text printed in place).
+    /// </summary>
+    public const decimal BoardTemplatePrice = 290000;
 
     /// <summary>
     /// Products with the 3D designer, by SKU.
@@ -115,7 +148,12 @@ public static class StudioCustomProducts
         ["TT-NAMEPLATE"] = new("nameplate", "Danh sách tên cần in", "bảng tên", true, true),
         ["TT-KEYCAP"] = new("keycap", "Danh sách keycap cần in", "keycap", true, false),
         [ClassBoardSku] = new("classboard", "Danh sách bảng cần in", "bảng", false, true),
-        [QrSku] = new("qr", "Danh sách mã QR cần in", "bảng QR", false, true)
+        [QrSku] = new("qr", "Danh sách mã QR cần in", "bảng QR", false, true),
+        ["TT-TKB-PASTEL"] = new("classboard", "Danh sách bảng cần in", "bảng", false, true, "pastel"),
+        ["TT-TKB-GAMER"] = new("classboard", "Danh sách bảng cần in", "bảng", false, true, "gamer"),
+        ["TT-TKB-PANDA"] = new("classboard", "Danh sách bảng cần in", "bảng", false, true, "panda"),
+        ["TT-TKB-SPACE"] = new("classboard", "Danh sách bảng cần in", "bảng", false, true, "space"),
+        ["TT-TKB-CLASSIC"] = new("classboard", "Danh sách bảng cần in", "bảng", false, true, "classic")
     };
 
     /// <summary>
@@ -343,78 +381,199 @@ public static class StudioCustomProducts
                 continue;
             }
 
-            var product = new Product
+            await CreateProductAsync(db, urlService, spec, category, template.Id, displayOrder, true, cancelToken);
+        }
+    }
+
+    // Creates a product of a spec with its attributes and puts it into the category.
+    private static async Task<Product> CreateProductAsync(
+        SmartDbContext db,
+        IUrlService urlService,
+        Spec spec,
+        Category category,
+        int templateId,
+        int displayOrder,
+        bool showOnHomePage,
+        CancellationToken cancelToken)
+    {
+        var product = new Product
+        {
+            ProductType = ProductType.SimpleProduct,
+            Sku = spec.Sku,
+            Name = spec.Name,
+            ShortDescription = spec.ShortDescription,
+            FullDescription = spec.FullDescription,
+            MetaTitle = spec.Name,
+            MetaDescription = spec.ShortDescription,
+            ProductTemplateId = templateId,
+            Price = spec.Price,
+            Visibility = ProductVisibility.Full,
+            Published = true,
+            ShowOnHomePage = showOnHomePage,
+            HomePageDisplayOrder = displayOrder,
+            ManageInventoryMethod = ManageInventoryMethod.DontManageStock,
+            OrderMinimumQuantity = 1,
+            OrderMaximumQuantity = 1000,
+            QuantityStep = 1,
+            IsShippingEnabled = true,
+            AllowCustomerReviews = true,
+            DisplayOrder = displayOrder
+        };
+
+        db.Products.Add(product);
+        await db.SaveChangesAsync(cancelToken);
+        await urlService.SaveSlugAsync(product, spec.Slug, spec.Name, true);
+
+        db.ProductCategories.Add(new ProductCategory { ProductId = product.Id, CategoryId = category.Id, DisplayOrder = displayOrder });
+
+        var attributeOrder = 0;
+        foreach (var attr in spec.Attributes)
+        {
+            var productAttribute = await db.ProductAttributes.FirstOrDefaultAsync(x => x.Name == attr.Name, cancelToken);
+            if (productAttribute == null)
             {
-                ProductType = ProductType.SimpleProduct,
-                Sku = spec.Sku,
-                Name = spec.Name,
-                ShortDescription = spec.ShortDescription,
-                FullDescription = spec.FullDescription,
-                MetaTitle = spec.Name,
-                MetaDescription = spec.ShortDescription,
-                ProductTemplateId = template.Id,
-                Price = spec.Price,
-                Visibility = ProductVisibility.Full,
-                Published = true,
-                ShowOnHomePage = true,
-                HomePageDisplayOrder = displayOrder,
-                ManageInventoryMethod = ManageInventoryMethod.DontManageStock,
-                OrderMinimumQuantity = 1,
-                OrderMaximumQuantity = 1000,
-                QuantityStep = 1,
-                IsShippingEnabled = true,
-                AllowCustomerReviews = true,
-                DisplayOrder = displayOrder
-            };
-
-            db.Products.Add(product);
-            await db.SaveChangesAsync(cancelToken);
-            await urlService.SaveSlugAsync(product, spec.Slug, spec.Name, true);
-
-            db.ProductCategories.Add(new ProductCategory { ProductId = product.Id, CategoryId = category.Id, DisplayOrder = displayOrder });
-
-            var attributeOrder = 0;
-            foreach (var attr in spec.Attributes)
-            {
-                var productAttribute = await db.ProductAttributes.FirstOrDefaultAsync(x => x.Name == attr.Name, cancelToken);
-                if (productAttribute == null)
-                {
-                    productAttribute = new ProductAttribute { Name = attr.Name };
-                    db.ProductAttributes.Add(productAttribute);
-                    await db.SaveChangesAsync(cancelToken);
-                }
-
-                var variantAttribute = new ProductVariantAttribute
-                {
-                    ProductId = product.Id,
-                    ProductAttributeId = productAttribute.Id,
-                    AttributeControlTypeId = (int)attr.ControlType,
-                    IsRequired = attr.IsRequired,
-                    TextPrompt = attr.TextPrompt,
-                    DisplayOrder = ++attributeOrder
-                };
-
-                db.ProductVariantAttributes.Add(variantAttribute);
+                productAttribute = new ProductAttribute { Name = attr.Name };
+                db.ProductAttributes.Add(productAttribute);
                 await db.SaveChangesAsync(cancelToken);
-
-                var valueOrder = 0;
-                foreach (var option in attr.Options)
-                {
-                    db.ProductVariantAttributeValues.Add(new ProductVariantAttributeValue
-                    {
-                        ProductVariantAttributeId = variantAttribute.Id,
-                        Name = option.Name,
-                        Color = option.Color,
-                        PriceAdjustment = option.PriceAdjustment,
-                        IsPreSelected = option.PreSelected,
-                        DisplayOrder = ++valueOrder,
-                        Quantity = 1
-                    });
-                }
             }
 
+            var variantAttribute = new ProductVariantAttribute
+            {
+                ProductId = product.Id,
+                ProductAttributeId = productAttribute.Id,
+                AttributeControlTypeId = (int)attr.ControlType,
+                IsRequired = attr.IsRequired,
+                TextPrompt = attr.TextPrompt,
+                DisplayOrder = ++attributeOrder
+            };
+
+            db.ProductVariantAttributes.Add(variantAttribute);
             await db.SaveChangesAsync(cancelToken);
+
+            var valueOrder = 0;
+            foreach (var option in attr.Options)
+            {
+                db.ProductVariantAttributeValues.Add(new ProductVariantAttributeValue
+                {
+                    ProductVariantAttributeId = variantAttribute.Id,
+                    Name = option.Name,
+                    Color = option.Color,
+                    PriceAdjustment = option.PriceAdjustment,
+                    IsPreSelected = option.PreSelected,
+                    DisplayOrder = ++valueOrder,
+                    Quantity = 1
+                });
+            }
         }
+
+        await db.SaveChangesAsync(cancelToken);
+        return product;
+    }
+
+    /// <summary>
+    /// Creates the "Thời khoá biểu" category (under "Bán hàng" when that exists) with the ready-made boards that do not
+    /// exist yet, each with its product image, and adds the class board designer to it as the "design your own" board.
+    /// The designer's look now comes from its themes: its former "Màu nền" / "Màu chữ" choices are removed.
+    /// </summary>
+    public static async Task ApplyBoardTemplatesAsync(SmartDbContext db, IUrlService urlService, IMediaService mediaService, CancellationToken cancelToken = default)
+    {
+        var category = await db.Categories.FirstOrDefaultAsync(x => x.Name == BoardCategoryName && !x.Deleted, cancelToken);
+        if (category == null)
+        {
+            var parent = await db.Categories.FirstOrDefaultAsync(x => x.Name == BoardParentCategoryName && !x.Deleted, cancelToken);
+            var categoryTemplate = await db.CategoryTemplates.FirstOrDefaultAsync(x => x.ViewPath == "CategoryTemplate.ProductsInGridOrLines", cancelToken)
+                ?? await db.CategoryTemplates.FirstAsync(cancelToken);
+
+            category = new Category
+            {
+                Name = BoardCategoryName,
+                ParentId = parent?.Id,
+                Description = "<p>Bảng thời khoá biểu in 3D nhiều màu cho bé: chọn mẫu, nhập tên là xong — studio in đúng mẫu, có khung ô cho từng tiết. "
+                    + "Muốn tự chọn màu, bố cục hoặc làm sơ đồ chỗ ngồi của lớp thì dùng mẫu <b>Tự thiết kế</b>.</p>",
+                CategoryTemplateId = categoryTemplate.Id,
+                Published = true,
+                DisplayOrder = parent != null ? 1 : 0
+            };
+
+            db.Categories.Add(category);
+            await db.SaveChangesAsync(cancelToken);
+            await urlService.SaveSlugAsync(category, BoardCategorySlug, category.Name, true);
+        }
+
+        var template = await db.ProductTemplates.FirstOrDefaultAsync(x => x.ViewPath == "Product", cancelToken)
+            ?? await db.ProductTemplates.FirstAsync(cancelToken);
+        var displayOrder = 0;
+
+        foreach (var board in BoardTemplates)
+        {
+            displayOrder++;
+            var product = await db.Products.FirstOrDefaultAsync(x => x.Sku == board.Sku, cancelToken);
+            if (product == null)
+            {
+                var spec = new Spec(board.Sku, board.Name, board.Slug, BoardTemplatePrice,
+                    $"Thời khoá biểu in 3D nhiều màu: {board.Look}. Chỉ cần nhập tên muốn in.",
+                    $"<p>Bảng thời khoá biểu in 3D nhiều màu theo mẫu: {board.Look}. Bạn chỉ cần <b>nhập tên</b> (tên bé hoặc tên lớp) — "
+                    + "xem trước 3D ngay trên trang. Bảng có sẵn ô cho từng tiết buổi sáng và buổi chiều, từ thứ 2 đến thứ 7, 2 lỗ treo tường.</p>"
+                    + "<p>Muốn in sẵn tên môn vào từng ô thì điền thêm ở phần xem trước (không bắt buộc). Chọn <b>ô rời</b> để có các miếng môn học "
+                    + "cắm vào hốc, rút ra đổi lại được khi thay thời khoá biểu. Giá theo chiều dài bảng.</p>",
+                    [
+                        new("Tên trên bảng", AttributeControlType.TextBox, true, "Tên muốn in (VD: Vũ Lan Anh, Lớp 6A1)", []),
+                        TileAttribute,
+                        new(LengthAttributeName, AttributeControlType.TextBox, false, null, [])
+                    ]);
+
+                product = await CreateProductAsync(db, urlService, spec, category, template.Id, displayOrder, false, cancelToken);
+            }
+
+            await EnsureBoardPictureAsync(db, mediaService, product, board.Theme, cancelToken);
+        }
+
+        // The designer: the last board of the category, and its colors now come from the looks.
+        var designer = await db.Products.FirstOrDefaultAsync(x => x.Sku == ClassBoardSku && !x.Deleted, cancelToken);
+        if (designer != null)
+        {
+            if (!await db.ProductCategories.AnyAsync(x => x.ProductId == designer.Id && x.CategoryId == category.Id, cancelToken))
+            {
+                db.ProductCategories.Add(new ProductCategory { ProductId = designer.Id, CategoryId = category.Id, DisplayOrder = BoardTemplates.Length + 1 });
+            }
+
+            var colors = await db.ProductVariantAttributes
+                .Where(x => x.ProductId == designer.Id && (x.ProductAttribute.Name == "Màu nền" || x.ProductAttribute.Name == "Màu chữ"))
+                .ToListAsync(cancelToken);
+            db.ProductVariantAttributes.RemoveRange(colors);
+
+            await db.SaveChangesAsync(cancelToken);
+            await EnsureBoardPictureAsync(db, mediaService, designer, "custom", cancelToken);
+        }
+    }
+
+    // Product image of a ready-made board (embedded Boards/{theme}.jpg), unless the product has pictures already.
+    private static async Task EnsureBoardPictureAsync(SmartDbContext db, IMediaService mediaService, Product product, string theme, CancellationToken cancelToken)
+    {
+        if (await db.ProductMediaFiles.AnyAsync(x => x.ProductId == product.Id, cancelToken))
+        {
+            return;
+        }
+
+        using var resource = typeof(StudioCustomProducts).Assembly.GetManifestResourceStream($"Smartstore.Split3D.Boards.{theme}.jpg");
+        if (resource == null)
+        {
+            return;
+        }
+
+        var path = mediaService.CombinePaths(SystemAlbumProvider.Catalog, $"thoi-khoa-bieu-{theme}.jpg");
+        var file = await mediaService.GetFileByPathAsync(path);
+        if (file == null)
+        {
+            using var stream = new MemoryStream();
+            await resource.CopyToAsync(stream, cancelToken);
+            stream.Position = 0;
+            file = await mediaService.SaveFileAsync(path, stream, false, DuplicateFileHandling.Rename);
+        }
+
+        db.ProductMediaFiles.Add(new ProductMediaFile { ProductId = product.Id, MediaFileId = file.Id, DisplayOrder = 1 });
+        product.MainPictureId = file.Id;
+        await db.SaveChangesAsync(cancelToken);
     }
 
     /// <summary>

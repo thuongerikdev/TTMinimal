@@ -13,5 +13,8 @@
         <!-- Default body of the key email message template (Services/StudioMailService). -->
         <EmbeddedResource Include="Mail\LicenseKey.liquid" LogicalName="Smartstore.Split3D.Mail.LicenseKey.liquid" />
         <None Remove="Mail\LicenseKey.liquid" />
+
+        <!-- Product images of the ready-made class boards (StudioCustomProducts.ApplyBoardTemplatesAsync). -->
+        <EmbeddedResource Include="Boards\*.jpg" LogicalName="Smartstore.Split3D.Boards.%(Filename)%(Extension)" />
     </ItemGroup>
 </Project>

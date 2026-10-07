@@ -5,6 +5,7 @@ using Smartstore.Core.Catalog;
 using Smartstore.Core.Checkout.Payment;
 using Smartstore.Core.Checkout.Shipping;
 using Smartstore.Core.Common.Configuration;
+using Smartstore.Core.Content.Media;
 using Smartstore.Core.Content.Menus;
 using Smartstore.Core.Data;
 using Smartstore.Core.Identity;
@@ -20,7 +21,7 @@ namespace Smartstore.Split3D.Services;
 /// </summary>
 public class StudioStorefrontSetup
 {
-    public const int CurrentVersion = 7;
+    public const int CurrentVersion = 8;
     public const string ThemeName = "TTMinimal";
     public const string PrintServiceRouteName = "TTPrintService";
     public const string PrintOrderRouteName = "TTPrintOrder";
@@ -38,6 +39,7 @@ public class StudioStorefrontSetup
     private readonly Split3DSettings _split3DSettings;
     private readonly IUrlService _urlService;
     private readonly PrintOrderService _printOrderService;
+    private readonly IMediaService _mediaService;
 
     public StudioStorefrontSetup(
         SmartDbContext db,
@@ -46,7 +48,8 @@ public class StudioStorefrontSetup
         StudioSettings studioSettings,
         Split3DSettings split3DSettings,
         IUrlService urlService,
-        PrintOrderService printOrderService)
+        PrintOrderService printOrderService,
+        IMediaService mediaService)
     {
         _db = db;
         _services = services;
@@ -55,6 +58,7 @@ public class StudioStorefrontSetup
         _split3DSettings = split3DSettings;
         _urlService = urlService;
         _printOrderService = printOrderService;
+        _mediaService = mediaService;
     }
 
     public ILogger Logger { get; set; } = NullLogger.Instance;
@@ -79,6 +83,7 @@ public class StudioStorefrontSetup
         await ApplyToolsCategoryAsync(cancelToken);
         await StudioCustomProducts.ApplyAsync(_db, _urlService, cancelToken);
         await StudioCustomProducts.UpgradeAsync(_db, cancelToken);
+        await StudioCustomProducts.ApplyBoardTemplatesAsync(_db, _urlService, _mediaService, cancelToken);
         await _printOrderService.EnsurePrintProductAsync(cancelToken);
         await ApplyMainMenuAsync(cancelToken);
         await ApplyShippingAsync(cancelToken);
