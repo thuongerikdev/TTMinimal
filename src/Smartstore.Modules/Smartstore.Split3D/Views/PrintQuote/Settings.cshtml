@@ -145,5 +145,27 @@
             <div class="adminTitle"><smart-label asp-for="DepositNote" /></div>
             <div class="adminData"><textarea asp-for="DepositNote" rows="2"></textarea></div>
         </div>
+
+        <div class="adminRow">
+            <div class="admin-config-group">
+                <div class="title">@T("Plugins.Split3D.Studio.Nameplate")</div>
+            </div>
+        </div>
+        <div class="adminRow">
+            <div class="adminTitle"><smart-label asp-for="NameplateMinLength" /></div>
+            <div class="adminData"><input asp-for="NameplateMinLength" sm-postfix="cm" /><span asp-validation-for="NameplateMinLength"></span></div>
+        </div>
+        <div class="adminRow">
+            <div class="adminTitle"><smart-label asp-for="NameplateMaxLength" /></div>
+            <div class="adminData"><input asp-for="NameplateMaxLength" sm-postfix="cm" /><span asp-validation-for="NameplateMaxLength"></span></div>
+        </div>
+        <div class="adminRow">
+            <div class="adminTitle"><smart-label asp-for="NameplateBaseLength" /></div>
+            <div class="adminData"><input asp-for="NameplateBaseLength" sm-postfix="cm" /><span asp-validation-for="NameplateBaseLength"></span></div>
+        </div>
+        <div class="adminRow">
+            <div class="adminTitle"><smart-label asp-for="NameplatePercentPerCm" /></div>
+            <div class="adminData"><input asp-for="NameplatePercentPerCm" sm-postfix="%" /><span asp-validation-for="NameplatePercentPerCm"></span></div>
+        </div>
     </div>
 </form>

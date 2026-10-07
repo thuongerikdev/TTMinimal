@@ -315,6 +315,10 @@ public class PrintQuoteController : AdminController
             DepositPercent = _settings.DepositPercent,
             AllowPickup = _settings.AllowPickup,
             DepositNote = _settings.DepositNote,
+            NameplateMinLength = _settings.NameplateMinLength,
+            NameplateMaxLength = _settings.NameplateMaxLength,
+            NameplateBaseLength = _settings.NameplateBaseLength,
+            NameplatePercentPerCm = _settings.NameplatePercentPerCm,
             QuoteMessageTemplate = _settings.QuoteMessageTemplate,
             FdmWeightFactor = _settings.FdmWeightFactor,
             ResinWeightFactor = _settings.ResinWeightFactor,
@@ -331,6 +335,11 @@ public class PrintQuoteController : AdminController
         if (model.PrintPriceTable.HasValue() && PrintPriceList.Parse(model.PrintPriceTable).Count == 0)
         {
             ModelState.AddModelError(nameof(model.PrintPriceTable), T("Plugins.Split3D.Studio.PriceTableInvalid"));
+        }
+
+        if (model.NameplateMinLength > model.NameplateMaxLength)
+        {
+            ModelState.AddModelError(nameof(model.NameplateMaxLength), T("Plugins.Split3D.Studio.NameplateLengthRangeInvalid"));
         }
 
         if (!ModelState.IsValid)
@@ -356,6 +365,10 @@ public class PrintQuoteController : AdminController
         _settings.DepositPercent = Math.Clamp(model.DepositPercent, 1, 100);
         _settings.AllowPickup = model.AllowPickup;
         _settings.DepositNote = model.DepositNote?.Trim();
+        _settings.NameplateMinLength = model.NameplateMinLength;
+        _settings.NameplateMaxLength = model.NameplateMaxLength;
+        _settings.NameplateBaseLength = Math.Clamp(model.NameplateBaseLength, model.NameplateMinLength, model.NameplateMaxLength);
+        _settings.NameplatePercentPerCm = model.NameplatePercentPerCm;
         _settings.QuoteMessageTemplate = model.QuoteMessageTemplate?.Trim().NullEmpty() ?? StudioSettings.DefaultQuoteMessageTemplate;
         _settings.FdmWeightFactor = model.FdmWeightFactor;
         _settings.ResinWeightFactor = model.ResinWeightFactor;

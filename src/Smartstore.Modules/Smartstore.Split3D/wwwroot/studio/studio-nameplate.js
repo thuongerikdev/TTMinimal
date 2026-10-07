@@ -6,21 +6,48 @@
 (function () {
     'use strict';
 
-    // Google Fonts with Vietnamese glyphs; loaded on demand (one stylesheet, the font files only when used).
+    // The studio's fonts. From Google Fonts: Pacifico (with Vietnamese), Yellowtail and Titan One (no Vietnamese
+    // accents). Every other font comes as a file from studio/fonts (see addFonts); a file named like a Google font
+    // replaces it, e.g. a Vietnamese version of Titan One.
     var FONTS = [
-        { key: 'be', name: 'Be Vietnam Pro', family: 'Be Vietnam Pro', weight: 900 },
-        { key: 'baloo', name: 'Baloo 2', family: 'Baloo 2', weight: 800 },
-        { key: 'nunito', name: 'Nunito', family: 'Nunito', weight: 900 },
-        { key: 'montserrat', name: 'Montserrat', family: 'Montserrat', weight: 800 },
-        { key: 'comfortaa', name: 'Comfortaa', family: 'Comfortaa', weight: 700 },
-        { key: 'bungee', name: 'Bungee', family: 'Bungee', weight: 400 },
-        { key: 'slab', name: 'Roboto Slab', family: 'Roboto Slab', weight: 800 },
-        { key: 'playfair', name: 'Playfair Display', family: 'Playfair Display', weight: 800 },
-        { key: 'lobster', name: 'Lobster', family: 'Lobster', weight: 400 },
-        { key: 'pacifico', name: 'Pacifico', family: 'Pacifico', weight: 400 },
-        { key: 'dancing', name: 'Dancing Script', family: 'Dancing Script', weight: 700 },
-        { key: 'patrick', name: 'Patrick Hand', family: 'Patrick Hand', weight: 400 }
+        { key: 'yellowtail', name: 'Yellowtail', family: 'Yellowtail', weight: 400, google: true, noVi: true },
+        { key: 'pacifico', name: 'Pacifico', family: 'Pacifico', weight: 400, google: true },
+        { key: 'titanone', name: 'Titan One', family: 'Titan One', weight: 400, google: true, noVi: true }
     ];
+
+    // Order of the studio's font list; fonts not named here follow alphabetically.
+    var FONT_ORDER = ['yellowtail', 'patricktonight', 'birthdayparty', 'bollifia', 'mjmilestonescript', 'pacifico', 'mobsters', 'peanutbutter', 'titanone', 'baguetscript'];
+
+    function fontKey(name) {
+        return String(name).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]/g, '').replace(/regular$/, '');
+    }
+
+    /**
+     * Adds font files of the shop ([{ name, url }]) to the list, replacing a font of the same name.
+     * The files load only when a font is shown (font chips) or used.
+     */
+    function addFonts(list) {
+        var css = '';
+        (list || []).forEach(function (f) {
+            if (!f || !f.name || !f.url) return;
+            var key = fontKey(f.name), family = 'TT ' + f.name.replace(/["\\]/g, '');
+            var entry = { key: key, name: f.name, family: family, weight: 400 };
+            var i = FONTS.map(function (x) { return x.key; }).indexOf(key);
+            if (i >= 0) FONTS[i] = entry; else FONTS.push(entry);
+            css += '@font-face{font-family:"' + family + '";src:url("' + encodeURI(f.url).replace(/"/g, '%22') + '");font-display:swap}';
+        });
+        FONTS.sort(function (a, b) {
+            var ia = FONT_ORDER.indexOf(a.key), ib = FONT_ORDER.indexOf(b.key);
+            if (ia < 0) ia = 999;
+            if (ib < 0) ib = 999;
+            return ia - ib || a.name.localeCompare(b.name);
+        });
+        if (css) {
+            var style = document.createElement('style');
+            style.textContent = css;
+            document.head.appendChild(style);
+        }
+    }
 
     var SHAPES = [
         { key: 'rounded', name: 'Bo góc' },
@@ -89,7 +116,7 @@
     ];
 
     var DEFAULTS = {
-        text: '', line2: '', font: 'be', upper: false, spacing: 0, textScale: 1,
+        text: '', line2: '', font: 'pacifico', upper: false, spacing: 0, textScale: 1,
         base: '#ffffff', color: '#20201f',
         length: 100, heightPct: 30, thickness: 3, shape: 'rounded', radius: 5, margin: 4,
         style: 'raised', relief: 1.6, border: false, hole: 'none', icon: '', iconSide: 'left', stand: false
@@ -100,14 +127,18 @@
     var FOV = 30 * Math.PI / 180;
     var TILT = 75 * Math.PI / 180;  // standing plate leans back 15°
 
-    var fontsLinked = false;
+    // Resolves once the Google Fonts stylesheet is in (or failed): before that a font load finds no face to load.
+    var fontsLinked = null;
     function ensureFonts() {
-        if (fontsLinked) return;
-        fontsLinked = true;
+        if (fontsLinked) return fontsLinked;
+        var google = FONTS.filter(function (f) { return f.google; });
+        if (!google.length) return (fontsLinked = Promise.resolve());
         var link = document.createElement('link');
         link.rel = 'stylesheet';
-        link.href = 'https://fonts.googleapis.com/css2?' + FONTS.map(function (f) { return 'family=' + f.family.replace(/ /g, '+') + ':wght@' + f.weight; }).join('&') + '&display=swap';
+        link.href = 'https://fonts.googleapis.com/css2?' + google.map(function (f) { return 'family=' + f.family.replace(/ /g, '+') + ':wght@' + f.weight; }).join('&') + '&display=swap';
+        fontsLinked = new Promise(function (resolve) { link.onload = link.onerror = function () { resolve(); }; setTimeout(resolve, 8000); });
         document.head.appendChild(link);
+        return fontsLinked;
     }
     function fontOf(key) { return FONTS.filter(function (f) { return f.key === key; })[0] || FONTS[0]; }
     function iconOf(key) { return ICONS.filter(function (i) { return i.key === key; })[0] || null; }
@@ -156,6 +187,64 @@
         return { l: l, w: Math.max(0, l + r), a: a, h: Math.max(0, a + d) };
     }
 
+    // Joins every separate piece of the plate (hole bosses, letters or icons far apart) to the largest piece with a
+    // bar along the shortest way, so the print always comes out in one piece. Works on a 0.5 mm grid.
+    function connect(bc, w, h, R, FW, FH, barW) {
+        var g = Math.max(1, Math.round(R * 0.5)), gw = Math.ceil(w / g), gh = Math.ceil(h / g), n = gw * gh;
+        var data = bc.getImageData(0, 0, w, h).data, full = new Uint8Array(n), label = new Int32Array(n).fill(-1);
+        for (var y = 0; y < gh; y++) {
+            for (var x = 0; x < gw; x++) {
+                var px = Math.min(w - 1, x * g + (g >> 1)), py = Math.min(h - 1, y * g + (g >> 1));
+                full[y * gw + x] = data[(py * w + px) * 4 + 3] > 127 ? 1 : 0;
+            }
+        }
+        var queue = new Int32Array(n), sizes = [];
+        function neighbours(i, fn) {
+            var x = i % gw, y = (i - x) / gw;
+            for (var dy = -1; dy <= 1; dy++) {
+                for (var dx = -1; dx <= 1; dx++) {
+                    var nx = x + dx, ny = y + dy;
+                    if ((dx || dy) && nx >= 0 && ny >= 0 && nx < gw && ny < gh) fn(ny * gw + nx);
+                }
+            }
+        }
+        for (var i = 0; i < n; i++) {
+            if (!full[i] || label[i] >= 0) continue;
+            var id = sizes.length, head = 0, tail = 0;
+            label[i] = id; queue[tail++] = i;
+            while (head < tail) neighbours(queue[head++], function (j) { if (full[j] && label[j] < 0) { label[j] = id; queue[tail++] = j; } });
+            sizes.push(tail);
+        }
+        if (sizes.length < 2) return;
+
+        var main = sizes.indexOf(Math.max.apply(null, sizes)), joined = new Uint8Array(sizes.length), from = new Int32Array(n);
+        joined[main] = 1;
+        function mm(i) { var x = i % gw, y = (i - x) / gw; return [(x * g + g / 2) / R - FW / 2, (y * g + g / 2) / R - FH / 2]; }
+        bc.save();
+        bc.strokeStyle = '#fff';
+        bc.lineWidth = barW;
+        bc.lineCap = 'round';
+        for (var pass = 1; pass < sizes.length; pass++) {
+            // Breadth-first search from all pieces not joined yet until a joined one is reached.
+            from.fill(-1);
+            var head2 = 0, tail2 = 0, hit = -1;
+            for (i = 0; i < n; i++) if (full[i] && !joined[label[i]]) { from[i] = i; queue[tail2++] = i; }
+            while (head2 < tail2 && hit < 0) {
+                var cur = queue[head2++];
+                neighbours(cur, function (j) {
+                    if (hit >= 0 || from[j] >= 0) return;
+                    from[j] = from[cur];
+                    if (full[j] && joined[label[j]]) hit = j; else queue[tail2++] = j;
+                });
+            }
+            if (hit < 0) break;
+            var a = mm(from[hit]), b = mm(hit);
+            bc.beginPath(); bc.moveTo(a[0], a[1]); bc.lineTo(b[0], b[1]); bc.stroke();
+            joined[label[from[hit]]] = 1;
+        }
+        bc.restore();
+    }
+
     // Builds the plate and relief masks for a spec. R = mask pixels per mm; frame = mask size in mm (centered).
     function masks(s) {
         var font = fontOf(s.font), L = s.length, H = Math.max(8, L * s.heightPct / 100), m = s.margin;
@@ -184,8 +273,8 @@
         // Room for the content: margins, and the holes beside or above it.
         var holeSide = 2 * HOLE_R + 2.5, aw = L - 2 * m, ah = H - 2 * m, cx = 0, cy = 0;
         if (s.hole === 'left') { aw -= holeSide; cx = holeSide / 2; }
+        else if (s.hole === 'top1' || (s.hole === 'top2' && s.shape === 'outline')) { ah -= holeSide; cy = holeSide / 2; }
         else if (s.hole === 'top2') aw -= 2 * holeSide;
-        else if (s.hole === 'top1') { ah -= holeSide; cy = holeSide / 2; }
         if (s.border && s.shape !== 'outline') { aw -= 3; ah -= 3; }
 
         var k = cw > 0 && ch > 0 && aw > 0 && ah > 0 ? Math.min(aw / cw, ah / ch) * s.textScale : 0;  // mm per reference px
@@ -246,11 +335,15 @@
         }
 
         // Holes: a boss so the hole always has material around it, then the cut through plate and relief.
-        var holes = [];
-        if (s.hole === 'left') holes.push(s.shape === 'outline' && k > 0 ? [left - m - HOLE_R * 0.4, cy] : [-L / 2 + 2.5 + HOLE_R, 0]);
+        // On an "outline" plate the holes sit right next to the content.
+        var holes = [], hug = s.shape === 'outline' && k > 0, top = cy - ch * k / 2 - m - HOLE_R * 0.3;
+        if (s.hole === 'left') holes.push(hug ? [left - m - HOLE_R * 0.4, cy] : [-L / 2 + 2.5 + HOLE_R, 0]);
+        else if (hug && s.hole === 'top1') holes.push([cx, top]);
+        else if (hug && s.hole === 'top2') holes.push([left + HOLE_R + 1.5, top], [left + cw * k - HOLE_R - 1.5, top]);
         else if (s.hole === 'top1') holes.push([0, -H / 2 + 2.5 + HOLE_R]);
         else if (s.hole === 'top2') holes.push([-L / 2 + 2.5 + HOLE_R + (s.shape === 'oval' || s.shape === 'pill' ? H * 0.18 : 0), -H / 2 + 2.5 + HOLE_R], [L / 2 - 2.5 - HOLE_R - (s.shape === 'oval' || s.shape === 'pill' ? H * 0.18 : 0), -H / 2 + 2.5 + HOLE_R]);
         holes.forEach(function (p) { bc.beginPath(); circle(bc, p[0], p[1], HOLE_R + 2.5); bc.fill(); });
+        connect(bc, w, h, R, FW, FH, Math.max(3, Math.min(5, m + 1)));
         bc.globalCompositeOperation = rc.globalCompositeOperation = 'destination-out';
         holes.forEach(function (p) {
             bc.beginPath(); circle(bc, p[0], p[1], HOLE_R); bc.fill();
@@ -492,10 +585,9 @@
         if (key === this.key && this.dims) { this.request(); return Promise.resolve(this.dims); }
 
         var seq = ++this.seq, font = fontOf(next.font), sample = (next.text + next.line2) || 'A';
-        if (next.font !== 'be') ensureFonts();
-        var ready = document.fonts && document.fonts.load
-            ? document.fonts.load(font.weight + ' 40px "' + font.family + '"', sample).catch(function () { })
-            : Promise.resolve();
+        var ready = (font.google ? ensureFonts() : Promise.resolve()).then(function () {
+            return document.fonts && document.fonts.load ? document.fonts.load(font.weight + ' 40px "' + font.family + '"', sample).catch(function () { }) : null;
+        });
         return ready.then(function () {
             if (seq !== self.seq) return self.dims;
             self.key = key;
@@ -618,5 +710,5 @@
         });
     };
 
-    window.TTNameplate = { View: View, FONTS: FONTS, SHAPES: SHAPES, ICONS: ICONS, DEFAULTS: DEFAULTS, ensureFonts: ensureFonts, fontOf: fontOf, iconOf: iconOf };
+    window.TTNameplate = { View: View, FONTS: FONTS, addFonts: addFonts, SHAPES: SHAPES, ICONS: ICONS, DEFAULTS: DEFAULTS, ensureFonts: ensureFonts, fontOf: fontOf, iconOf: iconOf };
 })();

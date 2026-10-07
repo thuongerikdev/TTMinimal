@@ -44,7 +44,6 @@ public class AdminMenu : IMenuProvider
         studioNode.Append(CreateItem("tt-studio-jobs", "Print orders", "Plugins.Split3D.PrintJob.ListTitle", "box-seam", "List", "PrintJob"));
         studioNode.Append(CreateItem("tt-studio-quotes", "Print & design requests", "Plugins.Split3D.Studio.Quotes", "printer", "List", "PrintQuote"));
         studioNode.Append(CreateItem("tt-studio-mail", "Emails", "Plugins.Split3D.Mail.MenuTitle", "envelope-paper-heart", "Index", "StudioMail"));
-        studioNode.Append(CreateItem("tt-studio-mail", "Emails", "Plugins.Split3D.Mail.MenuTitle", "envelope-paper-heart", "Index", "StudioMail"));
         studioNode.Append(CreateItem("tt-studio-settings", "Studio settings", "Plugins.Split3D.Studio.Settings", "shop", "Settings", "PrintQuote"));
 
         var dashboardNode = rootNode.SelectNodeById("dashboard");

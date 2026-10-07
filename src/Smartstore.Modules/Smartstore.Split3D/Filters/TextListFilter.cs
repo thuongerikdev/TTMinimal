@@ -18,11 +18,41 @@ public class TextListFilter : IAsyncActionFilter
 {
     private readonly SmartDbContext _db;
     private readonly Lazy<IWidgetProvider> _widgetProvider;
+    private readonly StudioSettings _studioSettings;
+    private readonly IModuleCatalog _moduleCatalog;
 
-    public TextListFilter(SmartDbContext db, Lazy<IWidgetProvider> widgetProvider)
+    private static readonly HashSet<string> _fontExtensions = new(StringComparer.OrdinalIgnoreCase) { ".ttf", ".otf", ".woff", ".woff2" };
+
+    public TextListFilter(SmartDbContext db, Lazy<IWidgetProvider> widgetProvider, StudioSettings studioSettings, IModuleCatalog moduleCatalog)
     {
         _db = db;
         _widgetProvider = widgetProvider;
+        _studioSettings = studioSettings;
+        _moduleCatalog = moduleCatalog;
+    }
+
+    /// <summary>
+    /// Font files of the shop in <c>wwwroot/studio/fonts</c> (ttf, otf, woff, woff2) for the name plate designer.
+    /// The file name without extension is the font name shown to the customer.
+    /// </summary>
+    private object[] ShopFonts(IUrlHelper url)
+    {
+        var webRoot = _moduleCatalog.GetModuleByAssembly(GetType().Assembly)?.WebRoot;
+        var contents = webRoot?.GetDirectoryContents(StudioAssets.FontFolder);
+        if (url == null || contents == null || !contents.Exists)
+        {
+            return [];
+        }
+
+        return contents
+            .Where(x => !x.IsDirectory && _fontExtensions.Contains(Path.GetExtension(x.Name)))
+            .OrderBy(x => x.Name, StringComparer.OrdinalIgnoreCase)
+            .Select(x => (object)new
+            {
+                name = Path.GetFileNameWithoutExtension(x.Name),
+                url = url.Content($"~/Modules/Smartstore.Split3D/{StudioAssets.FontFolder}/{Uri.EscapeDataString(x.Name)}?v={StudioAssets.Version}")
+            })
+            .ToArray();
     }
 
     public async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
@@ -37,7 +67,9 @@ public class TextListFilter : IAsyncActionFilter
             if (sku != null && StudioCustomProducts.TextListProducts.TryGetValue(sku, out var list))
             {
                 var attribute = await _db.ProductVariantAttributes
-                    .Where(x => x.ProductId == productId && x.AttributeControlTypeId == (int)AttributeControlType.TextBox)
+                    .Where(x => x.ProductId == productId
+                        && x.AttributeControlTypeId == (int)AttributeControlType.TextBox
+                        && x.ProductAttribute.Name != StudioCustomProducts.LengthAttributeName)
                     .OrderBy(x => x.DisplayOrder)
                     .Select(x => new { x.Id, x.ProductAttributeId })
                     .FirstOrDefaultAsync();
@@ -52,6 +84,24 @@ public class TextListFilter : IAsyncActionFilter
                         _widgetProvider.Value.RegisterWidget("end", new HtmlWidget($"<style>.form-group.choice:has(#{designControl}) {{ display: none; }}</style>"));
                     }
 
+                    // Free length (slider) instead of fixed sizes, priced by NameplateLengthPriceCalculator.
+                    object length = null;
+                    if (list.Preview)
+                    {
+                        var lengthAttribute = await StudioCustomProducts.EnsureLengthAttributeAsync(_db, productId);
+                        var lengthControl = ProductVariantQueryItem.CreateKey(productId, 0, lengthAttribute.ProductAttributeId, lengthAttribute.Id);
+                        _widgetProvider.Value.RegisterWidget("end", new HtmlWidget($"<style>.form-group.choice:has(#{lengthControl}) {{ display: none; }}</style>"));
+                        length = new
+                        {
+                            control = lengthControl,
+                            min = Math.Min(_studioSettings.NameplateMinLength, _studioSettings.NameplateMaxLength),
+                            max = Math.Max(_studioSettings.NameplateMinLength, _studioSettings.NameplateMaxLength),
+                            @base = _studioSettings.NameplateBaseLength,
+                            percent = _studioSettings.NameplatePercentPerCm,
+                            price = await _db.Products.Where(x => x.Id == productId).Select(x => x.Price).FirstOrDefaultAsync()
+                        };
+                    }
+
                     var url = (context.Controller as Controller)?.Url;
                     var json = JsonSerializer.Serialize(new
                     {
@@ -61,7 +111,9 @@ public class TextListFilter : IAsyncActionFilter
                         cartUrl = url?.RouteUrl("ShoppingCart"),
                         xlsxSrc = url?.Content(StudioAssets.XlsxScript),
                         previewSrc = list.Preview ? url?.Content(StudioAssets.NameplateScript) : null,
-                        designControl
+                        designControl,
+                        length,
+                        fonts = list.Preview ? ShopFonts(url) : null
                     });
 
                     // "<" is escaped by the serializer, so the JSON cannot close the script element.

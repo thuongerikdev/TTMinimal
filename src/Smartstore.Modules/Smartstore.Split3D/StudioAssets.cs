@@ -5,7 +5,7 @@ namespace Smartstore.Split3D;
 /// </summary>
 public static class StudioAssets
 {
-    public const string Version = "30";
+    public const string Version = "32";
 
     public const string StyleSheet = "~/Modules/Smartstore.Split3D/studio/studio.css?v=" + Version;
 
@@ -25,6 +25,11 @@ public static class StudioAssets
     /// 3D preview of the name plate (typed text on a plate), loaded on the name plate product page.
     /// </summary>
     public const string NameplateScript = "~/Modules/Smartstore.Split3D/studio/studio-nameplate.js?v=" + Version;
+
+    /// <summary>
+    /// Folder of the module's wwwroot holding the shop's own font files for the name plate designer.
+    /// </summary>
+    public const string FontFolder = "studio/fonts";
 
     /// <summary>
     /// "Pop Studio" skin for the admin area (see <see cref="Filters.AdminStyleFilter"/>).

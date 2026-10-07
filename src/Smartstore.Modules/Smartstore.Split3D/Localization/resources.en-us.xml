@@ -1913,6 +1913,36 @@
     <LocaleResource Name="Studio.Fields.DepositNote.Hint">
         <Value>Shown below the deposit on the print order page.</Value>
     </LocaleResource>
+    <LocaleResource Name="Studio.Nameplate">
+        <Value>Name plate: length & price</Value>
+    </LocaleResource>
+    <LocaleResource Name="Studio.NameplateLengthRangeInvalid">
+        <Value>The longest length must not be shorter than the shortest one.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Studio.Fields.NameplateMinLength">
+        <Value>Shortest length</Value>
+    </LocaleResource>
+    <LocaleResource Name="Studio.Fields.NameplateMinLength.Hint">
+        <Value>Smallest length the customer can pick with the slider on the name plate page.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Studio.Fields.NameplateMaxLength">
+        <Value>Longest length</Value>
+    </LocaleResource>
+    <LocaleResource Name="Studio.Fields.NameplateMaxLength.Hint">
+        <Value>Largest length the customer can pick with the slider on the name plate page.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Studio.Fields.NameplateBaseLength">
+        <Value>Base length</Value>
+    </LocaleResource>
+    <LocaleResource Name="Studio.Fields.NameplateBaseLength.Hint">
+        <Value>Length the product price stands for. Longer or shorter plates are priced from it.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Studio.Fields.NameplatePercentPerCm">
+        <Value>Price per cm</Value>
+    </LocaleResource>
+    <LocaleResource Name="Studio.Fields.NameplatePercentPerCm.Hint">
+        <Value>Price change per cm away from the base length, in percent of the product price: price × (1 + (length − base) × percent / 100). 6.67% keeps the former prices (15 cm = 4/3, 20 cm = 5/3 of the price).</Value>
+    </LocaleResource>
     <LocaleResource Name="Studio.Fields.QuoteMessageTemplate">
         <Value>Quote message template</Value>
     </LocaleResource>

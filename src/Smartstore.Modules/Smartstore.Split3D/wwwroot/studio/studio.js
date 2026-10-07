@@ -1896,8 +1896,9 @@
         var textAttr = attrs.filter(function (a) { return a !== baseAttr && /chu/.test(norm(a.title)); })[0]
             || attrs.filter(function (a) { return a !== baseAttr; })[0];
 
-        // Plate length in mm from the checked size option ("Dài 15 cm").
+        // Plate length in mm: the length slider, else the checked size option ("Dài 15 cm").
         function plateLength() {
+            if (lengthCfg && lengthCm != null) return lengthCm * 10;
             var len = 0;
             each('input[type=radio]:checked', function (input) {
                 if (len || input.classList.contains('swatch-input')) return;
@@ -2005,8 +2006,7 @@
             { key: 'keychain', name: 'Móc khoá', hint: 'Đế ôm chữ, lỗ móc', set: { shape: 'outline', stand: false, hole: 'left', border: false, heightPct: 32, margin: 3, thickness: 3 } },
             { key: 'door', name: 'Bảng treo cửa', hint: 'Viền nổi, 2 lỗ treo', set: { shape: 'rounded', stand: false, hole: 'top2', border: true, heightPct: 40, thickness: 3 } },
             { key: 'badge', name: 'Tag tên cài áo', hint: 'Mỏng, bo tròn', set: { shape: 'pill', stand: false, hole: 'none', border: false, heightPct: 28, thickness: 2.5 } },
-            { key: 'luggage', name: 'Thẻ treo hành lý', hint: 'Góc vát, lỗ dây', set: { shape: 'tag', stand: false, hole: 'left', border: true, heightPct: 45, thickness: 3 } },
-            { key: 'free', name: 'Tự thiết kế', hint: 'Đế phẳng, tuỳ chỉnh hết', set: { shape: 'rounded', stand: false, hole: 'none', border: false, heightPct: 30, thickness: 3 } }
+            { key: 'luggage', name: 'Thẻ treo hành lý', hint: 'Góc vát, lỗ dây', set: { shape: 'tag', stand: false, hole: 'left', border: true, heightPct: 45, thickness: 3 } }
         ];
         var STYLES = [['raised', 'Chữ nổi'], ['engraved', 'Chữ chìm'], ['flush', 'Phẳng (in màu)']];
         var HOLES = [['none', 'Không'], ['left', 'Bên trái'], ['top1', '1 lỗ trên'], ['top2', '2 lỗ trên']];
@@ -2069,7 +2069,8 @@
         function panelHtml(P) {
             var d = design;
             var fonts = P.FONTS.map(function (f) {
-                return '<button type="button" class="tt-np-font" data-set="font" data-val="' + f.key + '" aria-pressed="' + (d.font === f.key) + '" style="font-family:\'' + f.family + '\';font-weight:' + f.weight + '">' + escAttr(f.name) + '</button>';
+                return '<button type="button" class="tt-np-font" data-set="font" data-val="' + f.key + '" aria-pressed="' + (d.font === f.key) + '" title="' + escAttr(f.name) + (f.noVi ? ' — chưa có dấu tiếng Việt' : '') + '" style="font-family:\'' + f.family + '\';font-weight:' + f.weight + '">'
+                    + escAttr(f.name) + (f.noVi ? '<small>không dấu</small>' : '') + '</button>';
             }).join('');
             var shapes = seg('shape', P.SHAPES.map(function (s) { return [s.key, s.name]; }), d.shape);
             var icons = '<button type="button" class="tt-np-icon" data-set="icon" data-val="" aria-pressed="' + !d.icon + '" title="Không">∅</button>'
@@ -2102,7 +2103,7 @@
                 + slider('thickness', 'Độ dày đế', 2, 6, 0.5, d.thickness, mm)
                 + (d.shape === 'rounded' || d.shape === 'tag' ? slider('radius', 'Bo góc', 0, 15, 0.5, d.radius, mm) : '')
                 + '<label class="tt-np-check"><input type="checkbox" class="skip-pd-ajax-update" data-check="border"' + (d.border ? ' checked' : '') + (d.shape === 'outline' ? ' disabled' : '') + ' /> Viền nổi quanh bảng</label>'
-                + '</div><p class="tt-np-note">Chiều dài đế theo lựa chọn <b>Kích thước</b> của sản phẩm.</p></div>'
+                + '</div><p class="tt-np-note">Chiều dài đế kéo ở mục <b>Chiều dài</b> cạnh giá sản phẩm.</p></div>'
                 + '<div class="tt-np-pane" data-pane="3"' + (np.tab === 3 ? '' : ' hidden') + '>'
                 + '<div class="tt-np-label">Biểu tượng</div><div class="tt-np-icons">' + icons + '</div>'
                 + (d.icon ? '<div class="tt-np-label">Vị trí biểu tượng</div>' + seg('iconSide', SIDES, d.iconSide) : '')
@@ -2228,6 +2229,7 @@
 
             np.ready.then(function (P) {
                 np.lib = P;
+                P.addFonts(cfg.fonts);
                 design = freshDesign(P);
                 P.ensureFonts();
                 if (np.card) {
@@ -2247,8 +2249,73 @@
         }
 
         if (cfg.previewSrc) initPreview();
-        // After Smartstore re-renders the attributes: buttons back under the text field, summary back in the hidden field.
-        if (window.jQuery) window.jQuery('#main-update-container').on('updated', function () { mountTools(); if (np) { writeDesign(); renderPanel(); } schedulePreview(); });
+        // ----- Free length instead of fixed sizes: the slider writes the hidden "Chiều dài (cm)" attribute; the server
+        // prices it (NameplateLengthPriceCalculator), the estimate here only previews that price. -----
+
+        var lengthCfg = cfg.length || null, lengthCm = null, lengthBox = null;
+
+        function lengthField() { return lengthCfg && document.getElementById(lengthCfg.control); }
+        function clampLength(v) { return Math.min(lengthCfg.max, Math.max(lengthCfg.min, Math.round(v * 2) / 2)); }
+        function lengthFactor(cm) { return Math.max(0.2, 1 + (cm - lengthCfg.base) * lengthCfg.percent / 100); }
+        function cmText(v) { return String(v).replace('.', ',') + ' cm'; }
+
+        function showLength() {
+            if (!lengthBox) return;
+            var factor = lengthFactor(lengthCm);
+            lengthBox.querySelector('[data-len-val]').textContent = cmText(lengthCm);
+            lengthBox.querySelector('[data-len-price]').textContent = lengthCfg.price > 0
+                ? '≈ ' + vnd(Math.round(lengthCfg.price * factor / 1000) * 1000) + (factor !== 1 ? ' (× ' + String(Math.round(factor * 100) / 100).replace('.', ',') + ')' : '')
+                : '';
+            lengthBox.querySelector('input').value = lengthCm;
+            each('[data-len]', function (b) { b.setAttribute('aria-pressed', String(+b.getAttribute('data-len') === lengthCm)); }, lengthBox);
+        }
+
+        // Writes the length into the attribute; with refresh Smartstore reloads the price for it.
+        function commitLength(refresh) {
+            var f = lengthField();
+            if (!f || f.value === String(lengthCm)) return;
+            f.value = String(lengthCm);
+            if (refresh && window.jQuery) window.jQuery(f).trigger('change');
+        }
+
+        function mountLength() {
+            var f = lengthField();
+            if (!f) return;
+            var group = f.closest('.form-group');
+            if (group) group.hidden = true;
+            if (lengthCm == null) {
+                var v = parseFloat(String(f.value).replace(',', '.'));
+                lengthCm = clampLength(isNaN(v) ? lengthCfg.base : v);
+            }
+            if (!lengthBox) {
+                lengthBox = document.createElement('div');
+                lengthBox.className = 'tt-len';
+                var quick = [10, 15, 20, 25].filter(function (x) { return x >= lengthCfg.min && x <= lengthCfg.max; });
+                lengthBox.innerHTML = '<div class="tt-len-head"><b>Chiều dài</b><span class="tt-len-val" data-len-val></span><span class="tt-len-price" data-len-price></span></div>'
+                    + '<input type="range" class="skip-pd-ajax-update" min="' + lengthCfg.min + '" max="' + lengthCfg.max + '" step="0.5" aria-label="Chiều dài bảng tên (cm)" />'
+                    + '<div class="tt-len-quick">' + quick.map(function (x) { return '<button type="button" data-len="' + x + '">' + x + ' cm</button>'; }).join('') + '</div>'
+                    + '<small>Kéo để chọn từ ' + cmText(lengthCfg.min) + ' đến ' + cmText(lengthCfg.max) + '. Giá gốc là bảng dài ' + cmText(lengthCfg.base)
+                    + ', mỗi cm thêm / bớt ' + String(lengthCfg.percent).replace('.', ',') + '% giá.</small>';
+                var range = lengthBox.querySelector('input');
+                range.addEventListener('input', function () { lengthCm = clampLength(parseFloat(range.value)); showLength(); schedulePreview(); });
+                range.addEventListener('change', function () { commitLength(true); });
+                lengthBox.addEventListener('click', function (e) {
+                    var b = e.target.closest('[data-len]');
+                    if (!b) return;
+                    lengthCm = clampLength(+b.getAttribute('data-len'));
+                    showLength(); schedulePreview(); commitLength(true);
+                });
+            }
+            if (!lengthBox.isConnected) (group || f).parentNode.insertBefore(lengthBox, group || f);
+            showLength();
+            commitLength(false);
+        }
+
+        if (lengthCfg) mountLength();
+
+        // After Smartstore re-renders the attributes: buttons back under the text field, length slider and design
+        // summary back in place.
+        if (window.jQuery) window.jQuery('#main-update-container').on('updated', function () { mountTools(); if (lengthCfg) mountLength(); if (np) { writeDesign(); renderPanel(); } schedulePreview(); });
 
         tools.querySelector('[data-tl-open]').addEventListener('click', open);
         tools.addEventListener('click', excelClick);

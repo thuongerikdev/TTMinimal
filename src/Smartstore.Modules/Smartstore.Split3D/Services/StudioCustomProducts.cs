@@ -36,10 +36,7 @@ public static class StudioCustomProducts
                 new("Nội dung chữ", AttributeControlType.TextBox, true, "Tên / chữ muốn in", []),
                 new("Màu nền", AttributeControlType.Boxes, true, null, ColorOptions(0)),
                 new("Màu chữ", AttributeControlType.Boxes, true, null, ColorOptions(1)),
-                new("Kích thước", AttributeControlType.RadioList, true, null,
-                [
-                    new("Dài 10 cm", 0, PreSelected: true), new("Dài 15 cm", 50000), new("Dài 20 cm", 100000)
-                ])
+                new(LengthAttributeName, AttributeControlType.TextBox, false, null, [])
             ]),
         new("TT-KEYCAP", "Keycap in 3D theo yêu cầu", "keycap-in-3d-theo-yeu-cau", 45000,
             "Keycap in Resin cho bàn phím cơ: ký tự, logo hoặc hình nhỏ theo ý bạn.",
@@ -64,6 +61,85 @@ public static class StudioCustomProducts
         ["TT-NAMEPLATE"] = ("Danh sách tên cần in", "bảng tên", true),
         ["TT-KEYCAP"] = ("Danh sách keycap cần in", "keycap", false)
     };
+
+    /// <summary>
+    /// Name of the text attribute that holds the plate length in cm, picked with the slider on the product page and
+    /// priced by <see cref="NameplateLengthPriceCalculator"/>. Replaces the former fixed sizes.
+    /// </summary>
+    public const string LengthAttributeName = "Chiều dài (cm)";
+
+    /// <summary>
+    /// Name of the former fixed-size choice (10 / 15 / 20 cm) that the length slider replaces.
+    /// </summary>
+    public const string FormerSizeAttributeName = "Kích thước";
+
+    /// <summary>
+    /// Returns the product's length attribute (<see cref="LengthAttributeName"/>), adding it on first use. Adding it
+    /// removes the product's former fixed-size choice, whose price adjustments would otherwise add up with the length price.
+    /// </summary>
+    public static async Task<ProductVariantAttribute> EnsureLengthAttributeAsync(SmartDbContext db, int productId, CancellationToken cancelToken = default)
+    {
+        var attributes = await db.ProductVariantAttributes
+            .Include(x => x.ProductAttribute)
+            .Where(x => x.ProductId == productId)
+            .ToListAsync(cancelToken);
+
+        var attribute = attributes.FirstOrDefault(x => x.ProductAttribute.Name == LengthAttributeName);
+        if (attribute != null)
+        {
+            return attribute;
+        }
+
+        var sizes = attributes.FirstOrDefault(x => x.ProductAttribute.Name == FormerSizeAttributeName && x.AttributeControlType == AttributeControlType.RadioList);
+
+        var productAttribute = await db.ProductAttributes.FirstOrDefaultAsync(x => x.Name == LengthAttributeName, cancelToken);
+        if (productAttribute == null)
+        {
+            productAttribute = new ProductAttribute { Name = LengthAttributeName };
+            db.ProductAttributes.Add(productAttribute);
+            await db.SaveChangesAsync(cancelToken);
+        }
+
+        attribute = new ProductVariantAttribute
+        {
+            ProductId = productId,
+            ProductAttributeId = productAttribute.Id,
+            AttributeControlTypeId = (int)AttributeControlType.TextBox,
+            IsRequired = false,
+            DisplayOrder = sizes?.DisplayOrder ?? (attributes.Count > 0 ? attributes.Max(x => x.DisplayOrder) + 1 : 1)
+        };
+        db.ProductVariantAttributes.Add(attribute);
+        if (sizes != null)
+        {
+            db.ProductVariantAttributes.Remove(sizes);
+        }
+
+        await db.SaveChangesAsync(cancelToken);
+        return attribute;
+    }
+
+    /// <summary>
+    /// The length in cm a customer entered, limited to the range of the settings; the base length when empty or invalid.
+    /// </summary>
+    public static decimal ParseLength(string value, StudioSettings settings)
+    {
+        var min = Math.Min(settings.NameplateMinLength, settings.NameplateMaxLength);
+        var max = Math.Max(settings.NameplateMinLength, settings.NameplateMaxLength);
+        var text = value?.Trim().Replace(',', '.');
+        if (!decimal.TryParse(text, System.Globalization.NumberStyles.Number, System.Globalization.CultureInfo.InvariantCulture, out var length))
+        {
+            length = settings.NameplateBaseLength;
+        }
+
+        // Half centimetres, like the slider.
+        return Math.Clamp(Math.Round(length * 2, MidpointRounding.AwayFromZero) / 2, min, max);
+    }
+
+    /// <summary>
+    /// Price factor of a plate length: 1 + (length − base) × percent per cm / 100, never below 0.2.
+    /// </summary>
+    public static decimal LengthFactor(decimal length, StudioSettings settings)
+        => Math.Max(0.2m, 1 + (length - settings.NameplateBaseLength) * settings.NameplatePercentPerCm / 100);
 
     /// <summary>
     /// Name of the optional text attribute that holds the 3D designer's choices (font, shape, holes…) as a readable summary.

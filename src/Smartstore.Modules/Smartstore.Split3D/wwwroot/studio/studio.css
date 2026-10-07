@@ -845,6 +845,18 @@ textarea.tt-input { resize: vertical; min-height: 110px; }
 .tt-np-font { padding: 7px 8px; border: 1.5px solid var(--ink); border-radius: 10px; background: var(--cream); color: var(--ink); font-size: 16px; line-height: 1.2; cursor: pointer; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .tt-np-font:hover { background: var(--mint); }
 .tt-np-font[aria-pressed="true"] { background: var(--pink); color: #fff; }
+.tt-np-font small { display: block; font-family: "Be Vietnam Pro", Arial, sans-serif; font-size: 10px; font-weight: 700; opacity: .7; }
+/* Free length slider on the name plate page (replaces the fixed sizes) */
+.tt-len { margin: 4px 0 16px; padding: 12px 14px; border: 2px solid var(--ink); border-radius: 14px; background: var(--cream); box-shadow: 3px 3px 0 var(--ink); }
+.tt-len-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; margin-bottom: 6px; }
+.tt-len-head b { font-size: 14px; font-weight: 900; }
+.tt-len-val { font-size: 20px; font-weight: 900; font-variant-numeric: tabular-nums; }
+.tt-len-price { margin-left: auto; font-size: 14px; font-weight: 900; color: #c2187a; font-variant-numeric: tabular-nums; }
+.tt-len input[type=range] { width: 100%; accent-color: var(--pink); cursor: pointer; }
+.tt-len-quick { display: flex; flex-wrap: wrap; gap: 6px; margin: 6px 0; }
+.tt-len-quick button { padding: 3px 10px; border: 1.5px solid var(--ink); border-radius: 30px; background: #fff; color: var(--ink); font-size: 12px; font-weight: 800; cursor: pointer; }
+.tt-len-quick button[aria-pressed="true"] { background: var(--ink); color: var(--cream); }
+.tt-len small { display: block; font-size: 12px; opacity: .7; }
 .tt-np-icons { display: flex; flex-wrap: wrap; gap: 6px; }
 .tt-np-icon { display: grid; place-items: center; width: 40px; height: 40px; padding: 0; border: 1.5px solid var(--ink); border-radius: 10px; background: var(--cream); color: var(--ink); font-size: 18px; cursor: pointer; }
 .tt-np-icon canvas { width: 22px; height: 22px; }

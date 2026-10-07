@@ -71,6 +71,27 @@ public class StudioSettings : ISettings
     public bool AllowPickup { get; set; } = true;
 
     /// <summary>
+    /// Shortest name plate the customer can pick with the length slider, in cm.
+    /// </summary>
+    public decimal NameplateMinLength { get; set; } = 5;
+
+    /// <summary>
+    /// Longest name plate the customer can pick with the length slider, in cm.
+    /// </summary>
+    public decimal NameplateMaxLength { get; set; } = 30;
+
+    /// <summary>
+    /// Length the product price stands for, in cm.
+    /// </summary>
+    public decimal NameplateBaseLength { get; set; } = 10;
+
+    /// <summary>
+    /// Price change per cm longer or shorter than <see cref="NameplateBaseLength"/>, in percent of the price:
+    /// price × (1 + (length − base) × percent / 100). 6.67 keeps the former sizes: 15 cm = 4/3, 20 cm = 5/3 of the price.
+    /// </summary>
+    public decimal NameplatePercentPerCm { get; set; } = 6.67m;
+
+    /// <summary>
     /// Hint below the deposit on the order page, e.g. how the rest is settled.
     /// </summary>
     public string DepositNote { get; set; } = DefaultDepositNote;

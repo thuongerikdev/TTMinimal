@@ -1,4 +1,60 @@
 /*
+ * TT Minimal admin: highlights the top menu entry of the current page. The core admin menu renders no current
+ * state, so the link is matched here: exact path first, then the same controller (e.g. /admin/order/edit/5 keeps
+ * "Orders" lit), preferring list/index links and top-level links.
+ */
+(function () {
+    'use strict';
+
+    function parse(href) {
+        try {
+            var a = new URL(href, location.href);
+            if (a.origin !== location.origin) return null;
+            var path = a.pathname.toLowerCase().replace(/\/+$/, '');
+            var parts = path.split('/').filter(Boolean);
+            var admin = parts.indexOf('admin');
+            if (admin < 0) return null;
+            return { path: path, controller: parts[admin + 1] || 'home', action: parts[admin + 2] || 'index' };
+        }
+        catch (e) {
+            return null;
+        }
+    }
+
+    function mark() {
+        var current = parse(location.href);
+        var navbar = document.getElementById('navbar-menu');
+        if (!current || !navbar) return;
+
+        var best = null, bestScore = 0;
+        navbar.querySelectorAll('a.nav-link[href], a.dropdown-item[href]').forEach(function (link) {
+            var target = parse(link.getAttribute('href'));
+            if (!target) return;
+
+            var score = 0;
+            if (target.path === current.path) score = 100;
+            else if (target.controller === current.controller) score = /^(list|index)$/.test(target.action) ? 50 : 40;
+            if (!score) return;
+            if (link.classList.contains('nav-link')) score += 5;
+
+            if (score > bestScore) {
+                best = link;
+                bestScore = score;
+            }
+        });
+
+        if (!best) return;
+
+        best.classList.add('active');
+        var top = best.closest('#navbar-menu .navbar-nav > .nav-item');
+        if (top) top.classList.add('active');
+    }
+
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', mark);
+    else mark();
+})();
+
+/*
  * TT Minimal admin: count badges on the top menu ("3 new orders" on Orders, key orders waiting on License keys, …).
  * Polls the badge endpoint (data-badges-url on this script tag); an item with work lights up, and flashes when the
  * number grows while the page is open.

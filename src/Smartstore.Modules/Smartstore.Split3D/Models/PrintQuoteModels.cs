@@ -226,6 +226,22 @@ public class StudioConfigurationModel : ModelBase
     [LocalizedDisplay("*DepositNote")]
     public string DepositNote { get; set; }
 
+    [LocalizedDisplay("*NameplateMinLength")]
+    [Range(1, 200)]
+    public decimal NameplateMinLength { get; set; }
+
+    [LocalizedDisplay("*NameplateMaxLength")]
+    [Range(1, 200)]
+    public decimal NameplateMaxLength { get; set; }
+
+    [LocalizedDisplay("*NameplateBaseLength")]
+    [Range(1, 200)]
+    public decimal NameplateBaseLength { get; set; }
+
+    [LocalizedDisplay("*NameplatePercentPerCm")]
+    [Range(0, 100)]
+    public decimal NameplatePercentPerCm { get; set; }
+
     [LocalizedDisplay("*QuoteMessageTemplate")]
     public string QuoteMessageTemplate { get; set; }
 

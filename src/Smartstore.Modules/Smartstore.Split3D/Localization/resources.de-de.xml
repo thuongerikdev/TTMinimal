@@ -1913,6 +1913,36 @@
     <LocaleResource Name="Studio.Fields.DepositNote.Hint">
         <Value>Wird auf der Druckauftragsseite unter der Anzahlung gezeigt.</Value>
     </LocaleResource>
+    <LocaleResource Name="Studio.Nameplate">
+        <Value>Namensschild: Länge & Preis</Value>
+    </LocaleResource>
+    <LocaleResource Name="Studio.NameplateLengthRangeInvalid">
+        <Value>Die größte Länge darf nicht kleiner als die kleinste sein.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Studio.Fields.NameplateMinLength">
+        <Value>Kleinste Länge</Value>
+    </LocaleResource>
+    <LocaleResource Name="Studio.Fields.NameplateMinLength.Hint">
+        <Value>Kleinste Länge, die der Kunde auf der Namensschild-Seite mit dem Schieberegler wählen kann.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Studio.Fields.NameplateMaxLength">
+        <Value>Größte Länge</Value>
+    </LocaleResource>
+    <LocaleResource Name="Studio.Fields.NameplateMaxLength.Hint">
+        <Value>Größte Länge, die der Kunde auf der Namensschild-Seite mit dem Schieberegler wählen kann.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Studio.Fields.NameplateBaseLength">
+        <Value>Basislänge</Value>
+    </LocaleResource>
+    <LocaleResource Name="Studio.Fields.NameplateBaseLength.Hint">
+        <Value>Länge, für die der Produktpreis gilt. Längere oder kürzere Schilder werden davon ausgehend berechnet.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Studio.Fields.NameplatePercentPerCm">
+        <Value>Preis pro cm</Value>
+    </LocaleResource>
+    <LocaleResource Name="Studio.Fields.NameplatePercentPerCm.Hint">
+        <Value>Preisänderung je cm Abweichung von der Basislänge, in Prozent des Produktpreises: Preis × (1 + (Länge − Basis) × Prozent / 100). 6,67 % entspricht den bisherigen Preisen (15 cm = 4/3, 20 cm = 5/3 des Preises).</Value>
+    </LocaleResource>
     <LocaleResource Name="Studio.Fields.QuoteMessageTemplate">
         <Value>Nachrichtenvorlage Angebot</Value>
     </LocaleResource>

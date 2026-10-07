@@ -98,8 +98,13 @@ a:hover { color: var(--tt-ink); }
     color: var(--tt-yellow) !important;
 }
 
+/* Current page (admin.js): a solid yellow pill, distinct from the pink "work waiting" glow below. */
 #navbar .nav-item.active > .nav-link,
-#navbar .nav-item.selected > .nav-link { color: var(--tt-yellow) !important; }
+#navbar .nav-item.selected > .nav-link,
+#navbar .nav-item.active.tt-nav-alert > .nav-link {
+    background: var(--tt-yellow) !important;
+    color: var(--tt-ink) !important;
+}
 
 #navbar .reddot { background: var(--tt-pink); border: 2px solid var(--tt-ink); }
 
