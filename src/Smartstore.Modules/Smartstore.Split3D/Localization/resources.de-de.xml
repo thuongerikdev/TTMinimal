@@ -1914,7 +1914,7 @@
         <Value>Wird auf der Druckauftragsseite unter der Anzahlung gezeigt.</Value>
     </LocaleResource>
     <LocaleResource Name="Studio.Nameplate">
-        <Value>Namensschild: Länge & Preis</Value>
+        <Value>Namensschild: Länge &amp; Preis</Value>
     </LocaleResource>
     <LocaleResource Name="Studio.NameplateLengthRangeInvalid">
         <Value>Die größte Länge darf nicht kleiner als die kleinste sein.</Value>

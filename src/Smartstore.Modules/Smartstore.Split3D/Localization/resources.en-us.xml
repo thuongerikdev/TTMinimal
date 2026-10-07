@@ -1914,7 +1914,7 @@
         <Value>Shown below the deposit on the print order page.</Value>
     </LocaleResource>
     <LocaleResource Name="Studio.Nameplate">
-        <Value>Name plate: length & price</Value>
+        <Value>Name plate: length &amp; price</Value>
     </LocaleResource>
     <LocaleResource Name="Studio.NameplateLengthRangeInvalid">
         <Value>The longest length must not be shorter than the shortest one.</Value>

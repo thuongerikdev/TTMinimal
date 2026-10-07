@@ -4578,7 +4578,7 @@
         <Value>Hiện dưới số tiền cọc trên trang đặt in.</Value>
     </LocaleResource>
     <LocaleResource Name="Studio.Nameplate">
-        <Value>Bảng tên: chiều dài & giá</Value>
+        <Value>Bảng tên: chiều dài &amp; giá</Value>
     </LocaleResource>
     <LocaleResource Name="Studio.NameplateLengthRangeInvalid">
         <Value>Chiều dài tối đa không được nhỏ hơn chiều dài tối thiểu.</Value>
