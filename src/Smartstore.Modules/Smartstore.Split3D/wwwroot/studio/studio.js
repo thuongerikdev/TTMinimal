@@ -1249,7 +1249,8 @@
                     var cat = chip.getAttribute('data-cat');
                     Array.prototype.forEach.call(chips, function (c) { c.classList.toggle('is-active', c === chip); });
                     each('[data-cat]', function (card) {
-                        card.classList.toggle('is-hidden', cat !== 'all' && card.getAttribute('data-cat') !== cat);
+                        // A card lists all its categories ("3 7").
+                        card.classList.toggle('is-hidden', cat !== 'all' && (card.getAttribute('data-cat') || '').split(' ').indexOf(cat) < 0);
                     }, grid);
 
                     // A new category starts again at the first two rows.

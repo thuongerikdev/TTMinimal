@@ -87,6 +87,12 @@ public class StudioProductCard
     public bool PriceFrom { get; set; }
     public string CategoryName { get; set; }
     public int CategoryId { get; set; }
+
+    /// <summary>
+    /// Every category of the product (the collection filter matches any of them).
+    /// </summary>
+    public int[] CategoryIds { get; set; } = [];
+
     public bool HasVariants { get; set; }
 
     /// <summary>

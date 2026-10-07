@@ -20,6 +20,9 @@ namespace Smartstore.Split3D.Components;
 public class StudioHomeViewComponent : SmartViewComponent
 {
     const int MaxProducts = 24;
+
+    // Cards each category of the collection gets at least (when it has that many), so its filter is never empty.
+    const int CardsPerCategory = 8;
     const int ThumbnailSize = MediaSettings.ThumbnailSizeLg;
 
     private readonly SmartDbContext _db;
@@ -95,14 +98,15 @@ public class StudioHomeViewComponent : SmartViewComponent
             });
         }
 
-        model.Products = await GetProductsAsync(addonProductIds, storeId);
-        model.ServiceCategories = await GetServiceCategoriesAsync(model.Products, addonCategory?.Id ?? 0, model.AddonCategoryUrl);
+        var serviceCategories = await GetServiceCategoriesAsync(customer.GetRoleIds(), storeId, addonCategory?.Id ?? 0);
+        model.Products = await GetProductsAsync(addonProductIds, storeId, serviceCategories.Select(x => x.Id).ToArray());
+        model.ServiceCategories = serviceCategories;
         model.Addons = await GetAddonsAsync();
 
         return View(model);
     }
 
-    private async Task<List<StudioProductCard>> GetProductsAsync(List<int> addonProductIds, int storeId)
+    private async Task<List<StudioProductCard>> GetProductsAsync(List<int> addonProductIds, int storeId, int[] categoryIds)
     {
         var baseQuery = _db.Products
             .AsNoTracking()
@@ -129,6 +133,29 @@ public class StudioHomeViewComponent : SmartViewComponent
             .Take(MaxProducts)
             .ToListAsync();
 
+        // Every category of the column gets some cards too, also when none of its products is marked for the home
+        // page (a new category shows up by itself).
+        foreach (var categoryId in categoryIds)
+        {
+            var shown = products.Select(x => x.Id).ToArray();
+            var have = await _db.ProductCategories.CountAsync(x => x.CategoryId == categoryId && shown.Contains(x.ProductId));
+            if (have >= CardsPerCategory)
+            {
+                continue;
+            }
+
+            var more = await baseQuery
+                .Where(x => !shown.Contains(x.Id) && _db.ProductCategories.Any(pc => pc.ProductId == x.Id && pc.CategoryId == categoryId))
+                .OrderBy(x => x.DisplayOrder)
+                .ThenByDescending(x => x.CreatedOnUtc)
+                .Take(CardsPerCategory - have)
+                .ToListAsync();
+
+            products.AddRange(await more
+                .WhereAwait(async x => await _aclService.AuthorizeAsync(x) && await _storeMappingService.AuthorizeAsync(x))
+                .ToListAsync());
+        }
+
         if (products.Count == 0)
         {
             return [];
@@ -146,12 +173,13 @@ public class StudioHomeViewComponent : SmartViewComponent
             .Select(x => x.ProductId)
             .Distinct()
             .ToListAsync();
-        var productCategories = (await _db.ProductCategories
+        var productCategoryList = await _db.ProductCategories
             .AsNoTracking()
             .Where(x => productIds.Contains(x.ProductId))
             .OrderBy(x => x.DisplayOrder)
             .Select(x => new { x.ProductId, x.CategoryId, x.Category.Name })
-            .ToListAsync())
+            .ToListAsync();
+        var productCategories = productCategoryList
             .DistinctBy(x => x.ProductId)
             .ToDictionary(x => x.ProductId);
 
@@ -173,6 +201,7 @@ public class StudioHomeViewComponent : SmartViewComponent
                 PriceFrom = price.HasPriceRange,
                 CategoryName = productCategories.Get(product.Id)?.Name,
                 CategoryId = productCategories.Get(product.Id)?.CategoryId ?? 0,
+                CategoryIds = productCategoryList.Where(x => x.ProductId == product.Id).Select(x => x.CategoryId).Distinct().ToArray(),
                 HasVariants = variantProductIds.Contains(product.Id),
                 IsCustom = customProductIds.Contains(product.Id)
             });
@@ -182,27 +211,29 @@ public class StudioHomeViewComponent : SmartViewComponent
     }
 
     /// <summary>
-    /// The categories of the listed product cards, for the collection's category column.
+    /// The collection's category column: every published category (also sub categories such as "Chậu hoa") that has
+    /// visible products of its own, except the addon category (the tools have their own section). A new category
+    /// appears as soon as it has a product.
     /// </summary>
-    private async Task<List<StudioCategoryCard>> GetServiceCategoriesAsync(List<StudioProductCard> products, int addonCategoryId, string addonCategoryUrl)
+    private async Task<List<StudioCategoryCard>> GetServiceCategoriesAsync(int[] roleIds, int storeId, int addonCategoryId)
     {
-        var counts = products
-            .Where(x => x.CategoryId > 0)
-            .GroupBy(x => x.CategoryId)
-            .ToDictionary(x => x.Key, x => x.Count());
-
-        if (counts.Count == 0)
-        {
-            return [];
-        }
-
-        var categoryIds = counts.Keys.ToArray();
         var categories = await _db.Categories
             .AsNoTracking()
-            .Where(x => categoryIds.Contains(x.Id))
+            .ApplyStandardFilter(false, roleIds, storeId)
+            .Where(x => x.Id != addonCategoryId)
             .OrderBy(x => x.DisplayOrder)
             .ThenBy(x => x.Name)
             .ToListAsync();
+
+        var categoryIds = categories.Select(x => x.Id).ToArray();
+        var counts = await _db.ProductCategories
+            .AsNoTracking()
+            .Where(x => categoryIds.Contains(x.CategoryId) && x.Product.Published && !x.Product.Deleted && x.Product.Visibility != ProductVisibility.Hidden)
+            .GroupBy(x => x.CategoryId)
+            .Select(x => new { CategoryId = x.Key, Count = x.Count() })
+            .ToDictionaryAsync(x => x.CategoryId, x => x.Count);
+
+        categories = categories.Where(x => counts.Get(x.Id) > 0).ToList();
 
         var cards = new List<StudioCategoryCard>();
 
@@ -212,9 +243,7 @@ public class StudioHomeViewComponent : SmartViewComponent
             {
                 Id = category.Id,
                 Name = category.GetLocalized(x => x.Name),
-                Url = category.Id == addonCategoryId && addonCategoryUrl.HasValue()
-                    ? addonCategoryUrl
-                    : Url.RouteUrl("Category", new { SeName = await category.GetActiveSlugAsync() }),
+                Url = Url.RouteUrl("Category", new { SeName = await category.GetActiveSlugAsync() }),
                 ProductCount = counts.Get(category.Id)
             });
         }

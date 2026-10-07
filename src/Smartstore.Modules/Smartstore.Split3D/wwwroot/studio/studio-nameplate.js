@@ -195,7 +195,7 @@
     // Mask canvases are read back pixel by pixel: kept on the CPU, getImageData does not wait for the GPU.
     var READ = { willReadFrequently: true };
     var MAX_PX = 1800;     // raster width of the masks (contour detail)
-    var MAX_PX_BOARD = 2600;
+    var MAX_PX_BOARD = 1800;
     var MAX_R = 12;        // mask pixels per mm at most (small plates)
     // Supersampling of the preview: tops are cut out of the masks in the shader (discard), which MSAA does not
     // smooth, so the view renders at this multiple of the device pixels and the browser scales it down.
@@ -1658,6 +1658,9 @@
             return k === 'qr' && s.qr ? omit(s.qr, masksOnly ? ['multi', 'height'] : ['multi']) : s[k];
         }));
     }
+    // Geometry key without the typed content (texts, board cells and names): equal keys = only typing changed.
+    // Stored as a string at build time, since the design panel keeps editing the same cell arrays.
+    function typingKey(s) { return geometryKey(Object.assign({}, s, { text: '', line2: '', board: s.board ? 1 : null })); }
     function omit(o, keys) { var r = Object.assign({}, o); keys.forEach(function (k) { delete r[k]; }); return r; }
 
     // ---------- View: drag to rotate, Ctrl + wheel (or any wheel while opts.wheel() is true) to zoom ----------
@@ -1775,6 +1778,24 @@
         }
         clearTimeout(this.stretchTimer);
 
+        // Typing (text, second line, board cells / names): building on every key would block the next key for a
+        // large board (a slow last build; small plates still follow every key), so the build waits until typing pauses; a coarse draft first, full detail once it rests.
+        if (this.dims && this.typingKey && !this.cap && !this.typed && (this.buildMs || 0) > 150 && typingKey(next) === this.typingKey) {
+            ++this.seq;
+            clearTimeout(this.fineTimer);
+            clearTimeout(this.typeTimer);
+            this.typeTimer = setTimeout(function () {
+                self.typed = true;
+                self.changedAt = Date.now();
+                self.fineDelay = 700;
+                var done = self.set({});
+                self.typed = false;
+                done.then(function (d) { if (self.onDims) self.onDims(d); });
+            }, 220);
+            return Promise.resolve(this.dims);
+        }
+        clearTimeout(this.typeTimer);
+
         var seq = ++this.seq, font = fontOf(next.font), sample = (next.text + next.line2) || 'A';
         // Changes coming in quick succession (a slider being dragged, fast typing) are built as a coarse draft; the
         // full-detail build follows once they stop.
@@ -1801,13 +1822,21 @@
                     self.build();
                     self.request();
                     if (self.onDims) self.onDims(self.dims);
-                }, 260);
+                }, self.fineDelay || 260);
+                self.fineDelay = 0;
             }
             return self.dims;
         });
     };
 
     View.prototype.build = function () {
+        var t0 = Date.now();
+        this.buildSync();
+        // Full-detail build time decides whether typing waits for a pause (see set).
+        if (!this.draft) this.buildMs = Date.now() - t0;
+    };
+
+    View.prototype.buildSync = function () {
         if (this.spec.kind === 'keycap') { this.buildKeycap(); return; }
         this.cap = null;
         // Masks are the slow part (tier distance fields): reuse them while only the QR tier height changes.
@@ -1824,6 +1853,7 @@
         this.radius = Math.hypot(M.FW / 2, M.FH / 2);
         // The plate as built: the length slider stretches it until the next build (see set).
         this.builtLength = s.length;
+        this.typingKey = typingKey(s);
         this.builtDims = Object.assign({}, this.dims);
         this.scaleXY = 1;
         var g = this.gl;

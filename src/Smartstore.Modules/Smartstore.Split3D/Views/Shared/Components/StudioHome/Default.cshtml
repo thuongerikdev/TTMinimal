@@ -141,7 +141,7 @@
                             @for (var i = 0; i < Model.Products.Count; i++)
                             {
                                 var p = Model.Products[i];
-                                <a class="tt-product tt-@(cardColors[i % cardColors.Length])" href="@p.Url" data-cat="@p.CategoryId" data-tt-reveal style="--d:@Delay(i % 4)">
+                                <a class="tt-product tt-@(cardColors[i % cardColors.Length])" href="@p.Url" data-cat="@string.Join(' ', p.CategoryIds)" data-tt-reveal style="--d:@Delay(i % 4)">
                                     <div class="tt-product-media">
                                         <span class="tt-noimg">✦</span>
                                         @if (p.ImageUrl.HasValue())
