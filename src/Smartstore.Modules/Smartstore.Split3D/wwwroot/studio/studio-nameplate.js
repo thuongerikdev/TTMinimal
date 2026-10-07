@@ -22,8 +22,10 @@
         { key: 'be', name: 'Be Vietnam Pro', family: 'Be Vietnam Pro', weight: 800, google: true, kinds: ['classboard', 'keycap', 'qr'] }
     ];
 
-    // Order of the studio's font list; fonts not named here follow alphabetically.
-    var FONT_ORDER = ['be', 'yellowtail', 'patricktonight', 'birthdayparty', 'bollifia', 'mjmilestonescript', 'pacifico', 'mobsters', 'peanutbutter', 'titanone', 'baguetscript'];
+    // Order of the studio's font list; fonts not named here follow alphabetically. Each commercial font is followed
+    // by the free look-alike shipped in studio/fonts until the licensed file is added (Ms Madi for Patrick Tonight…).
+    var FONT_ORDER = ['be', 'yellowtail', 'patricktonight', 'msmadi', 'birthdayparty', 'sriracha', 'bollifia', 'dancingscript',
+        'mjmilestonescript', 'greatvibes', 'pacifico', 'mobsters', 'anton', 'peanutbutter', 'bangers', 'titanone', 'baguetscript', 'pattaya'];
 
     function fontKey(name) {
         return String(name).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]/g, '').replace(/regular$/, '');
@@ -41,7 +43,8 @@
             var entry = { key: key, name: f.name, family: family, weight: 400 };
             var i = FONTS.map(function (x) { return x.key; }).indexOf(key);
             if (i >= 0) FONTS[i] = entry; else FONTS.push(entry);
-            css += '@font-face{font-family:"' + family + '";src:url("' + encodeURI(f.url).replace(/"/g, '%22') + '");font-display:swap}';
+            // The URL comes escaped by the server ("Titan%20One.woff2"); encoding it again would break the file name.
+            css += '@font-face{font-family:"' + family + '";src:url("' + String(f.url).replace(/["\\]/g, encodeURIComponent) + '");font-display:swap}';
         });
         FONTS.sort(function (a, b) {
             var ia = FONT_ORDER.indexOf(a.key), ib = FONT_ORDER.indexOf(b.key);
