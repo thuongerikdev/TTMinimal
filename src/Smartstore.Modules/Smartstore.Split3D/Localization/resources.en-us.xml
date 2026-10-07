@@ -2022,4 +2022,22 @@
     <LocaleResource Name="Completed.PrintTrack">
         <Value>Track the order</Value>
     </LocaleResource>
+    <LocaleResource Name="Completed.GoodsTitle">
+        <Value>Next steps for your order</Value>
+    </LocaleResource>
+    <LocaleResource Name="Completed.GoodsStep2">
+        <Value>The studio confirms your payment and prepares your order (custom products are printed to your design).</Value>
+    </LocaleResource>
+    <LocaleResource Name="Completed.GoodsStep2Online">
+        <Value>Your payment is confirmed automatically as soon as it arrives, and the studio starts preparing your order.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Completed.GoodsStep3">
+        <Value>The studio ships your order or arranges a pickup at the workshop. The order status is always shown under My account › Orders.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Completed.GoodsPaidOnline">
+        <Value>Your payment has been received. The studio is preparing your order and will let you know when it ships.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Completed.MixedKeys">
+        <Value>The addon keys in this order are sent separately by email as soon as the payment is confirmed, and appear under My account › My license keys.</Value>
+    </LocaleResource>
 </Language>

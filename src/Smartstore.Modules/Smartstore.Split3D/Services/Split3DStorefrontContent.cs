@@ -302,7 +302,7 @@ public static class Split3DStorefrontContent
         string Value(string v) => System.Net.WebUtility.HtmlEncode(v.NullEmpty() ?? "(chưa cấu hình)");
 
         return $"""
-            <p><strong>Chuyển khoản ngân hàng</strong> – key và file cài đặt được gửi tự động ngay khi chúng tôi xác nhận đã nhận tiền.</p>
+            <p><strong>Chuyển khoản ngân hàng</strong> – đơn hàng được xử lý ngay khi chúng tôi xác nhận đã nhận tiền.</p>
             <ul>
               <li>Ngân hàng: <strong>{Value(bankName)}</strong></li>
               <li>Số tài khoản: <strong>{Value(accountNumber)}</strong></li>
@@ -310,31 +310,50 @@ public static class Split3DStorefrontContent
               <li>Nội dung chuyển khoản: <strong>mã đơn hàng</strong> (hiển thị sau khi đặt hàng)</li>
             </ul>
             <p>Sau khi đặt hàng, bạn sẽ nhận mã QR quét được bằng app ngân hàng hoặc MoMo, đã điền sẵn số tiền và nội dung chuyển khoản.</p>
+            <p>Sản phẩm in 3D được studio chuẩn bị và giao hàng; riêng addon Blender, key và file cài đặt được gửi tự động qua email.</p>
             """;
     }
+
+    /// <summary>
+    /// Phrases of earlier shipped texts that described the shop as addon-only (keys, no physical delivery).
+    /// Stored pages and descriptions that still contain one are replaced by the current text (layout version 9).
+    /// </summary>
+    public static readonly string[] AddonOnlyPhrases =
+    [
+        "key và file cài đặt được gửi tự động ngay khi chúng tôi xác nhận đã nhận tiền.</p>",
+        "Không có giao hàng vật lý.",
+        "Tất cả sản phẩm là sản phẩm số"
+    ];
 
     public const string ConditionsOfUse = """
         <h2>Điều khoản sử dụng</h2>
         <p>Khi đặt mua sản phẩm tại cửa hàng, bạn đồng ý với các điều khoản sau.</p>
-        <h3>1. Sản phẩm số</h3>
-        <p>Sản phẩm là addon phần mềm cho Blender, được giao dưới dạng file tải về và key kích hoạt. Không có giao hàng vật lý.</p>
-        <h3>2. Giao hàng</h3>
-        <p>Key được gửi qua email và hiển thị trong chi tiết đơn hàng; file cài đặt được mở khóa trong mục Tải về sau khi đơn hàng được xác nhận thanh toán.</p>
-        <h3>3. Thời hạn key</h3>
-        <p>Thời hạn tính từ lúc cấp key. Key là key offline, không ràng buộc máy, có thể nhập lại khi cài đặt lại hoặc đổi máy.</p>
-        <h3>4. Hoàn tiền</h3>
-        <p>Do đặc thù sản phẩm số, chúng tôi chỉ hoàn tiền khi key không thể kích hoạt và chúng tôi không khắc phục được trong vòng 7 ngày kể từ khi bạn liên hệ hỗ trợ.</p>
+        <h3>1. Sản phẩm in 3D</h3>
+        <p>Sản phẩm in 3D (chậu cây, bảng tên, thời khoá biểu, keycap…) được studio in và hoàn thiện sau khi đơn hàng được xác nhận thanh toán. Sản phẩm tuỳ chỉnh được làm theo nội dung và thiết kế bạn nhập khi đặt hàng; vui lòng kiểm tra kỹ chữ, màu và kích thước trước khi đặt. Màu thực tế có thể chênh lệch nhẹ so với ảnh.</p>
+        <h3>2. Giao hàng sản phẩm in 3D</h3>
+        <p>Studio giao hàng qua đơn vị vận chuyển hoặc hẹn bạn nhận tại xưởng. Trạng thái đơn hiển thị trong <em>Tài khoản › Đơn hàng</em>.</p>
+        <h3>3. Đổi trả sản phẩm in 3D</h3>
+        <p>Sản phẩm bị lỗi in hoặc hư hỏng khi vận chuyển được in lại miễn phí; vui lòng liên hệ studio kèm ảnh trong vòng 3 ngày kể từ khi nhận hàng. Sản phẩm tuỳ chỉnh đã làm đúng nội dung bạn đặt không được đổi trả.</p>
+        <h3>4. Addon Blender (sản phẩm số)</h3>
+        <p>Addon được giao dưới dạng file tải về và key kích hoạt, không giao hàng vật lý. Key được gửi qua email, hiển thị trong <em>Tài khoản › Key của tôi</em>; file cài đặt được mở khoá trong mục Tải về sau khi đơn hàng được xác nhận thanh toán. Thời hạn tính từ lúc cấp key.</p>
+        <p>Do đặc thù sản phẩm số, chúng tôi chỉ hoàn tiền addon khi key không thể kích hoạt và chúng tôi không khắc phục được trong vòng 7 ngày kể từ khi bạn liên hệ hỗ trợ.</p>
         <h3>5. Giấy phép mã nguồn</h3>
         <p>Split3D Print dựa trên mã nguồn Split3D Print của Cadaumoi và được phân phối theo giấy phép GNU General Public License v3.0. Gói tải về kèm đầy đủ mã nguồn và nội dung giấy phép; quyền của bạn theo GPL không bị hạn chế bởi các điều khoản này.</p>
         """;
 
     public const string ShippingInfo = """
         <h2>Giao hàng</h2>
-        <p>Tất cả sản phẩm là sản phẩm số, không phát sinh phí vận chuyển.</p>
+        <h3>Sản phẩm in 3D</h3>
         <ul>
-          <li>Key kích hoạt: gửi qua email và hiển thị trong <em>Tài khoản › Đơn hàng</em>.</li>
-          <li>File cài đặt: tải tại <em>Tài khoản › Tải về</em>.</li>
-          <li>Thời gian: ngay khi thanh toán được xác nhận.</li>
+          <li>Studio in và hoàn thiện sau khi xác nhận thanh toán, và báo thời gian hoàn thiện khi xác nhận đơn.</li>
+          <li>Giao hàng tận nơi qua đơn vị vận chuyển (thường 2–4 ngày) hoặc nhận tại xưởng.</li>
+          <li>Trạng thái đơn hiển thị trong <em>Tài khoản › Đơn hàng</em>.</li>
+        </ul>
+        <h3>Addon Blender (sản phẩm số)</h3>
+        <ul>
+          <li>Không phát sinh phí vận chuyển.</li>
+          <li>Key kích hoạt: gửi qua email và hiển thị trong <em>Tài khoản › Key của tôi</em>.</li>
+          <li>File cài đặt: tải tại <em>Tài khoản › Tải về</em>, ngay khi thanh toán được xác nhận.</li>
         </ul>
         """;
 }

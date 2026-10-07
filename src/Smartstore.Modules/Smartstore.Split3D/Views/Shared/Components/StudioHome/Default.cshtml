@@ -111,7 +111,7 @@
     <section class="tt-bleed tt-collection" id="tt-products">
         @if (Model.Products.Count > 0)
         {
-            <div class="tt-wrap">
+            <div class="tt-wrap tt-wrap--wide">
                 <div class="tt-section-heading">
                     <div>
                         <div class="tt-kicker">BỘ SƯU TẬP CỦA STUDIO</div>
@@ -136,8 +136,8 @@
                         </nav>
                     }
                     <div class="tt-shelf-main">
-                        @* Two rows at first, "Xem thêm" reveals the next two (studio.js initPaging). *@
-                        <div class="tt-products" id="tt-product-grid" data-tt-page="@(serviceCats.Count > 0 ? 6 : 8)">
+                        @* Two full rows at first, "Xem thêm" reveals the next two (studio.js initPaging). *@
+                        <div class="tt-products" id="tt-product-grid" data-tt-page="@(serviceCats.Count > 0 ? 10 : 12)" data-tt-rows="2">
                             @for (var i = 0; i < Model.Products.Count; i++)
                             {
                                 var p = Model.Products[i];

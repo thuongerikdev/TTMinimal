@@ -771,8 +771,9 @@ public class PrintOrderService
         // The line is priced from the job row (PrintOrderPriceCalculator), so no price travels with the request.
         product.CustomerEntersPrice = false;
         product.Price = 0;
-        product.IsShippingEnabled = true;
-        // Delivery is agreed with the customer after the studio confirms the job, so the cart adds no shipping cost.
+        // Delivery is agreed with the customer after the studio confirms the job and the address comes from the /dat-in
+        // form (AttachToOrderAsync), so the job needs no delivery block in checkout and the cart adds no shipping cost.
+        product.IsShippingEnabled = false;
         product.IsFreeShipping = true;
         product.IsEsd = false;
         product.IsDownload = false;

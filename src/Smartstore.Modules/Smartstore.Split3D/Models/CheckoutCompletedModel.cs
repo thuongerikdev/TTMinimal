@@ -30,9 +30,24 @@ public class CheckoutCompletedModel
     public List<string> PrintJobCodes { get; set; } = [];
 
     /// <summary>
+    /// What the order contains (keys, print jobs, goods). Key steps and the "My keys" link are only shown for keys.
+    /// </summary>
+    public StudioOrderContent Content { get; set; }
+
+    /// <summary>
+    /// The order contains nothing but keys or key upgrades: the next steps are about receiving the key.
+    /// </summary>
+    public bool KeysOnly => Content == StudioOrderContent.Keys;
+
+    /// <summary>
     /// The order contains nothing but print jobs, so the next steps are about printing, not about keys.
     /// </summary>
-    public bool PrintOnly { get; set; }
+    public bool PrintOnly => Content == StudioOrderContent.Print;
+
+    /// <summary>
+    /// The order contains keys next to other products: keys are sent by email, the rest follows the order.
+    /// </summary>
+    public bool HasKeys => Content.HasFlag(StudioOrderContent.Keys);
 
     /// <summary>
     /// Amount the studio collects when the print is handed over.

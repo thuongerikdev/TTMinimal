@@ -13,9 +13,9 @@ public class Events : IConsumer
     /// </summary>
     public async Task HandleEventAsync(
         OrderPlacedEvent message,
-        Split3DLicenseService licenseService,
         Split3DUpgradeService upgradeService,
         PrintOrderService printOrderService,
+        StudioOrderClassifier orderClassifier,
         Split3DSettings settings,
         SmartDbContext db,
         ILogger logger,
@@ -23,7 +23,6 @@ public class Events : IConsumer
     {
         var order = message.Order;
         Split3DLicenseUpgrade upgrade = null;
-        var printJobs = new List<PrintOrder>();
 
         if (order != null)
         {
@@ -39,7 +38,7 @@ public class Events : IConsumer
             try
             {
                 // Links the print jobs paid with this order and copies the delivery address into it.
-                printJobs = await printOrderService.AttachToOrderAsync(order, cancelToken);
+                await printOrderService.AttachToOrderAsync(order, cancelToken);
             }
             catch (Exception ex)
             {
@@ -57,12 +56,24 @@ public class Events : IConsumer
 
         try
         {
-            var productIds = (await licenseService.GetProductPlansAsync(cancelToken)).Keys.ToArray();
-            if (upgrade == null
-                && printJobs.Count == 0
-                && !await db.OrderItems.AnyAsync(x => x.OrderId == order.Id && productIds.Contains(x.ProductId), cancelToken))
+            // Every bank transfer order gets the instructions; only the closing line depends on what was bought.
+            var content = await orderClassifier.GetContentAsync(order.Id, cancelToken);
+            if (content == StudioOrderContent.None)
             {
                 return;
+            }
+
+            var nextStep = content == StudioOrderContent.Keys
+                ? upgrade != null
+                    ? "Key sẽ được nâng cấp tự động ngay khi chúng tôi xác nhận đã nhận tiền; addon trong Blender tự nhận gói mới, không cần cài lại."
+                    : "Key kích hoạt và file cài đặt sẽ được gửi tự động ngay khi chúng tôi xác nhận đã nhận tiền."
+                : content == StudioOrderContent.Print
+                    ? "Studio bắt đầu kiểm tra file và xác nhận đơn in ngay khi nhận được tiền cọc."
+                    : "Studio xác nhận và bắt đầu chuẩn bị đơn hàng ngay khi nhận được tiền; chúng tôi sẽ báo cho bạn khi giao hàng.";
+
+            if (content.HasFlag(StudioOrderContent.Keys) && content != StudioOrderContent.Keys)
+            {
+                nextStep += "\nKey của addon trong đơn được gửi riêng qua email ngay khi xác nhận thanh toán.";
             }
 
             var note =
@@ -72,11 +83,7 @@ public class Events : IConsumer
                 $"- Số tài khoản: {settings.BankAccountNumber}\n" +
                 $"- Chủ tài khoản: {settings.BankAccountHolder}\n" +
                 $"- Nội dung chuyển khoản: {order.GetOrderNumber()}\n\n" +
-                (printJobs.Count > 0
-                    ? "Studio bắt đầu kiểm tra file và xác nhận đơn in ngay khi nhận được tiền cọc."
-                    : upgrade != null
-                        ? "Key sẽ được nâng cấp tự động ngay khi chúng tôi xác nhận đã nhận tiền; addon trong Blender tự nhận gói mới, không cần cài lại."
-                        : "Key kích hoạt và file cài đặt sẽ được gửi tự động ngay khi chúng tôi xác nhận đã nhận tiền.");
+                nextStep;
 
             db.OrderNotes.Add(order, note, displayToCustomer: true);
             await db.SaveChangesAsync(cancelToken);

@@ -4686,4 +4686,22 @@
     <LocaleResource Name="Completed.PrintTrack">
         <Value>Theo dõi đơn hàng</Value>
     </LocaleResource>
+    <LocaleResource Name="Completed.GoodsTitle">
+        <Value>Các bước tiếp theo cho đơn hàng của bạn</Value>
+    </LocaleResource>
+    <LocaleResource Name="Completed.GoodsStep2">
+        <Value>Studio xác nhận thanh toán và chuẩn bị đơn hàng (sản phẩm tuỳ chỉnh được in theo thiết kế của bạn).</Value>
+    </LocaleResource>
+    <LocaleResource Name="Completed.GoodsStep2Online">
+        <Value>Thanh toán được xác nhận tự động ngay khi tiền về, studio bắt đầu chuẩn bị đơn hàng.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Completed.GoodsStep3">
+        <Value>Studio giao hàng hoặc hẹn bạn nhận tại xưởng. Trạng thái đơn luôn hiển thị ở Tài khoản › Đơn hàng.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Completed.GoodsPaidOnline">
+        <Value>Đã nhận được thanh toán của bạn. Studio đang chuẩn bị đơn hàng và sẽ báo cho bạn khi giao hàng.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Completed.MixedKeys">
+        <Value>Key của addon trong đơn được gửi riêng qua email ngay khi thanh toán được xác nhận, và hiển thị ở Tài khoản › Key của tôi.</Value>
+    </LocaleResource>
 </Language>

@@ -406,6 +406,11 @@ a:focus-visible, button:focus-visible, summary:focus-visible {
 // Grid hover: the core drops a panel (swatches, options, cart buttons) below the card (smartstore.articlelist.js
 // overlaps it 2px into the card). Draw card + panel as one outlined block: open card bottom, panel with the same
 // 2px outline, white background and the hard shadow carried down.
+// The hover lift (transform) gives the card its own stacking context, so the drop's high z-index only counts
+// inside the card and the cards of the next row (later in the DOM) would paint over it. Raise the whole card.
+.artlist-grid > .art:hover,
+.artlist-grid > .art.active { z-index: 20; }
+
 .artlist-grid > .art.active {
     border-bottom-color: transparent !important;
     border-bottom-left-radius: 0 !important;

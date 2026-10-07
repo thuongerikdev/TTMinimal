@@ -1,7 +1,9 @@
+using Autofac;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Smartstore.Split3D.Filters;
 using Smartstore.Web.Controllers;
+using Smartstore.Core.Checkout.Orders;
 using Smartstore.Core.Data;
 using Smartstore.Data;
 using Smartstore.Data.Providers;
@@ -20,6 +22,7 @@ internal class Startup : StarterBase
         services.AddScoped<Split3DRepoService>();
         services.AddScoped<Split3DStorefrontSetup>();
         services.AddScoped<Split3DOrderQuery>();
+        services.AddScoped<StudioOrderClassifier>();
         services.AddScoped<Split3DUpgradeService>();
         services.AddScoped<StudioStorefrontSetup>();
         services.AddScoped<PrintQuoteService>();
@@ -27,6 +30,7 @@ internal class Startup : StarterBase
         services.AddScoped<PrintOrderService>();
         services.AddScoped<BankQrService>();
         services.AddScoped<StudioMailService>();
+        services.AddScoped<StudioDeliveryService>();
 
         services.Configure<MvcOptions>(o =>
         {
@@ -40,6 +44,12 @@ internal class Startup : StarterBase
                 .ForController("Checkout")
                 .ForAction("PaymentMethod")
                 .WhenNonAjaxGet();
+
+            // Delivery address and shipping method on the confirm page (GET), required before placing the order (POST).
+            o.Filters.AddEndpointFilter<CheckoutDeliveryFilter, SmartController>()
+                .ForController("Checkout")
+                .ForAction("Confirm")
+                .WhenNonAjax();
 
             o.Filters.AddEndpointFilter<CheckoutConfirmPaymentFilter, SmartController>()
                 .ForController("Checkout")
@@ -91,5 +101,19 @@ internal class Startup : StarterBase
                 b.AddModelAssembly(this.GetType().Assembly);
             });
         }
+    }
+}
+
+/// <summary>
+/// Replaces Smartstore's checkout factory. Runs late so that it overrides the core registration.
+/// </summary>
+internal class CheckoutStartup : StarterBase
+{
+    public override int Order => StarterOrdering.Late;
+
+    public override void ConfigureContainer(ContainerBuilder builder, IApplicationContext appContext)
+    {
+        // Carts with physical products require shipping in the two-step checkout too (see StudioCheckoutFactory).
+        builder.RegisterType<StudioCheckoutFactory>().As<ICheckoutFactory>().InstancePerLifetimeScope();
     }
 }

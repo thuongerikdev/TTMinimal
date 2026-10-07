@@ -1287,8 +1287,18 @@
     // scroll through the whole collection. Cards hidden by the category filter (is-hidden) are not counted.
     function initPaging() {
         each('[data-tt-page]', function (grid) {
-            var size = parseInt(grid.getAttribute('data-tt-page'), 10) || 6;
+            var fixedSize = parseInt(grid.getAttribute('data-tt-page'), 10) || 6;
+            var rows = parseInt(grid.getAttribute('data-tt-rows'), 10) || 0;
             var button = grid.parentNode.querySelector('[data-tt-show-more]');
+
+            // With data-tt-rows the batch is "N full rows" of the current responsive column count.
+            function pageSize() {
+                if (!rows) return fixedSize;
+                var cols = getComputedStyle(grid).gridTemplateColumns.split(' ').filter(Boolean).length;
+                return cols > 0 ? cols * rows : fixedSize;
+            }
+
+            var size = pageSize();
             var shown = size;
 
             function render(animate) {
@@ -1318,6 +1328,7 @@
 
             grid.ttPaging = {
                 reset: function () {
+                    size = pageSize();
                     shown = size;
                     render(false);
                 }
@@ -1327,6 +1338,21 @@
                 button.addEventListener('click', function () {
                     shown += size;
                     render(true);
+                });
+            }
+
+            if (rows) {
+                var resizeTimer;
+                window.addEventListener('resize', function () {
+                    clearTimeout(resizeTimer);
+                    resizeTimer = setTimeout(function () {
+                        var next = pageSize();
+                        if (next === size) return;
+                        // Keep the same number of revealed batches, just re-aligned to the new column count.
+                        shown = Math.max(1, Math.round(shown / size)) * next;
+                        size = next;
+                        render(false);
+                    }, 150);
                 });
             }
 

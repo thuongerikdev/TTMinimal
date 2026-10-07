@@ -2,10 +2,23 @@
 
 @{
     var settings = Model.Settings;
+
+    // Key texts only for orders with nothing but keys; print texts only for print jobs; everything else is a regular
+    // order (goods, or a mix) that the studio prepares and ships. Keys inside a mixed order get one extra line.
+    var kind = Model.KeysOnly ? "" : Model.PrintOnly ? "Print" : "Goods";
+    string Res(string step) => step switch
+    {
+        "Title" => Model.KeysOnly ? "Title" : kind + "Title",
+        "Step2" => Model.KeysOnly ? "Step2" : kind + "Step2",
+        "Step2Online" => Model.KeysOnly ? "Step2Online" : Model.PrintOnly ? "PrintStep2" : "GoodsStep2Online",
+        "Step3" => Model.KeysOnly ? "Step3" : kind + "Step3",
+        "PaidOnline" => Model.KeysOnly ? "PaidOnline" : "GoodsPaidOnline",
+        _ => step
+    };
 }
 
 <div class="alert alert-info my-4">
-    <div class="h5 mb-2">@(Model.PrintOnly ? T("Plugins.Split3D.Completed.PrintTitle") : T("Plugins.Split3D.Completed.Title"))</div>
+    <div class="h5 mb-2">@T("Plugins.Split3D.Completed." + Res("Title"))</div>
     @if (Model.PrintJobCodes.Count > 0)
     {
         <p class="mb-2">
@@ -18,7 +31,7 @@
     }
     @if (Model.IsPaid)
     {
-        <p class="mb-3">@T("Plugins.Split3D.Completed.PaidOnline")</p>
+        <p class="mb-3">@T("Plugins.Split3D.Completed." + Res("PaidOnline"))</p>
     }
     else if (Model.CanPayOnline)
     {
@@ -32,8 +45,8 @@
                     </button>
                 </form>
             </li>
-            <li>@(Model.PrintOnly ? T("Plugins.Split3D.Completed.PrintStep2") : T("Plugins.Split3D.Completed.Step2Online"))</li>
-            <li>@(Model.PrintOnly ? T("Plugins.Split3D.Completed.PrintStep3") : T("Plugins.Split3D.Completed.Step3"))</li>
+            <li>@T("Plugins.Split3D.Completed." + Res("Step2Online"))</li>
+            <li>@T("Plugins.Split3D.Completed." + Res("Step3"))</li>
         </ol>
     }
     else
@@ -58,22 +71,28 @@
                     }
                 }
             </li>
-            <li>@(Model.PrintOnly ? T("Plugins.Split3D.Completed.PrintStep2") : T("Plugins.Split3D.Completed.Step2"))</li>
-            <li>@(Model.PrintOnly ? T("Plugins.Split3D.Completed.PrintStep3") : T("Plugins.Split3D.Completed.Step3"))</li>
+            <li>@T("Plugins.Split3D.Completed." + Res("Step2"))</li>
+            <li>@T("Plugins.Split3D.Completed." + Res("Step3"))</li>
         </ol>
     }
-    @if (Model.PrintOnly)
+    @if (Model.HasKeys && !Model.KeysOnly)
     {
-        <a class="btn btn-primary" href="@Url.Action("Details", "Order", new { id = Model.OrderId, area = "" })">
-            <i class="fa fa-receipt"></i>
-            <span>@T("Plugins.Split3D.Completed.PrintTrack")</span>
-        </a>
+        <p class="mb-3">@T("Plugins.Split3D.Completed.MixedKeys")</p>
     }
-    else
-    {
-        <a class="btn btn-primary" href="@Url.Action("Index", "Split3DKeys", new { area = "" })">
-            <i class="fa fa-key"></i>
-            <span>@T("Plugins.Split3D.MyKeys.Track")</span>
-        </a>
-    }
+    <div class="d-flex flex-wrap" style="gap: .5rem">
+        @if (!Model.KeysOnly)
+        {
+            <a class="btn btn-primary" href="@Url.Action("Details", "Order", new { id = Model.OrderId, area = "" })">
+                <i class="fa fa-receipt"></i>
+                <span>@T("Plugins.Split3D.Completed.PrintTrack")</span>
+            </a>
+        }
+        @if (Model.HasKeys)
+        {
+            <a class="btn @(Model.KeysOnly ? "btn-primary" : "btn-secondary")" href="@Url.Action("Index", "Split3DKeys", new { area = "" })">
+                <i class="fa fa-key"></i>
+                <span>@T("Plugins.Split3D.MyKeys.Track")</span>
+            </a>
+        }
+    </div>
 </div>

@@ -2022,4 +2022,22 @@
     <LocaleResource Name="Completed.PrintTrack">
         <Value>Auftrag verfolgen</Value>
     </LocaleResource>
+    <LocaleResource Name="Completed.GoodsTitle">
+        <Value>Die nächsten Schritte für Ihre Bestellung</Value>
+    </LocaleResource>
+    <LocaleResource Name="Completed.GoodsStep2">
+        <Value>Das Studio bestätigt Ihre Zahlung und bereitet Ihre Bestellung vor (individuelle Produkte werden nach Ihrem Entwurf gedruckt).</Value>
+    </LocaleResource>
+    <LocaleResource Name="Completed.GoodsStep2Online">
+        <Value>Ihre Zahlung wird bei Eingang automatisch bestätigt, danach bereitet das Studio Ihre Bestellung vor.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Completed.GoodsStep3">
+        <Value>Das Studio versendet Ihre Bestellung oder vereinbart eine Abholung in der Werkstatt. Den Status sehen Sie jederzeit unter Mein Konto › Bestellungen.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Completed.GoodsPaidOnline">
+        <Value>Ihre Zahlung ist eingegangen. Das Studio bereitet Ihre Bestellung vor und informiert Sie über den Versand.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Completed.MixedKeys">
+        <Value>Die Addon-Schlüssel dieser Bestellung werden nach Zahlungseingang separat per E-Mail gesendet und erscheinen unter Mein Konto › Meine Lizenzschlüssel.</Value>
+    </LocaleResource>
 </Language>

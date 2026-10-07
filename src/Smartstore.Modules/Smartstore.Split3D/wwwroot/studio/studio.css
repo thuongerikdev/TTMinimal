@@ -337,10 +337,28 @@ html.tt-noscroll, html.tt-noscroll body { overflow: hidden; }
 @keyframes tt-pop { from { opacity: 0; transform: translateY(14px) scale(.97); } }
 
 /* Collection: vertical category column + cards of the selected category. */
-.tt-shelf { display: grid; grid-template-columns: 240px minmax(0, 1fr); gap: 28px; align-items: start; }
+.tt-wrap--wide { width: min(1680px, 94%); }
+.tt-shelf { display: grid; grid-template-columns: 220px minmax(0, 1fr); gap: 26px; align-items: start; }
 .tt-shelf--single { grid-template-columns: minmax(0, 1fr); }
-.tt-shelf .tt-products { grid-template-columns: repeat(3, 1fr); }
-.tt-shelf--single .tt-products { grid-template-columns: repeat(4, 1fr); }
+.tt-shelf .tt-products { grid-template-columns: repeat(6, 1fr); gap: 16px; }
+.tt-shelf--single .tt-products { grid-template-columns: repeat(7, 1fr); gap: 16px; }
+@media (max-width: 1600px) {
+    .tt-shelf .tt-products { grid-template-columns: repeat(5, 1fr); }
+    .tt-shelf--single .tt-products { grid-template-columns: repeat(6, 1fr); }
+}
+@media (max-width: 1300px) {
+    .tt-shelf .tt-products { grid-template-columns: repeat(4, 1fr); }
+    .tt-shelf--single .tt-products { grid-template-columns: repeat(5, 1fr); }
+}
+/* Compact cards in the collection shelf, so more of them fit on one row. */
+.tt-shelf .tt-product { padding: 9px 9px 12px; border-radius: 14px; box-shadow: 4px 4px 0 var(--ink); }
+.tt-shelf .tt-product:hover { box-shadow: 6px 6px 0 var(--ink); }
+.tt-shelf .tt-product-media { border-radius: 10px; margin-bottom: 9px; }
+.tt-shelf .tt-product-cat { font-size: 10px; letter-spacing: .6px; }
+.tt-shelf .tt-product-name { font-size: 14px; margin: 2px 0 5px; }
+.tt-shelf .tt-product-price { font-size: 15px; }
+.tt-shelf .tt-product-price del { font-size: 12px; }
+.tt-shelf .tt-product-custom { margin-top: 8px; padding: 6px 10px; font-size: 12px; border-radius: 9px; }
 .tt-shelf-nav { position: sticky; top: 90px; display: flex; flex-direction: column; gap: 8px; padding: 14px; background: var(--cream); border: 2px solid var(--ink); border-radius: 18px; box-shadow: 5px 5px 0 var(--ink); }
 .tt-shelf-title { font-size: 11px; font-weight: 900; letter-spacing: 1px; text-transform: uppercase; opacity: .7; padding: 2px 4px 6px; border-bottom: 2px dashed rgba(0, 0, 0, .2); margin-bottom: 2px; }
 .tt-shelf-item { display: flex; align-items: center; gap: 10px; width: 100%; padding: 10px 12px; text-align: left; font-size: 14px; font-weight: 800; color: var(--ink); background: transparent; border: 2px solid transparent; border-radius: 12px; cursor: pointer; transition: background .15s, border-color .15s, transform .15s; }
@@ -657,7 +675,7 @@ textarea.tt-input { resize: vertical; min-height: 110px; }
 
 @media (max-width: 1100px) {
     .tt-products { grid-template-columns: repeat(3, 1fr); }
-    .tt-shelf .tt-products { grid-template-columns: repeat(2, 1fr); }
+    .tt-shelf .tt-products { grid-template-columns: repeat(3, 1fr); }
     .tt-footer-top { grid-template-columns: 1fr 1fr; }
 }
 

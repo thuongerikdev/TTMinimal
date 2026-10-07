@@ -7,6 +7,7 @@ using Smartstore.Core.Checkout.Shipping;
 using Smartstore.Core.Common.Configuration;
 using Smartstore.Core.Content.Media;
 using Smartstore.Core.Content.Menus;
+using Smartstore.Core.Content.Topics;
 using Smartstore.Core.Data;
 using Smartstore.Core.Identity;
 using Smartstore.Core.Seo;
@@ -21,7 +22,7 @@ namespace Smartstore.Split3D.Services;
 /// </summary>
 public class StudioStorefrontSetup
 {
-    public const int CurrentVersion = 8;
+    public const int CurrentVersion = 9;
     public const string ThemeName = "TTMinimal";
     public const string PrintServiceRouteName = "TTPrintService";
     public const string PrintOrderRouteName = "TTPrintOrder";
@@ -88,6 +89,8 @@ public class StudioStorefrontSetup
         await ApplyMainMenuAsync(cancelToken);
         await ApplyShippingAsync(cancelToken);
         await ApplyCheckoutAsync(cancelToken);
+        await ApplyOrderTextsAsync(cancelToken);
+        await ApplyGoodsShippingAsync(cancelToken);
         await ApplyAdminMenuAsync();
 
         // Without the theme files the layout is incomplete: leave the version unset so the next start tries again.
@@ -333,6 +336,79 @@ public class StudioStorefrontSetup
             var paymentSettings = await _services.SettingFactory.LoadSettingsAsync<PaymentSettings>(storeId);
             paymentSettings.SkipPaymentSelectionIfSingleOption = true;
             await _services.SettingFactory.SaveSettingsAsync(paymentSettings, storeId);
+        }
+    }
+
+    /// <summary>
+    /// Replaces texts that still describe the shop as addon-only (version 9): bank transfer description,
+    /// terms (included in the order email), shipping and payment pages. Texts the shop owner rewrote stay as they are.
+    /// </summary>
+    private async Task ApplyOrderTextsAsync(CancellationToken cancelToken)
+    {
+        static bool IsAddonOnly(string text)
+            => text.HasValue() && Split3DStorefrontContent.AddonOnlyPhrases.Any(x => text.Contains(x, StringComparison.Ordinal));
+
+        var paymentDescription = Split3DStorefrontContent.PaymentDescription(
+            _split3DSettings.BankName, _split3DSettings.BankAccountNumber, _split3DSettings.BankAccountHolder);
+
+        var method = await _db.PaymentMethods.FirstOrDefaultAsync(x => x.PaymentMethodSystemName == Split3DStorefrontSetup.PrepaymentSystemName, cancelToken);
+        if (method != null && IsAddonOnly(method.FullDescription))
+        {
+            method.FullDescription = paymentDescription;
+        }
+
+        var bodies = new Dictionary<string, string>
+        {
+            ["ConditionsOfUse"] = Split3DStorefrontContent.ConditionsOfUse,
+            ["ShippingInfo"] = Split3DStorefrontContent.ShippingInfo,
+            ["PaymentInfo"] = paymentDescription
+        };
+
+        var topicNames = bodies.Keys.ToArray();
+        var topics = await _db.Topics.Where(x => topicNames.Contains(x.SystemName)).ToListAsync(cancelToken);
+        foreach (var topic in topics.Where(x => IsAddonOnly(x.Body)))
+        {
+            topic.Body = bodies[topic.SystemName];
+        }
+
+        // Translated bodies would still show the old text in their language.
+        var topicIds = topics.ToDictionary(x => x.Id, x => x.SystemName);
+        var localized = await _db.LocalizedProperties
+            .Where(x => x.LocaleKeyGroup == nameof(Topic) && x.LocaleKey == nameof(Topic.Body) && topicIds.Keys.Contains(x.EntityId))
+            .ToListAsync(cancelToken);
+        foreach (var prop in localized.Where(x => IsAddonOnly(x.LocaleValue)))
+        {
+            prop.LocaleValue = bodies[topicIds[prop.EntityId]];
+        }
+
+        await _db.SaveChangesAsync(cancelToken);
+    }
+
+    /// <summary>
+    /// Physical products require shipping (version 9), so their orders get the delivery block in checkout and carry
+    /// address, shipping method and charge (see <see cref="StudioCheckoutFactory"/>). Several studio products were
+    /// created without the flag. Addon keys, key upgrades, print jobs and downloads stay without shipping.
+    /// </summary>
+    private async Task ApplyGoodsShippingAsync(CancellationToken cancelToken)
+    {
+        var keyProductIds = await _db.Split3DAddonProducts().Select(x => x.ProductId).Distinct().ToArrayAsync(cancelToken);
+        string[] noShippingSkus = [PrintOrderService.PrintProductSku, Split3DUpgradeService.UpgradeProductSku];
+
+        var products = await _db.Products
+            .Where(x => !x.Deleted && !x.IsShippingEnabled && !x.IsDownload && !x.IsEsd)
+            .Where(x => !keyProductIds.Contains(x.Id) && (x.Sku == null || !noShippingSkus.Contains(x.Sku)))
+            .ToListAsync(cancelToken);
+
+        foreach (var product in products)
+        {
+            product.IsShippingEnabled = true;
+        }
+
+        await _db.SaveChangesAsync(cancelToken);
+
+        if (products.Count > 0)
+        {
+            Logger.Info($"Shipping enabled for {products.Count} physical products: {string.Join(", ", products.Select(x => x.Sku.NullEmpty() ?? x.Name))}.");
         }
     }
 

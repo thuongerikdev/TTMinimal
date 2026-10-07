@@ -1,0 +1,155 @@
+@model CheckoutDeliveryModel
+
+@*
+    Delivery block of the two-step checkout (CheckoutDeliveryFilter). It sits inside the confirm form, so it has no form
+    of its own: the script posts the fields to StudioCheckout/SaveDelivery and reloads the page, which recalculates the
+    shipping charge in the order totals. Placing the order with unsaved changes saves them first and reloads instead.
+*@
+
+@{
+    var selected = Model.Methods.FirstOrDefault(x => x.Selected);
+    var pickup = selected?.IsPickup == true;
+}
+
+<section id="studio-delivery" class="card card-body mb-3 studio-delivery" aria-labelledby="studio-delivery-title"
+         data-url="@Url.Action("SaveDelivery", "StudioCheckout", new { area = string.Empty })"
+         data-complete="@(Model.IsComplete ? "true" : "false")">
+    <h5 id="studio-delivery-title" class="heading-title order-review-heading mb-3">Thông tin nhận hàng</h5>
+
+    @if (Model.Methods.Count == 0)
+    {
+        <div class="alert alert-warning mb-0">
+            Cửa hàng chưa cấu hình phương thức giao hàng nên chưa đặt được đơn có sản phẩm cần giao. Vui lòng liên hệ studio.
+        </div>
+    }
+    else
+    {
+        <div class="studio-delivery-methods mb-3" role="radiogroup" aria-label="Cách nhận hàng">
+            @foreach (var method in Model.Methods)
+            {
+                var id = "studio-dm-" + method.Id;
+                <div class="form-check mb-2">
+                    <input class="form-check-input studio-dm-radio" type="radio" name="studio-delivery-method" id="@id"
+                           value="@method.Id" data-pickup="@(method.IsPickup ? "true" : "false")" attr-checked='(method.Selected, "checked")' />
+                    <label class="form-check-label" for="@id">
+                        <span class="font-weight-bold">@method.Name</span>
+                        <span class="text-muted">· @(method.Rate > 0 ? Split3DLicenseService.FormatPrice(method.Rate) : "Miễn phí")</span>
+                        @if (method.Description.HasValue())
+                        {
+                            <span class="d-block small text-muted">@method.Description</span>
+                        }
+                    </label>
+                </div>
+            }
+        </div>
+
+        <div class="form-row">
+            <div class="form-group col-sm-6">
+                <label for="studio-delivery-name">Họ tên người nhận</label>
+                <input type="text" class="form-control studio-delivery-field" id="studio-delivery-name" data-field="FullName"
+                       value="@Model.FullName" autocomplete="name" required />
+            </div>
+            <div class="form-group col-sm-6">
+                <label for="studio-delivery-phone">Số điện thoại</label>
+                <input type="tel" class="form-control studio-delivery-field" id="studio-delivery-phone" data-field="Phone"
+                       value="@Model.Phone" autocomplete="tel" inputmode="tel" required />
+            </div>
+        </div>
+        <div class="form-row studio-delivery-address" attr-hidden='(pickup, "hidden")'>
+            <div class="form-group col-sm-8">
+                <label for="studio-delivery-address1">Địa chỉ (số nhà, đường, phường / xã)</label>
+                <input type="text" class="form-control studio-delivery-field" id="studio-delivery-address1" data-field="Address1"
+                       value="@Model.Address1" autocomplete="street-address" />
+            </div>
+            <div class="form-group col-sm-4">
+                <label for="studio-delivery-city">Tỉnh / thành phố</label>
+                <input type="text" class="form-control studio-delivery-field" id="studio-delivery-city" data-field="City"
+                       value="@Model.City" autocomplete="address-level1" />
+            </div>
+        </div>
+        <div class="small text-muted mb-3 studio-delivery-pickup" attr-hidden='(!pickup, "hidden")'>
+            Nhận tại xưởng: @Model.StudioAddress. Studio gọi cho bạn khi hàng sẵn sàng.
+        </div>
+
+        <div class="d-flex flex-wrap align-items-center" style="gap: .75rem">
+            <button type="button" class="btn btn-primary studio-delivery-save">
+                <i class="fa fa-check" aria-hidden="true"></i>
+                <span>Lưu thông tin nhận hàng</span>
+            </button>
+            <span class="small studio-delivery-status @(Model.IsComplete ? "text-success" : "text-danger")" role="status">
+                @(Model.IsComplete ? "Đã lưu. Phí giao hàng đã được cộng vào tổng tiền." : "Chưa lưu thông tin nhận hàng.")
+            </span>
+        </div>
+    }
+</section>
+
+<script sm-target-zone="scripts" data-origin="studio-delivery">
+    $(function () {
+        var box = $('#studio-delivery');
+        if (!box.length || !box.find('.studio-delivery-save').length) {
+            return;
+        }
+
+        var dirty = box.data('complete') !== true;
+        var status = box.find('.studio-delivery-status');
+
+        function setStatus(text, ok) {
+            status.text(text).toggleClass('text-success', ok).toggleClass('text-danger', !ok);
+        }
+
+        function togglePickup() {
+            var pickup = box.find('.studio-dm-radio:checked').data('pickup') === true;
+            box.find('.studio-delivery-address').prop('hidden', pickup);
+            box.find('.studio-delivery-pickup').prop('hidden', !pickup);
+        }
+
+        function save() {
+            var data = {
+                __RequestVerificationToken: $('#confirm-order-form input[name="__RequestVerificationToken"]').val()
+                    || $('input[name="__RequestVerificationToken"]').first().val(),
+                ShippingMethodId: box.find('.studio-dm-radio:checked').val() || 0
+            };
+            box.find('.studio-delivery-field').each(function () {
+                data[$(this).data('field')] = $.trim(this.value);
+            });
+
+            var button = box.find('.studio-delivery-save').prop('disabled', true);
+            return $.ajax({ type: 'POST', cache: false, url: box.data('url'), data: data })
+                .then(function (response) {
+                    if (response && response.success) {
+                        setStatus('Đã lưu. Đang cập nhật tổng tiền…', true);
+                        location.hash = 'studio-delivery';
+                        location.reload();
+                        return true;
+                    }
+                    setStatus((response && response.message) || 'Không lưu được thông tin nhận hàng.', false);
+                    button.prop('disabled', false);
+                    return false;
+                }, function () {
+                    setStatus('Không lưu được thông tin nhận hàng, vui lòng thử lại.', false);
+                    button.prop('disabled', false);
+                    return false;
+                });
+        }
+
+        box.on('change input', '.studio-delivery-field, .studio-dm-radio', function () {
+            dirty = true;
+            setStatus('Có thay đổi chưa lưu.', false);
+        });
+        box.on('change', '.studio-dm-radio', togglePickup);
+        box.on('click', '.studio-delivery-save', function (e) {
+            e.preventDefault();
+            save();
+        });
+
+        // Never place the order with delivery data the customer has not saved (the charge could differ).
+        $('#confirm-order-form').on('submit', function (e) {
+            if (dirty) {
+                e.preventDefault();
+                e.stopImmediatePropagation();
+                box[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
+                save();
+            }
+        });
+    });
+</script>

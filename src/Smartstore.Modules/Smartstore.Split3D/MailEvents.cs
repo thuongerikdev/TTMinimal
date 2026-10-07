@@ -1,4 +1,3 @@
-using Smartstore.Core.Data;
 using Smartstore.Core.Messaging;
 using Smartstore.Core.Messaging.Events;
 using Smartstore.Events;
@@ -29,14 +28,14 @@ public class MailEvents : IConsumer
     }
 
     /// <summary>
-    /// Orders with only key products get a single email (the key email, sent when the order is paid):
+    /// Orders with only key products (or key upgrades) get a single email (the key email, sent when the order is paid):
     /// Smartstore's own "order placed" / "order completed" customer emails stay in the queue as "send manually".
+    /// Every other order (goods, print jobs, or goods mixed with keys) keeps the regular order emails.
     /// </summary>
     public async Task HandleEventAsync(
         MessageQueuingEvent message,
         Split3DSettings settings,
-        Split3DLicenseService licenseService,
-        SmartDbContext db,
+        StudioOrderClassifier orderClassifier,
         CancellationToken cancelToken)
     {
         var templateName = message.MessageContext?.MessageTemplate?.Name;
@@ -54,13 +53,7 @@ public class MailEvents : IConsumer
             return;
         }
 
-        var planProductIds = (await licenseService.GetProductPlansAsync(cancelToken)).Keys.ToArray();
-        var productIds = await db.OrderItems
-            .Where(x => x.OrderId == orderId)
-            .Select(x => x.ProductId)
-            .ToListAsync(cancelToken);
-
-        if (productIds.Count > 0 && productIds.All(planProductIds.Contains))
+        if (await orderClassifier.GetContentAsync(orderId, cancelToken) == StudioOrderContent.Keys)
         {
             message.QueuedEmail.SendManually = true;
         }
