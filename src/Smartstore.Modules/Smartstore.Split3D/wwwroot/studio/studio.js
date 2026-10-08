@@ -2368,9 +2368,12 @@
             if (offer) {
                 np.offer.appendChild(offer);
                 np.offer.hidden = false;
-                var gallery = document.getElementById('pd-gallery-container'), info = document.querySelector('.pd-info-col .pd-info-container');
-                if (gallery && info) {
-                    info.parentNode.insertBefore(gallery, info.nextSibling);
+                // Name and description head the bar (on wide screens the bar sits right of the 3D view).
+                var head = document.querySelector('.pd-info-col .pd-info-container');
+                if (head) { head.classList.add('tt-np-info'); np.panel.parentNode.insertBefore(head, np.panel); }
+                var gallery = document.getElementById('pd-gallery-container'), infoCol = document.querySelector('.pd-info-col');
+                if (gallery && infoCol) {
+                    infoCol.insertBefore(gallery, infoCol.firstChild);
                     // Only the placeholder picture: nothing to show.
                     var imgs = gallery.querySelectorAll('.gal-item img');
                     gallery.hidden = !imgs.length || Array.prototype.every.call(imgs, function (img) { return /\/media\/0\//.test(img.getAttribute('src') || ''); });
