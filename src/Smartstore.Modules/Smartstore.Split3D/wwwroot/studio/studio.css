@@ -43,7 +43,7 @@ body.home .home-page .page-body { margin: 0; }
 /* ---------- Type & small parts ---------- */
 
 .tt h1 { font-size: clamp(2.4rem, 4.6vw, 4.4rem); font-weight: 900; letter-spacing: -2.5px; line-height: 1.17; margin: 27px 0; }
-.tt h1 em, .tt-contact h2 em { font-style: normal; display: inline-block; background: var(--yellow); border: 2px solid var(--ink); padding: 0 10px 6px; transform: rotate(-2deg); box-shadow: 5px 5px 0 var(--ink); }
+.tt h1 em, .tt-contact h2 em { font-style: normal; display: inline-block; background: var(--yellow); border: 2px solid var(--ink); padding: .06em 10px 6px; margin-top: .14em; transform: rotate(-2deg); box-shadow: 5px 5px 0 var(--ink); }
 .tt h2 { font-size: clamp(1.8rem, 3vw, 2.8rem); font-weight: 900; letter-spacing: -1.4px; line-height: 1.25; margin: 0 0 20px; }
 .tt mark { color: inherit; background: var(--pink); padding: 0 6px; }
 .tt-kicker { font-size: 12px; letter-spacing: 1.6px; font-weight: 800; margin-bottom: 15px; }
@@ -83,7 +83,7 @@ body.home .home-page .page-body { margin: 0; }
 
 .tt-js [data-tt-reveal] { opacity: 0; translate: 0 26px; transition: opacity .7s var(--ease), translate .7s var(--ease); transition-delay: var(--d, 0s); }
 .tt-js [data-tt-reveal].is-in { opacity: 1; translate: 0 0; }
-.tt-split .w { display: inline-block; overflow: hidden; vertical-align: top; padding: 0 .04em .14em; margin: 0 -.04em -.14em; }
+.tt-split .w { display: inline-block; overflow: hidden; vertical-align: top; padding: .16em .04em .14em; margin: -.16em -.04em -.14em; }
 .tt-split .w > span { display: inline-block; transform: translateY(110%); transition: transform .8s var(--ease); transition-delay: calc(var(--i, 0) * 45ms); }
 .tt-split.is-in .w > span { transform: none; }
 .tt-split em { overflow: visible; }
