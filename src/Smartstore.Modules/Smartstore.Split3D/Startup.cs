@@ -106,6 +106,11 @@ internal class Startup : StarterBase
                 .ForAction("List")
                 .WhenNonAjaxGet();
 
+            // Admin order list: the customer column shows the account name, not the billing address copy of the order.
+            o.Filters.AddEndpointFilter<OrderListCustomerNameFilter, SmartController>()
+                .ForController("Order")
+                .ForAction("OrderList");
+
             o.Filters.AddEndpointFilter<AdminStyleFilter, SmartController>()
                 .WhenNonAjaxGet();
         });

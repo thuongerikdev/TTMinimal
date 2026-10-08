@@ -83,7 +83,7 @@ public class StudioOrderController : AdminController
 
         var now = DateTime.UtcNow;
         var email = model.Email?.Trim().NullEmpty();
-        var customer = await FindOrCreateCustomerAsync(email);
+        var (customer, isNewCustomer) = await FindOrCreateCustomerAsync(email);
         var requiresShipping = lines.Any(x => products[x.ProductId].IsShippingEnabled);
         var countryId = await _db.Countries
             .Where(x => x.TwoLetterIsoCode == "VN")
@@ -156,6 +156,7 @@ public class StudioOrderController : AdminController
         order.OrderTotal = subtotal + shippingFee;
 
         _db.Orders.Add(order);
+        ApplyCustomerData(customer, isNewCustomer, email, name, index, CreateAddress);
         await _db.SaveChangesAsync();
 
         var user = Services.WorkContext.CurrentCustomer;
@@ -188,18 +189,45 @@ public class StudioOrderController : AdminController
     /// <summary>
     /// The registered customer with this email, otherwise a new guest account that only carries the order.
     /// </summary>
-    private async Task<Customer> FindOrCreateCustomerAsync(string? email)
+    private async Task<(Customer Customer, bool IsNew)> FindOrCreateCustomerAsync(string? email)
     {
         if (email != null)
         {
             var customer = await _db.Customers.FirstOrDefaultAsync(x => x.Email == email && !x.Deleted);
             if (customer != null)
             {
-                return customer;
+                return (customer, false);
             }
         }
 
-        return await _customerService.CreateGuestCustomerAsync();
+        return (await _customerService.CreateGuestCustomerAsync(), true);
+    }
+
+    /// <summary>
+    /// Gives the customer the name, email and address entered in the form, so that customer and order lists show who
+    /// it is: a new account gets all of it, an existing one only what it lacks (data the customer entered is kept).
+    /// </summary>
+    private static void ApplyCustomerData(Customer customer, bool isNew, string? email, string name, int index, Func<Address> createAddress)
+    {
+        if (customer.FirstName.IsEmpty() && customer.LastName.IsEmpty() && name.HasValue())
+        {
+            // CustomerHook builds FullName from these on save.
+            customer.FirstName = index > 0 ? name[..index] : name;
+            customer.LastName = index > 0 ? name[(index + 1)..] : null;
+        }
+
+        // No other account uses the email, otherwise FindOrCreateCustomerAsync had returned it.
+        if (isNew && email != null && customer.Email.IsEmpty())
+        {
+            customer.Email = email;
+        }
+
+        if (isNew || customer.BillingAddressId is null or 0)
+        {
+            var address = createAddress();
+            customer.Addresses.Add(address);
+            customer.BillingAddress = address;
+        }
     }
 
     private async Task PrepareViewAsync()

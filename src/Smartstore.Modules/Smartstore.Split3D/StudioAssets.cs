@@ -5,7 +5,7 @@ namespace Smartstore.Split3D;
 /// </summary>
 public static class StudioAssets
 {
-    public const string Version = "70";
+    public const string Version = "72";
 
     public const string StyleSheet = "~/Modules/Smartstore.Split3D/studio/studio.css?v=" + Version;
 

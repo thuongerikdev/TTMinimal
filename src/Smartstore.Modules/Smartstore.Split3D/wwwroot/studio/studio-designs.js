@@ -105,9 +105,10 @@
         empty: 'Nhập tên muốn in để xem trước 3D',
         // Quick design: type, font and text are all most customers need; the tabs below hold the advanced options.
         quick: function (d, P) {
-            return ui.step(1, 'Chọn loại') + ui.types(this.types, d)
-                + ui.step(2, 'Chọn phông chữ') + ui.fonts(P, d, 'nameplate')
-                + ui.step(3, 'Nhập tên muốn in') + ui.textSlot();
+            // Short step names: on the product page each step is one row, its name in a narrow label column.
+            return ui.step(1, 'Loại') + ui.types(this.types, d)
+                + ui.step(2, 'Phông chữ') + ui.fonts(P, d, 'nameplate')
+                + ui.step(3, 'Tên in') + ui.textSlot();
         },
         advanced: 'Kiểu chữ nổi / chìm, dòng chữ thứ 2, hình dạng đế, lỗ móc, biểu tượng, chân đứng',
         tabs: ['Chữ', 'Đế', 'Thêm'],

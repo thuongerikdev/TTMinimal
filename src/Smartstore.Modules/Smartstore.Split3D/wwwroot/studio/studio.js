@@ -2514,12 +2514,13 @@
                 card.className = 'tt-viewer tt-np tt-np--' + kindKey;
                 card.innerHTML = '<div class="tt-viewer-head"><span class="tt-viewer-tag">3D</span><b data-np-title>' + (KIND_TITLES[kindKey] || KIND_TITLES.nameplate) + '</b>'
                     + '<button type="button" class="tt-viewer-max" aria-pressed="false"><span>Phóng to</span></button></div>'
-                    + '<div class="tt-np-main"><div class="tt-viewer-stage tt-np-stage"><canvas role="img" aria-label="Xem trước 3D, kéo để xoay"></canvas>'
+                    // tt-np-body: transparent (display: contents) except on the product page's wide layout (studio.css).
+                    + '<div class="tt-np-body"><div class="tt-np-main"><div class="tt-viewer-stage tt-np-stage"><canvas role="img" aria-label="Xem trước 3D, kéo để xoay"></canvas>'
                     + '<span class="tt-np-empty" data-np-empty>Đang tải bản xem trước 3D…</span><span class="tt-viewer-size" data-np-size></span></div>'
                     + '<div class="tt-np-list" data-np-list hidden></div></div>'
                     + '<div class="tt-np-side"><div class="tt-np-scroll"><div class="tt-np-panel" data-np-panel></div>'
                     + '<div class="tt-np-offer" data-np-offer hidden><div class="tt-np-step"><i data-np-offer-no hidden></i>Màu &amp; kích thước</div></div></div>'
-                    + '<div class="tt-np-buy" data-np-buy hidden></div></div>'
+                    + '<div class="tt-np-buy" data-np-buy hidden></div></div></div>'
                     + '<div class="tt-viewer-foot"><span>Kéo để xoay · Ctrl + lăn chuột để phóng to · ảnh minh hoạ, studio gửi file xem trước trước khi in</span>'
                     + '<button type="button" class="tt-textlink" data-np-reset>Góc nhìn ban đầu</button></div>';
                 host.insertBefore(card, host.firstChild);
