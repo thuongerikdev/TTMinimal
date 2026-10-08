@@ -94,6 +94,12 @@ internal class Startup : StarterBase
                 .ForAction("Index")
                 .WhenNonAjaxGet();
 
+            // Admin order page: print files of the lines designed in the 3D designer.
+            o.Filters.AddEndpointFilter<OrderPrintFilesFilter, SmartController>()
+                .ForController("Order")
+                .ForAction("Edit")
+                .WhenNonAjaxGet();
+
             o.Filters.AddEndpointFilter<AdminStyleFilter, SmartController>()
                 .WhenNonAjaxGet();
         });

@@ -174,6 +174,35 @@ public class StudioConfigurationModel : ModelBase
     [LocalizedDisplay("*Tagline")]
     public string Tagline { get; set; }
 
+    [LocalizedDisplay("*LogoMediaFileId")]
+    [UIHint("Media")]
+    [AdditionalMetadata("album", "content")]
+    [AdditionalMetadata("transientUpload", true)]
+    public int LogoMediaFileId { get; set; }
+
+    [LocalizedDisplay("*LogoText1")]
+    public string LogoText1 { get; set; }
+
+    [LocalizedDisplay("*LogoColor1")]
+    [UIHint("Color")]
+    public string LogoColor1 { get; set; }
+
+    [LocalizedDisplay("*LogoText2")]
+    public string LogoText2 { get; set; }
+
+    [LocalizedDisplay("*LogoColor2")]
+    [UIHint("Color")]
+    public string LogoColor2 { get; set; }
+
+    [LocalizedDisplay("*LogoSubline")]
+    public string LogoSubline { get; set; }
+
+    [LocalizedDisplay("*LogoFont")]
+    public string LogoFont { get; set; }
+
+    [LocalizedDisplay("*LogoShowRegistered")]
+    public bool LogoShowRegistered { get; set; }
+
     [LocalizedDisplay("*Address")]
     public string Address { get; set; }
 

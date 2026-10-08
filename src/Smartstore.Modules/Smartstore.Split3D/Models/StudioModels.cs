@@ -158,6 +158,24 @@ public class PrintQuoteFormModel
     public string FileLink { get; set; }
 }
 
+public class StudioBrandModel
+{
+    public string Title { get; set; }
+    public string LogoUrl { get; set; }
+    public string Text1 { get; set; }
+    public string Color1 { get; set; }
+    public string Text2 { get; set; }
+    public string Color2 { get; set; }
+    public string Subline { get; set; }
+
+    /// <summary>
+    /// Google font family of the word mark, or <c>null</c> for the theme font.
+    /// </summary>
+    public string Font { get; set; }
+
+    public bool ShowRegistered { get; set; }
+}
+
 public class StudioNavModel
 {
     public List<StudioNavItem> Items { get; } = [];

@@ -9,6 +9,37 @@ public class StudioSettings : ISettings
 
     public string Tagline { get; set; } = "Minimal 3D Printing Studio";
 
+    /// <summary>
+    /// Image left of the header word mark. 0 = the bundled TT Minimal mascot (<c>studio/studio-logo.webp</c>).
+    /// </summary>
+    public int LogoMediaFileId { get; set; }
+
+    /// <summary>
+    /// First part of the header word mark, drawn in <see cref="LogoColor1"/>.
+    /// </summary>
+    public string LogoText1 { get; set; } = "TT";
+
+    public string LogoColor1 { get; set; } = "#80e5cb";
+
+    /// <summary>
+    /// Second part of the header word mark, drawn in <see cref="LogoColor2"/>.
+    /// </summary>
+    public string LogoText2 { get; set; } = "minimal";
+
+    public string LogoColor2 { get; set; } = "#ff67bc";
+
+    /// <summary>
+    /// Small line below the header word mark. Empty = none.
+    /// </summary>
+    public string LogoSubline { get; set; } = "3D PRINTING & CREATIVE TOOLS";
+
+    /// <summary>
+    /// Google font family of the header word mark. Empty = the theme font.
+    /// </summary>
+    public string LogoFont { get; set; } = "Fredoka";
+
+    public bool LogoShowRegistered { get; set; }
+
     public string Address { get; set; } = "Số 2, Nhà vườn 5, Yên Xá, Phường Thanh Liệt, Hà Nội";
 
     public string Phone1 { get; set; } = "0333424766";

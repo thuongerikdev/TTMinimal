@@ -27,4 +27,7 @@ public static class SmartDbContextExtensions
 
     public static DbSet<PrintOrder> PrintOrders(this SmartDbContext db)
         => db.Set<PrintOrder>();
+
+    public static DbSet<Split3DDesign> Split3DDesigns(this SmartDbContext db)
+        => db.Set<Split3DDesign>();
 }

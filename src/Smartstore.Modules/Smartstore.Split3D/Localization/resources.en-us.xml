@@ -1014,6 +1014,60 @@
     <LocaleResource Name="Studio.Fields.Tagline.Hint">
         <Value>Short line below the logo in the footer.</Value>
     </LocaleResource>
+    <LocaleResource Name="Studio.Group.Logo">
+        <Value>Header logo</Value>
+    </LocaleResource>
+    <LocaleResource Name="Studio.Group.ContactDetails">
+        <Value>Contact</Value>
+    </LocaleResource>
+    <LocaleResource Name="Studio.Fields.LogoMediaFileId">
+        <Value>Logo image</Value>
+    </LocaleResource>
+    <LocaleResource Name="Studio.Fields.LogoMediaFileId.Hint">
+        <Value>Square image left of the store name. Empty = the bundled TT Minimal mascot.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Studio.Fields.LogoText1">
+        <Value>Name, part 1</Value>
+    </LocaleResource>
+    <LocaleResource Name="Studio.Fields.LogoText1.Hint">
+        <Value>First part of the store name (e.g. "TT").</Value>
+    </LocaleResource>
+    <LocaleResource Name="Studio.Fields.LogoColor1">
+        <Value>Color of part 1</Value>
+    </LocaleResource>
+    <LocaleResource Name="Studio.Fields.LogoColor1.Hint">
+        <Value>Text color of part 1.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Studio.Fields.LogoText2">
+        <Value>Name, part 2</Value>
+    </LocaleResource>
+    <LocaleResource Name="Studio.Fields.LogoText2.Hint">
+        <Value>Second part of the store name (e.g. "minimal"). Both parts empty = the brand name.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Studio.Fields.LogoColor2">
+        <Value>Color of part 2</Value>
+    </LocaleResource>
+    <LocaleResource Name="Studio.Fields.LogoColor2.Hint">
+        <Value>Text color of part 2.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Studio.Fields.LogoSubline">
+        <Value>Small line</Value>
+    </LocaleResource>
+    <LocaleResource Name="Studio.Fields.LogoSubline.Hint">
+        <Value>Small line below the name (e.g. "3D PRINTING &amp; CREATIVE TOOLS"). Empty = hidden.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Studio.Fields.LogoFont">
+        <Value>Name font</Value>
+    </LocaleResource>
+    <LocaleResource Name="Studio.Fields.LogoFont.Hint">
+        <Value>Google Fonts family with a Bold (700) weight, e.g. Fredoka, Baloo 2, Nunito. Empty = the theme font.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Studio.Fields.LogoShowRegistered">
+        <Value>Show ® sign</Value>
+    </LocaleResource>
+    <LocaleResource Name="Studio.Fields.LogoShowRegistered.Hint">
+        <Value>Adds a small ® after the name.</Value>
+    </LocaleResource>
     <LocaleResource Name="Studio.Fields.Address">
         <Value>Address</Value>
     </LocaleResource>

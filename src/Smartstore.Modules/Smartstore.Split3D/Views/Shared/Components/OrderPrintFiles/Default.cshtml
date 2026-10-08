@@ -1,0 +1,88 @@
+@model OrderPrintFilesModel
+
+@{
+    var buildable = Model.Items.Count(x => x.HasSpec && x.Kind != "keycap");
+}
+
+<style>
+    .tt-pf { margin-bottom: 1.5rem; }
+    .tt-pf .table td { vertical-align: middle; }
+    .tt-pf-code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .8rem; }
+    .tt-pf-actions { white-space: nowrap; text-align: right; }
+    .tt-pf-actions .btn + .btn { margin-left: .25rem; }
+    .tt-pf-msg { min-height: 1.25rem; font-size: .875rem; }
+    .tt-pf-msg.is-ok { color: var(--success, #198754); }
+    .tt-pf-msg.is-error { color: var(--danger, #dc3545); }
+    .tt-pf-stage { position: relative; height: 380px; border-radius: .5rem; background: #fff8e6; overflow: hidden; }
+    .tt-pf-stage canvas { display: block; width: 100%; height: 100%; touch-action: none; }
+</style>
+
+<div class="card tt-pf" data-tt-print-card>
+    <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
+        <div>
+            <h6 class="m-0">File in 3D</h6>
+            <small class="text-muted">Dựng lại từ thiết kế khách đã duyệt. 3MF tách phần theo màu (đế, chữ…) để gán nhựa trong Bambu Studio / OrcaSlicer / PrusaSlicer; STL gộp một khối.</small>
+        </div>
+        @if (buildable > 1)
+        {
+            <button type="button" class="btn btn-primary btn-sm" data-tt-file="all">Tải tất cả 3MF (.zip)</button>
+        }
+    </div>
+    <div class="card-body p-0">
+        <table class="table table-sm m-0">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Sản phẩm</th>
+                    <th>Nội dung</th>
+                    <th class="text-center">SL</th>
+                    <th>Mã thiết kế</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @for (var i = 0; i < Model.Items.Count; i++)
+                {
+                    var item = Model.Items[i];
+                    <tr>
+                        <td>@item.No</td>
+                        <td>@item.ProductName</td>
+                        <td><b>@item.Text</b></td>
+                        <td class="text-center">@item.Quantity</td>
+                        <td class="tt-pf-code">@(item.Code ?? "—")</td>
+                        <td class="tt-pf-actions">
+                            @if (!item.HasSpec)
+                            {
+                                <span class="text-muted small">@(item.Code == null ? "Đặt trước khi có mã thiết kế, cần hỏi lại khách" : "Không tìm thấy thiết kế")</span>
+                            }
+                            else if (item.Kind == "keycap")
+                            {
+                                <span class="text-muted small">Keycap chưa hỗ trợ xuất file</span>
+                            }
+                            else
+                            {
+                                <button type="button" class="btn btn-outline-secondary btn-sm" data-tt-file="view" data-tt-item="@i">Xem 3D</button>
+                                <button type="button" class="btn btn-primary btn-sm" data-tt-file="3mf" data-tt-item="@i">3MF</button>
+                                <button type="button" class="btn btn-secondary btn-sm" data-tt-file="stl" data-tt-item="@i">STL</button>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+    <div class="card-footer">
+        <div class="tt-pf-msg" data-tt-msg></div>
+        <div data-tt-stage hidden>
+            <div class="d-flex justify-content-between small text-muted my-2">
+                <span data-tt-stage-title></span>
+                <span data-tt-stage-size></span>
+            </div>
+            <div class="tt-pf-stage"><canvas role="img" aria-label="Xem trước 3D, kéo để xoay"></canvas></div>
+        </div>
+    </div>
+    <script type="application/json" data-tt-print-files>@Html.Raw(Model.ConfigJson)</script>
+</div>
+
+<script src="@Url.Content(StudioAssets.NameplateScript)"></script>
+<script src="@Url.Content(StudioAssets.ExportScript)"></script>

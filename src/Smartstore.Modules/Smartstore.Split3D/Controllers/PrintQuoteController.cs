@@ -301,6 +301,14 @@ public class PrintQuoteController : AdminController
         {
             BrandName = _settings.BrandName,
             Tagline = _settings.Tagline,
+            LogoMediaFileId = _settings.LogoMediaFileId,
+            LogoText1 = _settings.LogoText1,
+            LogoColor1 = _settings.LogoColor1,
+            LogoText2 = _settings.LogoText2,
+            LogoColor2 = _settings.LogoColor2,
+            LogoSubline = _settings.LogoSubline,
+            LogoFont = _settings.LogoFont,
+            LogoShowRegistered = _settings.LogoShowRegistered,
             Address = _settings.Address,
             Phone1 = _settings.Phone1,
             Phone2 = _settings.Phone2,
@@ -369,6 +377,14 @@ public class PrintQuoteController : AdminController
 
         _settings.BrandName = model.BrandName.Trim();
         _settings.Tagline = model.Tagline?.Trim();
+        _settings.LogoMediaFileId = model.LogoMediaFileId;
+        _settings.LogoText1 = model.LogoText1?.Trim();
+        _settings.LogoColor1 = model.LogoColor1?.Trim();
+        _settings.LogoText2 = model.LogoText2?.Trim();
+        _settings.LogoColor2 = model.LogoColor2?.Trim();
+        _settings.LogoSubline = model.LogoSubline?.Trim();
+        _settings.LogoFont = model.LogoFont?.Trim();
+        _settings.LogoShowRegistered = model.LogoShowRegistered;
         _settings.Address = model.Address?.Trim();
         _settings.Phone1 = model.Phone1?.Trim();
         _settings.Phone2 = model.Phone2?.Trim();

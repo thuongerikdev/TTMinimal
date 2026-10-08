@@ -5,7 +5,7 @@ namespace Smartstore.Split3D;
 /// </summary>
 public static class StudioAssets
 {
-    public const string Version = "57";
+    public const string Version = "58";
 
     public const string StyleSheet = "~/Modules/Smartstore.Split3D/studio/studio.css?v=" + Version;
 
@@ -30,6 +30,12 @@ public static class StudioAssets
     /// Design panels (options, presets, order summary) of the products with the designer, loaded with the 3D preview.
     /// </summary>
     public const string DesignsScript = "~/Modules/Smartstore.Split3D/studio/studio-designs.js?v=" + Version;
+
+    /// <summary>
+    /// Print files (3MF, STL) of designer products, built in the browser on the admin order page
+    /// (see <see cref="Components.OrderPrintFilesViewComponent"/>).
+    /// </summary>
+    public const string ExportScript = "~/Modules/Smartstore.Split3D/studio/studio-export.js?v=" + Version;
 
     /// <summary>
     /// Folder of the module's wwwroot holding the shop's own font files for the name plate designer.

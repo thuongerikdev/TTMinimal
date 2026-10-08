@@ -3678,6 +3678,60 @@
     <LocaleResource Name="Studio.Fields.Tagline.Hint">
         <Value>Dòng ngắn dưới logo ở footer.</Value>
     </LocaleResource>
+    <LocaleResource Name="Studio.Group.Logo">
+        <Value>Logo ở header</Value>
+    </LocaleResource>
+    <LocaleResource Name="Studio.Group.ContactDetails">
+        <Value>Liên hệ</Value>
+    </LocaleResource>
+    <LocaleResource Name="Studio.Fields.LogoMediaFileId">
+        <Value>Ảnh logo</Value>
+    </LocaleResource>
+    <LocaleResource Name="Studio.Fields.LogoMediaFileId.Hint">
+        <Value>Ảnh vuông bên trái tên cửa hàng. Để trống = ảnh mascot TT Minimal có sẵn.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Studio.Fields.LogoText1">
+        <Value>Tên – phần 1</Value>
+    </LocaleResource>
+    <LocaleResource Name="Studio.Fields.LogoText1.Hint">
+        <Value>Phần đầu của tên cửa hàng (ví dụ "TT").</Value>
+    </LocaleResource>
+    <LocaleResource Name="Studio.Fields.LogoColor1">
+        <Value>Màu phần 1</Value>
+    </LocaleResource>
+    <LocaleResource Name="Studio.Fields.LogoColor1.Hint">
+        <Value>Màu chữ của phần 1.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Studio.Fields.LogoText2">
+        <Value>Tên – phần 2</Value>
+    </LocaleResource>
+    <LocaleResource Name="Studio.Fields.LogoText2.Hint">
+        <Value>Phần sau của tên cửa hàng (ví dụ "minimal"). Để trống cả hai phần = dùng Tên thương hiệu.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Studio.Fields.LogoColor2">
+        <Value>Màu phần 2</Value>
+    </LocaleResource>
+    <LocaleResource Name="Studio.Fields.LogoColor2.Hint">
+        <Value>Màu chữ của phần 2.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Studio.Fields.LogoSubline">
+        <Value>Dòng chữ nhỏ</Value>
+    </LocaleResource>
+    <LocaleResource Name="Studio.Fields.LogoSubline.Hint">
+        <Value>Dòng nhỏ dưới tên (ví dụ "3D PRINTING &amp; CREATIVE TOOLS"). Để trống = ẩn.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Studio.Fields.LogoFont">
+        <Value>Font chữ tên</Value>
+    </LocaleResource>
+    <LocaleResource Name="Studio.Fields.LogoFont.Hint">
+        <Value>Tên font Google Fonts có độ đậm Bold (700), ví dụ Fredoka, Baloo 2, Nunito. Để trống = font của giao diện.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Studio.Fields.LogoShowRegistered">
+        <Value>Hiện ký hiệu ®</Value>
+    </LocaleResource>
+    <LocaleResource Name="Studio.Fields.LogoShowRegistered.Hint">
+        <Value>Thêm ® nhỏ sau tên.</Value>
+    </LocaleResource>
     <LocaleResource Name="Studio.Fields.Address">
         <Value>Địa chỉ</Value>
     </LocaleResource>

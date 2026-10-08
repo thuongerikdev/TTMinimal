@@ -1,19 +1,4 @@
 @model ShopLogoModel
 
-@* Logo box + TT Minimal word mark. The box shows the store logo uploaded in Admin → Configuration → Stores, else a "tt" monogram. *@
-<a asp-route="Homepage" class="brand tt-brand" title="@Model.LogoTitle" aria-label="@Model.LogoTitle">
-    <span class="tt-brand-logo@(Model.LogoUploaded ? " has-image" : "")" aria-hidden="true">
-        @if (Model.LogoUploaded && Model.LogoUrl.HasValue())
-        {
-            <img src="@Model.LogoUrl" alt="" width="@Model.LogoWidth" height="@Model.LogoHeight" />
-        }
-        else
-        {
-            <span>tt</span>
-        }
-    </span>
-    <span class="tt-brand-text">
-        <span class="tt-brand-main">ttminimal<sup>®</sup></span>
-        <span class="tt-brand-sub">3D PRINTING &amp; CREATIVE TOOLS</span>
-    </span>
-</a>
+@* Logo image + two-colored word mark, set in Admin → TT Minimal Studio → Settings (module Smartstore.Split3D). *@
+@(await new Smartstore.Core.Widgets.ComponentWidget("StudioBrand", "Smartstore.Split3D", new { title = Model.LogoTitle }).InvokeAsync(ViewContext))

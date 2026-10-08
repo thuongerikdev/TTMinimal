@@ -46,6 +46,46 @@
             <div class="adminTitle"><smart-label asp-for="Tagline" /></div>
             <div class="adminData"><input asp-for="Tagline" /></div>
         </div>
+
+        <div class="adminRow">
+            <div class="admin-config-group"><div class="title">@T("Plugins.Split3D.Studio.Group.Logo")</div></div>
+        </div>
+        <div class="adminRow">
+            <div class="adminTitle"><smart-label asp-for="LogoMediaFileId" /></div>
+            <div class="adminData"><editor asp-for="LogoMediaFileId" /></div>
+        </div>
+        <div class="adminRow">
+            <div class="adminTitle"><smart-label asp-for="LogoText1" /></div>
+            <div class="adminData"><input asp-for="LogoText1" /></div>
+        </div>
+        <div class="adminRow">
+            <div class="adminTitle"><smart-label asp-for="LogoColor1" /></div>
+            <div class="adminData"><editor asp-for="LogoColor1" /></div>
+        </div>
+        <div class="adminRow">
+            <div class="adminTitle"><smart-label asp-for="LogoText2" /></div>
+            <div class="adminData"><input asp-for="LogoText2" /></div>
+        </div>
+        <div class="adminRow">
+            <div class="adminTitle"><smart-label asp-for="LogoColor2" /></div>
+            <div class="adminData"><editor asp-for="LogoColor2" /></div>
+        </div>
+        <div class="adminRow">
+            <div class="adminTitle"><smart-label asp-for="LogoSubline" /></div>
+            <div class="adminData"><input asp-for="LogoSubline" /></div>
+        </div>
+        <div class="adminRow">
+            <div class="adminTitle"><smart-label asp-for="LogoFont" /></div>
+            <div class="adminData"><input asp-for="LogoFont" placeholder="Fredoka" /></div>
+        </div>
+        <div class="adminRow">
+            <div class="adminTitle"><smart-label asp-for="LogoShowRegistered" /></div>
+            <div class="adminData"><input asp-for="LogoShowRegistered" /></div>
+        </div>
+
+        <div class="adminRow">
+            <div class="admin-config-group"><div class="title">@T("Plugins.Split3D.Studio.Group.ContactDetails")</div></div>
+        </div>
         <div class="adminRow">
             <div class="adminTitle"><smart-label asp-for="Address" /></div>
             <div class="adminData"><input asp-for="Address" /></div>

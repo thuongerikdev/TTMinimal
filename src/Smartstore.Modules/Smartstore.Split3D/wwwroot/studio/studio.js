@@ -1949,11 +1949,16 @@
                     data.set(field.name, r.note ? r.text + ' — ' + r.note : r.text);
                     attrs.forEach(function (a, i) { data.set(a.name, r.colors[i]); });
                     if (qtyInput) data.set(qtyInput.name, r.qty);
-                    return fetch(href, {
-                        method: 'POST',
-                        credentials: 'same-origin',
-                        headers: { 'X-Requested-With': 'XMLHttpRequest' },
-                        body: new URLSearchParams(data)
+                    // Every row is its own design (text, colors): saved, and its code goes with the row.
+                    var designEl = np && np.design && cfg.designControl && document.getElementById(cfg.designControl);
+                    return (designEl ? saveDesign(plateSpec(r)) : Promise.resolve(null)).then(function (code) {
+                        if (designEl) data.set(designEl.name, designText(code));
+                        return fetch(href, {
+                            method: 'POST',
+                            credentials: 'same-origin',
+                            headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                            body: new URLSearchParams(data)
+                        });
                     }).then(function (res) {
                         if (!res.ok) throw new Error('Lỗi máy chủ (' + res.status + ').');
                         return res.json();
@@ -2204,16 +2209,71 @@
             }, function () { });
         }
 
-        // The design choices travel with the order as a readable summary in the hidden "Thiết kế" attribute.
+        // The design choices travel with the order as a readable summary in the hidden "Thiết kế" attribute, followed
+        // by the code of the saved spec ("Mã file 3D: TT3D-…"): the admin order page rebuilds the print files from it.
+        var designCodes = {}, designSaving = {}, designTimer = 0;
+
+        // Saves a spec (POST studio/design, StudioDesignController); resolves with its code, or null when saving failed.
+        function saveDesign(spec) {
+            var json = JSON.stringify(spec);
+            if (designCodes[json]) return Promise.resolve(designCodes[json]);
+            if (!cfg.designSaveUrl) return Promise.resolve(null);
+            if (!designSaving[json]) {
+                designSaving[json] = fetch(cfg.designSaveUrl, {
+                    method: 'POST',
+                    credentials: 'same-origin',
+                    headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+                    body: json
+                }).then(function (res) { return res.ok ? res.json() : null; }).then(function (r) {
+                    delete designSaving[json];
+                    if (r && r.code) designCodes[json] = r.code;
+                    return designCodes[json] || null;
+                }, function () { delete designSaving[json]; return null; });
+            }
+            return designSaving[json];
+        }
+
+        function designText(code) { return np.design.summary() + (code ? '\nMã file 3D: ' + code : ''); }
+
+        // Spec of the page itself (text field and options on the page): what the add-to-cart button orders.
+        function pageSpec() { return plateSpec(pageRow()); }
+
         function writeDesign() {
             if (!np || !np.design) return;
             var el = cfg.designControl && document.getElementById(cfg.designControl);
             if (el) {
-                el.value = np.design.summary();
+                var json = JSON.stringify(pageSpec());
+                el.value = designText(designCodes[json]);
                 var group = el.closest('.form-group');
                 if (group) group.hidden = true;
+                // Saved once the design rests, so the add-to-cart click rarely has to wait.
+                if (!designCodes[json] && pageRow().text) {
+                    clearTimeout(designTimer);
+                    designTimer = setTimeout(function () { saveDesign(pageSpec()).then(function (code) { if (code) writeDesign(); }); }, 800);
+                }
             }
         }
+
+        // Add to cart from the page: the design has to be saved and its code written first. The click waits for the
+        // save and is then repeated; a failed save does not block the order (the line just lacks the print file).
+        var designClickPass = false;
+        document.addEventListener('click', function (e) {
+            var btn = e.target.closest && e.target.closest('.btn-add-to-cart, .ajax-cart-link[data-type="cart"]');
+            if (designClickPass || !btn || !np || !np.design || !cfg.designControl || !form.contains(btn) && btn !== addBtn) return;
+            if (!pageRow().text) return;
+            var json = JSON.stringify(pageSpec());
+            if (designCodes[json]) { writeDesign(); return; }
+            e.preventDefault();
+            e.stopImmediatePropagation();
+            if (btn.classList.contains('is-saving-design')) return;
+            btn.classList.add('is-saving-design');
+            saveDesign(pageSpec()).then(function () {
+                btn.classList.remove('is-saving-design');
+                writeDesign();
+                designClickPass = true;
+                try { btn.click(); } finally { designClickPass = false; }
+            });
+        }, true);
 
         function initPreview() {
             var designsSrc = cfg.designsSrc || cfg.previewSrc.replace('studio-nameplate.js', 'studio-designs.js');

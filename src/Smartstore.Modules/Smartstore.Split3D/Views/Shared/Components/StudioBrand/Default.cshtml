@@ -1,0 +1,22 @@
+@model StudioBrandModel
+
+@if (Model.Font.HasValue())
+{
+    var family = Uri.EscapeDataString(Model.Font).Replace("%20", "+");
+    var glyphs = Uri.EscapeDataString(string.Concat(Model.Text1, Model.Text2));
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=@(family):wght@700&display=swap&text=@(glyphs)" />
+}
+
+<a asp-route="Homepage" class="brand tt-brand" title="@Model.Title" aria-label="@Model.Title">
+    <span class="tt-brand-logo" aria-hidden="true">
+        <img src="@Model.LogoUrl" alt="" width="64" height="64" />
+    </span>
+    <span class="tt-brand-text">
+        @* One line on purpose: whitespace between the parts would show as a gap in the word mark. *@
+        <span class="tt-brand-main" style="@(Model.Font.HasValue() ? $"font-family:'{Model.Font}',sans-serif" : null)"><span style="color:@Model.Color1">@Model.Text1</span><span style="color:@Model.Color2">@Model.Text2</span>@if (Model.ShowRegistered) {<sup>®</sup>}</span>
+        @if (Model.Subline.HasValue())
+        {
+            <span class="tt-brand-sub">@Model.Subline</span>
+        }
+    </span>
+</a>

@@ -35,9 +35,9 @@ public class TextListFilter : IAsyncActionFilter
     /// Font files of the shop in <c>wwwroot/studio/fonts</c> (ttf, otf, woff, woff2) for the name plate designer.
     /// The file name without extension is the font name shown to the customer.
     /// </summary>
-    private object[] ShopFonts(IUrlHelper url)
+    internal static object[] ShopFonts(IModuleCatalog moduleCatalog, IUrlHelper url)
     {
-        var webRoot = _moduleCatalog.GetModuleByAssembly(GetType().Assembly)?.WebRoot;
+        var webRoot = moduleCatalog.GetModuleByAssembly(typeof(TextListFilter).Assembly)?.WebRoot;
         var contents = webRoot?.GetDirectoryContents(StudioAssets.FontFolder);
         if (url == null || contents == null || !contents.Exists)
         {
@@ -133,8 +133,9 @@ public class TextListFilter : IAsyncActionFilter
                         previewSrc = url?.Content(StudioAssets.NameplateScript),
                         designsSrc = url?.Content(StudioAssets.DesignsScript),
                         designControl,
+                        designSaveUrl = designControl != null ? url?.Content("~/studio/design") : null,
                         length,
-                        fonts = ShopFonts(url),
+                        fonts = ShopFonts(_moduleCatalog, url),
                         qrUrl = list.Kind == "qr" ? url?.Content("~/studio/qr") : null,
                         theme = list.Theme,
                         customUrl = list.Theme != null ? await DesignerUrlAsync(url) : null

@@ -2147,5 +2147,159 @@
         if (paint) ctx.drawImage(paint, x, y, dw, dh);
     };
 
-    window.TTNameplate = { View: View, PROFILES: PROFILES, FONTS: FONTS, addFonts: addFonts, SHAPES: SHAPES, ICONS: ICONS, DEFAULTS: DEFAULTS, ensureFonts: ensureFonts, fontOf: fontOf, iconOf: iconOf };
+    // ---------- Print export: the design as solids (meshed and written by studio-export.js) ----------
+
+    // Colored layer under flush or engraved text: two 0.2 mm layers in the text color, so a multi-material printer
+    // prints the text in its color (a single-color print just prints it with the rest).
+    var INLAY = 0.4;
+    var GAP = 6;  // mm between the plate and the loose pieces (tiles, foot) laid out beside it
+
+    /**
+     * Solids of a design for printing, built from the same masks as the preview at full detail. A solid is a mask
+     * (0..1, contour at 0.5) extruded from z0 to z1 (mm), or a box. Parts group the solids by name and color; group
+     * "main" is the plate, other groups are loose pieces laid out below it. The keycap is not supported.
+     * Resolves with { frame: { w, h, R, FW, FH }, parts: [{ name, color, group, solids: [{ f, z0, z1, dy, dz } | { box }] }], dims }.
+     */
+    function solids(spec) {
+        var s = Object.assign({}, DEFAULTS);
+        Object.keys(spec || {}).forEach(function (k) { if (spec[k] != null && k in DEFAULTS) s[k] = spec[k]; });
+        s.text = String(s.text).replace(/\s+/g, ' ').trim();
+        s.line2 = String(s.line2).replace(/\s+/g, ' ').trim();
+        if (s.kind === 'keycap') return Promise.reject(new Error('Keycap chưa hỗ trợ xuất file in.'));
+        var fonts = [fontOf(s.font)].concat(s.theme && s.theme.headFont ? [fontOf(s.theme.headFont)] : []), sample = (s.text + s.line2) || 'A';
+        var ready = (fonts.some(function (f) { return f.google; }) ? ensureFonts() : Promise.resolve()).then(function () {
+            return Promise.all(fonts.map(function (f) {
+                return document.fonts && document.fonts.load ? document.fonts.load(f.weight + ' 40px "' + f.family + '"', sample).catch(function () { }) : null;
+            }));
+        });
+        return ready.then(function () { return solidsOf(s); });
+    }
+
+    function solidsOf(s) {
+        var M = masks(s, false), n = M.w * M.h, T = s.thickness, parts = [];
+        var rel = Math.min(s.relief, s.style === 'engraved' ? T - 0.6 : 5);
+        var Lv = M.levels, qh = Lv ? Math.max(0.6, Math.min(12, +s.qr.height || 6)) : 0;
+        if (Lv) rel = Math.min(rel, 1.2);
+
+        function part(name, color, group) {
+            var hex = colorHex(color), p = parts.filter(function (x) { return x.name === name && x.color === hex && x.group === group; })[0];
+            if (!p) parts.push(p = { name: name, color: hex, group: group, solids: [] });
+            return p;
+        }
+        function minus(a, b) {
+            var o = new Float32Array(n);
+            for (var k = 0; k < n; k++) o[k] = Math.min(a[k], 1 - b[k]);
+            return o;
+        }
+        // A body of mask f from z0 to top with cuts (mask, depth below top) taken out of its top: one slab per depth.
+        function body(p, f, z0, top, cuts) {
+            var z = z0, m = f;
+            cuts.filter(function (c) { return c.depth > 0; }).sort(function (a, b) { return b.depth - a.depth; }).forEach(function (c) {
+                var zc = top - c.depth;
+                if (zc > z + 0.01) { p.solids.push({ f: m, z0: z, z1: zc }); z = zc; }
+                m = minus(m, c.f);
+            });
+            if (top > z + 0.01) p.solids.push({ f: m, z0: z, z1: top });
+        }
+        // Relief split by paint color (a class board paints each of its parts); unpainted relief takes the text color.
+        // Antialiased edges of the paint blend neighbouring colors: only colors covering a fair share of the relief
+        // are filaments, every other pixel takes the nearest of them.
+        function byColor(f, fallback) {
+            if (!M.paint) return [{ color: fallback, f: f }];
+            var fb = rgb(fallback).map(function (v) { return Math.round(v * 255); }), counts = new Map(), total = 0, k;
+            function packed(k) {
+                var a = M.paint[k * 4 + 3];
+                return a ? (M.paint[k * 4] << 16) | (M.paint[k * 4 + 1] << 8) | M.paint[k * 4 + 2] : (fb[0] << 16) | (fb[1] << 8) | fb[2];
+            }
+            for (k = 0; k < n; k++) {
+                if (f[k] <= 0) continue;
+                var c = packed(k);
+                counts.set(c, (counts.get(c) || 0) + 1);
+                total++;
+            }
+            function dist(a, b) {
+                var dr = (a >> 16) - (b >> 16), dg = ((a >> 8) & 255) - ((b >> 8) & 255), db = (a & 255) - (b & 255);
+                return dr * dr + dg * dg + db * db;
+            }
+            // Most used first; a color close to one already kept joins it.
+            var palette = [];
+            Array.from(counts.keys()).sort(function (a, b) { return counts.get(b) - counts.get(a); }).forEach(function (c) {
+                if (counts.get(c) < Math.max(50, total * 0.003)) return;
+                if (palette.some(function (p) { return dist(p, c) < 24 * 24; })) return;
+                palette.push(c);
+            });
+            if (!palette.length) return [{ color: fallback, f: f }];
+            var nearest = new Map(), groups = palette.map(function (c) {
+                return { color: 'rgb(' + (c >> 16) + ',' + ((c >> 8) & 255) + ',' + (c & 255) + ')', f: new Float32Array(n) };
+            });
+            for (k = 0; k < n; k++) {
+                if (f[k] <= 0) continue;
+                var col = packed(k), gi = nearest.get(col);
+                if (gi === undefined) {
+                    gi = 0;
+                    for (var q = 1; q < palette.length; q++) if (dist(palette[q], col) < dist(palette[gi], col)) gi = q;
+                    nearest.set(col, gi);
+                }
+                groups[gi].f[k] = f[k];
+            }
+            return groups;
+        }
+
+        var cuts = [], depth = 0;
+        if (M.hasRelief && s.style === 'raised') {
+            byColor(M.relief, s.color).forEach(function (g) { part('Chữ', g.color, 'main').solids.push({ f: g.f, z0: T, z1: T + rel }); });
+        } else if (M.hasRelief) {
+            // Engraved: a pocket with the colored layer at its floor. Flush: only the colored layer, level with the top.
+            var d = s.style === 'engraved' ? rel : 0, inlay = Math.min(INLAY, (T - d) / 2);
+            cuts.push({ f: M.relief, depth: d + inlay });
+            byColor(M.relief, s.color).forEach(function (g) { part('Chữ', g.color, 'main').solids.push({ f: g.f, z0: T - d - inlay, z1: T - d }); });
+        }
+        if (M.tile) {
+            depth = Math.max(0.8, Math.min(T - 1, 1.6));
+            cuts.push({ f: M.pocket, depth: depth });
+        }
+        body(part('Đế', s.base, 'main'), M.base, 0, T, cuts);
+
+        if (Lv) {
+            for (var k = 1; k <= Lv.n; k++) {
+                part('Mã QR', levelColor(s, k, Lv.n), 'main').solids.push({ f: levelMask(Lv, k), z0: T + qh * (k - 1) / Lv.n, z1: T + qh * k / Lv.n });
+            }
+        }
+
+        // Loose pieces go below the plate on the build plate.
+        var H = M.size[1], L = M.size[0], below = -H / 2 - GAP;
+        if (M.tile) {
+            // Removable tiles: printed apart, laid out as on the board but moved below it and down to z = 0.
+            var pro = 1, tz = T + pro, tb = T - depth + 0.02, tr = Math.min(s.relief, s.style === 'engraved' ? depth + pro - 0.4 : 5);
+            var dy = -H - GAP, tileCuts = [], ink = s.tileInk || s.color;
+            if (s.style === 'raised') part('Chữ trên ô', ink, 'tiles').solids.push({ f: M.tileText, z0: tz, z1: tz + tr });
+            else {
+                var td = s.style === 'engraved' ? tr : 0, ti = Math.min(INLAY, (tz - tb - td) / 2);
+                tileCuts.push({ f: M.tileText, depth: td + ti });
+                part('Chữ trên ô', ink, 'tiles').solids.push({ f: M.tileText, z0: tz - td - ti, z1: tz - td });
+            }
+            body(part('Ô rời', s.tileColor || s.base, 'tiles'), M.tile, tb, tz, tileCuts);
+            parts.forEach(function (p) { if (p.group === 'tiles') p.solids.forEach(function (sd) { sd.dy = dy; sd.dz = -tb; }); });
+            below += dy;
+        }
+        if (s.stand) {
+            // The foot of the preview: the block the plate stands on (see buildSync).
+            var fd = T * 1.6 + Math.max(H * 0.42, 14), fh = Math.max(2.4, T * 0.9);
+            part('Chân đế', s.base, 'foot').solids.push({ box: [-L * 0.36, L * 0.36, below - fd, below, 0, fh] });
+        }
+
+        var top = T + Math.max(qh, s.style === 'raised' && M.hasRelief ? rel : 0);
+        return {
+            frame: { w: M.w, h: M.h, R: M.R, FW: M.FW, FH: M.FH },
+            parts: parts.filter(function (p) { return p.solids.length; }),
+            dims: { length: Math.round(L * 10) / 10, height: Math.round(H * 10) / 10, depth: Math.round(top * 10) / 10 }
+        };
+    }
+
+    // CSS color to "#RRGGBB".
+    function colorHex(color) {
+        return '#' + rgb(color).map(function (v) { return ('0' + Math.round(v * 255).toString(16)).slice(-2); }).join('').toUpperCase();
+    }
+
+    window.TTNameplate = { View: View, PROFILES: PROFILES, FONTS: FONTS, addFonts: addFonts, SHAPES: SHAPES, ICONS: ICONS, DEFAULTS: DEFAULTS, ensureFonts: ensureFonts, fontOf: fontOf, iconOf: iconOf, solids: solids };
 })();
