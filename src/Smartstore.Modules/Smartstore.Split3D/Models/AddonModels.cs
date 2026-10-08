@@ -33,6 +33,11 @@ public class AddonModel : EntityModelBase
     [LocalizedDisplay("*Icon")]
     public string Icon { get; set; }
 
+    [UIHint("Media")]
+    [AdditionalMetadata("album", "catalog"), AdditionalMetadata("transientUpload", true), AdditionalMetadata("entityType", "Split3DAddon")]
+    [LocalizedDisplay("*Picture")]
+    public int? PictureId { get; set; }
+
     public int ProductCount { get; set; }
     public int LicenseCount { get; set; }
     public List<AddonProductModel> Products { get; set; } = [];

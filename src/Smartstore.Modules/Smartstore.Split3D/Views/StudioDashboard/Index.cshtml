@@ -1,0 +1,480 @@
+@model StudioDashboardModel
+@using System.Text.Json
+@using Smartstore.Split3D.Controllers
+
+@{
+    ViewBag.Title = "Bàn làm việc";
+
+    var vi = CultureInfo.GetCultureInfo("vi-VN");
+    var todoOpen = Model.Todos.Where(x => x.Count > 0).ToList();
+    var todoTotal = todoOpen.Sum(x => x.Count);
+    var monthDays = DateTime.DaysInMonth(Model.Now.Year, Model.Now.Month);
+    var monthPct = (int)Math.Round(100.0 * Model.Now.Day / monthDays);
+    var paceBase = Model.LastMonthRevenue;
+    var pacePct = paceBase > 0 ? (int)Math.Round(100 * Model.MonthRevenue / paceBase) : (Model.MonthRevenue > 0 ? 100 : 0);
+    var mixTotal = Model.Mix.Sum(x => x.Value);
+    var deltaToday = Model.YesterdayRevenue > 0 ? (int)Math.Round(100 * (Model.TodayRevenue - Model.YesterdayRevenue) / Model.YesterdayRevenue) : (int?)null;
+    var topMax = Model.TopProducts.Count > 0 ? Model.TopProducts.Max(x => x.Revenue) : 0;
+    var versionTotal = Model.AddonVersions.Sum(x => x.Value);
+
+    string Money(decimal v) => StudioDashboardController.FormatMoney(v);
+    string Num(decimal v) => v.ToString("#,##0", vi);
+
+    var lanes = new[]
+    {
+        (Status: PrintOrderStatus.Paid, Title: "Chờ nhận đơn", Icon: "bi-inbox", Tone: "pink"),
+        (Status: PrintOrderStatus.Confirmed, Title: "Hàng đợi", Icon: "bi-list-ol", Tone: "yellow"),
+        (Status: PrintOrderStatus.Printing, Title: "Đang in", Icon: "bi-printer", Tone: "mint"),
+        (Status: PrintOrderStatus.Ready, Title: "Chờ giao", Icon: "bi-box-seam", Tone: "lilac")
+    };
+
+    var data = new
+    {
+        today = Model.Now.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
+        hour = Model.Now.Hour,
+        days = Model.Days.Select(x => new object[] { x.Date, x.Revenue, x.Orders }),
+        hours = Model.Hours,
+        forecast = Model.MonthForecast
+    };
+}
+
+<link rel="stylesheet" href="@Url.Content(StudioAssets.DashboardStyleSheet)" />
+
+<div class="ttd" data-ttd>
+    <script type="application/json" data-ttd-data>@Html.Raw(JsonSerializer.Serialize(data))</script>
+
+    @* ---------- Hero: tear-off calendar, greeting, month pace ---------- *@
+    <section class="ttd-hero">
+        <div class="ttd-cal" data-ttd-cal title="Lịch bóc — bấm để bóc một tờ">
+            <div class="ttd-cal-rings" aria-hidden="true"><i></i><i></i></div>
+            <div class="ttd-cal-head">Tháng @Model.Now.Month · @Model.Now.Year</div>
+            <div class="ttd-cal-day">@Model.Now.Day.ToString("00")</div>
+            <div class="ttd-cal-week">@Model.Now.ToString("dddd", vi)</div>
+            <div class="ttd-cal-lunar" data-ttd-lunar>&nbsp;</div>
+            <div class="ttd-cal-tet" data-ttd-tet hidden></div>
+        </div>
+
+        <div class="ttd-hello">
+            <div class="ttd-hello-kicker" data-ttd-greet>Xin chào</div>
+            <h1 class="ttd-hello-title">
+                @(Model.UserName.HasValue() ? Model.UserName + " ơi, " : "")
+                @if (todoTotal > 0)
+                {
+                    <text>hôm nay có <mark>@todoTotal việc</mark> đang chờ bạn.</text>
+                }
+                else
+                {
+                    <text>bàn làm việc <mark class="is-clear">sạch bong</mark>. Tuyệt!</text>
+                }
+            </h1>
+            <p class="ttd-hello-sub">
+                Hôm nay <b>@Model.TodayOrders đơn</b> · <b>@Money(Model.TodayRevenue)</b>
+                @if (deltaToday.HasValue)
+                {
+                    <span class="ttd-delta @(deltaToday >= 0 ? "up" : "down")">
+                        <i class="bi @(deltaToday >= 0 ? "bi-arrow-up-right" : "bi-arrow-down-right")"></i>@Math.Abs(deltaToday.Value)%
+                    </span>
+                    <span class="ttd-muted">so với hôm qua</span>
+                }
+            </p>
+            <div class="ttd-hello-actions">
+                <button type="button" class="ttd-jump" data-ttd-jump-open>
+                    <i class="bi bi-lightning-charge-fill"></i>
+                    <span>Đi nhanh tới…</span>
+                    <kbd>Ctrl</kbd><kbd>K</kbd>
+                </button>
+                <a class="ttd-link" href="@Url.Content("~/")" target="_blank" rel="noopener"><i class="bi bi-shop"></i> Xem cửa hàng</a>
+                <a class="ttd-link" href="@Url.Action("Index", "Home", new { full = 1 })"><i class="bi bi-grid-1x2"></i> Dashboard gốc</a>
+            </div>
+        </div>
+
+        <div class="ttd-pace" title="Vòng ngoài: thời gian đã trôi trong tháng. Vòng trong: doanh thu tháng này so với cả tháng trước.">
+            <svg viewBox="0 0 120 120" class="ttd-pace-svg" aria-hidden="true">
+                <circle cx="60" cy="60" r="52" class="ttd-ring-bg" />
+                <circle cx="60" cy="60" r="52" class="ttd-ring ttd-ring-time" pathLength="100" style="--p:@Math.Min(monthPct, 100)" />
+                <circle cx="60" cy="60" r="38" class="ttd-ring-bg" />
+                <circle cx="60" cy="60" r="38" class="ttd-ring ttd-ring-money" pathLength="100" style="--p:@Math.Min(pacePct, 100)" />
+            </svg>
+            <div class="ttd-pace-center">
+                <b>@pacePct%</b>
+                <small>của tháng trước</small>
+            </div>
+            <div class="ttd-pace-legend">
+                <div><i class="ttd-sw ttd-sw-ink"></i> Đã qua @monthPct% tháng</div>
+                <div><i class="ttd-sw ttd-sw-pink"></i> @Money(Model.MonthRevenue)</div>
+                <div class="ttd-pace-verdict">
+                    @if (paceBase <= 0)
+                    {
+                        <span>Tháng đầu tiên có số liệu</span>
+                    }
+                    else if (pacePct >= monthPct)
+                    {
+                        <span class="up"><i class="bi bi-rocket-takeoff"></i> Đang vượt nhịp tháng trước</span>
+                    }
+                    else
+                    {
+                        <span class="down"><i class="bi bi-hourglass-split"></i> Chậm hơn nhịp tháng trước</span>
+                    }
+                </div>
+                <div class="ttd-muted">Dự báo cả tháng ≈ <b>@Money(Model.MonthForecast)</b></div>
+            </div>
+        </div>
+    </section>
+
+    @* ---------- To-do as sticky notes ---------- *@
+    <section class="ttd-section">
+        <div class="ttd-section-head">
+            <h2><i class="bi bi-pin-angle-fill"></i> Việc cần làm</h2>
+            <span class="ttd-muted">@(todoTotal > 0 ? $"{todoOpen.Count} nhóm việc · {todoTotal} mục" : "Không còn gì tồn đọng")</span>
+        </div>
+        <div class="ttd-notes @(todoTotal == 0 ? "is-clear" : null)" data-ttd-notes data-clear="@(todoTotal == 0 ? "1" : "0")">
+            @foreach (var todo in Model.Todos)
+            {
+                var done = todo.Count == 0;
+                <a class="ttd-note tone-@todo.Tone @(done ? "is-done" : null)" href="@todo.Url">
+                    <span class="ttd-note-pin" aria-hidden="true"></span>
+                    <span class="ttd-note-top">
+                        <i class="bi @todo.Icon"></i>
+                        @if (done)
+                        {
+                            <span class="ttd-note-check"><i class="bi bi-check-lg"></i> Xong</span>
+                        }
+                        else
+                        {
+                            <b class="ttd-note-count" data-ttd-count="@todo.Count">@todo.Count</b>
+                        }
+                    </span>
+                    <span class="ttd-note-title">@todo.Title</span>
+                    <span class="ttd-note-hint">@todo.Hint</span>
+                    @if (!done)
+                    {
+                        <span class="ttd-note-go">Xử lý ngay <i class="bi bi-arrow-right"></i></span>
+                    }
+                </a>
+            }
+        </div>
+    </section>
+
+    @* ---------- KPIs ---------- *@
+    <section class="ttd-kpis">
+        @foreach (var kpi in Model.Kpis)
+        {
+            int? delta = kpi.Previous > 0 ? (int)Math.Round(100 * (kpi.Value - kpi.Previous.Value) / kpi.Previous.Value) : null;
+            <a class="ttd-kpi tone-@kpi.Tone" href="@kpi.Url">
+                <div class="ttd-kpi-head">
+                    <span class="ttd-kpi-icon"><i class="bi @kpi.Icon"></i></span>
+                    <span class="ttd-kpi-label">@kpi.Label</span>
+                </div>
+                <div class="ttd-kpi-value" data-ttd-count="@kpi.Value.ToString(CultureInfo.InvariantCulture)" data-money="@(kpi.IsMoney ? "1" : "0")">
+                    @(kpi.IsMoney ? Money(kpi.Value) : Num(kpi.Value))
+                </div>
+                <div class="ttd-kpi-foot">
+                    @if (delta.HasValue)
+                    {
+                        <span class="ttd-delta @(delta >= 0 ? "up" : "down")"><i class="bi @(delta >= 0 ? "bi-arrow-up-right" : "bi-arrow-down-right")"></i>@Math.Abs(delta.Value)%</span>
+                    }
+                    else
+                    {
+                        <span class="ttd-delta flat">mới</span>
+                    }
+                    <span class="ttd-muted">@kpi.Caption</span>
+                </div>
+                <svg class="ttd-spark" viewBox="0 0 100 28" preserveAspectRatio="none" data-ttd-spark="@string.Join(",", kpi.Spark.Select(x => x.ToString("0.##", CultureInfo.InvariantCulture)))" aria-hidden="true"></svg>
+            </a>
+        }
+    </section>
+
+    @* ---------- Revenue chart + mix + best sellers ---------- *@
+    <section class="ttd-grid ttd-grid-main">
+        <div class="ttd-card ttd-chart" data-ttd-chart>
+            <div class="ttd-card-head">
+                <div>
+                    <h2><i class="bi bi-bar-chart-fill"></i> Doanh thu</h2>
+                    <div class="ttd-chart-sum" data-ttd-chart-sum>&nbsp;</div>
+                </div>
+                <div class="ttd-seg" role="tablist" aria-label="Khoảng thời gian">
+                    <button type="button" data-range="7">7 ngày</button>
+                    <button type="button" data-range="30" class="active">30 ngày</button>
+                    <button type="button" data-range="90">90 ngày</button>
+                    <button type="button" data-range="12m">12 tháng</button>
+                </div>
+            </div>
+            <div class="ttd-chart-body">
+                <svg class="ttd-chart-svg" data-ttd-chart-svg role="img" aria-label="Biểu đồ doanh thu"></svg>
+                <div class="ttd-tip" data-ttd-tip hidden></div>
+            </div>
+            <div class="ttd-chart-legend">
+                <span><i class="ttd-sw ttd-sw-pink"></i> Doanh thu</span>
+                <span><i class="ttd-sw ttd-sw-line"></i> Trung bình</span>
+                <span><i class="bi bi-trophy-fill"></i> Ngày kỷ lục</span>
+                <span data-ttd-ghost-legend hidden><i class="ttd-sw ttd-sw-ghost"></i> Dự báo hết tháng</span>
+            </div>
+        </div>
+
+        <div class="ttd-stack">
+            <div class="ttd-card">
+                <div class="ttd-card-head">
+                    <h2><i class="bi bi-pie-chart-fill"></i> Tiền đến từ đâu</h2>
+                    <span class="ttd-muted">30 ngày</span>
+                </div>
+                @if (mixTotal > 0)
+                {
+                    <div class="ttd-mixbar">
+                        @foreach (var share in Model.Mix.Where(x => x.Value > 0))
+                        {
+                            <span class="tone-@share.Tone" style="flex-grow:@share.Value.ToString(CultureInfo.InvariantCulture)" title="@share.Label: @Money(share.Value)"></span>
+                        }
+                    </div>
+                    <ul class="ttd-mixlist">
+                        @foreach (var share in Model.Mix)
+                        {
+                            var pct = (int)Math.Round(100 * share.Value / mixTotal);
+                            <li>
+                                <i class="ttd-sw tone-@share.Tone"></i>
+                                <span>@share.Label</span>
+                                <b>@pct%</b>
+                                <small>@Money(share.Value)</small>
+                            </li>
+                        }
+                    </ul>
+                }
+                else
+                {
+                    <div class="ttd-empty"><i class="bi bi-cup-hot"></i> Chưa có doanh thu trong 30 ngày.</div>
+                }
+            </div>
+
+            <div class="ttd-card">
+                <div class="ttd-card-head">
+                    <h2><i class="bi bi-fire"></i> Bán chạy</h2>
+                    <a class="ttd-more" href="@Url.Action("Index", "StudioProducts")">Sản phẩm <i class="bi bi-arrow-right"></i></a>
+                </div>
+                @if (Model.TopProducts.Count > 0)
+                {
+                    <ol class="ttd-top">
+                        @foreach (var p in Model.TopProducts)
+                        {
+                            <li>
+                                <a href="@p.Url" class="ttd-top-name">@p.Name</a>
+                                <span class="ttd-top-bar"><i style="width:@(topMax > 0 ? (int)Math.Round(100 * p.Revenue / topMax) : 0)%"></i></span>
+                                <span class="ttd-top-meta"><b>@Money(p.Revenue)</b> · @p.Quantity cái</span>
+                            </li>
+                        }
+                    </ol>
+                }
+                else
+                {
+                    <div class="ttd-empty"><i class="bi bi-box"></i> Chưa bán sản phẩm nào trong 30 ngày.</div>
+                }
+            </div>
+        </div>
+    </section>
+
+    @* ---------- Print room ---------- *@
+    <section class="ttd-card ttd-print">
+        <div class="ttd-card-head">
+            <div>
+                <h2><i class="bi bi-printer-fill"></i> Xưởng in</h2>
+                <span class="ttd-muted">@Model.Jobs.Count đơn in đang mở · xếp theo ngày khách cần</span>
+            </div>
+            <div class="ttd-spool" title="Nhựa của các đơn in đã xong trong tháng">
+                <svg viewBox="0 0 64 64" class="ttd-spool-svg" aria-hidden="true">
+                    <circle cx="32" cy="32" r="29" class="ttd-spool-rim" />
+                    <circle cx="32" cy="32" r="@(14 + Math.Min(13, (int)Math.Round(13.0 * Model.GramsThisMonth / Math.Max(1000, Math.Max(Model.GramsThisMonth, Model.GramsLastMonth)))))" class="ttd-spool-fil" />
+                    <circle cx="32" cy="32" r="12" class="ttd-spool-hub" />
+                    <circle cx="32" cy="32" r="4" class="ttd-spool-hole" />
+                    <path d="M32 20v-6M44 32h6M32 44v6M20 32h-6" class="ttd-spool-spoke" />
+                </svg>
+                <div>
+                    <b>@(Model.GramsThisMonth >= 1000 ? (Model.GramsThisMonth / 1000m).ToString("0.#", vi) + " kg" : Model.GramsThisMonth + " g")</b>
+                    <small>nhựa đã in tháng này@(Model.GramsLastMonth > 0 ? $" · tháng trước {(Model.GramsLastMonth >= 1000 ? (Model.GramsLastMonth / 1000m).ToString("0.#", vi) + " kg" : Model.GramsLastMonth + " g")}" : "")</small>
+                </div>
+            </div>
+        </div>
+
+        <div class="ttd-lanes">
+            @foreach (var lane in lanes)
+            {
+                var laneJobs = Model.Jobs.Where(x => x.StatusId == (int)lane.Status).ToList();
+                <div class="ttd-lane tone-@lane.Tone @(lane.Status == PrintOrderStatus.Printing ? "is-printing" : null)">
+                    <div class="ttd-lane-head">
+                        <i class="bi @lane.Icon"></i>
+                        <span>@lane.Title</span>
+                        <b>@laneJobs.Count</b>
+                    </div>
+                    <div class="ttd-lane-body">
+                        @foreach (var job in laneJobs.Take(6))
+                        {
+                            var dueDays = job.DesiredOn.HasValue ? (int)(job.DesiredOn.Value.Date - Model.Now.Date).TotalDays : (int?)null;
+                            var dueClass = dueDays switch { < 0 => "late", <= 1 => "hot", <= 3 => "soon", _ => null };
+                            <a class="ttd-ticket" href="@job.Url">
+                                @if (lane.Status == PrintOrderStatus.Printing)
+                                {
+                                    <span class="ttd-ticket-layers" aria-hidden="true"></span>
+                                    <span class="ttd-ticket-nozzle" aria-hidden="true"></span>
+                                }
+                                <span class="ttd-ticket-top">
+                                    <b>@(job.Code ?? "#" + job.Id)</b>
+                                    @if (dueDays.HasValue)
+                                    {
+                                        <span class="ttd-due @dueClass">
+                                            @(dueDays < 0 ? $"trễ {-dueDays} ngày" : dueDays == 0 ? "hôm nay" : dueDays == 1 ? "ngày mai" : job.DesiredOn!.Value.ToString("dd/MM"))
+                                        </span>
+                                    }
+                                </span>
+                                <span class="ttd-ticket-name">@(job.Customer.NullEmpty() ?? "Khách")</span>
+                                <span class="ttd-ticket-meta">
+                                    <span><i class="bi bi-boxes"></i> @job.Pieces cái</span>
+                                    <span><i class="bi bi-speedometer"></i> @Num(job.Grams) g</span>
+                                </span>
+                                @if (job.Material.HasValue())
+                                {
+                                    <span class="ttd-ticket-mat">@job.Material</span>
+                                }
+                            </a>
+                        }
+                        @if (laneJobs.Count > 6)
+                        {
+                            <a class="ttd-lane-more" href="@Url.Action("List", "PrintJob")">+ @(laneJobs.Count - 6) đơn nữa</a>
+                        }
+                        @if (laneJobs.Count == 0)
+                        {
+                            <div class="ttd-lane-empty">Trống</div>
+                        }
+                    </div>
+                </div>
+            }
+        </div>
+    </section>
+
+    @* ---------- Latest orders + Blender tools ---------- *@
+    <section class="ttd-grid ttd-grid-bottom">
+        <div class="ttd-card">
+            <div class="ttd-card-head">
+                <h2><i class="bi bi-receipt-cutoff"></i> Đơn mới nhất</h2>
+                <a class="ttd-more" href="@Url.Action("List", "Order")">Tất cả đơn <i class="bi bi-arrow-right"></i></a>
+            </div>
+            @if (Model.LatestOrders.Count > 0)
+            {
+                <div class="ttd-orders">
+                    @foreach (var o in Model.LatestOrders)
+                    {
+                        <a class="ttd-order" href="@o.Url">
+                            <span class="ttd-avatar" data-ttd-avatar="@o.Customer">@(o.Customer.Trim().Split(' ', StringSplitOptions.RemoveEmptyEntries).LastOrDefault()?.Substring(0, 1).ToUpper() ?? "?")</span>
+                            <span class="ttd-order-main">
+                                <b>@o.Customer</b>
+                                <small>#@o.Number · <span data-ttd-ago="@o.CreatedOn.ToString("yyyy-MM-ddTHH:mm:ss", CultureInfo.InvariantCulture)">@o.CreatedOn.ToString("dd/MM HH:mm")</span>@(o.Kind != null ? " · " + o.Kind : "")</small>
+                            </span>
+                            <span class="ttd-order-side">
+                                <b>@Money(o.Total)</b>
+                                <span class="ttd-status st-@o.StatusKey">@o.Status@(o.Paid ? " · đã trả" : "")</span>
+                            </span>
+                        </a>
+                    }
+                </div>
+            }
+            else
+            {
+                <div class="ttd-empty"><i class="bi bi-inbox"></i> Chưa có đơn hàng nào.</div>
+            }
+        </div>
+
+        <div class="ttd-card ttd-blender">
+            <div class="ttd-card-head">
+                <h2><i class="bi bi-box"></i> Công cụ Blender</h2>
+                <a class="ttd-more" href="@Url.Action("List", "Split3DDevice")">Thiết bị <i class="bi bi-arrow-right"></i></a>
+            </div>
+            <div class="ttd-live">
+                <span class="ttd-live-dot @(Model.DevicesOnline > 0 ? "on" : null)"></span>
+                <div>
+                    <b>@Model.DevicesOnline máy</b> đang mở addon
+                    <small>@Model.DevicesToday máy đã dùng hôm nay</small>
+                </div>
+            </div>
+            <div class="ttd-minis">
+                <div><b>@Num(Model.ActiveKeys)</b><small>key còn hạn</small></div>
+                <div><b>@Num(Model.DevicesActive)</b><small>máy đã kích hoạt</small></div>
+            </div>
+            @if (versionTotal > 0)
+            {
+                <div class="ttd-sub">Phiên bản addon đang dùng</div>
+                <div class="ttd-mixbar ttd-mixbar-sm">
+                    @foreach (var v in Model.AddonVersions)
+                    {
+                        <span class="tone-@v.Tone" style="flex-grow:@v.Value.ToString(CultureInfo.InvariantCulture)" title="@v.Label: @v.Value máy"></span>
+                    }
+                </div>
+                <div class="ttd-chips">
+                    @foreach (var v in Model.AddonVersions)
+                    {
+                        <span><i class="ttd-sw tone-@v.Tone"></i>v@(v.Label) <b>@((int)Math.Round(100 * v.Value / versionTotal))%</b></span>
+                    }
+                </div>
+            }
+            <div class="ttd-sub">Sắp hết hạn — gọi mời gia hạn</div>
+            @if (Model.ExpiringKeys.Count > 0)
+            {
+                <ul class="ttd-keys">
+                    @foreach (var k in Model.ExpiringKeys)
+                    {
+                        <li>
+                            <span class="ttd-keys-days @(k.DaysLeft <= 3 ? "hot" : null)"><b>@k.DaysLeft</b><small>ngày</small></span>
+                            <span class="ttd-keys-main"><b>@k.Customer</b><small>@k.Product</small></span>
+                            <span class="ttd-keys-act">
+                                @if (k.Phone.HasValue())
+                                {
+                                    <a href="https://zalo.me/@k.Phone.Replace(" ", "")" target="_blank" rel="noopener" title="Zalo">Zalo</a>
+                                }
+                                @if (k.Email.HasValue())
+                                {
+                                    <a href="mailto:@k.Email" title="Gửi email"><i class="bi bi-envelope"></i></a>
+                                }
+                            </span>
+                        </li>
+                    }
+                </ul>
+            }
+            else
+            {
+                <div class="ttd-empty ttd-empty-sm"><i class="bi bi-emoji-smile"></i> Không có key nào hết hạn trong 14 ngày.</div>
+            }
+        </div>
+    </section>
+
+    @* ---------- Store rhythm: heatmap + busy hours ---------- *@
+    <section class="ttd-card ttd-rhythm">
+        <div class="ttd-card-head">
+            <div>
+                <h2><i class="bi bi-activity"></i> Nhịp cửa hàng</h2>
+                <span class="ttd-muted" data-ttd-heat-sum>&nbsp;</span>
+            </div>
+            <div class="ttd-heat-scale" aria-hidden="true">
+                <span>Ít</span><i class="l0"></i><i class="l1"></i><i class="l2"></i><i class="l3"></i><i class="l4"></i><span>Nhiều</span>
+            </div>
+        </div>
+        <div class="ttd-rhythm-body">
+            <div class="ttd-heat" data-ttd-heat></div>
+            <div class="ttd-hours">
+                <div class="ttd-sub">Giờ vàng <span class="ttd-muted">— khách hay đặt lúc nào (90 ngày)</span></div>
+                <div class="ttd-hours-bars" data-ttd-hours></div>
+                <div class="ttd-hours-axis"><span>0h</span><span>6h</span><span>12h</span><span>18h</span><span>23h</span></div>
+                <div class="ttd-hours-best" data-ttd-hours-best></div>
+            </div>
+        </div>
+    </section>
+
+    @* ---------- Quick jump palette (Ctrl+K) ---------- *@
+    <div class="ttd-palette" data-ttd-palette hidden>
+        <div class="ttd-palette-box" role="dialog" aria-modal="true" aria-label="Đi nhanh">
+            <label class="ttd-palette-input">
+                <i class="bi bi-search"></i>
+                <input type="text" data-ttd-palette-input placeholder="Gõ tên trang: đơn hàng, key, báo giá…" autocomplete="off" />
+                <kbd>Esc</kbd>
+            </label>
+            <ul class="ttd-palette-list" data-ttd-palette-list></ul>
+            <div class="ttd-palette-foot"><kbd>↑</kbd><kbd>↓</kbd> chọn · <kbd>Enter</kbd> mở · gõ số đơn rồi Enter để tìm đơn</div>
+        </div>
+    </div>
+</div>
+
+<script src="@Url.Content(StudioAssets.DashboardScript)" data-find-url="@Url.Action("Find", "StudioDashboard")"></script>

@@ -31,6 +31,11 @@ internal class AddonComingSoon : Migration, IDataSeeder<SmartDbContext>
             Alter.Table(AddonTable)
                 .AddColumn(nameof(Split3DAddon.Icon)).AsString(50).Nullable();
         }
+        if (!Schema.Table(AddonTable).Column(nameof(Split3DAddon.MediaFileId)).Exists())
+        {
+            Alter.Table(AddonTable)
+                .AddColumn(nameof(Split3DAddon.MediaFileId)).AsInt32().Nullable();
+        }
     }
 
     public override void Down()

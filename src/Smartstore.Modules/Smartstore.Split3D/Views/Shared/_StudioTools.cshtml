@@ -101,7 +101,14 @@
         var tool = Model.ComingSoon[i];
         <article class="tt-soon-card" data-tt-reveal style="--d:@((i * 0.08).ToString("0.00", CultureInfo.InvariantCulture))s">
             <span class="tt-soon-sticker">Sắp ra mắt</span>
-            <span class="tt-soon-icon">@StudioIcons.Get(tool.Icon)</span>
+            @if (tool.ImageUrl.HasValue())
+            {
+                <span class="tt-soon-media"><img src="@tool.ImageUrl" alt="@tool.Name" loading="lazy" /></span>
+            }
+            else
+            {
+                <span class="tt-soon-icon">@StudioIcons.Get(tool.Icon)</span>
+            }
             @if (tool.Kind.HasValue())
             {
                 <span class="tt-pill">@tool.Kind</span>

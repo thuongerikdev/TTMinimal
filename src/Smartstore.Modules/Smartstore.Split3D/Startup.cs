@@ -88,6 +88,12 @@ internal class Startup : StarterBase
                 .ForAction("List")
                 .WhenNonAjaxGet();
 
+            // Admin start page: the studio workbench instead of the core widget dashboard.
+            o.Filters.AddEndpointFilter<DashboardRedirectFilter, SmartController>()
+                .ForController("Home")
+                .ForAction("Index")
+                .WhenNonAjaxGet();
+
             o.Filters.AddEndpointFilter<AdminStyleFilter, SmartController>()
                 .WhenNonAjaxGet();
         });

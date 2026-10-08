@@ -1117,6 +1117,12 @@
     <LocaleResource Name="Addon.Icon.Hint">
         <Value>Icon of the coming soon card.</Value>
     </LocaleResource>
+    <LocaleResource Name="Addon.Picture">
+        <Value>Picture</Value>
+    </LocaleResource>
+    <LocaleResource Name="Addon.Picture.Hint">
+        <Value>Card picture shown on the coming soon card instead of the icon. Recommended 16:10, e.g. 1280×800.</Value>
+    </LocaleResource>
     <LocaleResource Name="Fields.ObfuscateAddons">
         <Value>Obfuscate marketplace add-ons</Value>
     </LocaleResource>

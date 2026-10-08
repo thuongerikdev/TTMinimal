@@ -5,7 +5,7 @@ namespace Smartstore.Split3D;
 /// </summary>
 public static class StudioAssets
 {
-    public const string Version = "53";
+    public const string Version = "57";
 
     public const string StyleSheet = "~/Modules/Smartstore.Split3D/studio/studio.css?v=" + Version;
 
@@ -46,7 +46,17 @@ public static class StudioAssets
     /// </summary>
     public const string AdminScript = "~/Modules/Smartstore.Split3D/studio/admin.js?v=" + Version;
 
-    public const string Favicon = "~/Modules/Smartstore.Split3D/studio/favicon.svg?v=" + Version;
+    /// <summary>
+    /// Styles of the admin start page (see <see cref="Controllers.StudioDashboardController"/>).
+    /// </summary>
+    public const string DashboardStyleSheet = "~/Modules/Smartstore.Split3D/studio/dashboard.css?v=" + Version;
+
+    /// <summary>
+    /// Charts, calendar and quick-jump palette of the admin start page.
+    /// </summary>
+    public const string DashboardScript = "~/Modules/Smartstore.Split3D/studio/dashboard.js?v=" + Version;
+
+    public const string Favicon ="~/Modules/Smartstore.Split3D/studio/favicon.svg?v=" + Version;
 
     public const string FaviconPng = "~/Modules/Smartstore.Split3D/studio/favicon-32.png?v=" + Version;
 

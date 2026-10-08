@@ -3781,6 +3781,12 @@
     <LocaleResource Name="Addon.Icon.Hint">
         <Value>Icon của thẻ Sắp ra mắt.</Value>
     </LocaleResource>
+    <LocaleResource Name="Addon.Picture">
+        <Value>Ảnh</Value>
+    </LocaleResource>
+    <LocaleResource Name="Addon.Picture.Hint">
+        <Value>Ảnh của thẻ Sắp ra mắt, thay cho icon. Nên dùng tỉ lệ 16:10, ví dụ 1280×800.</Value>
+    </LocaleResource>
     <LocaleResource Name="Fields.ObfuscateAddons">
         <Value>Mã hoá addon của sàn</Value>
     </LocaleResource>

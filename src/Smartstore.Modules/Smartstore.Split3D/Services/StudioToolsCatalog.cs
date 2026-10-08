@@ -117,17 +117,25 @@ public class StudioToolsCatalog
     /// </summary>
     public async Task<List<ToolTeaserModel>> GetComingSoonAsync()
     {
-        return await _db.Split3DAddons().AsNoTracking()
+        var addons = await _db.Split3DAddons().AsNoTracking()
             .Where(x => x.Active && x.ComingSoon)
             .OrderBy(x => x.DisplayOrder).ThenBy(x => x.Name)
-            .Select(x => new ToolTeaserModel
-            {
-                AddonId = x.Id,
-                Name = x.Name,
-                Kind = x.Kind,
-                Icon = x.Icon,
-                Description = x.Description
-            })
             .ToListAsync();
+
+        var teasers = new List<ToolTeaserModel>(addons.Count);
+        foreach (var addon in addons)
+        {
+            teasers.Add(new ToolTeaserModel
+            {
+                AddonId = addon.Id,
+                Name = addon.Name,
+                Kind = addon.Kind,
+                Icon = addon.Icon,
+                ImageUrl = addon.MediaFileId > 0 ? await _mediaService.GetUrlAsync(addon.MediaFileId, ImageSize, null, false) : null,
+                Description = addon.Description
+            });
+        }
+
+        return teasers;
     }
 }

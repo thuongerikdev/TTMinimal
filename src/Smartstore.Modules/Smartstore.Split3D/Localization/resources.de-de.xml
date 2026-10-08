@@ -1117,6 +1117,12 @@
     <LocaleResource Name="Addon.Icon.Hint">
         <Value>Symbol der Vorschaukarte.</Value>
     </LocaleResource>
+    <LocaleResource Name="Addon.Picture">
+        <Value>Bild</Value>
+    </LocaleResource>
+    <LocaleResource Name="Addon.Picture.Hint">
+        <Value>Bild der Vorschaukarte, ersetzt das Symbol. Empfohlen 16:10, z. B. 1280×800.</Value>
+    </LocaleResource>
     <LocaleResource Name="Fields.ObfuscateAddons">
         <Value>Marktplatz-Add-ons verschleiern</Value>
     </LocaleResource>

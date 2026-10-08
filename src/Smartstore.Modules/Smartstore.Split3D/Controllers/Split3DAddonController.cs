@@ -79,7 +79,8 @@ public partial class Split3DAddonController : AdminController
             DisplayOrder = addon.DisplayOrder,
             ComingSoon = addon.ComingSoon,
             Kind = addon.Kind,
-            Icon = addon.Icon
+            Icon = addon.Icon,
+            PictureId = addon.MediaFileId
         };
 
         await PrepareEditAsync(model);
@@ -147,6 +148,7 @@ public partial class Split3DAddonController : AdminController
         addon.ComingSoon = model.ComingSoon;
         addon.Kind = model.Kind.NullEmpty();
         addon.Icon = model.Icon.NullEmpty();
+        addon.MediaFileId = model.PictureId.GetValueOrDefault() > 0 ? model.PictureId : null;
 
         await _db.SaveChangesAsync();
         NotifySuccess(T("Admin.Common.DataSuccessfullySaved"));

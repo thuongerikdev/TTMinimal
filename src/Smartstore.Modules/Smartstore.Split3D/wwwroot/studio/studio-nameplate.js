@@ -1056,12 +1056,14 @@
         var cw = tw + nIcons * (iconSize + iconGap), ch = Math.max(th, iconSize);
 
         // Room for the content: margins, and the holes beside or above it.
+        // Corner holes of a rounded plate sit on the center of the corner arc (concentric, even wall around them).
+        var holeIn = HOLE_R + 2.5, cornerD = s.shape === 'rounded' ? Math.max(holeIn, Math.min(s.radius || 0, Math.min(L, H) * 0.3)) : holeIn;
         var holeSide = 2 * HOLE_R + 2.5, aw = L - 2 * m, ah = H - 2 * m, cx = 0, cy = 0;
         // Behind a frame plus margin the holes find room in the frame itself.
         if (rimW && rimW + m >= holeSide) { /* no room needed */ }
         else if (s.hole === 'left') { aw -= holeSide; cx = holeSide / 2; }
         else if (s.hole === 'top1' || (s.hole === 'top2' && (s.shape === 'outline' || s.board || s.qr))) { ah -= holeSide; cy = holeSide / 2; }
-        else if (s.hole === 'top2') aw -= 2 * holeSide;
+        else if (s.hole === 'top2') aw -= 2 * Math.max(holeSide, cornerD + HOLE_R + 1 - m);
         if (rimW) { aw -= 2 * rimW; ah -= 2 * rimW; }
         else if (s.border && s.shape !== 'outline') { aw -= 3; ah -= 3; }
 
@@ -1142,10 +1144,15 @@
         }
         else if (s.hole === 'left') holes.push([-L / 2 + 2.5 + HOLE_R, 0]);
         else if (s.hole === 'top1') holes.push([0, -H / 2 + 2.5 + HOLE_R]);
-        else if (s.hole === 'top2') holes.push([-L / 2 + 2.5 + HOLE_R + (s.shape === 'oval' || s.shape === 'pill' ? H * 0.18 : 0), -H / 2 + 2.5 + HOLE_R], [L / 2 - 2.5 - HOLE_R - (s.shape === 'oval' || s.shape === 'pill' ? H * 0.18 : 0), -H / 2 + 2.5 + HOLE_R]);
+        else if (s.hole === 'top2') {
+            var hx = L / 2 - cornerD - (s.shape === 'oval' || s.shape === 'pill' ? H * 0.18 : 0);
+            holes.push([-hx, -H / 2 + cornerD], [hx, -H / 2 + cornerD]);
+        }
         // A scalloped edge dips in between its bumps: the holes move in a little.
         if (s.shape === 'scallop') holes = holes.map(function (p) { return [p[0] - Math.sign(p[0]) * 2.5, p[1] + 2.5]; });
-        holes.forEach(function (p) { bc.beginPath(); circle(bc, p[0], p[1], HOLE_R + 2.5); bc.fill(); });
+        // A boss keeps material around holes that may reach the edge. Rounded and square plates always have the wall
+        // already, and a boss there would bulge out of the corner arc.
+        if (hug || (s.shape !== 'rounded' && s.shape !== 'rect')) holes.forEach(function (p) { bc.beginPath(); circle(bc, p[0], p[1], HOLE_R + 2.5); bc.fill(); });
 
         if (rimW) {
             // Theme frame: a band along the plate edge in the frame color.
@@ -1170,19 +1177,36 @@
                 }
             }
         }
-        // Border: follows the plate, but steps inside the holes so they stay outside of it.
+        // Border: follows the plate at an even inset; where a hole would touch it, it bends inward around the hole
+        // (a concave arc), so the margin stays the same all round and the holes stay outside of the frame.
         if (!rimW && s.border && s.shape !== 'outline') {
-            var bi = Math.min(m * 0.4, 2) + 0.6, clear = HOLE_R + 1.2;
-            var x0 = -L / 2 + bi, x1 = L / 2 - bi, y0 = -H / 2 + bi, y1 = H / 2 - bi;
-            if (s.hole === 'left') x0 = Math.max(x0, holes[0][0] + clear);
-            else if (s.hole === 'top1' || (s.hole === 'top2' && (s.board || s.qr))) y0 = Math.max(y0, holes[0][1] + clear);
-            else if (s.hole === 'top2') { x0 = Math.max(x0, holes[0][0] + clear); x1 = Math.min(x1, holes[1][0] - clear); }
-            rc.lineWidth = 1.2;
+            var bi = Math.min(m * 0.4, 2) + 0.6, lw = 1.2, notch = HOLE_R + 1.6;
+            var fr = canvas(w, h), fc = fr.getContext('2d');
+            fc.setTransform(R, 0, 0, R, FW / 2 * R, FH / 2 * R);
+            fc.strokeStyle = fc.fillStyle = '#fff';
+            fc.lineWidth = lw;
+            shapePath(fc, s.shape, L, H, s.radius, bi);
+            // A hole needs a notch when the circle around it crosses the border line.
+            var notched = holes.filter(function (p) {
+                for (var a = 0; a < 32; a++) {
+                    var ang = a * Math.PI / 16, x = p[0] + Math.cos(ang) * (notch + lw), y = p[1] + Math.sin(ang) * (notch + lw);
+                    if (!fc.isPointInPath((x + FW / 2) * R, (y + FH / 2) * R)) return true;
+                }
+                return false;
+            });
+            fc.stroke();
+            fc.globalCompositeOperation = 'destination-out';
+            notched.forEach(function (p) { fc.beginPath(); circle(fc, p[0], p[1], notch); fc.fill(); });
+            fc.globalCompositeOperation = 'source-over';
+            fc.save();
+            shapePath(fc, s.shape, L, H, s.radius, bi - lw / 2);
+            fc.clip();
+            notched.forEach(function (p) { fc.beginPath(); circle(fc, p[0], p[1], notch); fc.stroke(); });
+            fc.restore();
             rc.save();
-            rc.translate((x0 + x1) / 2, (y0 + y1) / 2);
-            shapePath(rc, s.shape, x1 - x0, y1 - y0, Math.max(0, s.radius - bi), 0);
+            rc.setTransform(1, 0, 0, 1, 0, 0);
+            rc.drawImage(fr, 0, 0);
             rc.restore();
-            rc.stroke();
         }
         connect(bc, w, h, R, FW, FH, Math.max(3, Math.min(5, m + 1)));
         bc.globalCompositeOperation = rc.globalCompositeOperation = 'destination-out';
@@ -1262,6 +1286,55 @@
     // Pairs of cell edges (0 top, 1 right, 2 bottom, 3 left) per corner case; 5 and 10 are decided by the center.
     var CASES = [null, [3, 0], [0, 1], [3, 1], [1, 2], null, [0, 2], [3, 2], [2, 3], [0, 2], null, [1, 2], [1, 3], [0, 1], [3, 0], null];
 
+    // The antialiased mask puts contour points a few hundredths of a pixel off, which tilts the two-segment
+    // normals by several degrees in a pattern that repeats with the pixel grid: stripes along curved walls.
+    // Averages each normal with its neighbours along the contour over a few pixels ([1 2 1] passes, sigma ~ 3 px).
+    // A point whose two segments bend by more than ~30 degrees is a real corner: it keeps its normal and stays out
+    // of its neighbours' average, so corners remain crisp.
+    var NORMAL_PASSES = 16, NORMAL_CORNER_COS = 0.87;
+
+    function smoothNormals(acc, segs) {
+        var keys = Array.from(acc.keys()), n = keys.length, index = new Map(), i, k;
+        if (!n) return;
+        var nx = new Float32Array(n), ny = new Float32Array(n), links = new Int32Array(n * 2).fill(-1);
+        var sn = new Float32Array(n * 4), smooth = new Uint8Array(n);
+        for (i = 0; i < n; i++) {
+            var v = acc.get(keys[i]), l = Math.hypot(v[0], v[1]) || 1;
+            index.set(keys[i], i); nx[i] = v[0] / l; ny[i] = v[1] / l;
+        }
+        // Links to the two contour neighbours, with the unit normal of the segment to each (facing like the point's).
+        function link(a, b, ux, uy) {
+            var e = links[a * 2] < 0 ? 0 : links[a * 2] !== b && links[a * 2 + 1] < 0 ? 1 : -1;
+            if (e < 0) return;
+            var sg = ux * nx[a] + uy * ny[a] < 0 ? -1 : 1;
+            links[a * 2 + e] = b; sn[a * 4 + e * 2] = ux * sg; sn[a * 4 + e * 2 + 1] = uy * sg;
+        }
+        for (var s = 0; s < segs.length; s += 6) {
+            var a = index.get(segs[s + 2]), b = index.get(segs[s + 5]);
+            if (a === b) continue;
+            var dx = segs[s + 3] - segs[s], dy = segs[s + 4] - segs[s + 1], dl = Math.hypot(dx, dy) || 1;
+            link(a, b, dy / dl, -dx / dl); link(b, a, dy / dl, -dx / dl);
+        }
+        for (i = 0; i < n; i++) {
+            smooth[i] = links[i * 2 + 1] >= 0 && sn[i * 4] * sn[i * 4 + 2] + sn[i * 4 + 1] * sn[i * 4 + 3] > NORMAL_CORNER_COS ? 1 : 0;
+        }
+        var tx = new Float32Array(n), ty = new Float32Array(n);
+        for (var pass = 0; pass < NORMAL_PASSES; pass++) {
+            for (i = 0; i < n; i++) {
+                if (!smooth[i]) { tx[i] = nx[i]; ty[i] = ny[i]; continue; }
+                var sx = 2 * nx[i], sy = 2 * ny[i];
+                for (var e = 0; e < 2; e++) {
+                    k = links[i * 2 + e];
+                    if (smooth[k]) { sx += nx[k]; sy += ny[k]; } else { sx += nx[i]; sy += ny[i]; }
+                }
+                var sl = Math.hypot(sx, sy) || 1;
+                tx[i] = sx / sl; ty[i] = sy / sl;
+            }
+            var t = nx; nx = tx; tx = t; t = ny; ny = ty; ty = t;
+        }
+        for (i = 0; i < n; i++) { var w = acc.get(keys[i]); w[0] = nx[i]; w[1] = ny[i]; }
+    }
+
     function walls(M, f, z0, z1, flip) {
         var w = M.w, h = M.h, t = 0.5, segs = [], acc = new Map();
         var px = new Float64Array(4), py = new Float64Array(4), id = new Float64Array(4);
@@ -1294,6 +1367,7 @@
                 }
             }
         }
+        smoothNormals(acc, segs);
         // Mask pixel (x + 0.5, y + 0.5) is the sample; y goes up in mm.
         var out = new Float32Array(segs.length / 6 * 36), q = 0, sg = flip ? -1 : 1;
         function vert(x, y, key, z) {

@@ -56,6 +56,11 @@ public class Split3DAddon : BaseEntity
     /// </summary>
     [StringLength(50)]
     public string Icon { get; set; }
+
+    /// <summary>
+    /// Picture of the coming soon card. Shown instead of <see cref="Icon"/> when set.
+    /// </summary>
+    public int? MediaFileId { get; set; }
 }
 
 /// <summary>
