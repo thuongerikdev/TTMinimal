@@ -53,17 +53,16 @@ public class Split3DKeysController : PublicController
         var addonNames = await _db.Split3DAddons().AsNoTracking().ToDictionaryAsync(x => x.Id, x => x.Name);
         var orders = await _orderQuery.GetOrdersAsync(customer.Id, false, 100, HttpContext.RequestAborted);
 
-        // Keys issued manually or imported for the same email address.
-        var otherKeys = new List<Split3DLicense>();
-        if (customer.Email.HasValue())
-        {
-            var email = customer.Email.ToLowerInvariant();
-            otherKeys = await _db.Split3DLicenses()
-                .AsNoTracking()
-                .Where(x => x.OrderId == 0 && x.Email.ToLower() == email)
-                .OrderByDescending(x => x.IssuedOnUtc)
-                .ToListAsync();
-        }
+        // All other keys of the customer: issued manually, imported for the same email address,
+        // or belonging to an order that was deleted in the backend (soft delete hides the order, not the key).
+        var orderLicenseIds = orders.SelectMany(x => x.Licenses).Select(x => x.Id).ToArray();
+        var customerEmail = customer.Email?.ToLowerInvariant();
+        var otherKeys = await _db.Split3DLicenses()
+            .AsNoTracking()
+            .Where(x => x.CustomerId == customer.Id || (customerEmail != null && x.Email.ToLower() == customerEmail))
+            .Where(x => !orderLicenseIds.Contains(x.Id))
+            .OrderByDescending(x => x.IssuedOnUtc)
+            .ToListAsync();
 
         var licenseIds = orders.SelectMany(x => x.Licenses).Concat(otherKeys).Select(x => x.Id).Distinct().ToArray();
         var devices = (await _db.Split3DDevices()

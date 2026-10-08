@@ -149,7 +149,7 @@
         <Value>Order details</Value>
     </LocaleResource>
     <LocaleResource Name="MyKeys.OtherKeys">
-        <Value>Other keys for your email</Value>
+        <Value>Your other keys</Value>
     </LocaleResource>
     <LocaleResource Name="MyKeys.ActivateHint">
         <Value>Activate: install the addon (download the installer above and drag the zip into Blender 4.2 or newer), open the Split3D tab, paste the whole key and click Activate.</Value>

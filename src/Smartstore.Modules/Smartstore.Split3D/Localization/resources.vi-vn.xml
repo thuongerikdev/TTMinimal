@@ -149,7 +149,7 @@
         <Value>Chi tiết đơn hàng</Value>
     </LocaleResource>
     <LocaleResource Name="MyKeys.OtherKeys">
-        <Value>Key khác theo email của bạn</Value>
+        <Value>Key khác của bạn</Value>
     </LocaleResource>
     <LocaleResource Name="MyKeys.ActivateHint">
         <Value>Kích hoạt: cài addon (tải file cài đặt ở trên rồi kéo file zip vào Blender 4.2 trở lên), mở tab Split3D, dán toàn bộ key rồi bấm Kích hoạt.</Value>

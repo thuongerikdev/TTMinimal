@@ -5,7 +5,7 @@ public class MyKeysModel : ModelBase
     public List<MyKeysOrderModel> Orders { get; set; } = [];
 
     /// <summary>
-    /// Keys issued to the customer's email without an order (manual or imported).
+    /// Keys of the customer that are not listed under an order (manual, imported, or of a deleted order).
     /// </summary>
     public List<MyKeyModel> OtherKeys { get; set; } = [];
 

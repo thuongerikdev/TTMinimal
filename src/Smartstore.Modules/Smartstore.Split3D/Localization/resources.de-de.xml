@@ -149,7 +149,7 @@
         <Value>Bestelldetails</Value>
     </LocaleResource>
     <LocaleResource Name="MyKeys.OtherKeys">
-        <Value>Weitere Schlüssel zu Ihrer E-Mail</Value>
+        <Value>Ihre weiteren Schlüssel</Value>
     </LocaleResource>
     <LocaleResource Name="MyKeys.ActivateHint">
         <Value>Aktivieren: Addon installieren (Installationsdatei oben herunterladen und die Zip-Datei in Blender ab 4.2 ziehen), Split3D-Tab öffnen, den ganzen Schlüssel einfügen und Aktivieren klicken.</Value>
