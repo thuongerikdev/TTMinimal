@@ -354,7 +354,7 @@
         <Value>Beschreibung</Value>
     </LocaleResource>
     <LocaleResource Name="Addon.Description.Hint">
-        <Value>HTML-Beschreibung für neu angelegte Paketprodukte.</Value>
+        <Value>Wird auf der Karte und im Detailfenster der Tool-Übersicht angezeigt und für neu angelegte Paketprodukte verwendet.</Value>
     </LocaleResource>
     <LocaleResource Name="Addon.Active">
         <Value>Aktiv</Value>
@@ -1170,6 +1170,18 @@
     </LocaleResource>
     <LocaleResource Name="Addon.Icon.Hint">
         <Value>Symbol der Vorschaukarte.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Addon.GuideUrl">
+        <Value>Link zur Anleitung</Value>
+    </LocaleResource>
+    <LocaleResource Name="Addon.GuideUrl.Hint">
+        <Value>Seite der Bedienungsanleitung (https://...). Wenn gesetzt, zeigt das Detailfenster einen Button "Anleitung ansehen"; leer blendet ihn aus.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Addon.GuideUrlInvalid">
+        <Value>Der Link zur Anleitung muss eine vollständige Adresse mit http:// oder https:// sein.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Addon.DescriptionNote">
+        <Value>Klartext behält sein Layout: &lt;b&gt;Enter&lt;/b&gt; = Zeilenumbruch, &lt;b&gt;Leerzeile&lt;/b&gt; = neuer Absatz, &lt;b&gt;2 Leerzeichen am Zeilenanfang&lt;/b&gt; = eine Einrückungsstufe, &lt;code&gt;# Überschrift&lt;/code&gt; / &lt;code&gt;## Unterüberschrift&lt;/code&gt;, &lt;code&gt;- Punkt&lt;/code&gt; oder &lt;code&gt;1. Punkt&lt;/code&gt; = Liste, &lt;code&gt;**fett**&lt;/code&gt;, http(s)-Links werden klickbar. HTML bleibt unverändert.</Value>
     </LocaleResource>
     <LocaleResource Name="Addon.Picture">
         <Value>Bild</Value>

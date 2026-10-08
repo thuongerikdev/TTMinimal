@@ -61,6 +61,12 @@ public class Split3DAddon : BaseEntity
     /// Picture of the coming soon card. Shown instead of <see cref="Icon"/> when set.
     /// </summary>
     public int? MediaFileId { get; set; }
+
+    /// <summary>
+    /// Link to the user guide, shown as a button in the tool's detail panel. No button when empty.
+    /// </summary>
+    [StringLength(500)]
+    public string GuideUrl { get; set; }
 }
 
 /// <summary>

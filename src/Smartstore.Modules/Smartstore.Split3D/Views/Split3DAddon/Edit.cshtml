@@ -51,7 +51,17 @@
         </div>
         <div class="adminRow">
             <div class="adminTitle"><smart-label asp-for="Description" /></div>
-            <div class="adminData"><textarea asp-for="Description" rows="6" class="form-control"></textarea></div>
+            <div class="adminData">
+                <textarea asp-for="Description" rows="14" class="form-control" style="font-family: var(--font-family-monospace, monospace); font-size: .875rem;"></textarea>
+                <div class="form-text text-muted">@Html.Raw(T("Plugins.Split3D.Addon.DescriptionNote"))</div>
+            </div>
+        </div>
+        <div class="adminRow">
+            <div class="adminTitle"><smart-label asp-for="GuideUrl" /></div>
+            <div class="adminData">
+                <input asp-for="GuideUrl" type="url" placeholder="https://..." />
+                <span asp-validation-for="GuideUrl"></span>
+            </div>
         </div>
         <div class="adminRow">
             <div class="adminTitle"><smart-label asp-for="Active" /></div>

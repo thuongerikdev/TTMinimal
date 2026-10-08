@@ -418,5 +418,91 @@
             });
     });
 
+    // Inline price: click the price, type, Enter or leave the field to save, Escape to cancel.
+    var priceUrl = root.getAttribute('data-price-url');
+    var priceFormat = new Intl.NumberFormat('vi-VN');
+
+    root.addEventListener('click', function (e) {
+        var button = e.target.closest('[data-ttp-price]');
+        if (!button || !priceUrl || button.classList.contains('editing')) return;
+
+        var current = parseInt(button.getAttribute('data-value'), 10) || 0;
+        var input = document.createElement('input');
+        input.type = 'text';
+        input.inputMode = 'numeric';
+        input.className = 'ttp-price-input';
+        input.value = current > 0 ? priceFormat.format(current) : '';
+        input.setAttribute('aria-label', 'Giá bán (₫)');
+
+        button.classList.add('editing');
+        button.hidden = true;
+        button.parentNode.insertBefore(input, button);
+        input.focus();
+        input.select();
+
+        var done = false;
+        function close() {
+            done = true;
+            input.remove();
+            button.hidden = false;
+            button.classList.remove('editing');
+        }
+
+        function save() {
+            if (done) return;
+            var digits = input.value.replace(/\D/g, '');
+            if (!digits.length) { close(); return; }
+
+            var value = parseInt(digits, 10);
+            if (value === current) { close(); return; }
+
+            done = true;
+            input.disabled = true;
+
+            var row = button.closest('[data-ttp-row]');
+            var name = row ? (row.querySelector('.ttp-name') || {}).textContent : '';
+            var body = new FormData();
+            body.append('id', button.getAttribute('data-ttp-price'));
+            body.append('price', digits);
+            body.append('__RequestVerificationToken', token());
+
+            fetch(priceUrl, { method: 'POST', body: body, credentials: 'same-origin', headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+                .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
+                .then(function (data) {
+                    button.setAttribute('data-value', Math.round(data.price));
+                    button.querySelector('[data-ttp-price-text]').textContent = data.priceText;
+
+                    var warn = row && row.querySelector('[data-ttp-warn-price]');
+                    if (warn && !data.missingPrice) {
+                        warn.remove();
+                        if (!row.querySelector('.ttp-badge-warn') && row.getAttribute('data-attention') === '1') {
+                            row.setAttribute('data-attention', '0');
+                            bumpCount('attention', -1);
+                        }
+                    }
+
+                    showToast('Đã đổi giá: ' + name + ' → ' + data.priceText);
+                })
+                .catch(function () {
+                    showToast('Không lưu được giá, thử lại sau.', true);
+                })
+                .then(function () {
+                    input.remove();
+                    button.hidden = false;
+                    button.classList.remove('editing');
+                });
+        }
+
+        input.addEventListener('input', function () {
+            var digits = input.value.replace(/\D/g, '').slice(0, 12);
+            input.value = digits ? priceFormat.format(parseInt(digits, 10)) : '';
+        });
+        input.addEventListener('keydown', function (ev) {
+            if (ev.key === 'Enter') { ev.preventDefault(); save(); }
+            else if (ev.key === 'Escape') { ev.preventDefault(); close(); button.focus(); }
+        });
+        input.addEventListener('blur', save);
+    });
+
     apply();
 })();

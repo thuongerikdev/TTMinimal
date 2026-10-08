@@ -80,6 +80,7 @@ public partial class Split3DAddonController : AdminController
             ComingSoon = addon.ComingSoon,
             Kind = addon.Kind,
             Icon = addon.Icon,
+            GuideUrl = addon.GuideUrl,
             PictureId = addon.MediaFileId
         };
 
@@ -95,6 +96,7 @@ public partial class Split3DAddonController : AdminController
         model.ProductCode = model.ProductCode?.Trim().ToLowerInvariant();
         model.Version = model.Version?.Trim();
         model.Kind = model.Kind?.Trim();
+        model.GuideUrl = model.GuideUrl?.Trim().NullEmpty();
 
         if (model.Name.IsEmpty())
         {
@@ -111,6 +113,14 @@ public partial class Split3DAddonController : AdminController
         if (model.Version.HasValue() && !VersionRegex().IsMatch(model.Version))
         {
             ModelState.AddModelError(nameof(model.Version), T("Plugins.Split3D.Addon.VersionInvalid"));
+        }
+
+        if (model.GuideUrl != null
+            && (model.GuideUrl.Length > 500
+                || !Uri.TryCreate(model.GuideUrl, UriKind.Absolute, out var guideUri)
+                || (guideUri.Scheme != Uri.UriSchemeHttps && guideUri.Scheme != Uri.UriSchemeHttp)))
+        {
+            ModelState.AddModelError(nameof(model.GuideUrl), T("Plugins.Split3D.Addon.GuideUrlInvalid"));
         }
 
         var addon = model.Id > 0 ? await _db.Split3DAddons().FindByIdAsync(model.Id) : null;
@@ -148,6 +158,7 @@ public partial class Split3DAddonController : AdminController
         addon.ComingSoon = model.ComingSoon;
         addon.Kind = model.Kind.NullEmpty();
         addon.Icon = model.Icon.NullEmpty();
+        addon.GuideUrl = model.GuideUrl;
         addon.MediaFileId = model.PictureId.GetValueOrDefault() > 0 ? model.PictureId : null;
 
         await _db.SaveChangesAsync();

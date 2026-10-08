@@ -33,6 +33,9 @@ public class AddonModel : EntityModelBase
     [LocalizedDisplay("*Icon")]
     public string Icon { get; set; }
 
+    [LocalizedDisplay("*GuideUrl")]
+    public string GuideUrl { get; set; }
+
     [UIHint("Media")]
     [AdditionalMetadata("album", "catalog"), AdditionalMetadata("transientUpload", true), AdditionalMetadata("entityType", "Split3DAddon")]
     [LocalizedDisplay("*Picture")]

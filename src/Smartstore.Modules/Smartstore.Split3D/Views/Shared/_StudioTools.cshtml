@@ -156,6 +156,13 @@
                         </button>
                         <p class="tt-tool-note">@StudioIcons.Get("check") <span>Mỗi gói là 1 key · thanh toán xong nhận key qua email và trang <em>Key của tôi</em>.</span></p>
                     </form>
+
+                    @if (tool.GuideUrl.HasValue())
+                    {
+                        <a class="tt-button tt-tooldlg-guide" href="@tool.GuideUrl" target="_blank" rel="noopener">
+                            @StudioIcons.Get("book") <span>Xem hướng dẫn sử dụng</span> @StudioIcons.Get("arrow", "tt-arrow")
+                        </a>
+                    }
                 </div>
 
                 <div class="tt-tooldlg-info">
@@ -166,7 +173,8 @@
                     @foreach (var p in tool.Packages)
                     {
                         var desc = p.FullDescription.NullEmpty() ?? fallbackDesc;
-                        if (desc.HasValue())
+                        // Packages created from the addon copy its description: do not show the same text twice.
+                        if (desc.HasValue() && desc != tool.Description)
                         {
                             <div class="tt-tooldlg-desc" data-for="@p.ProductId" hidden="@(p.ProductId != selected.ProductId)">@Html.Raw(desc)</div>
                         }

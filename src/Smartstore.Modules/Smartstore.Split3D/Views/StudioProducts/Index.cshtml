@@ -5,7 +5,7 @@
     var visibleGroups = Model.Groups.Where(x => x.Products.Count > 0).ToList();
 }
 
-<div class="ttp" data-tt-products data-toggle-url="@Url.Action("SetPublished", "StudioProducts")">
+<div class="ttp" data-tt-products data-toggle-url="@Url.Action("SetPublished", "StudioProducts")" data-price-url="@Url.Action("SetPrice", "StudioProducts")">
     <div class="section-header">
         <div class="title">
             <i class="bi bi-box-seam"></i>
@@ -49,7 +49,7 @@
                     <i class="ttp-dot"></i><span>Đang ẩn</span><b data-ttp-count="hidden">@Model.HiddenCount</b>
                 </button>
                 <button type="button" class="ttp-filter ttp-filter-warn" data-ttp-filter="attention" @(Model.AttentionCount == 0 ? "disabled" : null)>
-                    <i class="bi bi-exclamation-triangle"></i><span>Cần xử lý</span><b>@Model.AttentionCount</b>
+                    <i class="bi bi-exclamation-triangle"></i><span>Cần xử lý</span><b data-ttp-count="attention">@Model.AttentionCount</b>
                 </button>
             </div>
         </div>
@@ -147,7 +147,7 @@
                                             <div class="ttp-badges">
                                                 @foreach (var warning in p.Warnings)
                                                 {
-                                                    <span class="ttp-badge ttp-badge-warn"><i class="bi bi-exclamation-triangle-fill"></i> @warning</span>
+                                                    <span class="ttp-badge ttp-badge-warn" @(warning == "Chưa có giá" ? "data-ttp-warn-price" : null)><i class="bi bi-exclamation-triangle-fill"></i> @warning</span>
                                                 }
                                                 @foreach (var badge in p.Badges)
                                                 {
@@ -157,7 +157,19 @@
                                         }
                                     </div>
 
-                                    <div class="ttp-price">@p.PriceText</div>
+                                    <div class="ttp-price">
+                                        @if (Model.CanEdit && p.PriceEditable)
+                                        {
+                                            <button type="button" class="ttp-price-edit" data-ttp-price="@p.Id" data-value="@p.Price.ToString("0", System.Globalization.CultureInfo.InvariantCulture)" title="Bấm để sửa giá">
+                                                <span data-ttp-price-text>@p.PriceText</span>
+                                                <i class="bi bi-pencil"></i>
+                                            </button>
+                                        }
+                                        else
+                                        {
+                                            @p.PriceText
+                                        }
+                                    </div>
 
                                     <div class="ttp-stock stock-@p.StockTone">@p.StockText</div>
 

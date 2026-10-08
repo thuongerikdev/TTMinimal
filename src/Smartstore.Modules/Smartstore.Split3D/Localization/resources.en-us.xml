@@ -354,7 +354,7 @@
         <Value>Description</Value>
     </LocaleResource>
     <LocaleResource Name="Addon.Description.Hint">
-        <Value>HTML description used for newly created plan products.</Value>
+        <Value>Shown on the tools board card and detail panel, also used for newly created plan products.</Value>
     </LocaleResource>
     <LocaleResource Name="Addon.Active">
         <Value>Active</Value>
@@ -1170,6 +1170,18 @@
     </LocaleResource>
     <LocaleResource Name="Addon.Icon.Hint">
         <Value>Icon of the coming soon card.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Addon.GuideUrl">
+        <Value>Guide link</Value>
+    </LocaleResource>
+    <LocaleResource Name="Addon.GuideUrl.Hint">
+        <Value>User guide page (https://...). When set, the detail panel shows a "View guide" button; empty hides it.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Addon.GuideUrlInvalid">
+        <Value>The guide link must be a full address starting with http:// or https://.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Addon.DescriptionNote">
+        <Value>Plain text keeps its layout: &lt;b&gt;Enter&lt;/b&gt; = line break, &lt;b&gt;blank line&lt;/b&gt; = new paragraph, &lt;b&gt;2 leading spaces&lt;/b&gt; = one indent level, &lt;code&gt;# Heading&lt;/code&gt; / &lt;code&gt;## Subheading&lt;/code&gt;, &lt;code&gt;- item&lt;/code&gt; or &lt;code&gt;1. item&lt;/code&gt; = list, &lt;code&gt;**bold**&lt;/code&gt;, http(s) links become clickable. HTML is kept as is.</Value>
     </LocaleResource>
     <LocaleResource Name="Addon.Picture">
         <Value>Picture</Value>

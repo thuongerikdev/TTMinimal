@@ -1013,6 +1013,35 @@ a:focus-visible, button:focus-visible, .btn:focus-visible {
 .ttp-badge-warn { border-color: #d9480f; background: #fff0e3; color: #a63a06; font-weight: 700; }
 
 .ttp-price { text-align: right; font-weight: 800; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.ttp-price-edit {
+    display: inline-flex;
+    align-items: center;
+    gap: .35rem;
+    padding: .2rem .45rem;
+    border: 2px dashed transparent;
+    border-radius: 8px;
+    background: none;
+    color: inherit;
+    font: inherit;
+    cursor: text;
+}
+.ttp-price-edit .bi { font-size: .75rem; opacity: 0; transition: opacity .15s; }
+.ttp-price-edit:hover, .ttp-price-edit:focus-visible { border-color: var(--tt-ink); background: #fff; outline: 0; }
+.ttp-price-edit:hover .bi, .ttp-price-edit:focus-visible .bi { opacity: .6; }
+.ttp-price-input {
+    width: 100%;
+    max-width: 120px;
+    padding: .2rem .45rem;
+    border: 2px solid var(--tt-ink);
+    border-radius: 8px;
+    background: #fff;
+    font: inherit;
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+    box-shadow: 3px 3px 0 var(--tt-pink);
+}
+.ttp-price-input:focus { outline: 0; }
+.ttp-price-input:disabled { opacity: .5; }
 .ttp-stock { font-size: .88rem; font-weight: 600; }
 .ttp-stock.stock-out { color: #c92a2a; font-weight: 800; }
 .ttp-stock.stock-low { color: #b35c00; font-weight: 800; }

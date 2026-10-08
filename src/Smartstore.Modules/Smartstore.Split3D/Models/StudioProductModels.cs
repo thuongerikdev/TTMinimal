@@ -76,6 +76,13 @@ public class StudioProductRowModel
 
     public string PriceText { get; set; } = default!;
 
+    public decimal Price { get; set; }
+
+    /// <summary>
+    /// Whether the price can be changed inline (not for "call for price" or system products).
+    /// </summary>
+    public bool PriceEditable { get; set; }
+
     public string StockText { get; set; } = default!;
 
     /// <summary>

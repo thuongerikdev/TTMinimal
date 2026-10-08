@@ -711,21 +711,31 @@ button.tt-tool-media:hover img { transform: scale(1.04); }
 @media (hover: none) { .tt-tool-zoom { opacity: 1; transform: none; } }
 
 /* Tool detail panel: picture + package choice on the left, features on the right. */
-.tt-tooldlg .tt-dialog-box { overflow-y: auto; }
+.tt-tooldlg .tt-dialog-box { width: min(1240px, 100%); padding: 24px 30px 28px; overflow-y: auto; }
 .tt-tooldlg .tt-dialog-head h3 { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; }
 .tt-tooldlg .tt-dialog-head .tt-pill { font-size: 11px; padding: 1px 8px; }
-.tt-tooldlg-grid { display: grid; grid-template-columns: minmax(0, 340px) minmax(0, 1fr); gap: 28px; align-items: start; margin-top: 14px; }
+.tt-tooldlg-grid { display: grid; grid-template-columns: minmax(0, 400px) minmax(0, 1fr); gap: 36px; align-items: start; margin-top: 14px; }
 .tt-tooldlg-side { position: sticky; top: 0; }
 .tt-tooldlg-side .tt-tool-buy { margin-top: 4px; }
-.tt-tooldlg-info { font-size: 14px; line-height: 1.55; }
-.tt-tooldlg-lead { margin-bottom: 10px; font-weight: 700; }
+.tt-tooldlg-info { font-size: 15px; line-height: 1.6; }
+.tt-tooldlg-lead { margin-bottom: 10px; }
+.tt-tooldlg-guide { width: 100%; margin-top: 16px; background: var(--mint); }
+.tt-tooldlg-guide .tt-arrow { margin-left: auto; }
 .tt-tooldlg-info h3 { margin: 0 0 8px; font-size: 20px; font-weight: 900; line-height: 1.25; }
 .tt-tooldlg-info h4 { display: inline-block; margin: 16px 0 8px; padding: 2px 10px; font-size: 12px; font-weight: 900; letter-spacing: .6px; text-transform: uppercase; background: var(--mint); border: 2px solid var(--ink); border-radius: 8px; box-shadow: 2px 2px 0 var(--ink); }
 .tt-tooldlg-info p { margin: 0 0 10px !important; max-width: none !important; }
 .tt-tooldlg-info ul, .tt-tooldlg-info ol { margin: 0 0 6px; padding-left: 20px; }
 .tt-tooldlg-info li { margin-bottom: 5px; }
 .tt-tooldlg-info .text-muted { font-size: 12px; opacity: .65; }
+/* Addon descriptions typed as plain text, see StudioDescription: indent levels and list items. */
+:where(.tt-tooldlg-info, .tt-tool-desc, .tt-soon-desc) [style*="--ind"] { padding-left: calc(var(--ind) * 1.5em); }
+:where(.tt-tooldlg-info, .tt-tool-desc, .tt-soon-desc) .tt-desc-li { display: flex; gap: .5em; margin-bottom: 4px !important; }
+.tt-tooldlg-info .tt-desc-li + p:not(.tt-desc-li) { margin-top: 10px !important; }
+.tt-desc-mark { flex: none; min-width: .8em; font-weight: 900; }
+.tt-desc-li > span:last-child { min-width: 0; }
+:where(.tt-tool-desc, .tt-soon-desc) :is(h3, h4) { margin: 0; font-size: inherit; font-weight: 900; }
 @media (max-width: 760px) {
+    .tt-tooldlg .tt-dialog-box { padding: 18px 18px 22px; }
     .tt-tooldlg-grid { grid-template-columns: minmax(0, 1fr); gap: 18px; }
     .tt-tooldlg-side { position: static; }
 }

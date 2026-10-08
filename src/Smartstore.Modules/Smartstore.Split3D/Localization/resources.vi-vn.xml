@@ -354,7 +354,7 @@
         <Value>Mô tả</Value>
     </LocaleResource>
     <LocaleResource Name="Addon.Description.Hint">
-        <Value>Mô tả HTML dùng cho sản phẩm theo gói được tạo mới.</Value>
+        <Value>Mô tả hiện trên thẻ và modal chi tiết của bảng công cụ, cũng dùng cho sản phẩm theo gói được tạo mới.</Value>
     </LocaleResource>
     <LocaleResource Name="Addon.Active">
         <Value>Đang bán</Value>
@@ -3834,6 +3834,18 @@
     </LocaleResource>
     <LocaleResource Name="Addon.Icon.Hint">
         <Value>Icon của thẻ Sắp ra mắt.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Addon.GuideUrl">
+        <Value>Link hướng dẫn</Value>
+    </LocaleResource>
+    <LocaleResource Name="Addon.GuideUrl.Hint">
+        <Value>Trang hướng dẫn sử dụng (https://...). Có link thì modal chi tiết hiện nút "Xem hướng dẫn", để trống thì không hiện.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Addon.GuideUrlInvalid">
+        <Value>Link hướng dẫn phải là địa chỉ đầy đủ bắt đầu bằng http:// hoặc https://.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Addon.DescriptionNote">
+        <Value>Gõ chữ thường, hiển thị giữ nguyên định dạng: &lt;b&gt;Enter&lt;/b&gt; = xuống dòng, &lt;b&gt;dòng trống&lt;/b&gt; = đoạn mới, &lt;b&gt;2 dấu cách đầu dòng&lt;/b&gt; = thụt lề 1 bậc, &lt;code&gt;# Tiêu đề&lt;/code&gt; / &lt;code&gt;## Tiêu đề nhỏ&lt;/code&gt;, &lt;code&gt;- mục&lt;/code&gt; hoặc &lt;code&gt;1. mục&lt;/code&gt; = danh sách, &lt;code&gt;**chữ đậm**&lt;/code&gt;, link http(s) tự thành liên kết. Dán HTML thì giữ nguyên HTML.</Value>
     </LocaleResource>
     <LocaleResource Name="Addon.Picture">
         <Value>Ảnh</Value>

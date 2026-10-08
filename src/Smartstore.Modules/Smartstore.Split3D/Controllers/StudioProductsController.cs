@@ -25,6 +25,7 @@ public class StudioProductsController : AdminController
     private const int ThumbnailSize = 128;
     private const int MaxProducts = 2000;
     private const string NoPictureWarning = "Chưa có ảnh";
+    private const string MissingPriceWarning = "Chưa có giá";
 
     private static readonly CultureInfo _vi = CultureInfo.GetCultureInfo("vi-VN");
 
@@ -305,6 +306,46 @@ public class StudioProductsController : AdminController
         return Json(new { success = true, published = product.Published });
     }
 
+    /// <summary>
+    /// Changes the selling price of a product (the inline price field on each row).
+    /// </summary>
+    [HttpPost]
+    [Permission(Permissions.Catalog.Product.Update)]
+    public async Task<IActionResult> SetPrice(int id, string? price)
+    {
+        var product = await _db.Products.FindByIdAsync(id);
+        if (product == null || product.Deleted)
+        {
+            return NotFound();
+        }
+
+        if (IsSystemSku(product.Sku) || product.CallForPrice)
+        {
+            return BadRequest();
+        }
+
+        // VND has no minor unit: accept "150.000", "150,000" or "150000 ₫".
+        var digits = new string((price ?? string.Empty).Where(char.IsDigit).ToArray());
+        if (digits.Length == 0 || digits.Length > 12 || !decimal.TryParse(digits, NumberStyles.None, CultureInfo.InvariantCulture, out var value))
+        {
+            return BadRequest();
+        }
+
+        if (product.Price != value)
+        {
+            product.Price = value;
+            await _db.SaveChangesAsync();
+        }
+
+        return Json(new
+        {
+            success = true,
+            price = product.Price,
+            priceText = FormatPrice(product),
+            missingPrice = IsMissingPrice(product)
+        });
+    }
+
     private async Task<StudioProductRowModel> CreateRowAsync(
         Product product,
         Dictionary<int, MediaFileInfo> files,
@@ -325,9 +366,9 @@ public class StudioProductsController : AdminController
             SearchText = Simplify($"{product.Name} {product.Sku} {product.ManufacturerPartNumber} {product.Gtin}")
         };
 
-        row.PriceText = product.CallForPrice
-            ? "Liên hệ"
-            : product.Price > 0 ? product.Price.ToString("#,##0", _vi) + " ₫" : "Tự tính";
+        row.PriceText = FormatPrice(product);
+        row.Price = product.Price;
+        row.PriceEditable = !product.CallForPrice && !IsSystemSku(product.Sku);
 
         switch (product.ManageInventoryMethod)
         {
@@ -352,9 +393,9 @@ public class StudioProductsController : AdminController
             row.Warnings.Add(NoPictureWarning);
         }
 
-        if (product.Price <= 0 && !product.CallForPrice && !product.CustomerEntersPrice && !IsSystemSku(product.Sku))
+        if (IsMissingPrice(product))
         {
-            row.Warnings.Add("Chưa có giá");
+            row.Warnings.Add(MissingPriceWarning);
         }
 
         if (product.ProductType == ProductType.GroupedProduct)
@@ -397,6 +438,14 @@ public class StudioProductsController : AdminController
 
     private static bool IsSystemSku(string? sku)
         => sku != null && _systemProducts.ContainsKey(sku);
+
+    private static string FormatPrice(Product product)
+        => product.CallForPrice
+            ? "Liên hệ"
+            : product.Price > 0 ? product.Price.ToString("#,##0", _vi) + " ₫" : "Tự tính";
+
+    private static bool IsMissingPrice(Product product)
+        => product.Price <= 0 && !product.CallForPrice && !product.CustomerEntersPrice && !IsSystemSku(product.Sku);
 
     private static List<Category> GetPath(Category category, Dictionary<int, Category> categories)
     {

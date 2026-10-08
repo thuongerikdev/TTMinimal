@@ -63,7 +63,8 @@ public class StudioToolsCatalog
                 AddonId = addon.Id,
                 Name = addon.Name,
                 Version = addon.Version,
-                Description = addon.Description
+                Description = StudioDescription.ToHtml(addon.Description),
+                GuideUrl = addon.GuideUrl
             };
 
             foreach (var mapping in mappings.Where(x => x.AddonId == addon.Id))
@@ -89,7 +90,7 @@ public class StudioToolsCatalog
                     IsLifetime = mapping.KeyType == Split3DPlans.Lifetime,
                     DisplayOrder = product.DisplayOrder,
                     ImageUrl = product.MainPictureId > 0 ? await _mediaService.GetUrlAsync(product.MainPictureId, ImageSize, null, false) : null,
-                    FullDescription = product.FullDescription
+                    FullDescription = StudioDescription.ToHtml(product.FullDescription)
                 });
 
                 if (tool.Description.IsEmpty() && product.ShortDescription.HasValue())
@@ -132,7 +133,7 @@ public class StudioToolsCatalog
                 Kind = addon.Kind,
                 Icon = addon.Icon,
                 ImageUrl = addon.MediaFileId > 0 ? await _mediaService.GetUrlAsync(addon.MediaFileId, ImageSize, null, false) : null,
-                Description = addon.Description
+                Description = StudioDescription.ToHtml(addon.Description)
             });
         }
 

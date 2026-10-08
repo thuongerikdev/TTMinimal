@@ -238,6 +238,12 @@ public class ToolCardModel
     public string Name { get; set; }
     public string Version { get; set; }
     public string Description { get; set; }
+
+    /// <summary>
+    /// Link to the user guide. The detail panel shows no guide button when empty.
+    /// </summary>
+    public string GuideUrl { get; set; }
+
     public List<ToolPackageModel> Packages { get; set; } = [];
     public List<int> DeviceOptions { get; set; } = [];
 }
