@@ -64,8 +64,12 @@ public class StudioHomeModel
     /// The categories of <see cref="Products"/>, shown as the collection's category column.
     /// </summary>
     public List<StudioCategoryCard> ServiceCategories { get; set; } = [];
-    public List<StudioAddonCard> Addons { get; set; } = [];
-    public string AddonCategoryUrl { get; set; }
+
+    /// <summary>
+    /// The tools board (same as on the tools page).
+    /// </summary>
+    public ToolsPageModel Tools { get; set; } = new();
+    public string ToolsUrl { get; set; }
 }
 
 public class StudioCategoryCard
@@ -99,17 +103,6 @@ public class StudioProductCard
     /// The customer types text (name, characters) before ordering, see <see cref="Services.StudioCustomProducts"/>.
     /// </summary>
     public bool IsCustom { get; set; }
-}
-
-public class StudioAddonCard
-{
-    public string Name { get; set; }
-    public string Version { get; set; }
-    public string Description { get; set; }
-    public string Url { get; set; }
-    public string ImageUrl { get; set; }
-    public string PriceFrom { get; set; }
-    public int PlanCount { get; set; }
 }
 
 public class PrintServicePageModel
@@ -234,4 +227,9 @@ public class ToolPackageModel
     /// Picture of the package product, shown when the package is selected.
     /// </summary>
     public string ImageUrl { get; set; }
+
+    /// <summary>
+    /// Full description (HTML) of the package product: the feature text of the tool's detail panel.
+    /// </summary>
+    public string FullDescription { get; set; }
 }

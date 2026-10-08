@@ -5,7 +5,8 @@
     var techs = Model.Technologies;
     var lowest = techs.Count > 0 ? techs.Min(x => x.LowestPrice) : 0;
     var phone = contact.Phone1.NullEmpty() ?? contact.Phone2;
-    var split3D = Model.Addons.FirstOrDefault(x => x.Name.Contains("Split3D", StringComparison.OrdinalIgnoreCase)) ?? Model.Addons.FirstOrDefault();
+    var tools = Model.Tools.Tools;
+    var split3D = tools.FirstOrDefault(x => x.Name.Contains("Split3D", StringComparison.OrdinalIgnoreCase)) ?? tools.FirstOrDefault();
     var toys = Url.Content("~/Modules/Smartstore.Split3D/studio/studio-toys.webp");
     var toysCut = Url.Content("~/Modules/Smartstore.Split3D/studio/studio-toys-cut.webp");
     var cardColors = new[] { "mint", "yellow", "lilac", "pink" };
@@ -209,32 +210,18 @@
         }
     </section>
 
-    @* ================= ADDON ================= *@
-    @if (split3D != null)
+    @* ================= TOOLS ================= *@
+    @if (tools.Count > 0)
     {
         <section class="tt-wrap tt-section" id="tt-addons">
-            <div class="tt-addon">
-                <div class="tt-addon-graphic" data-tt-reveal data-tt-tilt="6">
-                    <span class="tt-pill">BLENDER TOOLKIT</span>
-                    <div class="tt-split-title">SPLIT<span>3D</span><small>CẮT GỌN. RÁP CHUẨN.</small></div>
-                    <div class="tt-addon-tags"><span>Cắt mô hình</span><span>Tạo khớp</span><span>Chuẩn bị in</span>@if (split3D.Version.HasValue()) { <span>v@(split3D.Version)</span> }</div>
-                </div>
-                <div class="tt-addon-copy">
+            <div class="tt-section-heading">
+                <div>
                     <div class="tt-kicker">CÔNG CỤ TỪ CHÍNH STUDIO</div>
-                    <h2 class="tt-split">MÔ HÌNH LỚN?<br /><mark>CHUYỆN NHỎ.</mark></h2>
-                    <p data-tt-reveal>@split3D.Name giúp chia mô hình thành các phần vừa bàn in và tạo khớp để lắp ráp.</p>
-                    <ul data-tt-reveal>
-                        <li>Chia mô hình ngay trong Blender</li>
-                        <li>Tạo khớp nối giữa các phần</li>
-                        <li>Key gửi tự động, cập nhật ngay trong Blender</li>
-                        <li>Giao diện Tiếng Việt / English</li>
-                    </ul>
-                    <div class="tt-actions" data-tt-reveal>
-                        <a class="tt-button tt-button--dark" href="@(Model.AddonCategoryUrl ?? split3D.Url)">Xem tính năng &amp; gói mua</a>
-                        <span class="tt-price-note">Từ <b>@split3D.PriceFrom</b> · @split3D.PlanCount gói</span>
-                    </div>
+                    <h2 class="tt-split">MÔ HÌNH LỚN? <mark>CHUYỆN NHỎ.</mark></h2>
                 </div>
+                <p data-tt-reveal>Addon Blender giúp chia mô hình, tạo khớp và chuẩn bị file in. Bấm vào công cụ để xem tính năng và chọn gói.</p>
             </div>
+            <partial name="_StudioTools" model="Model.Tools" />
         </section>
     }
 

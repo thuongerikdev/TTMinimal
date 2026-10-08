@@ -60,7 +60,7 @@ public class Split3DKeysController : PublicController
             var email = customer.Email.ToLowerInvariant();
             otherKeys = await _db.Split3DLicenses()
                 .AsNoTracking()
-                .Where(x => x.OrderId == 0 && x.Email == email)
+                .Where(x => x.OrderId == 0 && x.Email.ToLower() == email)
                 .OrderByDescending(x => x.IssuedOnUtc)
                 .ToListAsync();
         }
@@ -343,7 +343,7 @@ public class Split3DKeysController : PublicController
         var email = customer.Email?.ToLowerInvariant();
 
         return await _db.Split3DLicenses()
-            .Where(x => x.CustomerId == customer.Id || (email != null && x.Email == email))
+            .Where(x => x.CustomerId == customer.Id || (email != null && x.Email.ToLower() == email))
             .Select(x => x.Id)
             .ToListAsync();
     }

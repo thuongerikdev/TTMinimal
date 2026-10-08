@@ -31,6 +31,7 @@ internal class Startup : StarterBase
         services.AddScoped<BankQrService>();
         services.AddScoped<StudioMailService>();
         services.AddScoped<StudioDeliveryService>();
+        services.AddScoped<StudioToolsCatalog>();
 
         services.Configure<MvcOptions>(o =>
         {

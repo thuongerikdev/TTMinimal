@@ -1493,32 +1493,84 @@
             });
         });
 
-        // Tools page: the device chips filter the packages; the first visible package gets selected.
-        // The picture follows the selected package.
-        each('[data-tt-tool]', function (tool) {
-            var img = tool.querySelector('[data-tt-tool-img]');
-            tool.addEventListener('change', function (e) {
-                var src = e.target.getAttribute && e.target.getAttribute('data-img');
-                if (img && src) img.src = src;
+        // Tools board (tools page, home page): card and detail panel share the package picker. Device chips filter
+        // the packages, the picture and the feature text follow the selected package. The picture, title and
+        // "Mua ngay" of a card open its panel with the card's package; the panel holds the actual buy form.
+        function pickPackage(root, productId) {
+            var radio = root.querySelector('.tt-package input[value="' + productId + '"]');
+            if (!radio) return;
+            var d = radio.closest('.tt-package').getAttribute('data-devices');
+            each('.tt-tool-devices [data-devices]', function (c) { c.classList.toggle('is-active', c.getAttribute('data-devices') === d); }, root);
+            if (root.querySelector('.tt-tool-devices')) {
+                each('.tt-package', function (p) { p.hidden = p.getAttribute('data-devices') !== d; }, root);
+            }
+            radio.checked = true;
+            syncPackage(root, radio);
+        }
+
+        function syncPackage(root, radio) {
+            var img = root.querySelector('[data-tt-tool-img]'), src = radio.getAttribute('data-img');
+            if (img && src) img.src = src;
+            each('.tt-tooldlg-desc', function (el) { el.hidden = el.getAttribute('data-for') !== radio.value; }, root);
+        }
+
+        function initPicker(root, onPick) {
+            root.addEventListener('change', function (e) {
+                if (!e.target.matches('.tt-package input')) return;
+                syncPackage(root, e.target);
+                if (onPick) onPick(e.target.value);
             });
-            var chips = tool.querySelectorAll('.tt-tool-devices [data-devices]');
-            Array.prototype.forEach.call(chips, function (chip) {
+            each('.tt-tool-devices [data-devices]', function (chip) {
                 chip.addEventListener('click', function () {
-                    var d = chip.getAttribute('data-devices'), first = null;
-                    Array.prototype.forEach.call(chips, function (c) { c.classList.toggle('is-active', c === chip); });
-                    each('.tt-package', function (p) {
-                        var show = p.getAttribute('data-devices') === d;
-                        p.hidden = !show;
-                        if (show && !first) first = p;
-                    }, tool);
-                    var checked = tool.querySelector('.tt-package:not([hidden]) input:checked');
-                    if (!checked && first) {
-                        var radio = first.querySelector('input');
-                        radio.checked = true;
-                        radio.dispatchEvent(new Event('change', { bubbles: true }));
-                    }
+                    var d = chip.getAttribute('data-devices');
+                    var current = root.querySelector('.tt-package[data-devices="' + d + '"] input:checked')
+                        || root.querySelector('.tt-package[data-devices="' + d + '"] input');
+                    if (!current) return;
+                    pickPackage(root, current.value);
+                    if (onPick) onPick(current.value);
                 });
+            }, root);
+        }
+
+        each('[data-tt-tool-dialog]', function (dlg) {
+            var id = dlg.getAttribute('data-tt-tool-dialog');
+            var card = document.querySelector('[data-tt-tool="' + id + '"]');
+            var lastFocus = null;
+            document.body.appendChild(dlg);
+
+            function current(root) { var r = root && root.querySelector('.tt-package input:checked'); return r ? r.value : null; }
+            function open() {
+                var pick = current(card);
+                if (pick) pickPackage(dlg, pick);
+                lastFocus = document.activeElement;
+                dlg.hidden = false;
+                document.documentElement.classList.add('tt-noscroll');
+                var box = dlg.querySelector('.tt-dialog-box');
+                box.scrollTop = 0;
+                var x = dlg.querySelector('[data-tt-tool-close]');
+                if (x) x.focus();
+            }
+            function close() {
+                dlg.hidden = true;
+                document.documentElement.classList.remove('tt-noscroll');
+                if (lastFocus && lastFocus.focus) lastFocus.focus();
+            }
+
+            initPicker(dlg, function (value) { if (card) pickPackage(card, value); });
+            if (card) {
+                initPicker(card);
+                card.addEventListener('click', function (e) {
+                    if (e.target.closest('[data-tt-tool-open]')) open();
+                });
+            }
+            dlg.addEventListener('click', function (e) {
+                if (e.target === dlg || e.target.closest('[data-tt-tool-close]')) close();
             });
+            dlg.addEventListener('keydown', function (e) {
+                if (e.key === 'Escape') { e.preventDefault(); close(); }
+            });
+            // Coming from a package product page (?goi=…): show the panel right away.
+            if (dlg.getAttribute('data-tt-tool-autoopen') === 'true') open();
         });
 
         // Design page: a category card picks the category in the form below instead of reloading the page.

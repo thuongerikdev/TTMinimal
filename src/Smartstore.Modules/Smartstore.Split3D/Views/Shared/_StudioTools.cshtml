@@ -1,0 +1,179 @@
+@model ToolsPageModel
+
+@addTagHelper Smartstore.Web.TagHelpers.Public.*, Smartstore.Web.Common
+
+@*
+    The tools board of the tools page and the home page. A card shows the packages; its picture, title or
+    "Mua ngay" opens the tool's detail panel (features + package choice + checkout), see studio.js initTools.
+*@
+
+@{
+    var buyUrl = Url.Action("Buy", "Tools", new { area = "" });
+
+    // Tools in development, shown after the ones on sale.
+    var comingSoon = new[]
+    {
+        (Name: "Công cụ tạo khuôn", Kind: "Addon Blender", Icon: "layers",
+            Text: "Dựng khuôn đúc nhiều mảnh từ mô hình ngay trong Blender: tự chia mặt phân khuôn, thêm chốt định vị, lỗ rót và lỗ thoát khí, xuất file sẵn để in."),
+        (Name: "App tạo khuôn", Kind: "Ứng dụng độc lập", Icon: "cube",
+            Text: "Phiên bản chạy riêng trên máy tính, không cần cài Blender: mở STL / OBJ / 3MF, tạo khuôn vài cú bấm và xuất file in."),
+        (Name: "App Split3D", Kind: "Ứng dụng độc lập", Icon: "scissors",
+            Text: "Cắt mô hình quá khổ thành nhiều mảnh vừa bàn in, tự tạo khớp nối — như addon Split3D Print nhưng không cần Blender.")
+    };
+
+    ToolPackageModel Selected(ToolCardModel tool)
+        => tool.Packages.FirstOrDefault(x => x.ProductId == Model.SelectedProductId)
+            ?? tool.Packages.FirstOrDefault(x => x.IsLifetime && x.Devices == tool.DeviceOptions[0])
+            ?? tool.Packages[0];
+
+    string ImageOf(ToolCardModel tool, ToolPackageModel selected)
+        => selected.ImageUrl ?? tool.Packages.FirstOrDefault(x => x.ImageUrl.HasValue())?.ImageUrl;
+}
+
+@* Package picker: device chips + package radios. Same markup on the card and in the panel. *@
+@functions {
+    void Picker(ToolCardModel tool, ToolPackageModel selected, string name)
+    {
+        if (tool.DeviceOptions.Count > 1)
+        {
+            <div class="tt-tool-label">Số máy</div>
+            <div class="tt-chips tt-tool-devices" role="group" aria-label="Số máy">
+                @foreach (var d in tool.DeviceOptions)
+                {
+                    <button type="button" class="tt-chip@(d == selected.Devices ? " is-active" : "")" data-devices="@d">@d máy</button>
+                }
+            </div>
+        }
+
+        <div class="tt-tool-label">Chọn gói</div>
+        <div class="tt-tool-packages">
+            @foreach (var p in tool.Packages)
+            {
+                <label class="tt-package" data-devices="@p.Devices" hidden="@(tool.DeviceOptions.Count > 1 && p.Devices != selected.Devices)">
+                    <input type="radio" name="@name" value="@p.ProductId" checked="@(p.ProductId == selected.ProductId)" data-img="@p.ImageUrl" />
+                    <span>
+                        <b>@p.Duration</b>
+                        <small>@p.Devices máy</small>
+                        <strong>@p.Price</strong>
+                    </span>
+                </label>
+            }
+        </div>
+    }
+}
+
+<div class="tt-tools">
+    @foreach (var tool in Model.Tools)
+    {
+        var selected = Selected(tool);
+        var image = ImageOf(tool, selected);
+
+        <article class="tt-tool" data-tt-tool="@tool.AddonId" data-tt-reveal>
+            <button type="button" class="tt-tool-media" data-tt-tool-open aria-label="Xem chi tiết @tool.Name">
+                @if (image != null)
+                {
+                    <img src="@image" alt="@tool.Name" data-tt-tool-img />
+                }
+                else
+                {
+                    <span class="tt-noimg">@StudioIcons.Get("cube")</span>
+                }
+                <span class="tt-tool-zoom">Xem chi tiết @StudioIcons.Get("arrow", "tt-arrow")</span>
+            </button>
+
+            <div class="tt-tool-body">
+                <div class="tt-tool-head">
+                    <h3><button type="button" data-tt-tool-open>@tool.Name</button></h3>
+                    @if (tool.Version.HasValue())
+                    {
+                        <span class="tt-pill">v@(tool.Version)</span>
+                    }
+                </div>
+                @if (tool.Description.HasValue())
+                {
+                    <div class="tt-tool-desc">@Html.Raw(tool.Description)</div>
+                }
+
+                <div class="tt-tool-buy">
+                    @{ Picker(tool, selected, "pick-" + tool.AddonId); }
+
+                    <button type="button" class="tt-button tt-button--dark tt-tool-cta" data-tt-tool-open>
+                        @StudioIcons.Get("bag") <span>Mua ngay</span>
+                    </button>
+                    <p class="tt-tool-note">@StudioIcons.Get("check") <span>Mỗi gói là 1 key · thanh toán xong nhận key qua email và trang <em>Key của tôi</em>.</span></p>
+                </div>
+            </div>
+        </article>
+    }
+
+    @* Coming soon cards share the row with the tools on sale. *@
+    @for (var i = 0; i < comingSoon.Length; i++)
+    {
+        var tool = comingSoon[i];
+        <article class="tt-soon-card" data-tt-reveal style="--d:@((i * 0.08).ToString("0.00", CultureInfo.InvariantCulture))s">
+            <span class="tt-soon-sticker">Sắp ra mắt</span>
+            <span class="tt-soon-icon">@StudioIcons.Get(tool.Icon)</span>
+            <span class="tt-pill">@tool.Kind</span>
+            <h3>@tool.Name</h3>
+            <p>@tool.Text</p>
+            <a class="tt-textlink" asp-route="ContactUs">Báo tôi khi ra mắt @StudioIcons.Get("arrow", "tt-arrow")</a>
+        </article>
+    }
+</div>
+
+@* Detail panels, moved to <body> by studio.js so no transformed ancestor clips them. *@
+@foreach (var tool in Model.Tools)
+{
+    var selected = Selected(tool);
+    var image = ImageOf(tool, selected);
+    var fallbackDesc = tool.Packages.FirstOrDefault(x => x.FullDescription.HasValue())?.FullDescription;
+    var titleId = "tt-tooldlg-title-" + tool.AddonId;
+
+    <div class="tt-dialog tt-tooldlg" data-tt-tool-dialog="@tool.AddonId" data-tt-tool-autoopen="@(tool.Packages.Any(x => x.ProductId == Model.SelectedProductId) ? "true" : null)" hidden>
+        <div class="tt-dialog-box tt-dialog-box--wide" role="dialog" aria-modal="true" aria-labelledby="@titleId">
+            <div class="tt-dialog-head">
+                <h3 id="@titleId">@tool.Name @if (tool.Version.HasValue()) { <span class="tt-pill">v@(tool.Version)</span> }</h3>
+                <button type="button" class="tt-dialog-x" data-tt-tool-close aria-label="Đóng">×</button>
+            </div>
+
+            <div class="tt-tooldlg-grid">
+                <div class="tt-tooldlg-side">
+                    <div class="tt-tool-media">
+                        @if (image != null)
+                        {
+                            <img src="@image" alt="@tool.Name" data-tt-tool-img />
+                        }
+                        else
+                        {
+                            <span class="tt-noimg">@StudioIcons.Get("cube")</span>
+                        }
+                    </div>
+
+                    <form method="post" action="@buyUrl" class="tt-tool-buy" asp-antiforgery="true">
+                        @{ Picker(tool, selected, "productId"); }
+
+                        <button type="submit" class="tt-button tt-button--dark tt-tool-cta">
+                            @StudioIcons.Get("bag") <span>Mua ngay</span>
+                        </button>
+                        <p class="tt-tool-note">@StudioIcons.Get("check") <span>Mỗi gói là 1 key · thanh toán xong nhận key qua email và trang <em>Key của tôi</em>.</span></p>
+                    </form>
+                </div>
+
+                <div class="tt-tooldlg-info">
+                    @if (tool.Description.HasValue())
+                    {
+                        <div class="tt-tooldlg-lead">@Html.Raw(tool.Description)</div>
+                    }
+                    @foreach (var p in tool.Packages)
+                    {
+                        var desc = p.FullDescription.NullEmpty() ?? fallbackDesc;
+                        if (desc.HasValue())
+                        {
+                            <div class="tt-tooldlg-desc" data-for="@p.ProductId" hidden="@(p.ProductId != selected.ProductId)">@Html.Raw(desc)</div>
+                        }
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+}

@@ -4,8 +4,30 @@
     {
       "name": "smartstore-web",
       "runtimeExecutable": "dotnet",
-      "runtimeArgs": ["run", "--no-build", "--project", "src/Smartstore.Web/Smartstore.Web.csproj", "--launch-profile", "Smartstore.Web"],
+      "runtimeArgs": [
+        "run",
+        "--no-build",
+        "--project",
+        "src/Smartstore.Web/Smartstore.Web.csproj",
+        "--launch-profile",
+        "Smartstore.Web"
+      ],
       "port": 5000
+    },
+    {
+      "name": "smartstore-web-5050",
+      "runtimeExecutable": "dotnet",
+      "runtimeArgs": [
+        "run",
+        "--no-build",
+        "--project",
+        "src/Smartstore.Web/Smartstore.Web.csproj",
+        "--launch-profile",
+        "Smartstore.Web",
+        "--urls",
+        "http://localhost:5050"
+      ],
+      "port": 5050
     }
   ]
 }

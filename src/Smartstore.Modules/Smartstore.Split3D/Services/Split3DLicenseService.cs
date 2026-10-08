@@ -363,7 +363,7 @@ public class Split3DLicenseService
                 LicenseId = payload.Id,
                 AddonId = addon.Id,
                 ProductCode = addon.ProductCode,
-                Email = payload.Email,
+                Email = payload.Email?.Trim().ToLowerInvariant(),
                 CustomerName = GetString(row, nameColumn).NullEmpty() ?? payload.Customer,
                 Phone = GetString(row, phoneColumn).Truncate(100),
                 KeyType = Split3DPlans.All.Contains(keyType) ? keyType : Split3DPlans.FromDays(days),

@@ -31,6 +31,7 @@ public class StudioHomeViewComponent : SmartViewComponent
     private readonly IAclService _aclService;
     private readonly IStoreMappingService _storeMappingService;
     private readonly StudioSettings _settings;
+    private readonly StudioToolsCatalog _toolsCatalog;
 
     public StudioHomeViewComponent(
         SmartDbContext db,
@@ -38,7 +39,8 @@ public class StudioHomeViewComponent : SmartViewComponent
         IPriceCalculationService priceCalculationService,
         IAclService aclService,
         IStoreMappingService storeMappingService,
-        StudioSettings settings)
+        StudioSettings settings,
+        StudioToolsCatalog toolsCatalog)
     {
         _db = db;
         _mediaService = mediaService;
@@ -46,6 +48,7 @@ public class StudioHomeViewComponent : SmartViewComponent
         _aclService = aclService;
         _storeMappingService = storeMappingService;
         _settings = settings;
+        _toolsCatalog = toolsCatalog;
     }
 
     public async Task<IViewComponentResult> InvokeAsync()
@@ -67,8 +70,7 @@ public class StudioHomeViewComponent : SmartViewComponent
             Technologies = PrintPriceList.Parse(_settings.PrintPriceTable),
             PrintPriceNote = _settings.PrintPriceNote,
             PrintServiceUrl = Url.RouteUrl(StudioStorefrontSetup.PrintServiceRouteName),
-            // The tools page lists every tool with its packages; the category page stays reachable by URL.
-            AddonCategoryUrl = Url.RouteUrl(StudioStorefrontSetup.ToolsRouteName)
+            ToolsUrl = Url.RouteUrl(StudioStorefrontSetup.ToolsRouteName)
         };
 
         // Own product categories: every published top-level category except the addon category.
@@ -101,7 +103,7 @@ public class StudioHomeViewComponent : SmartViewComponent
         var serviceCategories = await GetServiceCategoriesAsync(customer.GetRoleIds(), storeId, addonCategory?.Id ?? 0);
         model.Products = await GetProductsAsync(addonProductIds, storeId, serviceCategories.Select(x => x.Id).ToArray());
         model.ServiceCategories = serviceCategories;
-        model.Addons = await GetAddonsAsync();
+        model.Tools.Tools.AddRange(await _toolsCatalog.GetToolsAsync());
 
         return View(model);
     }
@@ -245,61 +247,6 @@ public class StudioHomeViewComponent : SmartViewComponent
                 Name = category.GetLocalized(x => x.Name),
                 Url = Url.RouteUrl("Category", new { SeName = await category.GetActiveSlugAsync() }),
                 ProductCount = counts.Get(category.Id)
-            });
-        }
-
-        return cards;
-    }
-
-    private async Task<List<StudioAddonCard>> GetAddonsAsync()
-    {
-        var addons = await _db.Split3DAddons()
-            .AsNoTracking()
-            .Where(x => x.Active)
-            .OrderBy(x => x.DisplayOrder)
-            .ThenBy(x => x.Id)
-            .ToListAsync();
-
-        var mappings = await _db.Split3DAddonProducts().AsNoTracking().ToListAsync();
-        var productIds = mappings.Select(x => x.ProductId).Distinct().ToArray();
-        var products = (await _db.Products
-            .AsNoTracking()
-            .ApplyStandardFilter(false)
-            .Where(x => productIds.Contains(x.Id))
-            .ToListAsync())
-            .ToDictionary(x => x.Id);
-
-        var cards = new List<StudioAddonCard>();
-
-        foreach (var addon in addons)
-        {
-            var addonProducts = mappings
-                .Where(x => x.AddonId == addon.Id)
-                .Select(x => products.Get(x.ProductId))
-                .Where(x => x != null)
-                .OrderBy(x => x.Price)
-                .ToList();
-
-            if (addonProducts.Count == 0)
-            {
-                continue;
-            }
-
-            var cheapest = addonProducts[0];
-            var featured = addonProducts.FirstOrDefault(x => x.Sku == "S3D-1Y") ?? cheapest;
-            var pictured = featured.MainPictureId > 0 ? featured : addonProducts.FirstOrDefault(x => x.MainPictureId > 0);
-
-            cards.Add(new StudioAddonCard
-            {
-                Name = addon.Name,
-                Version = addon.Version,
-                Description = addon.Description.HasValue()
-                    ? addon.Description.RemoveHtml().Truncate(220, "…")
-                    : Split3DStorefrontContent.ShortDescription,
-                Url = Url.RouteUrl("Product", new { SeName = await featured.GetActiveSlugAsync() }),
-                ImageUrl = pictured != null ? await _mediaService.GetUrlAsync(pictured.MainPictureId, ThumbnailSize, null, false) : null,
-                PriceFrom = PrintPriceList.FormatPrice(cheapest.Price),
-                PlanCount = addonProducts.Count
             });
         }
 
