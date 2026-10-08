@@ -710,7 +710,8 @@
         }
 
         function saveSettings(button) {
-            var token = card.querySelector('input[name="__RequestVerificationToken"]'), body = new URLSearchParams();
+            // The card renders no token of its own (it lives inside the order edit form), so use the page's.
+            var token = document.querySelector('input[name="__RequestVerificationToken"]'), body = new URLSearchParams();
             body.set('clearance', opt('clearance').replace(',', '.'));
             body.set('pocket', opt('pocket').replace(',', '.'));
             body.set('format', format());

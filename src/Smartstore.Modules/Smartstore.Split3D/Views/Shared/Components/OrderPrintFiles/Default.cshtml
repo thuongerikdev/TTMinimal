@@ -59,7 +59,8 @@
         </div>
         <div>
             <button type="button" class="btn btn-outline-secondary btn-sm" data-tt-save-settings>Lưu làm mặc định</button>
-            @Html.AntiForgeryToken()
+            @* No own antiforgery token: the card sits inside the order edit form, and a second
+               __RequestVerificationToken field makes every submit of that form fail with 400. *@
         </div>
     </div>
     <div class="card-body p-0">
