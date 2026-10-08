@@ -6,15 +6,7 @@
     var zalo = new string((Model.Phone ?? string.Empty).Where(char.IsDigit).ToArray());
 
     // The next step the studio usually takes, offered as the primary button.
-    var nextStep = (PrintOrderStatus)Model.StatusId switch
-    {
-        PrintOrderStatus.Draft or PrintOrderStatus.AwaitingPayment => ((int?)PrintOrderStatus.Paid, T("Plugins.Split3D.PrintJob.Action.MarkPaid").Value),
-        PrintOrderStatus.Paid => ((int?)PrintOrderStatus.Confirmed, T("Plugins.Split3D.PrintJob.Action.Confirm").Value),
-        PrintOrderStatus.Confirmed => ((int?)PrintOrderStatus.Printing, T("Plugins.Split3D.PrintJob.Action.StartPrinting").Value),
-        PrintOrderStatus.Printing => ((int?)PrintOrderStatus.Ready, T("Plugins.Split3D.PrintJob.Action.Ready").Value),
-        PrintOrderStatus.Ready => ((int?)PrintOrderStatus.Completed, T("Plugins.Split3D.PrintJob.Action.Complete").Value),
-        _ => (null, null)
-    };
+    var nextStep = PrintJobSteps.Next((PrintOrderStatus)Model.StatusId, Model.IsGoods);
 }
 
 <div class="section-header">
@@ -101,9 +93,9 @@
         </div>
 
         <div class="card">
-            <div class="card-header font-weight-bold"><i class="bi bi-boxes mr-1"></i> @T("Plugins.Split3D.PrintJob.Models")</div>
+            <div class="card-header font-weight-bold"><i class="bi bi-boxes mr-1"></i> @T(Model.IsGoods ? "Plugins.Split3D.PrintJob.Products" : "Plugins.Split3D.PrintJob.Models")</div>
             <div class="card-body">
-                <dl class="row">
+                <dl class="row" sm-if="!Model.IsGoods">
                     <dt class="col-sm-4"><smart-label asp-for="Technology" /></dt>
                     <dd class="col-sm-8">@Model.Technology @Model.Material @(Model.Fill.HasValue() ? "· " + Model.Fill : string.Empty)</dd>
 
@@ -136,7 +128,30 @@
                     </dd>
                 </dl>
 
-                @if (Model.Models.Count > 0)
+                @if (Model.IsGoods)
+                {
+                    <table class="table table-sm mb-0">
+                        <thead>
+                            <tr>
+                                <th>@T("Plugins.Split3D.PrintJob.ProductName")</th>
+                                <th class="text-right">@T("Plugins.Split3D.PrintJob.Quantity")</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var line in Model.Models)
+                            {
+                                <tr>
+                                    <td>
+                                        @line.Name
+                                        <div sm-if="line.Size.HasValue()" class="text-muted small">@line.Size</div>
+                                    </td>
+                                    <td class="text-right">@line.Quantity</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                }
+                else if (Model.Models.Count > 0)
                 {
                     <table class="table table-sm mb-0">
                         <thead>
@@ -213,7 +228,7 @@
                         {
                             <button type="submit" name="statusId" value="@nextStep.Item1" class="btn btn-primary mr-1 mb-1">
                                 <i class="bi bi-check2-circle"></i>
-                                <span>@nextStep.Item2</span>
+                                <span>@T(nextStep.Item2!)</span>
                             </button>
                         }
                         @if (Model.StatusId != (int)PrintOrderStatus.Cancelled)
@@ -257,7 +272,7 @@
             <input type="hidden" asp-for="Id" />
             <div class="card-header font-weight-bold"><i class="bi bi-cash-coin mr-1"></i> @T("Plugins.Split3D.PrintJob.Settlement")</div>
             <div class="card-body">
-                <div class="form-group">
+                <div class="form-group" sm-if="!Model.IsGoods">
                     <smart-label asp-for="FinalPrice" />
                     <input asp-for="FinalPrice" class="form-control" type="number" step="1000" min="0" />
                     <span class="form-text text-muted">@T("Plugins.Split3D.PrintJob.Fields.FinalPrice.Hint")</span>

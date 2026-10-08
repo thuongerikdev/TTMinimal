@@ -75,7 +75,7 @@ public class CheckoutCompletedFilter : IAsyncActionFilter
 
             var jobs = await _db.Value.PrintOrders()
                 .AsNoTracking()
-                .Where(x => x.OrderId == order.Id)
+                .Where(x => x.OrderId == order.Id && x.KindId == (int)PrintJobKind.File)
                 .ToListAsync();
 
             if (jobs.Count > 0)

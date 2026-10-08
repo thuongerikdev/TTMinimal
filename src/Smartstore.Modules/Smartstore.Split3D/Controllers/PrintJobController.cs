@@ -22,12 +22,18 @@ public class PrintJobController : AdminController
 
     private readonly SmartDbContext _db;
     private readonly PrintOrderService _printOrderService;
+    private readonly StudioOrderClassifier _orderClassifier;
     private readonly StudioSettings _settings;
 
-    public PrintJobController(SmartDbContext db, PrintOrderService printOrderService, StudioSettings settings)
+    public PrintJobController(
+        SmartDbContext db,
+        PrintOrderService printOrderService,
+        StudioOrderClassifier orderClassifier,
+        StudioSettings settings)
     {
         _db = db;
         _printOrderService = printOrderService;
+        _orderClassifier = orderClassifier;
         _settings = settings;
     }
 
@@ -54,6 +60,11 @@ public class PrintJobController : AdminController
     public async Task<IActionResult> JobList(GridCommand command, PrintJobListModel model)
     {
         var query = _db.PrintOrders().AsNoTracking();
+
+        if (model.SearchKindId.HasValue)
+        {
+            query = query.Where(x => x.KindId == model.SearchKindId.Value);
+        }
 
         if (model.SearchStatusId.HasValue)
         {
@@ -237,12 +248,81 @@ public class PrintJobController : AdminController
             return BadRequest();
         }
 
-        var status = (PrintOrderStatus)statusId;
-        await _printOrderService.SetStatusAsync(job, status, message, notifyCustomer);
-
-        NotifySuccess(T("Plugins.Split3D.PrintJob.StatusChanged", job.Code!, PrintOrderService.GetStatusText(status)));
+        await ApplyStatusAsync(job, (PrintOrderStatus)statusId, message, notifyCustomer);
 
         return RedirectToAction(nameof(Edit), new { id = job.Id });
+    }
+
+    /// <summary>
+    /// Workflow step taken on the admin order page (<see cref="Components.OrderWorkflowViewComponent"/>). The card sits
+    /// inside the order edit form, so its buttons post that form here via <c>formaction</c>; the job and the step come
+    /// from the query string, the form's own fields (e.g. its "Id") are ignored.
+    /// </summary>
+    [HttpPost]
+    [Permission(Permissions.Order.Update)]
+    public async Task<IActionResult> OrderStep([FromQuery] int jobId, [FromQuery] int step)
+    {
+        // Field names carry the job id: an order with several jobs renders one message box per job.
+        var message = Request.Form["ttStepMessage_" + jobId].ToString().NullEmpty();
+        var notifyCustomer = Request.Form["ttStepNotify_" + jobId].ToString().EqualsNoCase("true");
+
+        var job = await _db.PrintOrders().FindByIdAsync(jobId);
+        if (job == null)
+        {
+            return NotFound();
+        }
+
+        if (!Enum.IsDefined(typeof(PrintOrderStatus), step))
+        {
+            return BadRequest();
+        }
+
+        await ApplyStatusAsync(job, (PrintOrderStatus)step, message, notifyCustomer);
+
+        return job.OrderId > 0
+            ? RedirectToAction("Edit", "Order", new { id = job.OrderId, area = "Admin" })
+            : RedirectToAction(nameof(Edit), new { id = job.Id });
+    }
+
+    /// <summary>
+    /// Puts the products of an order into the studio workflow, for orders placed before the workflow covered goods
+    /// and for orders entered in the admin area (whose products are added after the order was created).
+    /// </summary>
+    [HttpPost]
+    [Permission(Permissions.Order.Update)]
+    public async Task<IActionResult> CreateForOrder([FromQuery] int orderId)
+    {
+        var order = await _db.Orders.FindByIdAsync(orderId);
+        if (order == null)
+        {
+            return NotFound();
+        }
+
+        var goods = await _orderClassifier.GetGoodsItemsAsync(order.Id);
+        var job = await _printOrderService.CreateGoodsJobAsync(order, goods, false);
+
+        if (job != null)
+        {
+            NotifySuccess(T("Plugins.Split3D.PrintJob.Created", job.Code!));
+        }
+        else
+        {
+            NotifyWarning(T("Plugins.Split3D.PrintJob.NoGoods"));
+        }
+
+        return RedirectToAction("Edit", "Order", new { id = order.Id, area = "Admin" });
+    }
+
+    private async Task ApplyStatusAsync(PrintOrder job, PrintOrderStatus status, string? message, bool notifyCustomer)
+    {
+        var warning = await _printOrderService.SetStatusAsync(job, status, message, notifyCustomer);
+
+        NotifySuccess(T("Plugins.Split3D.PrintJob.StatusChanged", job.Code!, PrintOrderService.GetStatusText(status, job.Kind)));
+
+        if (warning.HasValue())
+        {
+            NotifyWarning(warning!);
+        }
     }
 
     [HttpPost]
@@ -292,7 +372,10 @@ public class PrintJobController : AdminController
             Code = x.Code,
             CreatedOn = Services.DateTimeHelper.ConvertToUserTime(x.CreatedOnUtc, DateTimeKind.Utc),
             StatusId = x.StatusId,
-            StatusName = T("Plugins.Split3D.PrintJob.Status." + status),
+            StatusName = GetStatusName(status, x.Kind),
+            KindId = x.KindId,
+            IsGoods = x.Kind == PrintJobKind.Goods,
+            KindName = T("Plugins.Split3D.PrintJob.Kind." + x.Kind),
             StatusBadge = status switch
             {
                 PrintOrderStatus.Draft => "badge-secondary",
@@ -364,4 +447,10 @@ public class PrintJobController : AdminController
         => Enum.GetValues<PrintOrderStatus>()
             .Select(x => ((int)x, T("Plugins.Split3D.PrintJob.Status." + x).Value))
             .ToList();
+
+    /// <summary>
+    /// Status name; the production steps of goods have their own wording ("Đang làm" instead of "Đang in").
+    /// </summary>
+    private string GetStatusName(PrintOrderStatus status, PrintJobKind kind)
+        => T(PrintJobSteps.StatusKey(status, kind == PrintJobKind.Goods));
 }

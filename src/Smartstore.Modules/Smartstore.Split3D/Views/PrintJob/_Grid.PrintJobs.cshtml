@@ -30,6 +30,11 @@
                 <a :href="item.row.EditUrl" class="font-weight-medium">{{ item.value }}</a>
             </display-template>
         </column>
+        <column for="KindId" width="120px" sortable="false">
+            <display-template>
+                <span class="badge" :class="item.row.IsGoods ? 'badge-warning' : 'badge-light'">{{ item.row.KindName }}</span>
+            </display-template>
+        </column>
         <column for="CreatedOn" width="150px" />
         <column for="RecipientName" width="200px">
             <display-template>
@@ -42,10 +47,15 @@
                 <span class="badge" :class="item.row.StatusBadge">{{ item.row.StatusName }}</span>
             </display-template>
         </column>
-        <column for="Technology" width="130px" />
+        <column for="Technology" width="200px">
+            <display-template>
+                <span v-if="item.row.IsGoods" class="text-truncate d-block" :title="item.row.Material">{{ item.row.Material }}</span>
+                <span v-else>{{ item.value }}</span>
+            </display-template>
+        </column>
         <column for="TotalGrams" width="110px">
             <display-template>
-                {{ item.value }} g
+                <span v-if="item.value">{{ item.value }} g</span>
             </display-template>
         </column>
         <column for="Pieces" width="80px" />

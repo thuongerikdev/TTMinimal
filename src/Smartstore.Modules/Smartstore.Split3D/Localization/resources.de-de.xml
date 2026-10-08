@@ -2315,4 +2315,40 @@
     <LocaleResource Name="OrderCreate.Fields.Lines.Hint">
         <Value>Produkte und Mengen. Leerer Einzelpreis übernimmt den Produktpreis.</Value>
     </LocaleResource>
+    <LocaleResource Name="PrintJob.Kind.File">
+        <Value>Druck aus Dateien</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.Kind.Goods">
+        <Value>Produkte</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.Fields.Kind">
+        <Value>Art</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.Fields.Kind.Hint">
+        <Value>Druck aus hochgeladenen Dateien oder die Produkte einer normalen Bestellung.</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.GoodsStatus.Printing">
+        <Value>In Arbeit</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.GoodsStatus.Ready">
+        <Value>Fertig, wartet auf Übergabe</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.Action.StartMaking">
+        <Value>Produktion starten</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.Action.Made">
+        <Value>Fertig</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.Products">
+        <Value>Produkte</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.ProductName">
+        <Value>Produkt</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.OpenJob">
+        <Value>Details</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.NoGoods">
+        <Value>Diese Bestellung enthält keine Produkte für den Ablauf.</Value>
+    </LocaleResource>
 </Language>

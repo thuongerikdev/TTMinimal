@@ -1,5 +1,6 @@
 #nullable enable
 
+using Smartstore.Core.Checkout.Orders;
 using Smartstore.Core.Data;
 
 namespace Smartstore.Split3D.Services;
@@ -55,6 +56,31 @@ public class StudioOrderClassifier
             .ToListAsync(cancelToken);
 
         return await ClassifyAsync(productIds, cancelToken);
+    }
+
+    /// <summary>
+    /// Gets the items of an order that are <see cref="StudioOrderContent.Goods"/>: physical products the studio
+    /// prepares and hands over, i.e. neither keys nor print jobs. Products are included.
+    /// </summary>
+    public async Task<List<OrderItem>> GetGoodsItemsAsync(int orderId, CancellationToken cancelToken = default)
+    {
+        var items = await _db.OrderItems
+            .Include(x => x.Product)
+            .Where(x => x.OrderId == orderId)
+            .ToListAsync(cancelToken);
+
+        if (items.Count == 0)
+        {
+            return items;
+        }
+
+        var keyProductIds = (await _licenseService.GetProductPlansAsync(cancelToken)).Keys.ToHashSet();
+
+        return items
+            .Where(x => !keyProductIds.Contains(x.ProductId)
+                && !(x.Product?.Sku).EqualsNoCase(Split3DUpgradeService.UpgradeProductSku)
+                && !(x.Product?.Sku).EqualsNoCase(PrintOrderService.PrintProductSku))
+            .ToList();
     }
 
     /// <summary>

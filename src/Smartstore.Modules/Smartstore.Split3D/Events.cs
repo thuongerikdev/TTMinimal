@@ -44,6 +44,17 @@ public class Events : IConsumer
             {
                 logger.Error(ex, $"Split3D: failed to link the print job to order {order.Id}.");
             }
+
+            try
+            {
+                // Physical products run through the studio workflow like a print job.
+                var goods = await orderClassifier.GetGoodsItemsAsync(order.Id, cancelToken);
+                await printOrderService.CreateGoodsJobAsync(order, goods, true, cancelToken);
+            }
+            catch (Exception ex)
+            {
+                logger.Error(ex, $"Split3D: failed to create the studio job of order {order.Id}.");
+            }
         }
 
         if (order == null

@@ -8,7 +8,8 @@ using Smartstore.Split3D.Components;
 namespace Smartstore.Split3D.Filters;
 
 /// <summary>
-/// Puts the "File in 3D" card (<see cref="OrderPrintFilesViewComponent"/>) at the top of the admin order page.
+/// Puts the workflow card (<see cref="OrderWorkflowViewComponent"/>) and the "File in 3D" card
+/// (<see cref="OrderPrintFilesViewComponent"/>) at the top of the admin order page.
 /// Registered for Order/Edit, see Startup; the card renders nothing for orders without designer products.
 /// </summary>
 public class OrderPrintFilesFilter : IResultFilter
@@ -30,6 +31,7 @@ public class OrderPrintFilesFilter : IResultFilter
             return;
         }
 
+        _widgetProvider.Value.RegisterWidget("order_edit_top", new ComponentWidget<OrderWorkflowViewComponent>(new { orderId }) { Order = -10 });
         _widgetProvider.Value.RegisterWidget("order_edit_top", new ComponentWidget<OrderPrintFilesViewComponent>(new { orderId }));
     }
 

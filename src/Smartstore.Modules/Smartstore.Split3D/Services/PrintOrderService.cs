@@ -21,6 +21,7 @@ using Smartstore.Core.Stores;
 using Smartstore.Engine;
 using Smartstore.IO;
 using Smartstore.Utilities;
+using Smartstore.Utilities.Html;
 
 namespace Smartstore.Split3D.Services;
 
@@ -87,6 +88,8 @@ public class PrintOrderService
     private readonly IUrlService _urlService;
     private readonly IEmailAccountService _emailAccountService;
     private readonly IStoreContext _storeContext;
+    private readonly Lazy<IOrderProcessingService> _orderProcessingService;
+    private readonly Lazy<StudioOrderClassifier> _orderClassifier;
     private readonly StudioSettings _settings;
 
     public PrintOrderService(
@@ -96,6 +99,8 @@ public class PrintOrderService
         IUrlService urlService,
         IEmailAccountService emailAccountService,
         IStoreContext storeContext,
+        Lazy<IOrderProcessingService> orderProcessingService,
+        Lazy<StudioOrderClassifier> orderClassifier,
         StudioSettings settings)
     {
         _db = db;
@@ -104,6 +109,8 @@ public class PrintOrderService
         _urlService = urlService;
         _emailAccountService = emailAccountService;
         _storeContext = storeContext;
+        _orderProcessingService = orderProcessingService;
+        _orderClassifier = orderClassifier;
         _settings = settings;
     }
 
@@ -375,10 +382,118 @@ public class PrintOrderService
     }
 
     /// <summary>
+    /// Creates the studio job of an ordinary order: its physical products (<paramref name="items"/>) run through the
+    /// same workflow as a print job (paid, confirmed, in production, ready, handed over). An order gets one such job.
+    /// </summary>
+    /// <param name="items">The goods items of the order, products included, see <see cref="StudioOrderClassifier.GetGoodsItemsAsync"/>.</param>
+    /// <param name="notify">Whether the studio gets an email about the new job.</param>
+    /// <returns>The new or already existing job, or <c>null</c> if the order has no goods.</returns>
+    public async Task<PrintOrder?> CreateGoodsJobAsync(
+        Order order,
+        IReadOnlyCollection<OrderItem> items,
+        bool notify = true,
+        CancellationToken cancelToken = default)
+    {
+        Guard.NotNull(order);
+        Guard.NotNull(items);
+
+        if (items.Count == 0)
+        {
+            return null;
+        }
+
+        var existing = await _db.PrintOrders()
+            .FirstOrDefaultAsync(x => x.OrderId == order.Id && x.KindId == (int)PrintJobKind.Goods, cancelToken);
+        if (existing != null)
+        {
+            return existing;
+        }
+
+        await _db.LoadReferenceAsync(order, x => x.ShippingAddress);
+        await _db.LoadReferenceAsync(order, x => x.BillingAddress);
+
+        var address = order.ShippingAddress ?? order.BillingAddress;
+        var pickup = order.ShippingStatus == ShippingStatus.ShippingNotRequired || StudioDeliveryService.IsPickup(order.ShippingMethod);
+        var paid = order.PaymentStatus == PaymentStatus.Paid;
+        var total = decimal.Round(items.Sum(x => x.PriceInclTax), 0);
+
+        var models = items
+            .Select(x => new PrintOrderModel
+            {
+                Name = (x.Product?.Name.NullEmpty() ?? "#" + x.ProductId).Truncate(200),
+                Quantity = Math.Max(x.Quantity, 1),
+                // Selected attributes (text, color, length, ...) take the place of the model size.
+                Size = HtmlUtility.ConvertHtmlToPlainText(x.AttributeDescription, true)
+                    .Replace("\r", string.Empty)
+                    .Replace("\n", " · ")
+                    .Trim()
+                    .Truncate(300)
+                    .NullEmpty()
+            })
+            .ToList();
+
+        var job = new PrintOrder
+        {
+            Kind = PrintJobKind.Goods,
+            CustomerId = order.CustomerId,
+            OrderId = order.Id,
+            Technology = GoodsTechnology,
+            Material = string.Join(", ", models.Select(x => x.Quantity > 1 ? $"{x.Name} ×{x.Quantity}" : x.Name)).Truncate(400),
+            Pieces = models.Sum(x => x.Quantity),
+            ModelCount = models.Count,
+            PriceEstimate = total,
+            // Goods are paid in full with the order: nothing is collected on handover.
+            DepositPercent = 100,
+            DepositAmount = total,
+            DeliveryMethod = pickup ? PrintDeliveryMethod.Pickup : PrintDeliveryMethod.Shipping,
+            RecipientName = address?.GetFullName(false).NullEmpty()?.Truncate(200),
+            Phone = address?.PhoneNumber.NullEmpty()?.Truncate(50),
+            Email = address?.Email.NullEmpty()?.Truncate(255),
+            AddressLine = pickup
+                ? null
+                : string.Join(", ", new[] { address?.Address1, address?.Address2 }.Where(x => x.HasValue())).NullEmpty()?.Truncate(400),
+            City = pickup ? null : address?.City.NullEmpty()?.Truncate(150),
+            Note = order.CustomerOrderComment.NullEmpty(),
+            Status = paid ? PrintOrderStatus.Paid : PrintOrderStatus.AwaitingPayment,
+            PaidOnUtc = paid ? DateTime.UtcNow : null,
+            CreatedOnUtc = DateTime.UtcNow,
+            UpdatedOnUtc = DateTime.UtcNow
+        };
+
+        job.Models = models;
+
+        _db.PrintOrders().Add(job);
+        await _db.SaveChangesAsync(cancelToken);
+
+        job.Code = FormatCode(job.Id, PrintJobKind.Goods);
+        _db.OrderNotes.Add(order, $"Đơn hàng được đưa vào quy trình studio với mã {job.Code}.", false);
+        await _db.SaveChangesAsync(cancelToken);
+
+        if (notify)
+        {
+            QueueNotification(job, paid ? "Đơn hàng đã thanh toán – cần xác nhận" : "Đơn hàng mới", order);
+            await _db.SaveChangesAsync(cancelToken);
+        }
+
+        return job;
+    }
+
+    /// <summary>
+    /// <see cref="PrintOrder.Technology"/> of a goods job, shown in the job list and on the dashboard.
+    /// </summary>
+    public const string GoodsTechnology = "Sản phẩm";
+
+    /// <summary>
     /// Job number as shown to the customer and stored in the cart line.
     /// </summary>
     public static string FormatCode(int id)
         => "IN" + id.ToString("D5");
+
+    /// <summary>
+    /// Job number of a job of the given kind: "IN00012" for prints from files, "SP00012" for the products of an order.
+    /// </summary>
+    public static string FormatCode(int id, PrintJobKind kind)
+        => kind == PrintJobKind.Goods ? "SP" + id.ToString("D5") : FormatCode(id);
 
     private string BuildFilePath(PrintOrder job, string fileName)
         => PathUtility.Join(FileFolder, job.CreatedOnUtc.ToString("yyyy-MM"), $"{job.Id}-{SafeFileName(fileName)}");
@@ -621,16 +736,20 @@ public class PrintOrderService
             job.UpdatedOnUtc = DateTime.UtcNow;
         }
 
+        var onlyGoods = jobs.All(x => x.Kind == PrintJobKind.Goods);
         _db.OrderNotes.Add(order,
-            $"Đã nhận {PrintPriceList.FormatPrice(order.OrderTotal)} cho đơn in {string.Join(", ", jobs.Select(x => x.Code))}. " +
-            "Studio sẽ kiểm tra file và xác nhận đơn, sau đó bắt đầu in.",
+            onlyGoods
+                ? $"Đã nhận {PrintPriceList.FormatPrice(order.OrderTotal)} cho đơn hàng {string.Join(", ", jobs.Select(x => x.Code))}. " +
+                  "Studio sẽ xác nhận đơn và bắt đầu làm."
+                : $"Đã nhận {PrintPriceList.FormatPrice(order.OrderTotal)} cho đơn in {string.Join(", ", jobs.Select(x => x.Code))}. " +
+                  "Studio sẽ kiểm tra file và xác nhận đơn, sau đó bắt đầu in.",
             displayToCustomer: true);
 
         await _db.SaveChangesAsync(cancelToken);
 
         foreach (var job in jobs)
         {
-            QueueNotification(job, "Đơn in 3D đã thanh toán – cần xác nhận", order);
+            QueueNotification(job, job.Kind == PrintJobKind.Goods ? "Đơn hàng đã thanh toán – cần xác nhận" : "Đơn in 3D đã thanh toán – cần xác nhận", order);
         }
 
         await _db.SaveChangesAsync(cancelToken);
@@ -643,7 +762,11 @@ public class PrintOrderService
     /// </summary>
     /// <param name="message">Extra text for the order note, e.g. the printing time or the tracking number.</param>
     /// <param name="notifyCustomer">Whether the order note is visible to the customer.</param>
-    public async Task SetStatusAsync(
+    /// <returns>
+    /// A warning if the Smartstore order could not follow the step (e.g. it cannot be completed), otherwise <c>null</c>.
+    /// The job itself always moves.
+    /// </returns>
+    public async Task<string?> SetStatusAsync(
         PrintOrder job,
         PrintOrderStatus status,
         string? message = null,
@@ -657,6 +780,9 @@ public class PrintOrderService
 
         switch (status)
         {
+            case PrintOrderStatus.Paid:
+                job.PaidOnUtc ??= DateTime.UtcNow;
+                break;
             case PrintOrderStatus.Confirmed:
                 job.ConfirmedOnUtc ??= DateTime.UtcNow;
                 break;
@@ -665,12 +791,13 @@ public class PrintOrderService
                 break;
         }
 
+        Order? order = null;
         if (job.OrderId > 0)
         {
-            var order = await _db.Orders.FindByIdAsync(job.OrderId, false, cancelToken);
+            order = await _db.Orders.FindByIdAsync(job.OrderId, true, cancelToken);
             if (order != null)
             {
-                var note = $"Đơn in {job.Code}: {GetStatusText(status)}.";
+                var note = $"{GetJobLabel(job.Kind)} {job.Code}: {GetStatusText(status, job.Kind)}.";
                 if (message.HasValue())
                 {
                     note += " " + message!.Trim();
@@ -686,7 +813,113 @@ public class PrintOrderService
         }
 
         await _db.SaveChangesAsync(cancelToken);
+
+        return order != null ? await SyncOrderAsync(job, order, status, notifyCustomer, cancelToken) : null;
     }
+
+    /// <summary>
+    /// Lets the Smartstore order follow a workflow step of its job, so that order list, customer account and emails
+    /// show the same state: paid marks the order as paid, production moves it to processing, handed over completes it
+    /// once every job of the order is done, and cancelled cancels it once every job is cancelled (unless it also
+    /// carries addon keys, which are no studio work).
+    /// </summary>
+    private async Task<string?> SyncOrderAsync(PrintOrder job, Order order, PrintOrderStatus status, bool notifyCustomer, CancellationToken cancelToken)
+    {
+        var processing = _orderProcessingService.Value;
+
+        try
+        {
+            switch (status)
+            {
+                case PrintOrderStatus.Paid:
+                    if (order.CanMarkOrderAsPaid())
+                    {
+                        // Publishes OrderPaidEvent: other jobs of the order are marked as paid, keys are issued.
+                        await processing.MarkOrderAsPaidAsync(order);
+                    }
+                    break;
+
+                case PrintOrderStatus.Confirmed:
+                case PrintOrderStatus.Printing:
+                case PrintOrderStatus.Ready:
+                    if (order.OrderStatus == OrderStatus.Pending)
+                    {
+                        order.OrderStatus = OrderStatus.Processing;
+                        await _db.SaveChangesAsync(cancelToken);
+                    }
+                    break;
+
+                case PrintOrderStatus.Completed:
+                    if (order.OrderStatus != OrderStatus.Complete && await AllJobsAsync(order.Id, job.Id, PrintOrderStatus.Completed, cancelToken))
+                    {
+                        if (!order.CanCompleteOrder())
+                        {
+                            return $"Đơn hàng {order.GetOrderNumber()} không thể chuyển sang Hoàn tất.";
+                        }
+
+                        // Marks an unpaid order as paid (the rest was collected on handover) and delivered.
+                        await processing.CompleteOrderAsync(order);
+                    }
+                    break;
+
+                case PrintOrderStatus.Cancelled:
+                    if (order.CanCancelOrder() && await AllJobsAsync(order.Id, job.Id, PrintOrderStatus.Cancelled, cancelToken))
+                    {
+                        var content = await _orderClassifier.Value.GetContentAsync(order.Id, cancelToken);
+                        if (content.HasFlag(StudioOrderContent.Keys))
+                        {
+                            return $"Đơn hàng {order.GetOrderNumber()} còn key bản quyền nên không bị huỷ; huỷ thủ công nếu cần.";
+                        }
+
+                        await processing.CancelOrderAsync(order, notifyCustomer);
+                    }
+                    break;
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.Error(ex, $"Print job {job.Code}: order {order.Id} could not follow status {status}.");
+            return ex.Message;
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// Whether every other job of the order is <paramref name="status"/> (completed jobs also count as done when cancelled
+    /// ones are checked and vice versa, so a partly cancelled order still completes).
+    /// </summary>
+    private async Task<bool> AllJobsAsync(int orderId, int exceptJobId, PrintOrderStatus status, CancellationToken cancelToken)
+    {
+        var others = await _db.PrintOrders()
+            .Where(x => x.OrderId == orderId && x.Id != exceptJobId)
+            .Select(x => x.StatusId)
+            .ToListAsync(cancelToken);
+
+        return status == PrintOrderStatus.Cancelled
+            ? others.All(x => x == (int)PrintOrderStatus.Cancelled)
+            : others.All(x => x == (int)PrintOrderStatus.Completed || x == (int)PrintOrderStatus.Cancelled);
+    }
+
+    /// <summary>
+    /// Name of a job in order notes and messages: "Đơn in" for prints from files, "Đơn hàng" for products.
+    /// </summary>
+    public static string GetJobLabel(PrintJobKind kind)
+        => kind == PrintJobKind.Goods ? "Đơn hàng" : "Đơn in";
+
+    /// <summary>
+    /// Status text for order notes; production steps of goods read "đang làm" instead of "đang in".
+    /// </summary>
+    public static string GetStatusText(PrintOrderStatus status, PrintJobKind kind) => kind == PrintJobKind.Goods
+        ? status switch
+        {
+            PrintOrderStatus.Paid => "đã nhận tiền, chờ studio xác nhận",
+            PrintOrderStatus.Confirmed => "studio đã xác nhận, đang chuẩn bị",
+            PrintOrderStatus.Printing => "đang làm",
+            PrintOrderStatus.Ready => "đã làm xong, chờ giao / nhận hàng",
+            _ => GetStatusText(status)
+        }
+        : GetStatusText(status);
 
     public static string GetStatusText(PrintOrderStatus status) => status switch
     {
@@ -967,8 +1200,10 @@ public class PrintOrderService
                 Row("Khách hàng", job.RecipientName) +
                 Row("Điện thoại", job.Phone) +
                 Row("Email", job.Email) +
-                Row("Công nghệ", string.Join(' ', new[] { job.Technology, job.Material }.Where(x => x.HasValue()))) +
-                Row("Mô hình", $"{job.ModelCount} mẫu · {job.Pieces} cái · {PrintPriceList.FormatWeight(job.TotalGrams)}") +
+                Row("Công nghệ", job.Kind == PrintJobKind.Goods ? null : string.Join(' ', new[] { job.Technology, job.Material }.Where(x => x.HasValue()))) +
+                (job.Kind == PrintJobKind.Goods
+                    ? Row("Sản phẩm", $"{job.Material} ({job.Pieces} cái)")
+                    : Row("Mô hình", $"{job.ModelCount} mẫu · {job.Pieces} cái · {PrintPriceList.FormatWeight(job.TotalGrams)}")) +
                 Row("Tạm tính", PrintPriceList.FormatPrice(job.FinalPrice ?? job.PriceEstimate)) +
                 Row("Đã thanh toán", $"{PrintPriceList.FormatPrice(job.DepositAmount)} ({job.DepositPercent}%)") +
                 Row("Còn lại", job.Outstanding > 0 ? PrintPriceList.FormatPrice(job.Outstanding) : null) +

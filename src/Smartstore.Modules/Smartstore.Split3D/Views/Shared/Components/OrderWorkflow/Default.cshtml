@@ -1,0 +1,106 @@
+@using Smartstore.Split3D.Components
+@model OrderWorkflowModel
+
+@*
+    Sits inside the order edit form: no own <form> and no antiforgery token. The buttons post the order form to
+    PrintJob/OrderStep (or CreateForOrder) via formaction; that form carries the page's token.
+*@
+
+<style>
+    .tt-wf { margin-bottom: 1.5rem; }
+    .tt-wf-job + .tt-wf-job { border-top: 1px solid var(--gray-300, #dee2e6); }
+    .tt-wf-steps { display: flex; flex-wrap: wrap; gap: .35rem; margin: .5rem 0 .75rem; padding: 0; list-style: none; }
+    .tt-wf-steps li { padding: .2rem .6rem; border-radius: 999px; font-size: .78rem; background: var(--gray-200, #e9ecef); color: var(--gray-600, #6c757d); }
+    .tt-wf-steps li.is-done { background: #d1f2e0; color: #11643a; }
+    .tt-wf-steps li.is-current { background: #ffd84d; color: #1f1a17; font-weight: 700; }
+    .tt-wf-steps li.is-cancelled { background: #ffd6d6; color: #8a1c1c; font-weight: 700; }
+    .tt-wf-form { display: flex; flex-wrap: wrap; align-items: flex-end; gap: .5rem 1rem; }
+    .tt-wf-form textarea { min-width: 18rem; flex: 1 1 18rem; }
+</style>
+
+@if (Model.HasOpenJob)
+{
+    @* The order is completed or cancelled through its workflow, which keeps job, notes and order status together. *@
+    <style>
+        #completeorder, #cancelorder { display: none !important; }
+    </style>
+}
+
+<div class="card tt-wf">
+    <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
+        <div>
+            <h6 class="m-0">Quy trình xử lý</h6>
+            <small class="text-muted">
+                Đi từng bước: nhận tiền → xác nhận → làm / in → xong, chờ giao → đã giao. Mỗi bước ghi chú vào đơn
+                (khách xem được nếu tick "Báo khách"); bước cuối tự chuyển đơn sang Hoàn tất.
+            </small>
+        </div>
+    </div>
+
+    @foreach (var job in Model.Jobs)
+    {
+        var current = Array.IndexOf(PrintJobSteps.Path, job.Status);
+        var cancelled = job.Status == PrintOrderStatus.Cancelled;
+        var finished = cancelled || job.Status == PrintOrderStatus.Completed;
+
+        <div class="card-body tt-wf-job">
+            <div class="d-flex align-items-center flex-wrap gap-2">
+                <a href="@job.EditUrl" class="font-weight-bold">@job.Code</a>
+                <span class="badge @(job.IsGoods ? "badge-warning" : "badge-light") ml-2">@T("Plugins.Split3D.PrintJob.Kind." + (job.IsGoods ? PrintJobKind.Goods : PrintJobKind.File))</span>
+                <span sm-if="job.Summary.HasValue()" class="text-muted small ml-2">@job.Summary</span>
+            </div>
+
+            <ol class="tt-wf-steps">
+                @for (var i = 0; i < PrintJobSteps.Path.Length; i++)
+                {
+                    var step = PrintJobSteps.Path[i];
+                    var css = cancelled ? null : i < current ? "is-done" : i == current ? "is-current" : null;
+                    <li class="@css">@T(PrintJobSteps.StatusKey(step, job.IsGoods))</li>
+                }
+                @if (cancelled)
+                {
+                    <li class="is-cancelled">@T("Plugins.Split3D.PrintJob.Status.Cancelled")</li>
+                }
+            </ol>
+
+            @if (!finished)
+            {
+                <div class="tt-wf-form">
+                    <textarea name="ttStepMessage_@job.Id" rows="1" class="form-control form-control-sm"
+                              placeholder="@T("Plugins.Split3D.PrintJob.StatusMessagePlaceholder")"></textarea>
+                    <div class="form-check mb-1">
+                        <input type="checkbox" class="form-check-input" id="tt-wf-notify-@job.Id" name="ttStepNotify_@job.Id" value="true" checked />
+                        <label class="form-check-label" for="tt-wf-notify-@job.Id">Báo khách</label>
+                    </div>
+                    <div>
+                        @if (job.NextStatus.HasValue)
+                        {
+                            <button type="submit" class="btn btn-sm btn-primary"
+                                    formaction="@(job.StepUrl)&step=@job.NextStatus" formmethod="post" formnovalidate>
+                                <i class="fa fa-check"></i>
+                                <span>@T(job.NextLabel!)</span>
+                            </button>
+                        }
+                        <button type="submit" class="btn btn-sm btn-outline-danger"
+                                formaction="@(job.StepUrl)&step=@((int)PrintOrderStatus.Cancelled)" formmethod="post" formnovalidate
+                                onclick="return confirm('@T("Admin.Common.AreYouSure")')">
+                            <span>@T("Plugins.Split3D.PrintJob.Action.Cancel")</span>
+                        </button>
+                        <a href="@job.EditUrl" class="btn btn-sm btn-secondary">@T("Plugins.Split3D.PrintJob.OpenJob")</a>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+
+    @if (Model.CanCreate)
+    {
+        <div class="card-body tt-wf-job d-flex align-items-center justify-content-between flex-wrap gap-2">
+            <span class="text-muted">Đơn này chưa có quy trình cho sản phẩm (đơn đặt trước khi có tính năng, hoặc đơn tạo trong admin).</span>
+            <button type="submit" class="btn btn-sm btn-primary" formaction="@Model.CreateUrl" formmethod="post" formnovalidate>
+                <i class="fa fa-plus"></i>
+                <span>Đưa vào quy trình</span>
+            </button>
+        </div>
+    }
+</div>

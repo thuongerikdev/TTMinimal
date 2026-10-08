@@ -4979,4 +4979,40 @@
     <LocaleResource Name="OrderCreate.Fields.Lines.Hint">
         <Value>Sản phẩm và số lượng của đơn. Đơn giá để trống thì lấy giá sản phẩm.</Value>
     </LocaleResource>
+    <LocaleResource Name="PrintJob.Kind.File">
+        <Value>In theo file</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.Kind.Goods">
+        <Value>Sản phẩm</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.Fields.Kind">
+        <Value>Loại đơn</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.Fields.Kind.Hint">
+        <Value>In theo file khách gửi, hoặc sản phẩm của một đơn hàng thường.</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.GoodsStatus.Printing">
+        <Value>Đang làm</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.GoodsStatus.Ready">
+        <Value>Đã làm xong, chờ giao</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.Action.StartMaking">
+        <Value>Bắt đầu làm</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.Action.Made">
+        <Value>Làm xong</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.Products">
+        <Value>Sản phẩm</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.ProductName">
+        <Value>Sản phẩm</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.OpenJob">
+        <Value>Chi tiết</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.NoGoods">
+        <Value>Đơn này không có sản phẩm nào cần đưa vào quy trình.</Value>
+    </LocaleResource>
 </Language>

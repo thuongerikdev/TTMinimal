@@ -35,6 +35,18 @@ public enum PrintOrderStatus
     Cancelled = 90
 }
 
+/// <summary>
+/// What a job produces. Both kinds run through the same studio workflow (<see cref="PrintOrderStatus"/>).
+/// </summary>
+public enum PrintJobKind
+{
+    /// <summary>A print from model files the customer uploaded, carried by the hidden print product.</summary>
+    File = 0,
+
+    /// <summary>The physical products of an ordinary order (shop products, name plates, class boards, ...).</summary>
+    Goods = 10
+}
+
 public enum PrintDeliveryMethod
 {
     /// <summary>The customer picks the print up at the studio.</summary>
@@ -220,6 +232,15 @@ public class PrintOrder : BaseEntity
 
     [MaxLength]
     public string? Note { get; set; }
+
+    public int KindId { get; set; }
+
+    [NotMapped]
+    public PrintJobKind Kind
+    {
+        get => (PrintJobKind)KindId;
+        set => KindId = (int)value;
+    }
 
     public int StatusId { get; set; }
 

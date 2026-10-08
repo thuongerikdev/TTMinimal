@@ -20,6 +20,16 @@ public class PrintJobModel : EntityModelBase
     public string? StatusName { get; set; }
     public string? StatusBadge { get; set; }
 
+    [LocalizedDisplay("*Kind")]
+    public int KindId { get; set; }
+
+    public string? KindName { get; set; }
+
+    /// <summary>
+    /// Whether the job carries the products of an ordinary order instead of a print from files.
+    /// </summary>
+    public bool IsGoods { get; set; }
+
     [LocalizedDisplay("*RecipientName")]
     public string? RecipientName { get; set; }
 
@@ -123,6 +133,9 @@ public class PrintJobListModel : ModelBase
 
     [LocalizedDisplay("Plugins.Split3D.PrintJob.Fields.Status")]
     public int? SearchStatusId { get; set; }
+
+    [LocalizedDisplay("Plugins.Split3D.PrintJob.Fields.Kind")]
+    public int? SearchKindId { get; set; }
 
     /// <summary>
     /// Jobs that are paid and wait for the studio to confirm them.

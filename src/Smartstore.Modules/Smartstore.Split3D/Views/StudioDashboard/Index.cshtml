@@ -325,7 +325,10 @@
                                 <span class="ttd-ticket-name">@(job.Customer.NullEmpty() ?? "Khách")</span>
                                 <span class="ttd-ticket-meta">
                                     <span><i class="bi bi-boxes"></i> @job.Pieces cái</span>
-                                    <span><i class="bi bi-speedometer"></i> @Num(job.Grams) g</span>
+                                    @if (job.Grams > 0)
+                                    {
+                                        <span><i class="bi bi-speedometer"></i> @Num(job.Grams) g</span>
+                                    }
                                 </span>
                                 @if (job.Material.HasValue())
                                 {

@@ -2315,4 +2315,40 @@
     <LocaleResource Name="OrderCreate.Fields.Lines.Hint">
         <Value>Products and quantities. An empty unit price takes the product price.</Value>
     </LocaleResource>
+    <LocaleResource Name="PrintJob.Kind.File">
+        <Value>Print from files</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.Kind.Goods">
+        <Value>Products</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.Fields.Kind">
+        <Value>Kind</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.Fields.Kind.Hint">
+        <Value>Print from uploaded files, or the products of an ordinary order.</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.GoodsStatus.Printing">
+        <Value>In production</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.GoodsStatus.Ready">
+        <Value>Done, waiting for handover</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.Action.StartMaking">
+        <Value>Start production</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.Action.Made">
+        <Value>Done</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.Products">
+        <Value>Products</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.ProductName">
+        <Value>Product</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.OpenJob">
+        <Value>Details</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.NoGoods">
+        <Value>This order has no products for the studio workflow.</Value>
+    </LocaleResource>
 </Language>
