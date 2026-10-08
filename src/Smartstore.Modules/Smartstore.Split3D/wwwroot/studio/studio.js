@@ -172,6 +172,103 @@
         });
     }
 
+    // ---------- Monster logo (hero): the two T letters open and close their mouths in turn ----------
+
+    function initMonster() {
+        var root = document.querySelector('[data-tt-monster]');
+        if (!root) return;
+
+        // Mouth shapes of the lower T: four rounded quads (outline, fill, frame, window) in state A (closed) and B (open),
+        // each [x0, y0, x1, y1, x2, y2, x3, y3, radius]. Upper T: jaw offset and travel of teeth and dome.
+        var C = {
+            jx: 6.5, jy: -181, D: 84, Hu: 64, Hd: 56,
+            A: [[149.5, 527.5, 368.5, 527.5, 356, 875, 162, 875, 37.5], [167.98, 545, 350.02, 545, 339.97, 856.5, 178.03, 856.5, 18],
+                [194.03, 576.5, 325.46, 576.5, 315.52, 825, 201.49, 825, 0], [211.03, 593.5, 308.46, 593.5, 298.52, 808, 218.49, 808, 0]],
+            B: [[139.62, 589.5, 373.88, 589.5, 362.57, 695, 150.93, 695, 15.5], [157.47, 606, 356.03, 606, 347.41, 677.5, 166.09, 677.5, 2],
+                [159.78, 633.5, 353.72, 633.5, 351.72, 650, 161.78, 650, 0], [174.78, 641.75, 338.72, 641.75, 336.72, 641.75, 176.78, 641.75, 0]]
+        };
+        var el = {};
+        ['jaw', 'lt', 'ut', 'dome', 'vo', 'vt', 'vf', 'vcp', 'tu', 'tl', 'vec', 'ra', 'rb'].forEach(function (k) { el[k] = root.querySelector('[data-m="' + k + '"]'); });
+        var shapes = [el.vo, el.vt, el.vf, el.vcp];
+
+        function ss(x) { x = clamp(x, 0, 1); return x * x * (3 - 2 * x); }
+        function spring(x) { return x <= 0 ? 0 : x >= 1 ? 1 : 1 - Math.exp(-6.5 * x) * Math.cos(12 * x) * (1 - x); }
+        function wobble(x) { return x <= 0 || x >= 1 ? 0 : Math.exp(-5 * x) * Math.sin(12 * x) * (1 - x); }
+        function translate(node, x, y) { node.setAttribute('transform', 'translate(' + x + ' ' + y + ')'); }
+        function width(s) { return ((s[2] - s[0]) + (s[4] - s[6])) / 2; }
+        function centerX(s) { return (s[0] + s[2] + s[4] + s[6]) / 4; }
+
+        function quadPath(s) {
+            var P = [[s[0], s[1]], [s[2], s[3]], [s[4], s[5]], [s[6], s[7]]], r = s[8], d = '';
+            for (var i = 0; i < 4; i++) {
+                var p = P[i], a = P[(i + 3) % 4], b = P[(i + 1) % 4];
+                var va = [a[0] - p[0], a[1] - p[1]], vb = [b[0] - p[0], b[1] - p[1]];
+                var la = Math.hypot(va[0], va[1]) || 1, lb = Math.hypot(vb[0], vb[1]) || 1, ra = Math.min(r, la / 2), rb = Math.min(r, lb / 2);
+                d += (i ? 'L' : 'M') + (p[0] + va[0] / la * ra).toFixed(2) + ' ' + (p[1] + va[1] / la * ra).toFixed(2)
+                    + 'Q' + p[0].toFixed(2) + ' ' + p[1].toFixed(2) + ' ' + (p[0] + vb[0] / lb * rb).toFixed(2) + ' ' + (p[1] + vb[1] / lb * rb).toFixed(2);
+            }
+            return d + 'Z';
+        }
+
+        // p: 0 = upper T closed / lower T open, 1 = the other way round (springs past 1); w: squash; rest: 0/1 = resting in A/B, -1 = moving.
+        function mouth(p, w, rest) {
+            var q = 1 - p, pc = clamp(p, 0, 1);
+            el.jaw.setAttribute('transform', 'translate(' + (C.jx * q) + ' ' + (C.jy * q) + ') translate(740 325) scale(' + (1 + .11 * w) + ' ' + (1 - .13 * w) + ') translate(-740 -325)');
+            translate(el.lt, 0, C.D * (1 - ss(pc * 1.15)));
+            translate(el.ut, 0, -C.Hu * (1 - ss((pc - .1) / .9)) + 5 * w);
+            translate(el.dome, 0, C.Hd * (1 - ss((pc - .1) / .9)));
+
+            var S = C.A.map(function (a, i) {
+                var t = i < 2 ? Math.min(p, 1) : pc;
+                return a.map(function (v, j) { return v + (C.B[i][j] - v) * t; });
+            });
+            shapes.forEach(function (node, i) { node.setAttribute('d', quadPath(S[i])); });
+
+            var c = S[3], a = C.A[3], sx = width(c) / width(a), X = centerX(c);
+            var teeth = function (dy) { return 'translate(' + X + ' ' + dy + ') scale(' + sx + ' 1) translate(' + (-centerX(a)) + ' 0)'; };
+            el.tu.setAttribute('transform', teeth(c[1] - a[1]));
+            el.tl.setAttribute('transform', teeth(c[5] - a[5]));
+
+            var o = S[0], ox = centerX(o), oy = (o[1] + o[5]) / 2;
+            el.vec.setAttribute('transform', 'translate(' + ox + ' ' + oy + ') scale(' + (1 - .09 * w) + ' ' + (1 + .1 * w) + ') translate(' + (-ox) + ' ' + (-oy) + ')');
+            el.ra.style.display = rest === 0 ? '' : 'none';
+            el.rb.style.display = rest === 1 ? '' : 'none';
+            el.vec.style.display = rest < 0 ? '' : 'none';
+        }
+
+        function at(ms) {
+            var u = (ms % 4400) / 4400, x;
+            if (u < .05) mouth(0, 0, 0);
+            else if (u < .5) { x = (u - .05) / .45; mouth(spring(x), wobble(x), -1); }
+            else if (u < .55) mouth(1, 0, 1);
+            else { x = (u - .55) / .45; mouth(1 - spring(x), -wobble(x), -1); }
+        }
+
+        at(0);
+        if (reduceMotion) return;
+
+        // Runs only while the hero is on screen; the CSS peek animations pause with it.
+        var visible = true, running = false, elapsed = 0, last = null;
+        function frame(now) {
+            if (!visible) { running = false; last = null; return; }
+            if (last !== null) elapsed += Math.min(now - last, 100);
+            last = now;
+            at(elapsed);
+            requestAnimationFrame(frame);
+        }
+        function start() {
+            if (!running) { running = true; requestAnimationFrame(frame); }
+        }
+        if ('IntersectionObserver' in window) {
+            new IntersectionObserver(function (entries) {
+                visible = entries[0].isIntersecting;
+                root.classList.toggle('is-paused', !visible);
+                if (visible) start();
+            }).observe(root);
+        }
+        start();
+    }
+
     // ---------- Word rotator ----------
 
     function initRotator() {
@@ -2166,7 +2263,7 @@
             var r = pageRow(), spec = plateSpec(r);
             if (!sizedToText(spec) || !r.text) return;
             var L = np.lib.naturalSize(spec).plate;
-            if (L > lengthCfg.max * 10 + 5) { np.design.set({ scale: np.design.kind.sizeTo(np.design.d, lengthCfg.max * 10, L) }, true); return; }
+            if (L > lengthCfg.max * 10 + 5) { np.design.set({ scale: np.design.kind.sizeTo(np.design.d, lengthCfg.max * 10, L) }); redrawPanel(); return; }
             var cm = clampLength(L / 10);
             if (cm !== lengthCm) { lengthCm = cm; showLength(); commitLength(true); }
         }
@@ -2175,8 +2272,34 @@
         function scaleToLength() {
             var r = pageRow(), spec = plateSpec(r);
             if (!sizedToText(spec) || !r.text) return false;
-            np.design.set({ scale: np.design.kind.sizeTo(np.design.d, lengthCm * 10, np.lib.naturalSize(spec).plate) }, true);
+            np.design.set({ scale: np.design.kind.sizeTo(np.design.d, lengthCm * 10, np.lib.naturalSize(spec).plate) });
+            redrawPanel();
             return true;
+        }
+
+        // Redrawing the panel replaces its markup, and with it the field being typed in (focus and the Vietnamese input
+        // method's pending accent are lost, the field flickers). While a text field of the panel has focus the redraw
+        // waits until focus leaves the panel.
+        var panelRedrawPending = false;
+        function redrawPanel() {
+            var a = document.activeElement;
+            if (a && np.panel && np.panel.contains(a) && a.matches('input[type=text], textarea')) {
+                if (!panelRedrawPending) {
+                    panelRedrawPending = true;
+                    np.panel.addEventListener('focusout', function retry() {
+                        setTimeout(function () {
+                            if (np.panel.contains(document.activeElement)) return;
+                            np.panel.removeEventListener('focusout', retry);
+                            panelRedrawPending = false;
+                            np.design.render();
+                            numberOffer();
+                        }, 0);
+                    });
+                }
+                return;
+            }
+            np.design.render();
+            numberOffer();
         }
 
         function pageRow() { var f = getField(); return { text: f ? f.value.trim() : '', colors: [] }; }
@@ -2235,6 +2358,35 @@
             var base = designCtx.color('base', r, '#ffffff'), color = designCtx.color('text', r, '#20201f');
             return '<button type="button" class="tt-np-chip' + (on ? ' is-on' : '') + '" data-np-pick="' + index + '" aria-pressed="' + on + '" title="' + escAttr(r.text) + '">'
                 + '<i style="background:' + escAttr(base) + ';color:' + escAttr(color) + '">A</i><span>' + escAttr(prefix + r.text) + '</span></button>';
+        }
+
+        // One bar for the whole design: the product's offer (price, colors, length, quantity, add to cart) moves from the
+        // info column into the 3D card, below the design steps. It stays inside the update container and the form, so
+        // Smartstore still posts it and refreshes its partials in place. The pictures go to the info column instead.
+        function mountOffer() {
+            var offer = document.querySelector('.pd-info-col .pd-offer');
+            if (offer) {
+                np.offer.appendChild(offer);
+                np.offer.hidden = false;
+                var gallery = document.getElementById('pd-gallery-container'), info = document.querySelector('.pd-info-col .pd-info-container');
+                if (gallery && info) {
+                    info.parentNode.insertBefore(gallery, info.nextSibling);
+                    // Only the placeholder picture: nothing to show.
+                    var imgs = gallery.querySelectorAll('.gal-item img');
+                    gallery.hidden = !imgs.length || Array.prototype.every.call(imgs, function (img) { return /\/media\/0\//.test(img.getAttribute('src') || ''); });
+                }
+                document.documentElement.classList.add('tt-np-merged');
+            }
+            numberOffer();
+        }
+
+        // The offer continues the numbered steps of the quick design.
+        function numberOffer() {
+            var no = np && np.offer && np.offer.querySelector('[data-np-offer-no]');
+            if (!no) return;
+            var steps = np.panel.querySelectorAll('.tt-np-quick > .tt-np-step').length;
+            no.hidden = !steps;
+            no.textContent = steps + 1;
         }
 
         function openPreview() {
@@ -2331,7 +2483,8 @@
                     + '<div class="tt-np-main"><div class="tt-viewer-stage tt-np-stage"><canvas role="img" aria-label="Xem trước 3D, kéo để xoay"></canvas>'
                     + '<span class="tt-np-empty" data-np-empty>Đang tải bản xem trước 3D…</span><span class="tt-viewer-size" data-np-size></span></div>'
                     + '<div class="tt-np-list" data-np-list hidden></div></div>'
-                    + '<div class="tt-np-panel" data-np-panel></div>'
+                    + '<div class="tt-np-side"><div class="tt-np-panel" data-np-panel></div>'
+                    + '<div class="tt-np-offer" data-np-offer hidden><div class="tt-np-step"><i data-np-offer-no hidden></i>Màu, kích thước &amp; đặt hàng</div></div></div>'
                     + '<div class="tt-viewer-foot"><span>Kéo để xoay · Ctrl + lăn chuột để phóng to · ảnh minh hoạ, studio gửi file xem trước trước khi in</span>'
                     + '<button type="button" class="tt-textlink" data-np-reset>Góc nhìn ban đầu</button></div>';
                 host.insertBefore(card, host.firstChild);
@@ -2340,16 +2493,17 @@
                 np.size = card.querySelector('[data-np-size]');
                 np.list = card.querySelector('[data-np-list]');
                 np.panel = card.querySelector('[data-np-panel]');
+                np.offer = card.querySelector('[data-np-offer]');
+                mountOffer();
 
-                // Full screen: the card moves to <body> (the product columns create their own stacking context, so a
-                // fixed card inside them stays under the info column) and comes back to its placeholder afterwards.
-                var maxBtn = card.querySelector('.tt-viewer-max'), placeholder = document.createComment('tt-np');
+                // Full screen: the card stays inside the product form (the offer it now holds must keep posting with
+                // it); tt-np-maxed lifts the stacking contexts of the product columns so the fixed card covers the page.
+                var maxBtn = card.querySelector('.tt-viewer-max');
                 var maximize = function (on) {
                     if (on === card.classList.contains('is-max')) return;
-                    if (on) { card.parentNode.insertBefore(placeholder, card); document.body.appendChild(card); }
-                    else if (placeholder.parentNode) { placeholder.parentNode.insertBefore(card, placeholder); placeholder.remove(); }
                     card.classList.toggle('is-max', on);
                     document.documentElement.classList.toggle('tt-noscroll', on);
+                    document.documentElement.classList.toggle('tt-np-maxed', on);
                     maxBtn.setAttribute('aria-pressed', on ? 'true' : 'false');
                     maxBtn.querySelector('span').textContent = on ? 'Thu nhỏ' : 'Phóng to';
                     if (np.view) np.view.request();
@@ -2374,6 +2528,7 @@
                 np.design = new window.TTDesigns.Panel(np.panel || document.createElement('div'), kindKey, designCtx, function (info) {
                     writeDesign();
                     schedulePreview();
+                    numberOffer();
                     if (info.reset && np.view) np.view.reset();
                     // "Nhìn thẳng": face the code so a phone can scan it from the screen.
                     if (info.view === 'top' && np.view) np.view.face();
@@ -2384,6 +2539,7 @@
                     // The full-detail build after a slider drag can move the measured size a little.
                     np.view.onDims = function (d) { np.size.textContent = sizeText(d); };
                     np.design.render();
+                    numberOffer();
                 }
                 writeDesign();
                 schedulePreview();
@@ -2470,7 +2626,7 @@
 
         // After Smartstore re-renders the attributes: buttons back under the text field, length slider and design
         // summary back in place.
-        if (window.jQuery) window.jQuery('#main-update-container').on('updated', function () { mountTools(); if (lengthCfg) mountLength(); if (np && np.design) { writeDesign(); np.design.render(); } schedulePreview(); });
+        if (window.jQuery) window.jQuery('#main-update-container').on('updated', function () { mountTools(); if (lengthCfg) mountLength(); if (np && np.design) { writeDesign(); redrawPanel(); } schedulePreview(); });
 
         tools.querySelector('[data-tl-open]').addEventListener('click', open);
         tools.addEventListener('click', excelClick);
@@ -2483,6 +2639,7 @@
         initPointerFx();
         initRotator();
         init3D();
+        initMonster();
         initMarquee();
         initHero();
         initProcess();

@@ -8,7 +8,6 @@
     var tools = Model.Tools.Tools;
     var split3D = tools.FirstOrDefault(x => x.Name.Contains("Split3D", StringComparison.OrdinalIgnoreCase)) ?? tools.FirstOrDefault();
     var toys = Url.Content("~/Modules/Smartstore.Split3D/studio/studio-toys.webp");
-    var toysCut = Url.Content("~/Modules/Smartstore.Split3D/studio/studio-toys-cut.webp");
     var cardColors = new[] { "mint", "yellow", "lilac", "pink" };
     var serviceCats = Model.ServiceCategories;
     string Delay(int i, double step = .08) => (i * step).ToString("0.00", CultureInfo.InvariantCulture) + "s";
@@ -37,11 +36,11 @@
                 <div class="tt-hero-foot" data-tt-reveal style="--d:.45s">FDM &amp; Resin <span>✦</span> Thiết kế &amp; hoàn thiện@(lowest > 0 ? " ✦ từ " + PrintPriceList.FormatPrice(lowest) + "/g" : "")</div>
             </div>
 
-            @* 3D card: tilts with the pointer, toys, label and sticker sit at different depths. *@
+            @* 3D card: tilts with the pointer; the monster logo, label and sticker sit at different depths. *@
             <div class="tt-art-stage" data-tt-reveal="zoom" style="--d:.15s">
                 <div class="tt-art3d" data-tt-3d>
-                    <div class="tt-art3d-card">
-                        <img class="tt-art3d-toys" src="@toysCut" alt="Khủng long mint, robot hồng và bình vàng in 3D" width="900" height="900" />
+                    <div class="tt-art3d-card tt-art3d-card--monster">
+                        <partial name="_StudioMonster" />
                         <span class="tt-art3d-shine" aria-hidden="true"></span>
                     </div>
                     <div class="tt-art-label">CUTE THINGS, REAL THINGS.</div>

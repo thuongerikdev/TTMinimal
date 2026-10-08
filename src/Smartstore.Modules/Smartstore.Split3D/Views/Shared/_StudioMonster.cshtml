@@ -1,0 +1,60 @@
+@* Hero mascot: the TT logo as a monster animation. Two stacked layers inside the 3D card: the quadrants with the
+   peeking monsters at the back, the two T letters (mouths driven by studio.js, initMonster) floating in front. *@
+@{
+    string Img(string name) => Url.Content("~/Modules/Smartstore.Split3D/studio/monster/" + name + ".webp");
+}
+<div class="tt-monster" data-tt-monster>
+    <svg class="tt-monster-back" viewBox="0 0 1000 1000" role="img" aria-label="Logo TT: hai chữ T thay nhau há miệng, các bạn quái vật nhô đầu ra">
+        <defs>
+            <clipPath id="ttm-cm1"><rect x="18" y="18" width="482" height="482" /></clipPath>
+            <clipPath id="ttm-cm2"><rect x="500" y="250" width="240" height="250" /></clipPath>
+            <clipPath id="ttm-cm3"><path d="M500 500H982V982H500V752H478V651H500Z" /></clipPath>
+            <clipPath id="ttm-cm4"><path d="M500 500H982V982H460V860H500Z" /></clipPath>
+        </defs>
+        <rect width="500" height="500" fill="#fffbed" />
+        <rect x="500" width="500" height="500" fill="#ffe348" />
+        <rect y="500" width="500" height="500" fill="#ffe348" />
+        <rect x="500" y="500" width="500" height="500" fill="#fffbed" />
+        <g clip-path="url(#ttm-cm1)"><g class="tt-m-peek tt-m1"><g class="tt-m-idle"><image x="18" y="18" width="482" height="482" href="@Img("m1")" /></g></g></g>
+        <g clip-path="url(#ttm-cm2)"><g class="tt-m-peek tt-m2"><g class="tt-m-idle"><image x="552" y="325" width="213" height="175" href="@Img("m2")" /></g></g></g>
+        <g clip-path="url(#ttm-cm3)"><g class="tt-m-peek tt-m3"><g class="tt-m-idle"><image x="481" y="500" width="424" height="241" href="@Img("m3")" /></g></g></g>
+        <g clip-path="url(#ttm-cm4)"><g class="tt-m-peek tt-m4"><g class="tt-m-idle"><image x="465" y="744" width="517" height="238" href="@Img("m4")" /></g></g></g>
+        <rect x="9" y="9" width="982" height="982" rx="26" fill="none" stroke="#000" stroke-width="18" />
+    </svg>
+    <svg class="tt-monster-front" viewBox="0 0 1000 1000" aria-hidden="true" focusable="false">
+        <defs>
+            <clipPath id="ttm-cut"><rect x="500" y="142.5" width="500" height="400" /></clipPath>
+            <clipPath id="ttm-cdm"><rect x="500" y="0" width="500" height="142.5" /></clipPath>
+            <clipPath id="ttm-vc"><path data-m="vcp" /></clipPath>
+            <mask id="ttm-mlt" maskUnits="userSpaceOnUse" x="0" y="0" width="1000" height="1000"><image x="604" y="224" width="253" height="97" href="@Img("lt-mask")" /></mask>
+        </defs>
+        @* Upper T: the mouth sits under the crossbar and opens downwards. *@
+        <g class="tt-m-sway1"><image x="675" y="135" width="150" height="370" href="@Img("stem-top")" /></g>
+        <rect x="509" y="9" width="463.5" height="133.5" rx="12" fill="#80e5cb" stroke="#000" stroke-width="18" />
+        <g class="tt-m-sway1">
+            <g clip-path="url(#ttm-cdm)"><g data-m="dome"><image x="585" y="88" width="312" height="58" href="@Img("dome")" /></g></g>
+            <g clip-path="url(#ttm-cut)"><g data-m="ut"><image x="583" y="132" width="316" height="73" href="@Img("upper-teeth")" /></g></g>
+            <g data-m="jaw">
+                <g mask="url(#ttm-mlt)"><g data-m="lt"><image x="604" y="239" width="253" height="82" href="@Img("lower-teeth")" /></g></g>
+                <image x="567" y="237" width="347" height="131" href="@Img("jaw")" />
+            </g>
+        </g>
+        @* Lower T: the mouth is a window in the stem. *@
+        <rect x="27.5" y="508.5" width="463.5" height="134" rx="12" fill="#80e5cb" stroke="#000" stroke-width="18" />
+        <g class="tt-m-sway2">
+            <image x="184" y="677" width="150" height="316" href="@Img("stem-bottom")" />
+            <g data-m="vec">
+                <path data-m="vo" />
+                <path data-m="vt" fill="#80e5cb" />
+                <path data-m="vf" />
+                <g clip-path="url(#ttm-vc)">
+                    <rect y="500" width="500" height="500" fill="#ffe348" />
+                    <g data-m="tl"><image x="214" y="695" width="90" height="114" href="@Img("teeth-low")" /></g>
+                    <g data-m="tu"><image x="211" y="593" width="98" height="102" href="@Img("teeth-up")" /></g>
+                </g>
+            </g>
+            <g data-m="ra"><image x="151" y="527" width="216" height="348" href="@Img("mouth-a")" /></g>
+            <g data-m="rb"><image x="141" y="589" width="231" height="106" href="@Img("mouth-b")" /></g>
+        </g>
+    </svg>
+</div>
