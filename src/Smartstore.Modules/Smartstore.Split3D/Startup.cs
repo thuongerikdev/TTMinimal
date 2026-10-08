@@ -100,6 +100,12 @@ internal class Startup : StarterBase
                 .ForAction("Edit")
                 .WhenNonAjaxGet();
 
+            // Admin order list: "create order" button for orders taken by phone or in the studio.
+            o.Filters.AddEndpointFilter<OrderListCreateButtonFilter, SmartController>()
+                .ForController("Order")
+                .ForAction("List")
+                .WhenNonAjaxGet();
+
             o.Filters.AddEndpointFilter<AdminStyleFilter, SmartController>()
                 .WhenNonAjaxGet();
         });

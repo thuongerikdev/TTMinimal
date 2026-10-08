@@ -1,0 +1,176 @@
+@model PrintJobCreateModel
+
+@{
+    ViewBag.Title = T("Plugins.Split3D.PrintJob.Create").Value;
+    var technologies = (List<PrintTechnology>)ViewBag.Technologies;
+    var shipping = Model.DeliveryMethodId == (int)PrintDeliveryMethod.Shipping;
+}
+
+<form asp-action="Create" method="post" enctype="multipart/form-data" id="printjob-create-form">
+    <div class="section-header">
+        <div class="title">
+            <a sm-backto href="@Url.Action("List")"></a>
+            <i class="bi bi-box-seam"></i>
+            @ViewBag.Title
+        </div>
+        <div class="options">
+            <button type="submit" class="btn btn-warning">
+                <i class="fa fa-check"></i>
+                <span>@T("Admin.Common.Save")</span>
+            </button>
+        </div>
+    </div>
+
+    @if (!ViewData.ModelState.IsValid)
+    {
+        <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+    }
+
+    <div class="row">
+        <div class="col-lg-7 mb-4">
+            <div class="card mb-4">
+                <div class="card-header font-weight-bold"><i class="bi bi-person mr-1"></i> @T("Plugins.Split3D.PrintJob.Customer")</div>
+                <div class="card-body">
+                    <div class="form-row">
+                        <div class="form-group col-md-6">
+                            <smart-label asp-for="RecipientName" />
+                            <input asp-for="RecipientName" class="form-control" autofocus />
+                            <span asp-validation-for="RecipientName"></span>
+                        </div>
+                        <div class="form-group col-md-6">
+                            <smart-label asp-for="Phone" />
+                            <input asp-for="Phone" class="form-control" type="tel" />
+                            <span asp-validation-for="Phone"></span>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <smart-label asp-for="Email" />
+                        <input asp-for="Email" class="form-control" type="email" />
+                        <span class="form-text text-muted">@T("Plugins.Split3D.PrintJob.CreateEmailHint")</span>
+                    </div>
+                    <div class="form-group">
+                        <smart-label asp-for="DeliveryMethodId" />
+                        <div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="DeliveryMethodId" id="dm-pickup"
+                                       value="@((int)PrintDeliveryMethod.Pickup)" checked="@(!shipping)" />
+                                <label class="form-check-label" for="dm-pickup">@T("Plugins.Split3D.PrintJob.Pickup")</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="DeliveryMethodId" id="dm-shipping"
+                                       value="@((int)PrintDeliveryMethod.Shipping)" checked="@shipping" />
+                                <label class="form-check-label" for="dm-shipping">@T("Plugins.Split3D.PrintJob.Shipping")</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="tt-job-address" class="form-row" style="@(shipping ? null : "display:none")">
+                        <div class="form-group col-md-8">
+                            <smart-label asp-for="AddressLine" />
+                            <input asp-for="AddressLine" class="form-control" />
+                            <span asp-validation-for="AddressLine"></span>
+                        </div>
+                        <div class="form-group col-md-4">
+                            <smart-label asp-for="City" />
+                            <input asp-for="City" class="form-control" />
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <smart-label asp-for="DesiredOn" />
+                        <input asp-for="DesiredOn" class="form-control" type="date" asp-format="{0:yyyy-MM-dd}" style="max-width: 220px" />
+                    </div>
+                    <div class="form-group mb-0">
+                        <smart-label asp-for="Note" />
+                        <textarea asp-for="Note" rows="4" class="form-control"></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header font-weight-bold"><i class="bi bi-boxes mr-1"></i> @T("Plugins.Split3D.PrintJob.Models")</div>
+                <div class="card-body">
+                    <div class="form-row">
+                        <div class="form-group col-md-4">
+                            <smart-label asp-for="Technology" />
+                            <input asp-for="Technology" class="form-control" list="tt-technologies" autocomplete="off" />
+                            <datalist id="tt-technologies">
+                                @foreach (var tech in technologies)
+                                {
+                                    <option value="@tech.Name"></option>
+                                }
+                            </datalist>
+                        </div>
+                        <div class="form-group col-md-4">
+                            <smart-label asp-for="Material" />
+                            <input asp-for="Material" class="form-control" list="tt-materials" autocomplete="off" />
+                            <datalist id="tt-materials">
+                                @foreach (var name in technologies.SelectMany(x => x.Materials).Select(x => x.Name).Distinct())
+                                {
+                                    <option value="@name"></option>
+                                }
+                            </datalist>
+                        </div>
+                        <div class="form-group col-md-4">
+                            <smart-label asp-for="Fill" />
+                            <input asp-for="Fill" class="form-control" placeholder="Độ đặc 20%" />
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group col-md-6">
+                            <smart-label asp-for="TotalGrams" />
+                            <input asp-for="TotalGrams" class="form-control" type="number" min="0" step="1" />
+                            <span asp-validation-for="TotalGrams"></span>
+                        </div>
+                        <div class="form-group col-md-6">
+                            <smart-label asp-for="Pieces" />
+                            <input asp-for="Pieces" class="form-control" type="number" min="1" step="1" />
+                            <span asp-validation-for="Pieces"></span>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <smart-label asp-for="FileLink" />
+                        <input asp-for="FileLink" class="form-control" type="url" placeholder="https://drive.google.com/..." />
+                    </div>
+                    <div class="form-group mb-0">
+                        <label for="files">@T("Plugins.Split3D.PrintQuote.CreateFiles")</label>
+                        <input type="file" id="files" name="files" class="form-control-file" multiple />
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-5 mb-4">
+            <div class="card">
+                <div class="card-header font-weight-bold"><i class="bi bi-cash-coin mr-1"></i> @T("Plugins.Split3D.PrintJob.Settlement")</div>
+                <div class="card-body">
+                    <div class="form-group">
+                        <smart-label asp-for="Price" />
+                        <input asp-for="Price" class="form-control" type="number" step="1000" min="0" />
+                        <span asp-validation-for="Price"></span>
+                        <span class="form-text text-muted">@T("Plugins.Split3D.PrintJob.CreatePriceHint")</span>
+                    </div>
+                    <div class="form-group">
+                        <smart-label asp-for="DepositPercent" />
+                        <div class="input-group" style="max-width: 180px">
+                            <input asp-for="DepositPercent" class="form-control" type="number" min="1" max="100" step="1" />
+                            <div class="input-group-append"><span class="input-group-text">%</span></div>
+                        </div>
+                        <span asp-validation-for="DepositPercent"></span>
+                    </div>
+                    <div class="form-group mb-0">
+                        <smart-label asp-for="AdminNote" />
+                        <textarea asp-for="AdminNote" rows="4" class="form-control"></textarea>
+                    </div>
+                    <div class="alert alert-info small mt-3 mb-0">@T("Plugins.Split3D.PrintJob.CreateInfo")</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+<script sm-target-zone="scripts" data-origin="printjob-create">
+    $(function () {
+        $('#printjob-create-form').on('change', 'input[name=DeliveryMethodId]', function () {
+            $('#tt-job-address').toggle(this.value === '@((int)PrintDeliveryMethod.Shipping)');
+        });
+    });
+</script>

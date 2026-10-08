@@ -1,5 +1,6 @@
 #nullable enable
 
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Smartstore.Core.Checkout.Orders;
 using Smartstore.Core.Data;
@@ -16,6 +17,9 @@ namespace Smartstore.Split3D.Controllers;
 /// </summary>
 public class PrintJobController : AdminController
 {
+    // Upper bound for the model files of a job entered in the admin area.
+    private const long MaxRequestSize = 520L * 1024 * 1024;
+
     private readonly SmartDbContext _db;
     private readonly PrintOrderService _printOrderService;
     private readonly StudioSettings _settings;
@@ -92,6 +96,91 @@ public class PrintJobController : AdminController
         var count = await _printOrderService.DeleteAsync(jobs);
 
         return Json(new { Success = true, Count = count });
+    }
+
+    /// <summary>
+    /// Form for a job the studio enters itself, e.g. ordered by phone. The job starts as a draft with a payment link.
+    /// </summary>
+    [Permission(Permissions.Configuration.Module.Update)]
+    public IActionResult Create()
+    {
+        var model = new PrintJobCreateModel
+        {
+            DepositPercent = _printOrderService.DepositPercent,
+            DeliveryMethodId = (int)(_settings.AllowPickup ? PrintDeliveryMethod.Pickup : PrintDeliveryMethod.Shipping)
+        };
+
+        ViewBag.Technologies = PrintPriceList.Parse(_settings.PrintPriceTable);
+
+        return View(model);
+    }
+
+    [HttpPost]
+    [Permission(Permissions.Configuration.Module.Update)]
+    [RequestSizeLimit(MaxRequestSize)]
+    [RequestFormLimits(MultipartBodyLengthLimit = MaxRequestSize)]
+    public async Task<IActionResult> Create(PrintJobCreateModel model, List<IFormFile> files)
+    {
+        var uploads = (files ?? []).Where(x => x != null && x.Length > 0).ToList();
+        if (uploads.Sum(x => x.Length) > MaxRequestSize)
+        {
+            ModelState.AddModelError(string.Empty, T("Plugins.Split3D.PrintQuote.FileTooLarge", MaxRequestSize / 1024 / 1024));
+        }
+
+        var shipping = model.DeliveryMethodId == (int)PrintDeliveryMethod.Shipping;
+        if (shipping && model.AddressLine.IsEmpty())
+        {
+            ModelState.AddModelError(nameof(model.AddressLine), T("Plugins.Split3D.PrintJob.AddressRequired"));
+        }
+
+        PrintOrder? job = null;
+        if (ModelState.IsValid)
+        {
+            var email = model.Email?.Trim().NullEmpty();
+            var customerId = email != null
+                ? await _db.Customers.Where(x => x.Email == email && !x.Deleted).Select(x => x.Id).FirstOrDefaultAsync()
+                : 0;
+
+            job = await _printOrderService.CreateManualAsync(
+                new PrintOrder
+                {
+                    CustomerId = customerId,
+                    RecipientName = model.RecipientName!.Trim(),
+                    Phone = model.Phone!.Trim(),
+                    Email = email,
+                    Technology = model.Technology?.Trim().NullEmpty(),
+                    Material = model.Material?.Trim().NullEmpty(),
+                    Fill = model.Fill?.Trim().NullEmpty(),
+                    TotalGrams = model.TotalGrams,
+                    Pieces = model.Pieces,
+                    DeliveryMethod = shipping ? PrintDeliveryMethod.Shipping : PrintDeliveryMethod.Pickup,
+                    AddressLine = shipping ? model.AddressLine?.Trim().NullEmpty() : null,
+                    City = shipping ? model.City?.Trim().NullEmpty() : null,
+                    DesiredOnUtc = model.DesiredOn?.Date,
+                    FileLink = model.FileLink?.Trim().NullEmpty(),
+                    Note = model.Note?.Trim().NullEmpty(),
+                    AdminNote = model.AdminNote?.Trim().NullEmpty()
+                },
+                model.Price,
+                model.DepositPercent > 0 ? model.DepositPercent : null,
+                uploads,
+                HttpContext.RequestAborted);
+
+            if (job == null)
+            {
+                ModelState.AddModelError(nameof(model.Price), T("Plugins.Split3D.PrintJob.PriceRequired"));
+            }
+        }
+
+        if (job == null)
+        {
+            ViewBag.Technologies = PrintPriceList.Parse(_settings.PrintPriceTable);
+            return View(model);
+        }
+
+        NotifySuccess(T("Plugins.Split3D.PrintJob.Created", job.Code!));
+
+        return RedirectToAction(nameof(Edit), new { id = job.Id });
     }
 
     [Permission(Permissions.Configuration.Module.Read)]

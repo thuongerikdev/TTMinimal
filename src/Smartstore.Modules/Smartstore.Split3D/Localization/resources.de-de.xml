@@ -2130,4 +2130,189 @@
     <LocaleResource Name="Completed.MixedKeys">
         <Value>Die Addon-Schlüssel dieser Bestellung werden nach Zahlungseingang separat per E-Mail gesendet und erscheinen unter Mein Konto › Meine Lizenzschlüssel.</Value>
     </LocaleResource>
+
+    <!-- Admin: create print/design requests, print jobs and orders -->
+    <LocaleResource Name="PrintQuote.CreatePrint">
+        <Value>Neue Druckanfrage</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintQuote.CreateDesign">
+        <Value>Neue Designanfrage</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintQuote.CreateEmailHint">
+        <Value>Gehört die E-Mail zu einem registrierten Kunden, wird die Anfrage dessen Konto zugeordnet.</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintQuote.DesignCategoryPlaceholder">
+        <Value>Kategorie, z. B. Schlüsselanhänger, Figur</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintQuote.CreateFiles">
+        <Value>Dateien hochladen</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintQuote.CreateFilesHint">
+        <Value>Mehrere Dateien möglich; sie werden zusammen als ZIP gespeichert.</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintQuote.FileTooLarge">
+        <Value>Die Dateien überschreiten {0} MB. Bitte einen Google-Drive-/Dropbox-Link verwenden.</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintQuote.CreatedByAdminLog">
+        <Value>Anfrage im Adminbereich erfasst.</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintQuote.Created">
+        <Value>Anfrage #{0} angelegt.</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.Create">
+        <Value>Neuer Druckauftrag</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.CreateEmailHint">
+        <Value>Gehört die E-Mail zu einem registrierten Kunden, wird der Auftrag dessen Konto zugeordnet.</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.CreatePriceHint">
+        <Value>Leer lassen, um nach Preisliste zu berechnen (Gewicht × Grammpreis von Technologie und Material).</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.CreateInfo">
+        <Value>Der Auftrag startet als Entwurf mit einem Zahlungslink für die Anzahlung. Zahlt der Kunde direkt, den Status auf der Auftragsseite manuell setzen.</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.AddressRequired">
+        <Value>Bitte die Lieferadresse eingeben.</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.PriceRequired">
+        <Value>Preis eingeben oder Gewicht mit Technologie/Material aus der Preisliste.</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.Created">
+        <Value>Druckauftrag {0} angelegt.</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.Fields.DepositPercent">
+        <Value>Anzahlung</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.Fields.DepositPercent.Hint">
+        <Value>Anteil, den der Kunde vorab über den Zahlungslink zahlt.</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.Fields.AddressLine">
+        <Value>Adresse</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.Fields.AddressLine.Hint">
+        <Value>Hausnummer, Straße, Bezirk.</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.Fields.City">
+        <Value>Stadt / Provinz</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.Fields.City.Hint">
+        <Value>Stadt oder Provinz der Lieferung.</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.Fields.FileLink">
+        <Value>Datei-Link</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.Fields.FileLink.Hint">
+        <Value>Google-Drive-/Dropbox-Link zu den Modelldateien.</Value>
+    </LocaleResource>
+    <LocaleResource Name="OrderCreate.Button">
+        <Value>Auftrag anlegen</Value>
+    </LocaleResource>
+    <LocaleResource Name="OrderCreate.Title">
+        <Value>Auftrag anlegen</Value>
+    </LocaleResource>
+    <LocaleResource Name="OrderCreate.Submit">
+        <Value>Auftrag anlegen</Value>
+    </LocaleResource>
+    <LocaleResource Name="OrderCreate.Customer">
+        <Value>Kunde</Value>
+    </LocaleResource>
+    <LocaleResource Name="OrderCreate.Payment">
+        <Value>Zahlung</Value>
+    </LocaleResource>
+    <LocaleResource Name="OrderCreate.Product">
+        <Value>Produkt</Value>
+    </LocaleResource>
+    <LocaleResource Name="OrderCreate.Quantity">
+        <Value>Menge</Value>
+    </LocaleResource>
+    <LocaleResource Name="OrderCreate.UnitPrice">
+        <Value>Einzelpreis</Value>
+    </LocaleResource>
+    <LocaleResource Name="OrderCreate.LineTotal">
+        <Value>Summe</Value>
+    </LocaleResource>
+    <LocaleResource Name="OrderCreate.PickProduct">
+        <Value>— Produkt wählen —</Value>
+    </LocaleResource>
+    <LocaleResource Name="OrderCreate.AddLine">
+        <Value>Produkt hinzufügen</Value>
+    </LocaleResource>
+    <LocaleResource Name="OrderCreate.OrderTotal">
+        <Value>Gesamtsumme</Value>
+    </LocaleResource>
+    <LocaleResource Name="OrderCreate.AttributesHint">
+        <Value>Produkt mit Attributen (Farbe, Größe...): nach dem Anlegen über "Produkt hinzufügen" auf der Auftragsseite mit Attributen hinzufügen.</Value>
+    </LocaleResource>
+    <LocaleResource Name="OrderCreate.NoLines">
+        <Value>Bitte mindestens ein Produkt wählen.</Value>
+    </LocaleResource>
+    <LocaleResource Name="OrderCreate.ShippingMethod">
+        <Value>Lieferung</Value>
+    </LocaleResource>
+    <LocaleResource Name="OrderCreate.CreatedNote">
+        <Value>Auftrag im Adminbereich angelegt von {0}.</Value>
+    </LocaleResource>
+    <LocaleResource Name="OrderCreate.Created">
+        <Value>Auftrag {0} angelegt. Hier können Produkte ergänzt oder der Auftrag bearbeitet werden.</Value>
+    </LocaleResource>
+    <LocaleResource Name="OrderCreate.Fields.FullName">
+        <Value>Name</Value>
+    </LocaleResource>
+    <LocaleResource Name="OrderCreate.Fields.FullName.Hint">
+        <Value>Kundenname, wird in die Auftragsadresse geschrieben.</Value>
+    </LocaleResource>
+    <LocaleResource Name="OrderCreate.Fields.Phone">
+        <Value>Telefon</Value>
+    </LocaleResource>
+    <LocaleResource Name="OrderCreate.Fields.Phone.Hint">
+        <Value>Telefon- oder Zalo-Nummer des Kunden.</Value>
+    </LocaleResource>
+    <LocaleResource Name="OrderCreate.Fields.Email">
+        <Value>E-Mail</Value>
+    </LocaleResource>
+    <LocaleResource Name="OrderCreate.Fields.Email.Hint">
+        <Value>Gehört sie zu einem registrierten Kunden, wird der Auftrag dessen Konto zugeordnet, sonst wird ein Gast angelegt.</Value>
+    </LocaleResource>
+    <LocaleResource Name="OrderCreate.Fields.AddressLine">
+        <Value>Adresse</Value>
+    </LocaleResource>
+    <LocaleResource Name="OrderCreate.Fields.AddressLine.Hint">
+        <Value>Leer lassen bei Abholung im Studio.</Value>
+    </LocaleResource>
+    <LocaleResource Name="OrderCreate.Fields.City">
+        <Value>Stadt / Provinz</Value>
+    </LocaleResource>
+    <LocaleResource Name="OrderCreate.Fields.City.Hint">
+        <Value>Stadt oder Provinz der Lieferung.</Value>
+    </LocaleResource>
+    <LocaleResource Name="OrderCreate.Fields.PaymentMethod">
+        <Value>Zahlungsart</Value>
+    </LocaleResource>
+    <LocaleResource Name="OrderCreate.Fields.PaymentMethod.Hint">
+        <Value>Wie der Kunde diesen Auftrag bezahlt.</Value>
+    </LocaleResource>
+    <LocaleResource Name="OrderCreate.Fields.IsPaid">
+        <Value>Kunde hat bezahlt</Value>
+    </LocaleResource>
+    <LocaleResource Name="OrderCreate.Fields.IsPaid.Hint">
+        <Value>Markiert den Auftrag sofort als bezahlt: Addon-Keys werden ausgestellt und E-Mails wie bei normalen Aufträgen gesendet.</Value>
+    </LocaleResource>
+    <LocaleResource Name="OrderCreate.Fields.ShippingFee">
+        <Value>Versandkosten</Value>
+    </LocaleResource>
+    <LocaleResource Name="OrderCreate.Fields.ShippingFee.Hint">
+        <Value>Wird zur Gesamtsumme addiert.</Value>
+    </LocaleResource>
+    <LocaleResource Name="OrderCreate.Fields.Note">
+        <Value>Notiz</Value>
+    </LocaleResource>
+    <LocaleResource Name="OrderCreate.Fields.Note.Hint">
+        <Value>Kundenkommentar, wird im Auftrag angezeigt.</Value>
+    </LocaleResource>
+    <LocaleResource Name="OrderCreate.Fields.Lines">
+        <Value>Produkte</Value>
+    </LocaleResource>
+    <LocaleResource Name="OrderCreate.Fields.Lines.Hint">
+        <Value>Produkte und Mengen. Leerer Einzelpreis übernimmt den Produktpreis.</Value>
+    </LocaleResource>
 </Language>

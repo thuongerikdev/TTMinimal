@@ -11,6 +11,14 @@
         @T("Plugins.Split3D.Studio.Quotes")
     </div>
     <div class="options">
+        <a href="@Url.Action("Create")" class="btn btn-primary">
+            <i class="fa fa-plus"></i>
+            <span>@T("Plugins.Split3D.PrintQuote.CreatePrint")</span>
+        </a>
+        <a href="@Url.Action("Create", new { design = true })" class="btn btn-primary">
+            <i class="fa fa-plus"></i>
+            <span>@T("Plugins.Split3D.PrintQuote.CreateDesign")</span>
+        </a>
         <a href="@Url.RouteUrl(StudioStorefrontSetup.PrintServiceRouteName)" target="_blank" class="btn btn-secondary">
             <i class="bi bi-box-arrow-up-right"></i>
             <span>@T("Plugins.Split3D.PrintQuote.OpenPage")</span>

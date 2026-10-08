@@ -1,0 +1,225 @@
+@model StudioOrderCreateModel
+
+@{
+    ViewBag.Title = T("Plugins.Split3D.OrderCreate.Title").Value;
+    var paymentMethods = (List<(string SystemName, string Name)>)ViewBag.PaymentMethods;
+    var products = (List<StudioOrderProductOption>)ViewBag.Products;
+    var lines = Model.Lines.Count > 0 ? Model.Lines : [new StudioOrderLineModel()];
+}
+
+@functions {
+    static string Money(decimal value) => value.ToString("N0", System.Globalization.CultureInfo.GetCultureInfo("vi-VN"));
+}
+
+<form asp-action="Create" method="post" id="tt-order-create">
+    <div class="section-header">
+        <div class="title">
+            <a sm-backto href="@Url.Action("List", "Order")"></a>
+            <i class="bi bi-cart-plus"></i>
+            @ViewBag.Title
+        </div>
+        <div class="options">
+            <button type="submit" class="btn btn-warning">
+                <i class="fa fa-check"></i>
+                <span>@T("Plugins.Split3D.OrderCreate.Submit")</span>
+            </button>
+        </div>
+    </div>
+
+    @if (!ViewData.ModelState.IsValid)
+    {
+        <div asp-validation-summary="All" class="alert alert-danger"></div>
+    }
+
+    <div class="row">
+        <div class="col-lg-7 mb-4">
+            <div class="card">
+                <div class="card-header font-weight-bold"><i class="bi bi-box mr-1"></i> @T("Plugins.Split3D.OrderCreate.Fields.Lines")</div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-sm mb-2" id="tt-order-lines">
+                            <thead>
+                                <tr>
+                                    <th>@T("Plugins.Split3D.OrderCreate.Product")</th>
+                                    <th style="width: 90px">@T("Plugins.Split3D.OrderCreate.Quantity")</th>
+                                    <th style="width: 140px">@T("Plugins.Split3D.OrderCreate.UnitPrice")</th>
+                                    <th style="width: 120px" class="text-right">@T("Plugins.Split3D.OrderCreate.LineTotal")</th>
+                                    <th style="width: 40px"></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @for (var i = 0; i < lines.Count; i++)
+                                {
+                                    var line = lines[i];
+                                    <tr class="tt-line">
+                                        <td>
+                                            <select name="Lines[@i].ProductId" class="form-control form-control-sm noskin tt-product">
+                                                <option value="">@T("Plugins.Split3D.OrderCreate.PickProduct")</option>
+                                                @foreach (var p in products)
+                                                {
+                                                    <option value="@p.Id" data-price="@p.Price.ToString(System.Globalization.CultureInfo.InvariantCulture)" data-attrs="@(p.HasAttributes ? "1" : null)"
+                                                            selected="@(p.Id == line.ProductId)">@p.Name@(p.Sku.HasValue() ? $" ({p.Sku})" : null) · @Money(p.Price) ₫</option>
+                                                }
+                                            </select>
+                                            <div class="small text-warning tt-attrs-hint" style="display:none">@T("Plugins.Split3D.OrderCreate.AttributesHint")</div>
+                                        </td>
+                                        <td><input name="Lines[@i].Quantity" value="@line.Quantity" class="form-control form-control-sm tt-qty" type="number" min="1" step="1" /></td>
+                                        <td><input name="Lines[@i].UnitPrice" value="@(line.UnitPrice?.ToString("0", System.Globalization.CultureInfo.InvariantCulture))" class="form-control form-control-sm tt-price" type="number" min="0" step="1000" /></td>
+                                        <td class="text-right align-middle tt-total">-</td>
+                                        <td class="align-middle"><button type="button" class="btn btn-sm btn-link text-danger tt-remove" title="@T("Admin.Common.Delete")"><i class="far fa-trash-alt"></i></button></td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                    <button type="button" class="btn btn-sm btn-secondary" id="tt-add-line">
+                        <i class="fa fa-plus"></i>
+                        <span>@T("Plugins.Split3D.OrderCreate.AddLine")</span>
+                    </button>
+
+                    <hr />
+
+                    <div class="form-row align-items-end">
+                        <div class="form-group col-md-6 mb-md-0">
+                            <smart-label asp-for="ShippingFee" />
+                            <input asp-for="ShippingFee" class="form-control" type="number" min="0" step="1000" id="tt-shipping" />
+                        </div>
+                        <div class="form-group col-md-6 mb-0 text-md-right">
+                            <div class="text-muted small text-uppercase">@T("Plugins.Split3D.OrderCreate.OrderTotal")</div>
+                            <div class="fs-h3 font-weight-bold" id="tt-order-total">0 ₫</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-5 mb-4">
+            <div class="card mb-4">
+                <div class="card-header font-weight-bold"><i class="bi bi-person mr-1"></i> @T("Plugins.Split3D.OrderCreate.Customer")</div>
+                <div class="card-body">
+                    <div class="form-group">
+                        <smart-label asp-for="FullName" />
+                        <input asp-for="FullName" class="form-control" autofocus />
+                        <span asp-validation-for="FullName"></span>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group col-md-6">
+                            <smart-label asp-for="Phone" />
+                            <input asp-for="Phone" class="form-control" type="tel" />
+                        </div>
+                        <div class="form-group col-md-6">
+                            <smart-label asp-for="Email" />
+                            <input asp-for="Email" class="form-control" type="email" />
+                            <span asp-validation-for="Email"></span>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <smart-label asp-for="AddressLine" />
+                        <input asp-for="AddressLine" class="form-control" />
+                    </div>
+                    <div class="form-group mb-0">
+                        <smart-label asp-for="City" />
+                        <input asp-for="City" class="form-control" />
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header font-weight-bold"><i class="bi bi-cash-coin mr-1"></i> @T("Plugins.Split3D.OrderCreate.Payment")</div>
+                <div class="card-body">
+                    <div class="form-group">
+                        <smart-label asp-for="PaymentMethod" />
+                        <select asp-for="PaymentMethod" class="form-control">
+                            @foreach (var method in paymentMethods)
+                            {
+                                <option value="@method.SystemName" selected="@(method.SystemName == Model.PaymentMethod)">@method.Name</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="form-group form-check">
+                        <input asp-for="IsPaid" class="form-check-input" />
+                        <label asp-for="IsPaid" class="form-check-label">@T("Plugins.Split3D.OrderCreate.Fields.IsPaid")</label>
+                        <span class="form-text text-muted">@T("Plugins.Split3D.OrderCreate.Fields.IsPaid.Hint")</span>
+                    </div>
+                    <div class="form-group mb-0">
+                        <smart-label asp-for="Note" />
+                        <textarea asp-for="Note" rows="3" class="form-control"></textarea>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+<script sm-target-zone="scripts" data-origin="studio-order-create">
+    $(function () {
+        var $table = $('#tt-order-lines');
+        var fmt = new Intl.NumberFormat('vi-VN');
+
+        function num(v) {
+            var n = parseFloat(v);
+            return isNaN(n) ? 0 : n;
+        }
+
+        // Keeps the model binder indexes (Lines[0], Lines[1], ...) gap-free after adding or removing rows.
+        function reindex() {
+            $table.find('tbody tr').each(function (i) {
+                $(this).find('[name]').each(function () {
+                    this.name = this.name.replace(/Lines\[\d+\]/, 'Lines[' + i + ']');
+                });
+            });
+        }
+
+        function recalc() {
+            var total = 0;
+            $table.find('tbody tr').each(function () {
+                var $row = $(this);
+                var $opt = $row.find('.tt-product option:selected');
+                var price = $row.find('.tt-price').val() === '' ? num($opt.data('price')) : num($row.find('.tt-price').val());
+                var line = $opt.val() ? price * Math.max(num($row.find('.tt-qty').val()), 0) : 0;
+                total += line;
+                $row.find('.tt-total').text($opt.val() ? fmt.format(line) + ' ₫' : '-');
+                $row.find('.tt-price').attr('placeholder', $opt.val() ? $opt.data('price') : '');
+                $row.find('.tt-attrs-hint').toggle(!!$opt.data('attrs'));
+            });
+            total += Math.max(num($('#tt-shipping').val()), 0);
+            $('#tt-order-total').text(fmt.format(total) + ' ₫');
+        }
+
+        $('#tt-add-line').on('click', function () {
+            var $last = $table.find('tbody tr').last();
+            var $row = $last.clone();
+            $row.find('.tt-product').val('');
+            $row.find('.tt-qty').val(1);
+            $row.find('.tt-price').val('');
+            $table.find('tbody').append($row);
+            reindex();
+            recalc();
+            $row.find('.tt-product').trigger('focus');
+        });
+
+        $table.on('click', '.tt-remove', function () {
+            var $rows = $table.find('tbody tr');
+            if ($rows.length > 1) {
+                $(this).closest('tr').remove();
+            }
+            else {
+                $rows.find('.tt-product').val('');
+                $rows.find('.tt-price').val('');
+            }
+            reindex();
+            recalc();
+        });
+
+        $table.on('change', '.tt-product', function () {
+            // A different product: its own price applies unless the studio types one.
+            $(this).closest('tr').find('.tt-price').val('');
+            recalc();
+        });
+
+        $table.on('input change', '.tt-qty, .tt-price', recalc);
+        $('#tt-shipping').on('input change', recalc);
+
+        recalc();
+    });
+</script>

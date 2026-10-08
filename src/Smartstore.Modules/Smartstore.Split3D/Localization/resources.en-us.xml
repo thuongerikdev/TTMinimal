@@ -2130,4 +2130,189 @@
     <LocaleResource Name="Completed.MixedKeys">
         <Value>The addon keys in this order are sent separately by email as soon as the payment is confirmed, and appear under My account › My license keys.</Value>
     </LocaleResource>
+
+    <!-- Admin: create print/design requests, print jobs and orders -->
+    <LocaleResource Name="PrintQuote.CreatePrint">
+        <Value>New print request</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintQuote.CreateDesign">
+        <Value>New design request</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintQuote.CreateEmailHint">
+        <Value>If the email belongs to a registered customer, the request is linked to that account.</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintQuote.DesignCategoryPlaceholder">
+        <Value>Category, e.g. key chain, figure</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintQuote.CreateFiles">
+        <Value>Upload files</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintQuote.CreateFilesHint">
+        <Value>Several files can be picked; they are stored together as one ZIP.</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintQuote.FileTooLarge">
+        <Value>The files exceed {0} MB. Please use a Google Drive / Dropbox link.</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintQuote.CreatedByAdminLog">
+        <Value>Request entered in the admin area.</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintQuote.Created">
+        <Value>Request #{0} created.</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.Create">
+        <Value>New print order</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.CreateEmailHint">
+        <Value>If the email belongs to a registered customer, the job is linked to that account.</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.CreatePriceHint">
+        <Value>Leave empty to price it from the price list (weight × price per gram of technology and material).</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.CreateInfo">
+        <Value>The job starts as a draft with a deposit payment link to send to the customer. If the customer pays in person, set the status manually on the job page.</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.AddressRequired">
+        <Value>Please enter the delivery address.</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.PriceRequired">
+        <Value>Enter a price, or a weight with a technology/material from the price list.</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.Created">
+        <Value>Print order {0} created.</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.Fields.DepositPercent">
+        <Value>Deposit</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.Fields.DepositPercent.Hint">
+        <Value>Share the customer pays up front through the payment link.</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.Fields.AddressLine">
+        <Value>Address</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.Fields.AddressLine.Hint">
+        <Value>House number, street, ward.</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.Fields.City">
+        <Value>City / province</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.Fields.City.Hint">
+        <Value>City or province of delivery.</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.Fields.FileLink">
+        <Value>File link</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.Fields.FileLink.Hint">
+        <Value>Google Drive / Dropbox link to the model files.</Value>
+    </LocaleResource>
+    <LocaleResource Name="OrderCreate.Button">
+        <Value>Create order</Value>
+    </LocaleResource>
+    <LocaleResource Name="OrderCreate.Title">
+        <Value>Create order</Value>
+    </LocaleResource>
+    <LocaleResource Name="OrderCreate.Submit">
+        <Value>Create order</Value>
+    </LocaleResource>
+    <LocaleResource Name="OrderCreate.Customer">
+        <Value>Customer</Value>
+    </LocaleResource>
+    <LocaleResource Name="OrderCreate.Payment">
+        <Value>Payment</Value>
+    </LocaleResource>
+    <LocaleResource Name="OrderCreate.Product">
+        <Value>Product</Value>
+    </LocaleResource>
+    <LocaleResource Name="OrderCreate.Quantity">
+        <Value>Qty</Value>
+    </LocaleResource>
+    <LocaleResource Name="OrderCreate.UnitPrice">
+        <Value>Unit price</Value>
+    </LocaleResource>
+    <LocaleResource Name="OrderCreate.LineTotal">
+        <Value>Total</Value>
+    </LocaleResource>
+    <LocaleResource Name="OrderCreate.PickProduct">
+        <Value>— Pick a product —</Value>
+    </LocaleResource>
+    <LocaleResource Name="OrderCreate.AddLine">
+        <Value>Add product</Value>
+    </LocaleResource>
+    <LocaleResource Name="OrderCreate.OrderTotal">
+        <Value>Order total</Value>
+    </LocaleResource>
+    <LocaleResource Name="OrderCreate.AttributesHint">
+        <Value>Product with attributes (color, size...): after creating the order, add it with its attributes via "Add product" on the order page.</Value>
+    </LocaleResource>
+    <LocaleResource Name="OrderCreate.NoLines">
+        <Value>Please pick at least one product.</Value>
+    </LocaleResource>
+    <LocaleResource Name="OrderCreate.ShippingMethod">
+        <Value>Delivery</Value>
+    </LocaleResource>
+    <LocaleResource Name="OrderCreate.CreatedNote">
+        <Value>Order created in the admin area by {0}.</Value>
+    </LocaleResource>
+    <LocaleResource Name="OrderCreate.Created">
+        <Value>Order {0} created. You can add products or edit it here.</Value>
+    </LocaleResource>
+    <LocaleResource Name="OrderCreate.Fields.FullName">
+        <Value>Full name</Value>
+    </LocaleResource>
+    <LocaleResource Name="OrderCreate.Fields.FullName.Hint">
+        <Value>Customer name, written into the order address.</Value>
+    </LocaleResource>
+    <LocaleResource Name="OrderCreate.Fields.Phone">
+        <Value>Phone</Value>
+    </LocaleResource>
+    <LocaleResource Name="OrderCreate.Fields.Phone.Hint">
+        <Value>Phone or Zalo number of the customer.</Value>
+    </LocaleResource>
+    <LocaleResource Name="OrderCreate.Fields.Email">
+        <Value>Email</Value>
+    </LocaleResource>
+    <LocaleResource Name="OrderCreate.Fields.Email.Hint">
+        <Value>If it belongs to a registered customer, the order is linked to that account; otherwise a guest is created.</Value>
+    </LocaleResource>
+    <LocaleResource Name="OrderCreate.Fields.AddressLine">
+        <Value>Address</Value>
+    </LocaleResource>
+    <LocaleResource Name="OrderCreate.Fields.AddressLine.Hint">
+        <Value>Leave empty if the customer picks up at the studio.</Value>
+    </LocaleResource>
+    <LocaleResource Name="OrderCreate.Fields.City">
+        <Value>City / province</Value>
+    </LocaleResource>
+    <LocaleResource Name="OrderCreate.Fields.City.Hint">
+        <Value>City or province of delivery.</Value>
+    </LocaleResource>
+    <LocaleResource Name="OrderCreate.Fields.PaymentMethod">
+        <Value>Payment method</Value>
+    </LocaleResource>
+    <LocaleResource Name="OrderCreate.Fields.PaymentMethod.Hint">
+        <Value>How the customer pays this order.</Value>
+    </LocaleResource>
+    <LocaleResource Name="OrderCreate.Fields.IsPaid">
+        <Value>Customer has paid</Value>
+    </LocaleResource>
+    <LocaleResource Name="OrderCreate.Fields.IsPaid.Hint">
+        <Value>Marks the order as paid right away: addon keys are issued and emails sent like for a regular order.</Value>
+    </LocaleResource>
+    <LocaleResource Name="OrderCreate.Fields.ShippingFee">
+        <Value>Shipping fee</Value>
+    </LocaleResource>
+    <LocaleResource Name="OrderCreate.Fields.ShippingFee.Hint">
+        <Value>Added to the order total.</Value>
+    </LocaleResource>
+    <LocaleResource Name="OrderCreate.Fields.Note">
+        <Value>Note</Value>
+    </LocaleResource>
+    <LocaleResource Name="OrderCreate.Fields.Note.Hint">
+        <Value>Customer comment shown on the order.</Value>
+    </LocaleResource>
+    <LocaleResource Name="OrderCreate.Fields.Lines">
+        <Value>Products</Value>
+    </LocaleResource>
+    <LocaleResource Name="OrderCreate.Fields.Lines.Hint">
+        <Value>Products and quantities. An empty unit price takes the product price.</Value>
+    </LocaleResource>
 </Language>

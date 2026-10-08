@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Smartstore.Core.Data;
 using Smartstore.Http;
@@ -13,6 +14,9 @@ namespace Smartstore.Split3D.Controllers;
 /// </summary>
 public class PrintQuoteController : AdminController
 {
+    // Upper bound for the request body. The configured file limit (StudioSettings.QuoteMaxFileSizeMb) is checked in the action.
+    private const long MaxRequestSize = 520L * 1024 * 1024;
+
     private readonly SmartDbContext _db;
     private readonly PrintQuoteService _quoteService;
     private readonly PrintQuoteFollowUpService _followUpService;
@@ -101,6 +105,101 @@ public class PrintQuoteController : AdminController
         var count = await _quoteService.DeleteAsync(requests);
 
         return Json(new { Success = true, Count = count });
+    }
+
+    /// <summary>
+    /// Form for a request the studio enters itself; <paramref name="design"/> starts it as a design request.
+    /// </summary>
+    [Permission(Permissions.Configuration.Module.Update)]
+    public IActionResult Create(bool design = false)
+    {
+        var model = new PrintQuoteCreateModel
+        {
+            IsDesign = design,
+            NeedsDesign = design,
+            Technology = design ? PrintQuoteService.DesignTechnology : null,
+            StatusId = (int)PrintQuoteStatus.New
+        };
+
+        PrepareCreateView();
+
+        return View(model);
+    }
+
+    [HttpPost]
+    [Permission(Permissions.Configuration.Module.Update)]
+    [RequestSizeLimit(MaxRequestSize)]
+    [RequestFormLimits(MultipartBodyLengthLimit = MaxRequestSize)]
+    public async Task<IActionResult> Create(PrintQuoteCreateModel model, List<IFormFile> files)
+    {
+        var uploads = (files ?? []).Where(x => x != null && x.Length > 0).ToList();
+        if (uploads.Sum(x => x.Length) > _quoteService.MaxFileSize)
+        {
+            ModelState.AddModelError(string.Empty, T("Plugins.Split3D.PrintQuote.FileTooLarge", _settings.QuoteMaxFileSizeMb));
+        }
+
+        if (!ModelState.IsValid)
+        {
+            PrepareCreateView();
+            return View(model);
+        }
+
+        var request = new PrintQuoteRequest
+        {
+            CustomerId = await FindCustomerIdAsync(model.Email),
+            Name = model.Name!.Trim(),
+            Phone = model.Phone!.Trim(),
+            Email = model.Email?.Trim().NullEmpty(),
+            Technology = model.IsDesign
+                ? PrintQuoteService.DesignTechnology
+                : model.Technology?.Trim().NullEmpty(),
+            Material = model.Material?.Trim().NullEmpty(),
+            Quantity = Math.Max(model.Quantity, 1),
+            EstimatedGrams = model.EstimatedGrams > 0 ? model.EstimatedGrams : null,
+            NeedsDesign = model.IsDesign || model.NeedsDesign,
+            Note = model.Note?.Trim().NullEmpty(),
+            FileLink = model.FileLink?.Trim().NullEmpty(),
+            StatusId = Enum.IsDefined(typeof(PrintQuoteStatus), model.StatusId) ? model.StatusId : (int)PrintQuoteStatus.New,
+            QuotedPrice = model.QuotedPrice > 0 ? model.QuotedPrice : null,
+            AdminNote = model.AdminNote?.Trim().NullEmpty()
+        };
+
+        await _quoteService.CreateAsync(request, uploads, HttpContext.RequestAborted);
+
+        var user = Services.WorkContext.CurrentCustomer;
+        await _followUpService.LogAsync(
+            request,
+            PrintContactChannel.Note,
+            T("Plugins.Split3D.PrintQuote.CreatedByAdminLog").Value,
+            userId: user.Id,
+            userName: user.GetFullName().NullEmpty() ?? user.Email);
+
+        NotifySuccess(T("Plugins.Split3D.PrintQuote.Created", request.Id));
+
+        return RedirectToAction(nameof(Edit), new { id = request.Id });
+    }
+
+    private void PrepareCreateView()
+    {
+        ViewBag.Statuses = GetStatuses();
+        ViewBag.Technologies = PrintPriceList.Parse(_settings.PrintPriceTable);
+    }
+
+    /// <summary>
+    /// Id of the registered customer with this email, 0 if there is none.
+    /// </summary>
+    private async Task<int> FindCustomerIdAsync(string email)
+    {
+        email = email?.Trim();
+        if (email.IsEmpty())
+        {
+            return 0;
+        }
+
+        return await _db.Customers
+            .Where(x => x.Email == email && !x.Deleted)
+            .Select(x => x.Id)
+            .FirstOrDefaultAsync();
     }
 
     [Permission(Permissions.Configuration.Module.Read)]

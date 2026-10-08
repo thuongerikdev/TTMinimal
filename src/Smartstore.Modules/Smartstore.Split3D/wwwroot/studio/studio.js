@@ -1754,7 +1754,9 @@
             if (f && quick) {
                 var group = f.closest('.form-group');
                 if (group) group.hidden = true;
-                if (quick.input !== document.activeElement) quick.input.value = f.value;
+                // The quick field is what the customer sees and edits: Smartstore re-renders the hidden field with the
+                // text it was sent at request time, which lags behind typing, so the quick text is written back.
+                if (f.value !== quick.input.value) f.value = quick.input.value;
                 if (cfg.list !== false && tools.parentNode !== quick.el) quick.el.appendChild(tools);
                 return;
             }
@@ -1770,6 +1772,8 @@
                 el.innerHTML = '<input type="text" class="tt-input skip-pd-ajax-update" maxlength="80" data-np-quick'
                     + ' placeholder="VD: Nguyễn Văn An" aria-label="Tên muốn in" autocomplete="off" />';
                 quick = { el: el, input: el.firstChild };
+                var start = getField();
+                if (start) quick.input.value = start.value;
                 quick.input.addEventListener('input', function () {
                     var f = getField();
                     quick.input.classList.remove('is-invalid');
@@ -2259,13 +2263,32 @@
         }
 
         // After the page's plate is built: the length slider shows (and the price uses) the plate's own length.
+        // A text too long for the longest length shrinks the design (fit scale); the scale the customer chose (slider,
+        // panel, reset) is kept apart, so the design grows back once the text gets shorter again.
+        var wantScale = null, fitScale = null, commitTimer = 0;
+
         function syncLength() {
             var r = pageRow(), spec = plateSpec(r);
             if (!sizedToText(spec) || !r.text) return;
-            var L = np.lib.naturalSize(spec).plate;
-            if (L > lengthCfg.max * 10 + 5) { np.design.set({ scale: np.design.kind.sizeTo(np.design.d, lengthCfg.max * 10, L) }); redrawPanel(); return; }
+            var d = np.design.d, kind = np.design.kind, max = lengthCfg.max * 10;
+            if (wantScale == null || d.scale !== fitScale) wantScale = d.scale || 1;
+            var target = wantScale, dt = Object.assign({}, d, { scale: target }), L = np.lib.naturalSize(kind.spec(dt, r, designCtx)).plate;
+            // Thickness and relief follow the square root of the scale: two linear steps land close to the longest length.
+            for (var i = 0; i < 2 && L > max + 5; i++) {
+                target = kind.sizeTo(dt, max, L);
+                dt = Object.assign({}, d, { scale: target });
+                L = np.lib.naturalSize(kind.spec(dt, r, designCtx)).plate;
+            }
+            fitScale = target;
+            if (Math.abs(target - (d.scale || 1)) > 0.001) { np.design.set({ scale: target }); redrawPanel(); return; }
             var cm = clampLength(L / 10);
-            if (cm !== lengthCm) { lengthCm = cm; showLength(); commitLength(true); }
+            if (cm === lengthCm) return;
+            lengthCm = cm;
+            showLength();
+            // While the customer types the estimate follows at once; the page price (a Smartstore reload of the price,
+            // colors and buttons) waits until typing rests, so the offer does not flicker with every letter.
+            clearTimeout(commitTimer);
+            commitTimer = setTimeout(function () { commitLength(true, true); }, 700);
         }
 
         // The length slider moved: the design scales so that the plate gets that long.
@@ -2273,6 +2296,8 @@
             var r = pageRow(), spec = plateSpec(r);
             if (!sizedToText(spec) || !r.text) return false;
             np.design.set({ scale: np.design.kind.sizeTo(np.design.d, lengthCm * 10, np.lib.naturalSize(spec).plate) });
+            // The customer's own size.
+            wantScale = fitScale = np.design.d.scale;
             redrawPanel();
             return true;
         }
@@ -2368,6 +2393,12 @@
             if (offer) {
                 np.offer.appendChild(offer);
                 np.offer.hidden = false;
+                // Price, quantity and add to cart stay in view at the foot of the bar. Both are partials Smartstore
+                // refreshes by data-partial inside the update container, wherever they sit in it.
+                ['.pd-offer-price-container', '.pd-offer-actions-container'].forEach(function (sel) {
+                    var part = offer.querySelector(sel);
+                    if (part) { np.buy.appendChild(part); np.buy.hidden = false; }
+                });
                 // Name and description head the bar (on wide screens the bar sits right of the 3D view).
                 var head = document.querySelector('.pd-info-col .pd-info-container');
                 if (head) { head.classList.add('tt-np-info'); np.panel.parentNode.insertBefore(head, np.panel); }
@@ -2486,8 +2517,9 @@
                     + '<div class="tt-np-main"><div class="tt-viewer-stage tt-np-stage"><canvas role="img" aria-label="Xem trước 3D, kéo để xoay"></canvas>'
                     + '<span class="tt-np-empty" data-np-empty>Đang tải bản xem trước 3D…</span><span class="tt-viewer-size" data-np-size></span></div>'
                     + '<div class="tt-np-list" data-np-list hidden></div></div>'
-                    + '<div class="tt-np-side"><div class="tt-np-panel" data-np-panel></div>'
-                    + '<div class="tt-np-offer" data-np-offer hidden><div class="tt-np-step"><i data-np-offer-no hidden></i>Màu, kích thước &amp; đặt hàng</div></div></div>'
+                    + '<div class="tt-np-side"><div class="tt-np-scroll"><div class="tt-np-panel" data-np-panel></div>'
+                    + '<div class="tt-np-offer" data-np-offer hidden><div class="tt-np-step"><i data-np-offer-no hidden></i>Màu &amp; kích thước</div></div></div>'
+                    + '<div class="tt-np-buy" data-np-buy hidden></div></div>'
                     + '<div class="tt-viewer-foot"><span>Kéo để xoay · Ctrl + lăn chuột để phóng to · ảnh minh hoạ, studio gửi file xem trước trước khi in</span>'
                     + '<button type="button" class="tt-textlink" data-np-reset>Góc nhìn ban đầu</button></div>';
                 host.insertBefore(card, host.firstChild);
@@ -2497,6 +2529,7 @@
                 np.list = card.querySelector('[data-np-list]');
                 np.panel = card.querySelector('[data-np-panel]');
                 np.offer = card.querySelector('[data-np-offer]');
+                np.buy = card.querySelector('[data-np-buy]');
                 mountOffer();
 
                 // Full screen: the card stays inside the product form (the offer it now holds must keep posting with
@@ -2579,9 +2612,9 @@
         }
 
         // Writes the length into the attribute; with refresh Smartstore reloads the price for it.
-        function commitLength(refresh) {
+        function commitLength(refresh, force) {
             var f = lengthField();
-            if (!f || f.value === String(lengthCm)) return;
+            if (!f || (f.value === String(lengthCm) && !force)) return;
             f.value = String(lengthCm);
             if (!refresh) return;
             // Smartstore marks text attributes "skip-pd-ajax-update" (text never changes the price); the length does,

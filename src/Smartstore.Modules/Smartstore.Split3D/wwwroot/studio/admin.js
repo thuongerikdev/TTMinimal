@@ -21,8 +21,8 @@
         }
     }
 
-    // Pages that stand in for a core page: /admin/studioproducts lights "Products", /admin/studiodashboard lights "Dashboard".
-    var aliases = { studioproducts: 'product', studiodashboard: 'home' };
+    // Pages that stand in for a core page: /admin/studioproducts lights "Products", /admin/studiodashboard lights "Dashboard", /admin/studioorder lights "Orders".
+    var aliases = { studioproducts: 'product', studiodashboard: 'home', studioorder: 'order' };
 
     function mark() {
         var current = parse(location.href);

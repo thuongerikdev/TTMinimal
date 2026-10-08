@@ -4794,4 +4794,189 @@
     <LocaleResource Name="Completed.MixedKeys">
         <Value>Key của addon trong đơn được gửi riêng qua email ngay khi thanh toán được xác nhận, và hiển thị ở Tài khoản › Key của tôi.</Value>
     </LocaleResource>
+
+    <!-- Admin: create print/design requests, print jobs and orders -->
+    <LocaleResource Name="PrintQuote.CreatePrint">
+        <Value>Tạo yêu cầu in</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintQuote.CreateDesign">
+        <Value>Tạo yêu cầu thiết kế</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintQuote.CreateEmailHint">
+        <Value>Nếu email trùng với tài khoản khách đã đăng ký, yêu cầu được gắn vào tài khoản đó.</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintQuote.DesignCategoryPlaceholder">
+        <Value>Hạng mục, ví dụ: móc khoá, mô hình nhân vật</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintQuote.CreateFiles">
+        <Value>Tải file lên</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintQuote.CreateFilesHint">
+        <Value>Có thể chọn nhiều file; nhiều file được nén chung thành một ZIP.</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintQuote.FileTooLarge">
+        <Value>File vượt quá {0} MB. Hãy dùng link Google Drive / Dropbox.</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintQuote.CreatedByAdminLog">
+        <Value>Yêu cầu được nhập trong trang quản trị.</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintQuote.Created">
+        <Value>Đã tạo yêu cầu #{0}.</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.Create">
+        <Value>Tạo đơn in</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.CreateEmailHint">
+        <Value>Nếu email trùng với tài khoản khách đã đăng ký, đơn được gắn vào tài khoản đó.</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.CreatePriceHint">
+        <Value>Để trống để tính theo bảng giá (khối lượng × giá/gram của công nghệ và vật liệu).</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.CreateInfo">
+        <Value>Đơn được tạo ở trạng thái Nháp kèm link thanh toán tiền cọc để gửi cho khách. Nếu khách trả trực tiếp, đổi trạng thái thủ công ở trang đơn.</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.AddressRequired">
+        <Value>Hãy nhập địa chỉ giao hàng.</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.PriceRequired">
+        <Value>Hãy nhập giá, hoặc nhập khối lượng với công nghệ/vật liệu có trong bảng giá.</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.Created">
+        <Value>Đã tạo đơn in {0}.</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.Fields.DepositPercent">
+        <Value>Tiền cọc</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.Fields.DepositPercent.Hint">
+        <Value>Phần trăm khách trả trước qua link thanh toán.</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.Fields.AddressLine">
+        <Value>Địa chỉ</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.Fields.AddressLine.Hint">
+        <Value>Số nhà, đường, phường/xã.</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.Fields.City">
+        <Value>Tỉnh / thành phố</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.Fields.City.Hint">
+        <Value>Tỉnh hoặc thành phố giao hàng.</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.Fields.FileLink">
+        <Value>Link file</Value>
+    </LocaleResource>
+    <LocaleResource Name="PrintJob.Fields.FileLink.Hint">
+        <Value>Link Google Drive / Dropbox tới file mẫu.</Value>
+    </LocaleResource>
+    <LocaleResource Name="OrderCreate.Button">
+        <Value>Tạo đơn hàng</Value>
+    </LocaleResource>
+    <LocaleResource Name="OrderCreate.Title">
+        <Value>Tạo đơn hàng</Value>
+    </LocaleResource>
+    <LocaleResource Name="OrderCreate.Submit">
+        <Value>Tạo đơn</Value>
+    </LocaleResource>
+    <LocaleResource Name="OrderCreate.Customer">
+        <Value>Khách hàng</Value>
+    </LocaleResource>
+    <LocaleResource Name="OrderCreate.Payment">
+        <Value>Thanh toán</Value>
+    </LocaleResource>
+    <LocaleResource Name="OrderCreate.Product">
+        <Value>Sản phẩm</Value>
+    </LocaleResource>
+    <LocaleResource Name="OrderCreate.Quantity">
+        <Value>SL</Value>
+    </LocaleResource>
+    <LocaleResource Name="OrderCreate.UnitPrice">
+        <Value>Đơn giá</Value>
+    </LocaleResource>
+    <LocaleResource Name="OrderCreate.LineTotal">
+        <Value>Thành tiền</Value>
+    </LocaleResource>
+    <LocaleResource Name="OrderCreate.PickProduct">
+        <Value>— Chọn sản phẩm —</Value>
+    </LocaleResource>
+    <LocaleResource Name="OrderCreate.AddLine">
+        <Value>Thêm sản phẩm</Value>
+    </LocaleResource>
+    <LocaleResource Name="OrderCreate.OrderTotal">
+        <Value>Tổng đơn</Value>
+    </LocaleResource>
+    <LocaleResource Name="OrderCreate.AttributesHint">
+        <Value>Sản phẩm có thuộc tính (màu, kích thước…): sau khi tạo đơn, chọn thuộc tính bằng nút "Thêm sản phẩm" ở trang đơn hàng.</Value>
+    </LocaleResource>
+    <LocaleResource Name="OrderCreate.NoLines">
+        <Value>Hãy chọn ít nhất một sản phẩm.</Value>
+    </LocaleResource>
+    <LocaleResource Name="OrderCreate.ShippingMethod">
+        <Value>Giao hàng</Value>
+    </LocaleResource>
+    <LocaleResource Name="OrderCreate.CreatedNote">
+        <Value>Đơn được tạo trong trang quản trị bởi {0}.</Value>
+    </LocaleResource>
+    <LocaleResource Name="OrderCreate.Created">
+        <Value>Đã tạo đơn hàng {0}. Có thể thêm sản phẩm hoặc sửa đơn ở đây.</Value>
+    </LocaleResource>
+    <LocaleResource Name="OrderCreate.Fields.FullName">
+        <Value>Họ tên</Value>
+    </LocaleResource>
+    <LocaleResource Name="OrderCreate.Fields.FullName.Hint">
+        <Value>Tên khách hàng, ghi vào địa chỉ của đơn.</Value>
+    </LocaleResource>
+    <LocaleResource Name="OrderCreate.Fields.Phone">
+        <Value>Điện thoại</Value>
+    </LocaleResource>
+    <LocaleResource Name="OrderCreate.Fields.Phone.Hint">
+        <Value>Số điện thoại hoặc Zalo của khách.</Value>
+    </LocaleResource>
+    <LocaleResource Name="OrderCreate.Fields.Email">
+        <Value>Email</Value>
+    </LocaleResource>
+    <LocaleResource Name="OrderCreate.Fields.Email.Hint">
+        <Value>Nếu trùng với tài khoản đã đăng ký, đơn được gắn vào tài khoản đó; nếu không, một khách vãng lai được tạo.</Value>
+    </LocaleResource>
+    <LocaleResource Name="OrderCreate.Fields.AddressLine">
+        <Value>Địa chỉ</Value>
+    </LocaleResource>
+    <LocaleResource Name="OrderCreate.Fields.AddressLine.Hint">
+        <Value>Để trống nếu khách nhận tại xưởng.</Value>
+    </LocaleResource>
+    <LocaleResource Name="OrderCreate.Fields.City">
+        <Value>Tỉnh / thành phố</Value>
+    </LocaleResource>
+    <LocaleResource Name="OrderCreate.Fields.City.Hint">
+        <Value>Tỉnh hoặc thành phố giao hàng.</Value>
+    </LocaleResource>
+    <LocaleResource Name="OrderCreate.Fields.PaymentMethod">
+        <Value>Phương thức thanh toán</Value>
+    </LocaleResource>
+    <LocaleResource Name="OrderCreate.Fields.PaymentMethod.Hint">
+        <Value>Cách khách trả tiền cho đơn này.</Value>
+    </LocaleResource>
+    <LocaleResource Name="OrderCreate.Fields.IsPaid">
+        <Value>Khách đã thanh toán</Value>
+    </LocaleResource>
+    <LocaleResource Name="OrderCreate.Fields.IsPaid.Hint">
+        <Value>Đánh dấu đơn đã thanh toán ngay: key addon được cấp và email được gửi như đơn thường.</Value>
+    </LocaleResource>
+    <LocaleResource Name="OrderCreate.Fields.ShippingFee">
+        <Value>Phí giao hàng</Value>
+    </LocaleResource>
+    <LocaleResource Name="OrderCreate.Fields.ShippingFee.Hint">
+        <Value>Cộng vào tổng đơn.</Value>
+    </LocaleResource>
+    <LocaleResource Name="OrderCreate.Fields.Note">
+        <Value>Ghi chú</Value>
+    </LocaleResource>
+    <LocaleResource Name="OrderCreate.Fields.Note.Hint">
+        <Value>Ghi chú của khách, hiện trong đơn hàng.</Value>
+    </LocaleResource>
+    <LocaleResource Name="OrderCreate.Fields.Lines">
+        <Value>Sản phẩm</Value>
+    </LocaleResource>
+    <LocaleResource Name="OrderCreate.Fields.Lines.Hint">
+        <Value>Sản phẩm và số lượng của đơn. Đơn giá để trống thì lấy giá sản phẩm.</Value>
+    </LocaleResource>
 </Language>

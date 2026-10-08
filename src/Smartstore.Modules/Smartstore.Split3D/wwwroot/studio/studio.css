@@ -1009,7 +1009,7 @@ button.tt-tool-media:hover img { transform: scale(1.04); }
 .tt-np.is-max > .tt-viewer-head, .tt-np.is-max > .tt-viewer-foot { grid-column: 1 / -1; }
 .tt-np.is-max .tt-np-main { display: flex; flex-direction: column; min-height: 0; }
 .tt-np.is-max .tt-np-stage { flex: 1; aspect-ratio: auto; min-height: 0; }
-.tt-np.is-max .tt-np-side { min-height: 0; overflow-y: auto; border-left: 2px solid var(--ink); background: #fff; }
+.tt-np.is-max .tt-np-side { min-height: 0; border-left: 2px solid var(--ink); background: #fff; }
 .tt-np.is-max .tt-np-panel { border-top: 0; }
 /* Full screen stays inside the product form: the sticky picture column and the page's own stacking context are lifted
    so the fixed card covers the header too. */
@@ -1019,25 +1019,112 @@ html.tt-np-maxed .page-main { z-index: 1080; }
 .tt-np-offer { padding: 4px 16px 16px; border-top: 2px solid var(--ink); background: #fff; }
 .tt-np-offer[hidden] { display: none; }
 .tt-np-offer > .tt-np-step i[hidden] { display: none; }
-.tt-np-offer .pd-offer { margin: 0; }
+.tt-np-offer .pd-offer { margin: 0; padding: 0; border: 0; background: none; box-shadow: none; }
 .tt-np-offer .pd-offer-actions { margin-top: 10px; }
 .tt-np-offer .tt-len { margin-bottom: 12px; }
 .tt-np-info { padding: 14px 16px 4px; background: #fff; }
 .tt-np-info .pd-info { margin-bottom: 0; }
 .tt-np-info .pd-name { font-size: 22px; }
+/* The bar: steps and colors scroll inside it when they do not fit, price + quantity + add to cart stay at its foot. */
+.tt-np-side { display: flex; flex-direction: column; min-height: 0; }
+.tt-np-scroll { flex: 1 1 auto; min-height: 0; }
+.tt-np-buy { position: sticky; bottom: 0; z-index: 2; display: flex; align-items: center; gap: 12px; padding: 10px 16px; border-top: 2px solid var(--ink); background: var(--cream); }
+.tt-np-buy[hidden] { display: none; }
+.tt-np-buy .pd-offer-price-container { flex: none; min-width: 0; }
+.tt-np-buy .pd-offer-price-container * { margin-bottom: 0 !important; }
+.tt-np-buy .pd-offer-actions-container { flex: 1 1 auto; min-width: 0; }
+.tt-np-buy .pd-offer-actions { margin: 0 !important; }
+.tt-np.is-max .tt-np-scroll { overflow-y: auto; }
+.tt-np-buy .pd-offer-actions > * { min-width: 0; }
+.tt-np-buy .btn-add-to-cart { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+@media (max-width: 575px) {
+    .tt-np-buy { flex-wrap: wrap; gap: 6px; padding: 8px 12px; }
+    .tt-np-buy .pd-offer-actions-container { flex-basis: 100%; }
+}
 /* Wide screens: the card spans the page, 3D view left (stays in view while scrolling), the whole bar right. */
 @media (min-width: 768px) {
     html.tt-np-merged .pd-data-col, html.tt-np-merged .pd-info-col { flex: 0 0 100%; max-width: 100%; }
     html.tt-np-merged .pd-data-col-inner { position: static; }
 }
+/* Wide screens: the card is one screen high, 3D view left, the bar right — nothing to scroll for on the page. */
 @media (min-width: 992px) {
-    .tt-np-merged .tt-np:not(.is-max) { display: grid; grid-template-columns: minmax(0, 1fr) 420px; grid-template-rows: auto 1fr auto; overflow: clip; }
+    .tt-np-merged .tt-np:not(.is-max) { display: grid; grid-template-columns: minmax(0, 1fr) 430px; grid-template-rows: auto minmax(0, 1fr) auto; height: calc(100vh - 205px); min-height: 520px; max-height: 900px; }
     .tt-np-merged .tt-np:not(.is-max) > .tt-viewer-head, .tt-np-merged .tt-np:not(.is-max) > .tt-viewer-foot { grid-column: 1 / -1; }
-    .tt-np-merged .tt-np:not(.is-max) .tt-np-main { position: sticky; top: 110px; align-self: start; }
-    .tt-np-merged .tt-np:not(.is-max) .tt-np-stage { aspect-ratio: auto; height: min(560px, calc(100vh - 150px)); }
+    .tt-np-merged .tt-np:not(.is-max) .tt-viewer-head { padding: 8px 14px; }
+    /* The hint line under the 3D view goes; its "Góc nhìn ban đầu" button sits in the view's upper right corner
+       (the page's floating "Thả file 3D" button covers the lower left one, the hint badge the top middle). */
+    .tt-np-merged .tt-np:not(.is-max) { position: relative; grid-template-rows: auto minmax(0, 1fr); }
+    .tt-np-merged .tt-np:not(.is-max) > .tt-viewer-foot { position: absolute; right: 442px; top: 88px; z-index: 1; padding: 3px 10px; border: 1.5px solid var(--ink); border-radius: 30px; background: #fff; }
+    .tt-np-merged .tt-np:not(.is-max) > .tt-viewer-foot span { display: none; }
+    .tt-np-merged .tt-np:not(.is-max) .tt-np-main { display: flex; flex-direction: column; min-height: 0; }
+    .tt-np-merged .tt-np:not(.is-max) .tt-np-stage { flex: 1; aspect-ratio: auto; min-height: 0; }
     .tt-np-merged .tt-np:not(.is-max) .tt-np-side { border-left: 2px solid var(--ink); background: #fff; }
+    .tt-np-merged .tt-np:not(.is-max) .tt-np-scroll { overflow-y: auto; overscroll-behavior: contain; }
     .tt-np-merged .tt-np:not(.is-max) .tt-np-panel { border-top: 0; }
-    .tt-np-merged .tt-np:not(.is-max) .tt-np-info + .tt-np-panel { border-top: 1px dashed rgba(32, 32, 31, .3); }
+    /* Compact steps: one line per choice, smaller swatches, the 12 colors in one row. */
+    .tt-np-merged .tt-np-info { padding: 10px 14px 0; }
+    .tt-np-merged .tt-np-info .pd-name { margin-bottom: 2px; font-size: 18px; }
+    .tt-np-merged .tt-np-info .pd-description { display: none; }
+    .tt-np-merged .tt-np-info .pd-review-summary, .tt-np-merged .tt-np-info .pd-rating-box { display: none; }
+    .tt-np-merged .tt-np-panel { padding: 6px 14px 10px; }
+    .tt-np-merged .tt-np-step { margin: 10px 0 6px; font-size: 13px; }
+    .tt-np-merged .tt-np-step i { width: 20px; height: 20px; font-size: 11px; }
+    .tt-np-merged .tt-np-quick .tt-np-types { grid-template-columns: repeat(auto-fill, minmax(84px, 1fr)); gap: 4px; }
+    .tt-np-merged .tt-np-quick .tt-np-type { padding: 5px 8px; }
+    .tt-np-merged .tt-np-quick .tt-np-type b { font-size: 12px; line-height: 1.2; }
+    .tt-np-merged .tt-np-quick .tt-np-type small { display: none; }
+    .tt-np-merged .tt-np-quick .tt-np-fonts { grid-template-columns: repeat(auto-fill, minmax(84px, 1fr)); gap: 4px; }
+    .tt-np-merged .tt-np-font { padding: 4px 6px; font-size: 14px; }
+    .tt-np-merged .tt-np-quicktext .tt-input { min-height: 38px; padding: 6px 12px; font-size: 15px; }
+    .tt-np-merged .tt-np-quicktext .tt-textlist-tools { margin-top: 6px; }
+    .tt-np-merged .tt-np-adv { margin-top: 10px; }
+    .tt-np-merged .tt-np-adv-btn { padding: 7px 40px 7px 12px; }
+    .tt-np-merged .tt-np-adv-btn small { display: none; }
+    .tt-np-merged .tt-np-panel-foot { margin-top: 8px; padding-top: 6px; }
+    .tt-np-merged .tt-np-panel-foot span { display: none; }
+    .tt-np-merged .tt-np-quicktext .tt-textlist-btn { padding: 4px 10px; font-size: 12px; }
+    .tt-np-merged .tt-np-quicktext .tt-tl-excel .tt-textlink { font-size: 11px; }
+    .tt-np-merged .tt-np-offer { padding: 0 14px 10px; }
+    .tt-np-merged .tt-np-offer .form-group { margin-bottom: 6px; }
+    .tt-np-merged .tt-np-offer > .tt-np-step { margin-top: 8px; }
+    .tt-np-merged .tt-np-offer .choice-label { margin-bottom: 4px; font-size: 13px; }
+    /* Smartstore sizes swatches by --swatch-size: 12 colors fit one row. */
+    .tt-np-merged .tt-np-offer .swatch-group { --swatch-size: 18px; gap: 2px; }
+    .tt-np-merged .tt-np-offer .tt-len { margin: 0 0 8px; padding: 8px 12px; box-shadow: 2px 2px 0 var(--ink); }
+    .tt-np-merged .tt-np-offer .tt-len small { display: none; }
+    .tt-np-merged .tt-np-offer .tt-len-head { flex-wrap: nowrap; margin-bottom: 2px; }
+    .tt-np-merged .tt-np-offer .tt-len-head b { font-size: 13px; white-space: nowrap; }
+    .tt-np-merged .tt-np-offer .tt-len-val { font-size: 16px; white-space: nowrap; }
+    .tt-np-merged .tt-np-offer .tt-len-price { font-size: 12px; white-space: nowrap; }
+    .tt-np-merged .tt-np-offer .tt-len-quick { flex-wrap: nowrap; gap: 4px; margin: 4px 0 0; }
+    .tt-np-merged .tt-np-offer .tt-len-quick button { padding: 2px 7px; font-size: 11px; white-space: nowrap; }
+    /* Wish list / question: one small line instead of two big buttons. */
+    .tt-np-merged .tt-np-offer .pd-actions { display: flex; gap: 14px; margin: 0; }
+    .tt-np-merged .tt-np-offer .pd-action-item { flex: none; width: auto; max-width: none; padding: 0; }
+    .tt-np-merged .tt-np-offer .pd-action-link { display: inline-flex; flex-direction: row; align-items: center; gap: 5px; padding: 2px 0; font-size: 12px; }
+    .tt-np-merged .tt-np-offer .pd-action-icon { margin: 0; font-size: 14px; }
+    .tt-np-merged .tt-np-buy { padding: 8px 14px; }
+    .tt-np-merged .tt-np-buy .pd-offer-price-container { font-size: .85em; }
+}
+/* The bar in two columns: steps 1–3 left, colors and length right. */
+@media (min-width: 992px) {
+    .tt-np-merged .tt-np:not(.is-max) { grid-template-columns: minmax(0, 1fr) min(660px, 62%); }
+    .tt-np-merged .tt-np:not(.is-max) > .tt-viewer-foot { right: calc(min(660px, 62%) + 12px); }
+    .tt-np-merged .tt-np.is-max { grid-template-columns: minmax(0, 1fr) min(660px, 55%); }
+    .tt-np-merged .tt-np.is-max .tt-np-panel { border-top: 0; }
+    .tt-np-merged .tt-np .tt-np-scroll { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); grid-template-rows: auto auto auto auto 1fr; column-gap: 0; align-content: start; }
+    .tt-np-merged .tt-np .tt-np-info { grid-column: 1 / -1; grid-row: 1; }
+    /* The panel's own blocks join the grid: quick steps (or the tabs) left; advanced options and reset under the colors. */
+    .tt-np-merged .tt-np .tt-np-panel { display: contents; }
+    .tt-np-merged .tt-np .tt-np-panel > * { grid-column: 1; margin-left: 14px; margin-right: 14px; }
+    .tt-np-merged .tt-np .tt-np-panel > .tt-np-quick { grid-row: 2 / 6; padding-bottom: 10px; }
+    .tt-np-merged .tt-np .tt-np-panel > .tt-np-tabs { grid-row: 2; margin-top: 10px; }
+    .tt-np-merged .tt-np .tt-np-panel > .tt-np-pane { grid-row: 3 / 6; padding-bottom: 10px; }
+    .tt-np-merged .tt-np .tt-np-offer { grid-column: 2; grid-row: 2; border-top: 0; padding-top: 0; }
+    .tt-np-merged .tt-np .tt-np-panel > .tt-np-adv { grid-column: 2; grid-row: 3; margin-top: 0; }
+    .tt-np-merged .tt-np .tt-np-panel > .tt-np-panel-foot { grid-column: 2; grid-row: 4; margin-bottom: 10px; }
+    .tt-np-merged .tt-np .tt-np-offer, .tt-np-merged .tt-np .tt-np-panel > .tt-np-adv, .tt-np-merged .tt-np .tt-np-panel > .tt-np-panel-foot { margin-left: 0; }
+    .tt-np-merged .tt-np .tt-np-offer .swatch-group { flex-wrap: wrap; }
 }
 @media (max-width: 760px) {
     .tt-np.is-max { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr) minmax(0, 45vh) auto; }

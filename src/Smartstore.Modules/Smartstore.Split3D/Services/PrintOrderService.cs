@@ -311,6 +311,70 @@ public class PrintOrderService
     }
 
     /// <summary>
+    /// Creates a job the studio enters itself in the admin area, e.g. for a customer who ordered by phone.
+    /// The customer pays it through <see cref="PrintOrder.PayToken"/> like a job created from a quote request.
+    /// </summary>
+    /// <param name="job">The job with customer, material, weight, delivery and notes filled in.</param>
+    /// <param name="price">Settled total price, or <c>null</c> to price the weight from the studio price list.</param>
+    /// <param name="depositPercent">Deposit share, or <c>null</c> for the configured one.</param>
+    /// <returns>The job, or <c>null</c> if no price was given and none could be calculated.</returns>
+    public async Task<PrintOrder?> CreateManualAsync(
+        PrintOrder job,
+        decimal? price,
+        int? depositPercent,
+        IReadOnlyCollection<IFormFile>? files,
+        CancellationToken cancelToken = default)
+    {
+        Guard.NotNull(job);
+
+        var pieces = Math.Clamp(job.Pieces, 1, 9999);
+        var models = job.TotalGrams > 0
+            ? new List<PrintOrderModel>
+            {
+                new()
+                {
+                    Name = "Nhập tay",
+                    Grams = Math.Clamp(job.TotalGrams, MinGrams, MaxGrams),
+                    Quantity = 1,
+                    Fill = job.Fill?.Truncate(60),
+                    Manual = true
+                }
+            }
+            : [];
+
+        var calculated = CalculatePrice(job.Technology, job.Material, models, depositPercent);
+        var total = price > 0 ? decimal.Round(price.Value, 0) : calculated.Total;
+        if (total <= 0)
+        {
+            return null;
+        }
+
+        var percent = calculated.DepositPercent;
+
+        job.PayToken = CommonHelper.GenerateRandomDigitCode(6) + Guid.NewGuid().ToString("N")[..16];
+        job.Models = models;
+        job.TotalGrams = models.Sum(x => x.TotalGrams);
+        job.Pieces = pieces;
+        job.ModelCount = models.Count;
+        job.PricePerGram = calculated.PricePerGram;
+        job.PriceEstimate = total;
+        job.FinalPrice = price > 0 ? total : null;
+        job.DepositPercent = percent;
+        job.DepositAmount = RoundDeposit(total, percent);
+        job.Status = PrintOrderStatus.Draft;
+        job.CreatedOnUtc = job.UpdatedOnUtc = DateTime.UtcNow;
+
+        _db.PrintOrders().Add(job);
+        await _db.SaveChangesAsync(cancelToken);
+
+        job.Code = FormatCode(job.Id);
+        await StoreFilesAsync(job, files, cancelToken);
+        await _db.SaveChangesAsync(cancelToken);
+
+        return job;
+    }
+
+    /// <summary>
     /// Job number as shown to the customer and stored in the cart line.
     /// </summary>
     public static string FormatCode(int id)

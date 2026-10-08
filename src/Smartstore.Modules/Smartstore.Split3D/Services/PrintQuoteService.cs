@@ -22,6 +22,11 @@ public class PrintQuoteService
     /// </summary>
     public const string FileFolder = "PrintQuotes";
 
+    /// <summary>
+    /// <see cref="PrintQuoteRequest.Technology"/> of a design request (page "Thiết kế"), as opposed to a print request.
+    /// </summary>
+    public const string DesignTechnology = "Thiết kế 3D";
+
     public static readonly string[] AllowedExtensions =
     [
         ".stl", ".obj", ".3mf", ".step", ".stp", ".igs", ".iges", ".fbx", ".blend", ".ply", ".amf",
@@ -65,12 +70,26 @@ public class PrintQuoteService
     /// Saves a new request, stores its files and queues the notification email.
     /// Several files are stored together as one ZIP archive.
     /// </summary>
-    public async Task SubmitAsync(PrintQuoteRequest request, IReadOnlyCollection<IFormFile> files, CancellationToken cancelToken = default)
+    public Task SubmitAsync(PrintQuoteRequest request, IReadOnlyCollection<IFormFile> files, CancellationToken cancelToken = default)
+        => SaveAsync(request, files, true, cancelToken);
+
+    /// <summary>
+    /// Saves a request the studio enters itself in the admin area (customer called or messaged).
+    /// Stores its files like <see cref="SubmitAsync(PrintQuoteRequest, IReadOnlyCollection{IFormFile}, CancellationToken)"/>
+    /// but sends no notification email and keeps the status the studio picked.
+    /// </summary>
+    public Task CreateAsync(PrintQuoteRequest request, IReadOnlyCollection<IFormFile> files, CancellationToken cancelToken = default)
+        => SaveAsync(request, files, false, cancelToken);
+
+    private async Task SaveAsync(PrintQuoteRequest request, IReadOnlyCollection<IFormFile> files, bool notify, CancellationToken cancelToken)
     {
         Guard.NotNull(request);
 
         request.CreatedOnUtc = request.UpdatedOnUtc = DateTime.UtcNow;
-        request.Status = PrintQuoteStatus.New;
+        if (notify)
+        {
+            request.Status = PrintQuoteStatus.New;
+        }
 
         _db.PrintQuoteRequests().Add(request);
         await _db.SaveChangesAsync(cancelToken);
@@ -115,6 +134,11 @@ public class PrintQuoteService
             request.FilePath = path;
             request.FileSize = (await _appContext.TenantRoot.GetFileAsync(path)).Length;
             await _db.SaveChangesAsync(cancelToken);
+        }
+
+        if (!notify)
+        {
+            return;
         }
 
         try

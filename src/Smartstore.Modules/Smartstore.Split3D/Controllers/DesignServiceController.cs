@@ -68,7 +68,7 @@ public class DesignServiceController : PublicController
             Name = form.Name.Trim(),
             Phone = form.Phone.Trim(),
             Email = form.Email?.Trim().NullEmpty() ?? (customer.IsRegistered() ? customer.Email : null),
-            Technology = "Thiết kế 3D",
+            Technology = PrintQuoteService.DesignTechnology,
             Material = category?.Title ?? "Chưa rõ hạng mục",
             Quantity = 1,
             NeedsDesign = true,

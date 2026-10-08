@@ -11,6 +11,10 @@
         @ViewBag.Title
     </div>
     <div class="options">
+        <a href="@Url.Action("Create")" class="btn btn-primary">
+            <i class="fa fa-plus"></i>
+            <span>@T("Plugins.Split3D.PrintJob.Create")</span>
+        </a>
         <a href="@Url.Action("List", "PrintQuote")" class="btn btn-secondary">
             <i class="bi bi-chat-left-text"></i>
             <span>@T("Plugins.Split3D.Studio.Quotes")</span>

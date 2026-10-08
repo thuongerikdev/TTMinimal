@@ -1,0 +1,151 @@
+@model PrintQuoteCreateModel
+
+@{
+    ViewBag.Title = T(Model.IsDesign ? "Plugins.Split3D.PrintQuote.CreateDesign" : "Plugins.Split3D.PrintQuote.CreatePrint").Value;
+    var statuses = (List<(int Id, string Name)>)ViewBag.Statuses;
+    var technologies = (List<PrintTechnology>)ViewBag.Technologies;
+}
+
+<form asp-action="Create" method="post" enctype="multipart/form-data" id="printquote-create-form">
+    <input type="hidden" asp-for="IsDesign" />
+
+    <div class="section-header">
+        <div class="title">
+            <a sm-backto href="@Url.Action("List")"></a>
+            <i class="bi bi-@(Model.IsDesign ? "vector-pen" : "printer")"></i>
+            @ViewBag.Title
+        </div>
+        <div class="options">
+            <button type="submit" class="btn btn-warning">
+                <i class="fa fa-check"></i>
+                <span>@T("Admin.Common.Save")</span>
+            </button>
+        </div>
+    </div>
+
+    @if (!ViewData.ModelState.IsValid)
+    {
+        <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+    }
+
+    <div class="row">
+        <div class="col-lg-7 mb-4">
+            <div class="card mb-4">
+                <div class="card-header font-weight-bold"><i class="bi bi-person mr-1"></i> @T("Plugins.Split3D.PrintQuote.Request")</div>
+                <div class="card-body">
+                    <div class="form-row">
+                        <div class="form-group col-md-6">
+                            <smart-label asp-for="Name" />
+                            <input asp-for="Name" class="form-control" autofocus />
+                            <span asp-validation-for="Name"></span>
+                        </div>
+                        <div class="form-group col-md-6">
+                            <smart-label asp-for="Phone" />
+                            <input asp-for="Phone" class="form-control" type="tel" />
+                            <span asp-validation-for="Phone"></span>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <smart-label asp-for="Email" />
+                        <input asp-for="Email" class="form-control" type="email" />
+                        <span class="form-text text-muted">@T("Plugins.Split3D.PrintQuote.CreateEmailHint")</span>
+                    </div>
+
+                    @if (!Model.IsDesign)
+                    {
+                        <div class="form-row">
+                            <div class="form-group col-md-6">
+                                <smart-label asp-for="Technology" />
+                                <input asp-for="Technology" class="form-control" list="tt-technologies" autocomplete="off" />
+                                <datalist id="tt-technologies">
+                                    @foreach (var tech in technologies)
+                                    {
+                                        <option value="@tech.Name"></option>
+                                    }
+                                </datalist>
+                            </div>
+                            <div class="form-group col-md-6">
+                                <smart-label asp-for="Material" />
+                                <input asp-for="Material" class="form-control" list="tt-materials" autocomplete="off" />
+                                <datalist id="tt-materials">
+                                    @foreach (var name in technologies.SelectMany(x => x.Materials).Select(x => x.Name).Distinct())
+                                    {
+                                        <option value="@name"></option>
+                                    }
+                                </datalist>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group col-md-6">
+                                <smart-label asp-for="Quantity" />
+                                <input asp-for="Quantity" class="form-control" type="number" min="1" step="1" />
+                                <span asp-validation-for="Quantity"></span>
+                            </div>
+                            <div class="form-group col-md-6">
+                                <smart-label asp-for="EstimatedGrams" />
+                                <input asp-for="EstimatedGrams" class="form-control" type="number" min="0" step="1" />
+                                <span asp-validation-for="EstimatedGrams"></span>
+                            </div>
+                        </div>
+                        <div class="form-group form-check">
+                            <input asp-for="NeedsDesign" class="form-check-input" />
+                            <label asp-for="NeedsDesign" class="form-check-label">@T("Plugins.Split3D.PrintQuote.Fields.NeedsDesign")</label>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="form-group">
+                            <smart-label asp-for="Material" />
+                            <input asp-for="Material" class="form-control" placeholder="@T("Plugins.Split3D.PrintQuote.DesignCategoryPlaceholder")" />
+                        </div>
+                    }
+
+                    <div class="form-group">
+                        <smart-label asp-for="Note" />
+                        <textarea asp-for="Note" rows="5" class="form-control"></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header font-weight-bold"><i class="bi bi-paperclip mr-1"></i> @T("Plugins.Split3D.PrintQuote.Fields.File")</div>
+                <div class="card-body">
+                    <div class="form-group">
+                        <smart-label asp-for="FileLink" />
+                        <input asp-for="FileLink" class="form-control" type="url" placeholder="https://drive.google.com/..." />
+                    </div>
+                    <div class="form-group mb-0">
+                        <label for="files">@T("Plugins.Split3D.PrintQuote.CreateFiles")</label>
+                        <input type="file" id="files" name="files" class="form-control-file" multiple />
+                        <span class="form-text text-muted">@T("Plugins.Split3D.PrintQuote.CreateFilesHint")</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-5 mb-4">
+            <div class="card">
+                <div class="card-header font-weight-bold"><i class="bi bi-kanban mr-1"></i> @T("Plugins.Split3D.PrintQuote.Processing")</div>
+                <div class="card-body">
+                    <div class="form-group">
+                        <smart-label asp-for="StatusId" />
+                        <select asp-for="StatusId" class="form-control">
+                            @foreach (var status in statuses.Where(x => x.Id != (int)PrintQuoteStatus.Ordered))
+                            {
+                                <option value="@status.Id" selected="@(status.Id == Model.StatusId)">@status.Name</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <smart-label asp-for="QuotedPrice" />
+                        <input asp-for="QuotedPrice" class="form-control" type="number" step="1000" min="0" />
+                    </div>
+                    <div class="form-group mb-0">
+                        <smart-label asp-for="AdminNote" />
+                        <textarea asp-for="AdminNote" rows="4" class="form-control"></textarea>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
