@@ -22,7 +22,7 @@ namespace Smartstore.Split3D.Services;
 /// </summary>
 public class StudioStorefrontSetup
 {
-    public const int CurrentVersion = 9;
+    public const int CurrentVersion = 10;
     public const string ThemeName = "TTMinimal";
     public const string PrintServiceRouteName = "TTPrintService";
     public const string PrintOrderRouteName = "TTPrintOrder";

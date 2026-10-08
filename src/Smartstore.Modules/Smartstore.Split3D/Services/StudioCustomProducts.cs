@@ -18,10 +18,16 @@ public static class StudioCustomProducts
     public const string CategoryName = "Quà tặng cá nhân hoá";
     public const string CategorySlug = "qua-tang-ca-nhan-hoa";
 
+    // Filament colors of the design products (same hex as BOARD_COLORS in studio-designs.js where both have the color).
+    // Existing products get the missing ones from UpgradeColorsAsync.
     private static readonly (string Name, string Color)[] _colors =
     [
-        ("Trắng", "#ffffff"), ("Đen", "#20201f"), ("Hồng", "#ff67bc"), ("Mint", "#80e5cb"), ("Vàng", "#ffe348")
+        ("Trắng", "#ffffff"), ("Đen", "#20201f"), ("Xám", "#9e9e9a"), ("Đỏ", "#e5484d"), ("Cam", "#ff7a1a"), ("Vàng", "#ffe348"),
+        ("Xanh lá", "#6cc644"), ("Mint", "#80e5cb"), ("Xanh trời", "#5ac8fa"), ("Xanh dương", "#2f6fe4"), ("Tím", "#9b6bf2"), ("Hồng", "#ff67bc")
     ];
+
+    // Color choices of the design products that UpgradeColorsAsync completes.
+    private static readonly string[] _colorAttributeNames = ["Màu nền", "Màu chữ", "Màu", "Màu ký tự"];
 
     private sealed record Option(string Name, decimal PriceAdjustment = 0, string Color = null, bool PreSelected = false);
 
@@ -609,6 +615,8 @@ public static class StudioCustomProducts
     /// </summary>
     public static async Task UpgradeAsync(SmartDbContext db, CancellationToken cancelToken = default)
     {
+        await UpgradeColorsAsync(db, cancelToken);
+
         var boardId = await db.Products.Where(x => x.Sku == ClassBoardSku).Select(x => (int?)x.Id).FirstOrDefaultAsync(cancelToken);
         if (boardId != null)
         {
@@ -669,6 +677,57 @@ public static class StudioCustomProducts
 
             await db.SaveChangesAsync(cancelToken);
         }
+    }
+
+    /// <summary>
+    /// Completes the color choices of the design products with the colors of <see cref="_colors"/> they lack (matched
+    /// by name) and orders them like that list. Names, colors and prices of existing values are left alone; colors the
+    /// shop added itself follow the list.
+    /// </summary>
+    private static async Task UpgradeColorsAsync(SmartDbContext db, CancellationToken cancelToken)
+    {
+        var skus = DesignProducts.Keys.ToArray();
+        var attributes = await db.ProductVariantAttributes
+            .Include(x => x.ProductAttribute)
+            .Include(x => x.ProductVariantAttributeValues)
+            .Where(x => skus.Contains(x.Product.Sku)
+                && _colorAttributeNames.Contains(x.ProductAttribute.Name)
+                && x.AttributeControlTypeId == (int)AttributeControlType.Boxes)
+            .ToListAsync(cancelToken);
+
+        static bool Same(ProductVariantAttributeValue value, string name)
+            => string.Equals(value.Name?.Trim(), name, StringComparison.OrdinalIgnoreCase);
+
+        foreach (var attribute in attributes)
+        {
+            var values = attribute.ProductVariantAttributeValues.ToList();
+            var order = 0;
+            foreach (var (name, color) in _colors)
+            {
+                var value = values.FirstOrDefault(v => Same(v, name));
+                if (value != null)
+                {
+                    value.DisplayOrder = ++order;
+                    continue;
+                }
+
+                db.ProductVariantAttributeValues.Add(new ProductVariantAttributeValue
+                {
+                    ProductVariantAttributeId = attribute.Id,
+                    Name = name,
+                    Color = color,
+                    DisplayOrder = ++order,
+                    Quantity = 1
+                });
+            }
+
+            foreach (var other in values.Where(v => !_colors.Any(c => Same(v, c.Name))).OrderBy(v => v.DisplayOrder))
+            {
+                other.DisplayOrder = ++order;
+            }
+        }
+
+        await db.SaveChangesAsync(cancelToken);
     }
 
     private static async Task AddAttributeAsync(SmartDbContext db, int productId, Attribute attr, int displayOrder, CancellationToken cancelToken)
