@@ -24,6 +24,15 @@ public class AddonModel : EntityModelBase
     [LocalizedDisplay("*DisplayOrder")]
     public int DisplayOrder { get; set; }
 
+    [LocalizedDisplay("*ComingSoon")]
+    public bool ComingSoon { get; set; }
+
+    [LocalizedDisplay("*Kind")]
+    public string Kind { get; set; }
+
+    [LocalizedDisplay("*Icon")]
+    public string Icon { get; set; }
+
     public int ProductCount { get; set; }
     public int LicenseCount { get; set; }
     public List<AddonProductModel> Products { get; set; } = [];

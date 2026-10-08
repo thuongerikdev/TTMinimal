@@ -1099,6 +1099,24 @@
     <LocaleResource Name="Addon.ManagedLicensing.Hint">
         <Value>Das hochgeladene Add-on enthält nur Funktionen: der Shop fügt Schlüsselaktivierung (Schlüsseldatei, Online-Prüfung, Gerätelimit), Update-Button und Verschleierung hinzu. Für Add-ons mit eigener Lizenzierung (Split3D Print) ausschalten.</Value>
     </LocaleResource>
+    <LocaleResource Name="Addon.ComingSoon">
+        <Value>Demnächst</Value>
+    </LocaleResource>
+    <LocaleResource Name="Addon.ComingSoon.Hint">
+        <Value>Zeigt das Add-on als Vorschaukarte "Sắp ra mắt" auf der Tools-Seite und der Startseite (Symbol, Label, Name, Beschreibung) statt einer Karte mit Paketen. Beim Verkaufsstart ausschalten. Aktiv muss eingeschaltet sein, damit die Karte erscheint.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Addon.Kind">
+        <Value>Label</Value>
+    </LocaleResource>
+    <LocaleResource Name="Addon.Kind.Hint">
+        <Value>Kurzes Label über dem Namen in der Tool-Übersicht, z. B. "Addon Blender" oder "Ứng dụng độc lập".</Value>
+    </LocaleResource>
+    <LocaleResource Name="Addon.Icon">
+        <Value>Symbol</Value>
+    </LocaleResource>
+    <LocaleResource Name="Addon.Icon.Hint">
+        <Value>Symbol der Vorschaukarte.</Value>
+    </LocaleResource>
     <LocaleResource Name="Fields.ObfuscateAddons">
         <Value>Marktplatz-Add-ons verschleiern</Value>
     </LocaleResource>

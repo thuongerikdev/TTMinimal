@@ -1099,6 +1099,24 @@
     <LocaleResource Name="Addon.ManagedLicensing.Hint">
         <Value>The uploaded add-on contains features only: the shop adds key activation (key file drop, online check, device limit), the update button and obfuscation. Turn off for add-ons that ship their own licensing (Split3D Print).</Value>
     </LocaleResource>
+    <LocaleResource Name="Addon.ComingSoon">
+        <Value>Coming soon</Value>
+    </LocaleResource>
+    <LocaleResource Name="Addon.ComingSoon.Hint">
+        <Value>Shows the add-on as a "Sắp ra mắt" teaser card on the tools page and the home page (icon, label, name, description) instead of a card with packages. Turn off when it goes on sale. Active must be on for the card to show.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Addon.Kind">
+        <Value>Label</Value>
+    </LocaleResource>
+    <LocaleResource Name="Addon.Kind.Hint">
+        <Value>Short label above the name on the tools board, e.g. "Addon Blender" or "Ứng dụng độc lập".</Value>
+    </LocaleResource>
+    <LocaleResource Name="Addon.Icon">
+        <Value>Icon</Value>
+    </LocaleResource>
+    <LocaleResource Name="Addon.Icon.Hint">
+        <Value>Icon of the coming soon card.</Value>
+    </LocaleResource>
     <LocaleResource Name="Fields.ObfuscateAddons">
         <Value>Obfuscate marketplace add-ons</Value>
     </LocaleResource>

@@ -29,6 +29,7 @@ public class ToolsController : PublicController
     {
         var model = new ToolsPageModel { SelectedProductId = goi };
         model.Tools.AddRange(await _catalog.GetToolsAsync());
+        model.ComingSoon.AddRange(await _catalog.GetComingSoonAsync());
 
         return View(model);
     }

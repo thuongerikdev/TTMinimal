@@ -34,9 +34,14 @@ public static class StudioIcons
         ["expand"] = "<path d='M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5'/>"
     };
 
+    /// <summary>
+    /// Names of all icons, e.g. for an icon picker in the admin.
+    /// </summary>
+    public static IEnumerable<string> Names => _paths.Keys;
+
     public static IHtmlContent Get(string name, string cssClass = null)
     {
-        var path = _paths.Get(name) ?? _paths["cube"];
+        var path = (name.HasValue() ? _paths.Get(name) : null) ?? _paths["cube"];
         var css = cssClass.HasValue() ? $" class=\"{cssClass}\"" : string.Empty;
 
         return new HtmlString($"<svg{css} viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\">{path}</svg>");

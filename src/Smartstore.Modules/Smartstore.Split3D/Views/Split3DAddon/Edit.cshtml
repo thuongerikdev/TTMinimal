@@ -65,6 +65,26 @@
             <div class="adminTitle"><smart-label asp-for="DisplayOrder" /></div>
             <div class="adminData"><input asp-for="DisplayOrder" /></div>
         </div>
+        <div class="adminRow">
+            <div class="adminTitle"><smart-label asp-for="ComingSoon" /></div>
+            <div class="adminData"><input asp-for="ComingSoon" /></div>
+        </div>
+        <div class="adminRow">
+            <div class="adminTitle"><smart-label asp-for="Kind" /></div>
+            <div class="adminData"><input asp-for="Kind" placeholder="Addon Blender" /></div>
+        </div>
+        <div class="adminRow">
+            <div class="adminTitle"><smart-label asp-for="Icon" /></div>
+            <div class="adminData">
+                <select asp-for="Icon" class="form-control">
+                    <option value=""></option>
+                    @foreach (var name in StudioIcons.Names.Where(x => x != "facebook"))
+                    {
+                        <option value="@name" selected="@(name == Model.Icon)">@name</option>
+                    }
+                </select>
+            </div>
+        </div>
     </div>
 </form>
 

@@ -45,7 +45,12 @@
                 @foreach (var a in Model)
                 {
                     <tr>
-                        <td class="font-weight-bold"><a href="@Url.Action("Edit", new { id = a.Id })">@a.Name</a></td>
+                        <td class="font-weight-bold"><a href="@Url.Action("Edit", new { id = a.Id })">@a.Name</a>
+                            @if (a.ComingSoon)
+                            {
+                                <span class="badge badge-warning ml-1">@T("Plugins.Split3D.Addon.ComingSoon")</span>
+                            }
+                        </td>
                         <td><code>@a.ProductCode</code></td>
                         <td>@a.Version</td>
                         <td class="text-center">@a.ProductCount</td>

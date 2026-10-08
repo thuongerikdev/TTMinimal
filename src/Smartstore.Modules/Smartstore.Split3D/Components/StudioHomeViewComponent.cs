@@ -104,6 +104,7 @@ public class StudioHomeViewComponent : SmartViewComponent
         model.Products = await GetProductsAsync(addonProductIds, storeId, serviceCategories.Select(x => x.Id).ToArray());
         model.ServiceCategories = serviceCategories;
         model.Tools.Tools.AddRange(await _toolsCatalog.GetToolsAsync());
+        model.Tools.ComingSoon.AddRange(await _toolsCatalog.GetComingSoonAsync());
 
         return View(model);
     }

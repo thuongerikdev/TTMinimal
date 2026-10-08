@@ -3763,6 +3763,24 @@
     <LocaleResource Name="Addon.ManagedLicensing.Hint">
         <Value>Addon tải lên chỉ cần có tính năng: shop tự gắn phần nhập key (kéo file key, kiểm tra online, giới hạn số máy), nút cập nhật và mã hoá. Tắt cho addon tự có phần bản quyền (Split3D Print).</Value>
     </LocaleResource>
+    <LocaleResource Name="Addon.ComingSoon">
+        <Value>Sắp ra mắt</Value>
+    </LocaleResource>
+    <LocaleResource Name="Addon.ComingSoon.Hint">
+        <Value>Hiện addon thành thẻ "Sắp ra mắt" trên trang Công cụ 3D và trang chủ (icon, nhãn, tên, mô tả) thay cho thẻ có gói bán. Tắt khi bắt đầu bán. Phải bật Kích hoạt thì thẻ mới hiện.</Value>
+    </LocaleResource>
+    <LocaleResource Name="Addon.Kind">
+        <Value>Nhãn</Value>
+    </LocaleResource>
+    <LocaleResource Name="Addon.Kind.Hint">
+        <Value>Nhãn nhỏ phía trên tên trên bảng công cụ, ví dụ "Addon Blender" hoặc "Ứng dụng độc lập".</Value>
+    </LocaleResource>
+    <LocaleResource Name="Addon.Icon">
+        <Value>Icon</Value>
+    </LocaleResource>
+    <LocaleResource Name="Addon.Icon.Hint">
+        <Value>Icon của thẻ Sắp ra mắt.</Value>
+    </LocaleResource>
     <LocaleResource Name="Fields.ObfuscateAddons">
         <Value>Mã hoá addon của sàn</Value>
     </LocaleResource>

@@ -43,7 +43,7 @@ public class StudioToolsCatalog
     public async Task<List<ToolCardModel>> GetToolsAsync()
     {
         var addons = await _db.Split3DAddons().AsNoTracking()
-            .Where(x => x.Active)
+            .Where(x => x.Active && !x.ComingSoon)
             .OrderBy(x => x.DisplayOrder).ThenBy(x => x.Name)
             .ToListAsync();
 
@@ -110,5 +110,24 @@ public class StudioToolsCatalog
         }
 
         return tools;
+    }
+
+    /// <summary>
+    /// Active tools flagged as coming soon, shown as teaser cards after the tools on sale.
+    /// </summary>
+    public async Task<List<ToolTeaserModel>> GetComingSoonAsync()
+    {
+        return await _db.Split3DAddons().AsNoTracking()
+            .Where(x => x.Active && x.ComingSoon)
+            .OrderBy(x => x.DisplayOrder).ThenBy(x => x.Name)
+            .Select(x => new ToolTeaserModel
+            {
+                AddonId = x.Id,
+                Name = x.Name,
+                Kind = x.Kind,
+                Icon = x.Icon,
+                Description = x.Description
+            })
+            .ToListAsync();
     }
 }

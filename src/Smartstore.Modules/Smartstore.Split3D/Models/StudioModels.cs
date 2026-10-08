@@ -194,9 +194,23 @@ public class ToolsPageModel
     public List<ToolCardModel> Tools { get; } = [];
 
     /// <summary>
+    /// Tools in development ("Sắp ra mắt"), shown after the ones on sale.
+    /// </summary>
+    public List<ToolTeaserModel> ComingSoon { get; } = [];
+
+    /// <summary>
     /// Package preselected from the URL (?goi=productId), e.g. when coming from a package product page.
     /// </summary>
     public int? SelectedProductId { get; set; }
+}
+
+public class ToolTeaserModel
+{
+    public int AddonId { get; set; }
+    public string Name { get; set; }
+    public string Kind { get; set; }
+    public string Icon { get; set; }
+    public string Description { get; set; }
 }
 
 public class ToolCardModel

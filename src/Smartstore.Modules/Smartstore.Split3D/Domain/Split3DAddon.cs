@@ -39,6 +39,23 @@ public class Split3DAddon : BaseEntity
     public bool ManagedLicensing { get; set; }
 
     public int DisplayOrder { get; set; }
+
+    /// <summary>
+    /// Shown as a "Sắp ra mắt" teaser card on the tools board instead of a card with packages.
+    /// </summary>
+    public bool ComingSoon { get; set; }
+
+    /// <summary>
+    /// Short label above the name on the tools board, e.g. "Addon Blender" or "Ứng dụng độc lập".
+    /// </summary>
+    [StringLength(100)]
+    public string Kind { get; set; }
+
+    /// <summary>
+    /// Name of a <see cref="StudioIcons"/> icon for the teaser card, e.g. "layers".
+    /// </summary>
+    [StringLength(50)]
+    public string Icon { get; set; }
 }
 
 /// <summary>

@@ -45,6 +45,7 @@ public partial class Split3DAddonController : AdminController
             Version = x.Version,
             Active = x.Active,
             DisplayOrder = x.DisplayOrder,
+            ComingSoon = x.ComingSoon,
             ProductCount = productCounts.GetValueOrDefault(x.Id),
             LicenseCount = licenseCounts.GetValueOrDefault(x.Id)
         })
@@ -75,7 +76,10 @@ public partial class Split3DAddonController : AdminController
             Description = addon.Description,
             Active = addon.Active,
             ManagedLicensing = addon.ManagedLicensing,
-            DisplayOrder = addon.DisplayOrder
+            DisplayOrder = addon.DisplayOrder,
+            ComingSoon = addon.ComingSoon,
+            Kind = addon.Kind,
+            Icon = addon.Icon
         };
 
         await PrepareEditAsync(model);
@@ -89,6 +93,7 @@ public partial class Split3DAddonController : AdminController
         model.Name = model.Name?.Trim();
         model.ProductCode = model.ProductCode?.Trim().ToLowerInvariant();
         model.Version = model.Version?.Trim();
+        model.Kind = model.Kind?.Trim();
 
         if (model.Name.IsEmpty())
         {
@@ -139,6 +144,9 @@ public partial class Split3DAddonController : AdminController
         addon.Active = model.Active;
         addon.ManagedLicensing = model.ManagedLicensing;
         addon.DisplayOrder = model.DisplayOrder;
+        addon.ComingSoon = model.ComingSoon;
+        addon.Kind = model.Kind.NullEmpty();
+        addon.Icon = model.Icon.NullEmpty();
 
         await _db.SaveChangesAsync();
         NotifySuccess(T("Admin.Common.DataSuccessfullySaved"));

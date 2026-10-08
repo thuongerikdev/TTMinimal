@@ -659,7 +659,9 @@ textarea.tt-input { resize: vertical; min-height: 110px; }
 /* Tools in development */
 .tt-soon-card { position: relative; display: flex; flex-direction: column; align-items: flex-start; gap: 8px; padding: 18px 16px 16px; background: var(--cream); border: 2px dashed var(--ink); border-radius: 16px; }
 .tt-soon-card h3 { margin: 0; font-size: 17px; line-height: 1.2; }
-.tt-soon-card p { margin: 0 !important; font-size: 12.5px; line-height: 1.45; flex: 1; }
+.tt-soon-desc { flex: 1; font-size: 12.5px; line-height: 1.45; }
+.tt-soon-desc p { margin: 0 0 6px !important; }
+.tt-soon-desc p:last-child { margin-bottom: 0 !important; }
 .tt-soon-card .tt-pill { font-size: 10px; padding: 1px 7px; }
 .tt-soon-card .tt-textlink { display: inline-flex; align-items: center; gap: 6px; font-weight: 900; font-size: 13px; }
 .tt-soon-card .tt-arrow { width: 14px; height: 14px; }
