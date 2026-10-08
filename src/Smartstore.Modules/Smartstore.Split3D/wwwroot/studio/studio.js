@@ -1949,9 +1949,12 @@
                     data.set(field.name, r.note ? r.text + ' — ' + r.note : r.text);
                     attrs.forEach(function (a, i) { data.set(a.name, r.colors[i]); });
                     if (qtyInput) data.set(qtyInput.name, r.qty);
-                    // Every row is its own design (text, colors): saved, and its code goes with the row.
+                    // Every row is its own design (text, colors): saved, and its code goes with the row. A plate sized to its
+                    // text also has its own length (price).
                     var designEl = np && np.design && cfg.designControl && document.getElementById(cfg.designControl);
-                    return (designEl ? saveDesign(plateSpec(r)) : Promise.resolve(null)).then(function (code) {
+                    var sized = designEl ? sizedRow(r) : null, lenEl = sized && sized.cm != null ? lengthField() : null;
+                    if (lenEl) data.set(lenEl.name, String(sized.cm));
+                    return (designEl ? saveDesign(sized.spec) : Promise.resolve(null)).then(function (code) {
                         if (designEl) data.set(designEl.name, designText(code));
                         return fetch(href, {
                             method: 'POST',
@@ -2140,6 +2143,42 @@
 
         function plateSpec(r) { return np && np.design ? np.design.spec(r) : { text: r.text }; }
 
+        // ----- Name plates sized to their text (spec.capMm, the standard of studio-designs.js): the plate length on
+        // the page follows the text and prices it; dragging the length scales the whole design instead. -----
+
+        function sizedToText(spec) { return !!(lengthCfg && np && np.lib && np.design && np.design.kind.sizeTo && spec && spec.capMm); }
+
+        // Spec and length (cm) of a row: a plate longer than the longest length on sale is scaled down to it.
+        function sizedRow(r) {
+            var spec = plateSpec(r);
+            if (!sizedToText(spec) || !r.text) return { spec: spec, cm: null };
+            var L = np.lib.naturalSize(spec).plate;
+            if (L > lengthCfg.max * 10) {
+                var d = Object.assign({}, np.design.d, { scale: np.design.kind.sizeTo(np.design.d, lengthCfg.max * 10, L) });
+                spec = np.design.kind.spec(d, r, designCtx);
+                L = np.lib.naturalSize(spec).plate;
+            }
+            return { spec: spec, cm: clampLength(L / 10) };
+        }
+
+        // After the page's plate is built: the length slider shows (and the price uses) the plate's own length.
+        function syncLength() {
+            var r = pageRow(), spec = plateSpec(r);
+            if (!sizedToText(spec) || !r.text) return;
+            var L = np.lib.naturalSize(spec).plate;
+            if (L > lengthCfg.max * 10 + 5) { np.design.set({ scale: np.design.kind.sizeTo(np.design.d, lengthCfg.max * 10, L) }, true); return; }
+            var cm = clampLength(L / 10);
+            if (cm !== lengthCm) { lengthCm = cm; showLength(); commitLength(true); }
+        }
+
+        // The length slider moved: the design scales so that the plate gets that long.
+        function scaleToLength() {
+            var r = pageRow(), spec = plateSpec(r);
+            if (!sizedToText(spec) || !r.text) return false;
+            np.design.set({ scale: np.design.kind.sizeTo(np.design.d, lengthCm * 10, np.lib.naturalSize(spec).plate) }, true);
+            return true;
+        }
+
         function pageRow() { var f = getField(); return { text: f ? f.value.trim() : '', colors: [] }; }
 
         function sizeText(d) { return d ? [d.length, d.height, d.depth].map(function (v) { return String(v).replace('.', ','); }).join(' × ') + ' mm' : ''; }
@@ -2169,7 +2208,7 @@
                 np.title.textContent = r.text ? (no ? 'Dòng ' + no + ' · ' : '') + r.text : KIND_TITLES[kindKey] || KIND_TITLES.nameplate;
                 if (np.view && np.design) {
                     np.empty.hidden = !!r.text;
-                    np.view.set(spec).then(function (d) { np.size.textContent = sizeText(d); });
+                    np.view.set(spec).then(function (d) { np.size.textContent = sizeText(d); if (!picked) syncLength(); });
                 }
 
                 var rows = tbody ? Array.prototype.filter.call(tbody.rows, function (tr) { return readRow(tr).text; }) : [];
@@ -2413,13 +2452,13 @@
                     + '<small>Kéo để chọn từ ' + cmText(lengthCfg.min) + ' đến ' + cmText(lengthCfg.max) + '. Giá gốc là bảng dài ' + cmText(lengthCfg.base)
                     + ', mỗi cm thêm / bớt ' + String(lengthCfg.percent).replace('.', ',') + '% giá.</small>';
                 var range = lengthBox.querySelector('input');
-                range.addEventListener('input', function () { lengthCm = clampLength(parseFloat(range.value)); showLength(); schedulePreview(); });
+                range.addEventListener('input', function () { lengthCm = clampLength(parseFloat(range.value)); showLength(); if (!scaleToLength()) schedulePreview(); });
                 range.addEventListener('change', function () { commitLength(true); });
                 lengthBox.addEventListener('click', function (e) {
                     var b = e.target.closest('[data-len]');
                     if (!b) return;
                     lengthCm = clampLength(+b.getAttribute('data-len'));
-                    showLength(); schedulePreview(); commitLength(true);
+                    showLength(); if (!scaleToLength()) schedulePreview(); commitLength(true);
                 });
             }
             if (!lengthBox.isConnected) (group || f).parentNode.insertBefore(lengthBox, group || f);

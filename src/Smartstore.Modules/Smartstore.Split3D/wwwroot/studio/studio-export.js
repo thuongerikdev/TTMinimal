@@ -1,7 +1,8 @@
-/* TT Minimal print files: turns the solids of a design (TTNameplate.solids) into closed triangle meshes and writes
-   them as 3MF (one part per name and color, opened as one object with parts by Bambu Studio, OrcaSlicer and
-   PrusaSlicer) or binary STL. Contours come from marching squares over the masks, are simplified, walled and capped
-   by ear clipping. Used by the "File in 3D" card of the admin order page; no dependencies. */
+/* TT Minimal print files: turns the print pieces of a design (TTNameplate.solids: the frame with its pockets and the
+   content pieces, per color) into closed triangle meshes and writes them as 3MF (Bambu Studio, OrcaSlicer,
+   PrusaSlicer), binary STL or GLB (Blender, with colors). Contours come from marching squares over the masks, are
+   simplified, walled and capped by ear clipping. Used by the "File in 3D" card of the admin order page; no
+   dependencies. */
 (function () {
     'use strict';
 
@@ -13,9 +14,11 @@
     var CX = [0, 1, 1, 0], CY = [0, 0, 1, 1];
 
     // Closed contours of a mask (iso 0.5) as flat [x, y, …] arrays in mask pixels, each with the inside on its
-    // left as seen on screen (counterclockwise outlines, clockwise holes once y points up).
+    // left as seen on screen (counterclockwise outlines, clockwise holes once y points up). loop.fixed flags the
+    // points around saddle cells, where two contours pass within a fraction of a pixel: simplify keeps them, so the
+    // simplified contours cannot cross there.
     function contours(f, w, h) {
-        var t = 0.5, next = new Map(), xs = new Map(), ys = new Map();
+        var t = 0.5, next = new Map(), xs = new Map(), ys = new Map(), saddle = new Uint8Array(w * h);
         var px = [0, 0, 0, 0], py = [0, 0, 0, 0], id = [0, 0, 0, 0], v = [0, 0, 0, 0];
         for (var j = 0; j < h - 1; j++) {
             for (var i = 0; i < w - 1; i++) {
@@ -24,6 +27,7 @@
                 if (idx === 0 || idx === 15) continue;
                 var pairs = CASES[idx];
                 if (!pairs) {
+                    saddle[o] = 1;
                     var inside = (a + b + c + d) / 4 > t;
                     pairs = (idx === 5) === inside ? [0, 1, 2, 3] : [3, 0, 1, 2];
                 }
@@ -51,22 +55,32 @@
                 }
             }
         }
+        // A point id is its edge: (cell index) * 2, + 1 for a vertical edge.
+        function nearSaddle(key) {
+            var o = Math.floor(key / 2), i0 = o % w, j0 = (o - i0) / w;
+            for (var j = Math.max(0, j0 - 2); j <= Math.min(h - 2, j0 + 1); j++) {
+                for (var i = Math.max(0, i0 - 2); i <= Math.min(w - 2, i0 + 1); i++) if (saddle[j * w + i]) return true;
+            }
+            return false;
+        }
         var loops = [], seen = new Set();
         next.forEach(function (_, start) {
             if (seen.has(start)) return;
-            var loop = [], key = start, guard = next.size + 1;
+            var loop = [], fixed = [], key = start, guard = next.size + 1;
             while (key !== undefined && !seen.has(key) && guard--) {
                 seen.add(key);
                 loop.push(xs.get(key), ys.get(key));
+                fixed.push(nearSaddle(key));
                 key = next.get(key);
             }
-            if (key === start && loop.length >= 6) loops.push(loop);
+            if (key === start && loop.length >= 6) { loop.fixed = fixed; loops.push(loop); }
         });
         return loops;
     }
 
-    // Douglas–Peucker on a closed loop (tolerance in the loop's units); drops repeated points.
-    function simplify(p, eps) {
+    // Douglas–Peucker on a closed loop (tolerance in the loop's units), keeping the points flagged in fixed;
+    // drops repeated points.
+    function simplify(p, eps, fixed) {
         var n = p.length / 2, i;
         if (n < 4) return p;
         var far = 0, fd = -1;
@@ -74,8 +88,11 @@
             var dd = (p[i * 2] - p[0]) * (p[i * 2] - p[0]) + (p[i * 2 + 1] - p[1]) * (p[i * 2 + 1] - p[1]);
             if (dd > fd) { fd = dd; far = i; }
         }
-        var keep = new Uint8Array(n), stack = [0, far, far, n], e2 = eps * eps;
+        var keep = new Uint8Array(n), stack = [], e2 = eps * eps, kept = [];
         keep[0] = keep[far] = 1;
+        if (fixed) for (i = 0; i < n; i++) if (fixed[i]) keep[i] = 1;
+        for (i = 0; i < n; i++) if (keep[i]) kept.push(i);
+        for (i = 0; i < kept.length; i++) stack.push(kept[i], i + 1 < kept.length ? kept[i + 1] : n);
         while (stack.length) {
             var b = stack.pop(), a = stack.pop(), ax = p[a * 2], ay = p[a * 2 + 1], bx = p[(b % n) * 2], by = p[(b % n) * 2 + 1];
             var vx = bx - ax, vy = by - ay, len2 = vx * vx + vy * vy, worst = -1, at = -1;
@@ -357,7 +374,7 @@
     function polygons(f, frame) {
         var R = frame.R, ox = frame.FW / 2, oy = frame.FH / 2, outers = [], holes = [];
         contours(f, frame.w, frame.h).forEach(function (loop) {
-            var p = simplify(loop, SIMPLIFY);
+            var p = simplify(loop, SIMPLIFY, loop.fixed);
             if (p.length < 6) return;
             for (var i = 0; i < p.length; i += 2) { p[i] = (p[i] + 0.5) / R - ox; p[i + 1] = oy - (p[i + 1] + 0.5) / R; }
             var a = signedArea(p);
@@ -409,22 +426,41 @@
     }
 
     /**
-     * Meshes of a design spec: resolves with { dims, parts: [{ name, color, group, shells: [Float32Array], count }] }.
-     * Every solid is a closed shell of its own; the layers of a part (a plate under its engraved text) touch but are
-     * not merged, which slicers handle as one body. P is TTNameplate.
+     * Print files of a design spec (options: see EXPORT in studio-nameplate.js). Resolves with
+     * { dims, files: [{ key, title, color, parts: [{ name, color, group, shells: [Float32Array], count }] }] }: the
+     * frame first, then the content, one file per color. Every solid is a closed shell of its own (the layers of a
+     * frame with pockets touch but are not merged, which slicers handle as one body); every file is moved down to
+     * stand on the build plate. P is TTNameplate.
      */
-    function build(P, spec) {
-        return P.solids(spec).then(function (r) {
+    function build(P, spec, options) {
+        return P.solids(spec, options).then(function (r) {
             var parts = r.parts.map(function (p) {
                 var shells = p.solids.map(function (sd) {
                     var out = [];
                     if (sd.box) boxTris(out, sd.box);
-                    else extrude(out, sd.f, r.frame, sd.z0, sd.z1, sd.dy, sd.dz);
+                    else extrude(out, sd.f, r.frame, sd.z0, sd.z1, sd.dy, 0);
                     return new Float32Array(out);
                 }).filter(function (t) { return t.length; });
-                return { name: p.name, color: p.color, group: p.group, shells: shells, count: shells.reduce(function (s, t) { return s + t.length / 9; }, 0) };
+                return { name: p.name, color: p.color, file: p.file, group: p.group, shells: shells, count: shells.reduce(function (s, t) { return s + t.length / 9; }, 0) };
             }).filter(function (p) { return p.count; });
-            return { dims: r.dims, parts: parts };
+
+            var files = [], frame = parts.filter(function (p) { return p.file === 'frame'; }), colors = [];
+            parts.forEach(function (p) { if (p.file === 'content' && colors.indexOf(p.color) < 0) colors.push(p.color); });
+            // Nothing apart (a QR plate): the frame is the whole print.
+            if (frame.length) files.push(colors.length ? { key: 'khung', title: 'Khung', color: frame[0].color, parts: frame } : { key: 'nguyen-khoi', title: 'Nguyên khối', color: frame[0].color, parts: frame });
+            colors.forEach(function (c) {
+                files.push({
+                    key: colors.length > 1 ? 'noi-dung-' + c.slice(1).toLowerCase() : 'noi-dung', title: 'Nội dung' + (colors.length > 1 ? ' ' + c : ''), color: c,
+                    parts: parts.filter(function (p) { return p.file === 'content' && p.color === c; })
+                });
+            });
+            files.forEach(function (f) {
+                var min = Infinity;
+                f.parts.forEach(function (p) { p.shells.forEach(function (t) { for (var k = 2; k < t.length; k += 3) if (t[k] < min) min = t[k]; }); });
+                if (min) f.parts.forEach(function (p) { p.shells.forEach(function (t) { for (var k = 2; k < t.length; k += 3) t[k] -= min; }); });
+                f.count = f.parts.reduce(function (s, p) { return s + p.count; }, 0);
+            });
+            return { dims: r.dims, files: files };
         });
     }
 
@@ -493,6 +529,81 @@
         ])], { type: 'model/3mf' });
     }
 
+    // ---------- GLB (binary glTF 2.0) ----------
+
+    // sRGB "#RRGGBB" to linear RGBA, as glTF expects base colors.
+    function linearColor(hex) {
+        return [1, 3, 5].map(function (i) {
+            var c = parseInt(hex.substr(i, 2), 16) / 255;
+            return c <= 0.04045 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
+        }).concat([1]);
+    }
+
+    // For Blender and other 3D apps (3MF colors are read by slicers only): one mesh per shell with its part's name
+    // and color as a material, grouped per piece. Flat shaded (every triangle its own vertices and face normal).
+    // glTF is in meters with y up: (x, y, z) mm becomes (x, z, -y) / 1000.
+    function glb(mesh, title) {
+        var colors = [], materials = [], meshes = [], nodes = [], accessors = [], views = [], chunks = [], offset = 0, groups = [];
+        mesh.parts.forEach(function (p) {
+            if (colors.indexOf(p.color) < 0) {
+                colors.push(p.color);
+                materials.push({ name: 'Màu ' + p.color, pbrMetallicRoughness: { baseColorFactor: linearColor(p.color), metallicFactor: 0, roughnessFactor: 0.6 } });
+            }
+        });
+        function addView(arr) {
+            views.push({ buffer: 0, byteOffset: offset, byteLength: arr.byteLength, target: 34962 });
+            chunks.push(new Uint8Array(arr.buffer, arr.byteOffset, arr.byteLength));
+            offset += arr.byteLength;
+            return views.length - 1;
+        }
+        mesh.parts.forEach(function (p) {
+            p.shells.forEach(function (t, si) {
+                var n = t.length / 3, pos = new Float32Array(n * 3), nor = new Float32Array(n * 3);
+                var min = [Infinity, Infinity, Infinity], max = [-Infinity, -Infinity, -Infinity];
+                for (var k = 0; k < t.length; k += 9) {
+                    var ux = t[k + 3] - t[k], uy = t[k + 4] - t[k + 1], uz = t[k + 5] - t[k + 2];
+                    var vx = t[k + 6] - t[k], vy = t[k + 7] - t[k + 1], vz = t[k + 8] - t[k + 2];
+                    var nx = uy * vz - uz * vy, ny = uz * vx - ux * vz, nz = ux * vy - uy * vx, l = Math.hypot(nx, ny, nz) || 1;
+                    for (var q = 0; q < 9; q += 3) {
+                        var o = k + q, x = t[o] / 1000, y = t[o + 2] / 1000, z = -t[o + 1] / 1000;
+                        pos[o] = x; pos[o + 1] = y; pos[o + 2] = z;
+                        nor[o] = nx / l; nor[o + 1] = nz / l; nor[o + 2] = -ny / l;
+                        if (x < min[0]) min[0] = x; if (y < min[1]) min[1] = y; if (z < min[2]) min[2] = z;
+                        if (x > max[0]) max[0] = x; if (y > max[1]) max[1] = y; if (z > max[2]) max[2] = z;
+                    }
+                }
+                accessors.push({ bufferView: addView(pos), componentType: 5126, count: n, type: 'VEC3', min: min, max: max });
+                accessors.push({ bufferView: addView(nor), componentType: 5126, count: n, type: 'VEC3' });
+                var name = p.name + (p.shells.length > 1 ? ' ' + (si + 1) : '');
+                meshes.push({ name: name, primitives: [{ attributes: { POSITION: accessors.length - 2, NORMAL: accessors.length - 1 }, material: colors.indexOf(p.color) }] });
+                nodes.push({ name: name, mesh: meshes.length - 1 });
+                var g = groups.filter(function (x) { return x.key === p.group; })[0];
+                if (!g) groups.push(g = { key: p.group, children: [] });
+                g.children.push(nodes.length - 1);
+            });
+        });
+        var names = { main: title, tiles: 'Ô rời', foot: 'Chân đế' }, roots = groups.map(function (g) {
+            nodes.push({ name: names[g.key] || g.key, children: g.children });
+            return nodes.length - 1;
+        });
+        var json = {
+            asset: { version: '2.0', generator: 'TT Minimal' },
+            scene: 0, scenes: [{ name: title, nodes: roots }], nodes: nodes, meshes: meshes, materials: materials,
+            accessors: accessors, bufferViews: views, buffers: [{ byteLength: offset }]
+        };
+        var jsonBytes = new TextEncoder().encode(JSON.stringify(json)), jsonLen = (jsonBytes.length + 3) & ~3, binLen = (offset + 3) & ~3;
+        var out = new Uint8Array(12 + 8 + jsonLen + 8 + binLen), dv = new DataView(out.buffer);
+        dv.setUint32(0, 0x46546C67, true); dv.setUint32(4, 2, true); dv.setUint32(8, out.length, true);
+        dv.setUint32(12, jsonLen, true); dv.setUint32(16, 0x4E4F534A, true);
+        out.set(jsonBytes, 20);
+        for (var i = 20 + jsonBytes.length; i < 20 + jsonLen; i++) out[i] = 0x20;
+        var b = 20 + jsonLen;
+        dv.setUint32(b, binLen, true); dv.setUint32(b + 4, 0x004E4942, true);
+        var o2 = b + 8;
+        chunks.forEach(function (c) { out.set(c, o2); o2 += c.length; });
+        return new Blob([out], { type: 'model/gltf-binary' });
+    }
+
     // ---------- ZIP (stored, no compression) ----------
 
     var CRC = (function () {
@@ -547,7 +658,19 @@
         setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 2000);
     }
 
-    // Card of the admin order page (Views/Shared/Components/OrderPrintFiles): one row per order line with a design.
+    // One print file in the chosen format.
+    function write(file, format, title) {
+        return format === 'stl' ? stl(file) : format === 'glb' ? glb(file, title + ' - ' + file.title) : threeMF(file, title + ' - ' + file.title);
+    }
+
+    function zipBlob(entries) {
+        return Promise.all(entries.map(function (e) { return e.blob.arrayBuffer(); })).then(function (bufs) {
+            return new Blob([zip(entries.map(function (e, i) { return { name: e.name, data: new Uint8Array(bufs[i]) }; }))], { type: 'application/zip' });
+        });
+    }
+
+    // Card of the admin order page (Views/Shared/Components/OrderPrintFiles): one row per order line with a design,
+    // the print settings (clearance, floor, format; saved as defaults on request) and the downloads.
     function mount(card) {
         var cfg;
         try { cfg = JSON.parse(card.querySelector('script[data-tt-print-files]').textContent); } catch (e) { return; }
@@ -555,8 +678,20 @@
         if (!P) { msg.textContent = 'Không tải được bộ dựng 3D.'; return; }
         P.addFonts(cfg.fonts || []);
 
+        function opt(name) { var el = card.querySelector('[data-tt-opt="' + name + '"]'); return el ? el.value : ''; }
+        function options() { return { clearance: parseFloat(opt('clearance').replace(',', '.')), pocket: parseFloat(opt('pocket').replace(',', '.')) }; }
+        function format() { return opt('format') || '3mf'; }
         function say(text, ok) { msg.textContent = text; msg.className = 'tt-pf-msg' + (ok ? ' is-ok' : text ? ' is-error' : ''); }
-        function fileName(item, ext) { return cfg.order + '-' + item.no + '-' + slug(item.text) + '-x' + item.qty + '.' + ext; }
+        function baseName(item) { return cfg.order + '-' + item.no + '-' + slug(item.text || item.name) + '-x' + item.qty; }
+        function entries(item, m, which) {
+            return m.files.filter(function (f) { return which === 'set' || (which === 'frame') === (f.key === 'khung' || f.key === 'nguyen-khoi'); }).map(function (f) {
+                return { name: baseName(item) + '-' + f.key + '.' + format(), blob: write(f, format(), item.text || item.name), file: f };
+            });
+        }
+        function summary(m) {
+            return m.dims.length + ' × ' + m.dims.height + ' × ' + m.dims.depth + ' mm · '
+                + m.files.map(function (f) { return f.title + ' ' + f.count.toLocaleString('vi-VN') + ' tam giác'; }).join(' · ');
+        }
 
         var busy = false;
         function run(button, work) {
@@ -574,7 +709,21 @@
             }, 30);
         }
 
+        function saveSettings(button) {
+            var token = card.querySelector('input[name="__RequestVerificationToken"]'), body = new URLSearchParams();
+            body.set('clearance', opt('clearance').replace(',', '.'));
+            body.set('pocket', opt('pocket').replace(',', '.'));
+            body.set('format', format());
+            if (token) body.set(token.name, token.value);
+            button.disabled = true;
+            fetch(cfg.saveUrl, { method: 'POST', credentials: 'same-origin', headers: { 'X-Requested-With': 'XMLHttpRequest' }, body: body })
+                .then(function (res) { return res.ok ? res.json() : { success: false, message: 'Lỗi máy chủ (' + res.status + ').' }; })
+                .then(function (r) { say(r.success ? 'Đã lưu làm mặc định.' : r.message || 'Không lưu được.', r.success); }, function () { say('Không lưu được.'); })
+                .then(function () { button.disabled = false; });
+        }
+
         card.addEventListener('click', function (e) {
+            if (e.target.closest('[data-tt-save-settings]')) { saveSettings(e.target.closest('[data-tt-save-settings]')); return; }
             var b = e.target.closest('button[data-tt-file]');
             if (!b) return;
             var kind = b.getAttribute('data-tt-file'), item = cfg.items[+b.getAttribute('data-tt-item')];
@@ -591,33 +740,36 @@
                 return;
             }
             if (kind === 'all') {
+                // Every line in its own folder of the archive.
                 run(b, function () {
-                    var files = [], enc = cfg.items.filter(function (x) { return x.spec; });
-                    return enc.reduce(function (p, it) {
+                    var all = [], items = cfg.items.filter(function (x) { return x.spec; });
+                    return items.reduce(function (p, it) {
                         return p.then(function () {
-                            return build(P, it.spec).then(function (m) { return threeMF(m, it.text || it.name).arrayBuffer(); })
-                                .then(function (buf) { files.push({ name: fileName(it, '3mf'), data: new Uint8Array(buf) }); });
+                            return build(P, it.spec, options()).then(function (m) {
+                                entries(it, m, 'set').forEach(function (en) { all.push({ name: baseName(it) + '/' + en.name, blob: en.blob }); });
+                            });
                         });
-                    }, Promise.resolve()).then(function () {
-                        download(new Blob([zip(files)], { type: 'application/zip' }), 'don-' + cfg.order + '-file-in-3d.zip');
-                        return 'Đã tải ' + files.length + ' file 3MF (.zip).';
+                    }, Promise.resolve()).then(function () { return zipBlob(all); }).then(function (z) {
+                        download(z, 'don-' + cfg.order + '-file-in-3d.zip');
+                        return 'Đã tải ' + all.length + ' file của ' + items.length + ' sản phẩm (.zip).';
                     });
                 });
                 return;
             }
+            // frame, content (one file per color: several are zipped), set (all files of the line, zipped)
             run(b, function () {
-                return build(P, item.spec).then(function (m) {
-                    if (kind === 'stl') download(stl(m), fileName(item, 'stl'));
-                    else download(threeMF(m, item.text || item.name), fileName(item, '3mf'));
-                    var n = m.parts.reduce(function (s, p) { return s + p.count; }, 0);
-                    return 'Đã tải ' + fileName(item, kind) + ' · ' + m.dims.length + ' × ' + m.dims.height + ' × ' + m.dims.depth + ' mm · '
-                        + m.parts.length + ' phần · ' + n.toLocaleString('vi-VN') + ' tam giác.';
+                return build(P, item.spec, options()).then(function (m) {
+                    var list = entries(item, m, kind);
+                    if (!list.length) return 'Sản phẩm này không có phần ' + (kind === 'frame' ? 'khung' : 'nội dung') + ' riêng (cùng màu với khung). ' + summary(m);
+                    if (list.length === 1) { download(list[0].blob, list[0].name); return 'Đã tải ' + list[0].name + ' · ' + summary(m); }
+                    var name = baseName(item) + (kind === 'set' ? '' : '-' + (kind === 'frame' ? 'khung' : 'noi-dung')) + '.zip';
+                    return zipBlob(list).then(function (z) { download(z, name); return 'Đã tải ' + name + ' (' + list.length + ' file) · ' + summary(m); });
                 });
             });
         });
     }
 
-    window.TTExport = { build: build, stl: stl, threeMF: threeMF, zip: zip, polygons: polygons, contours: contours, earcut: earcut };
+    window.TTExport = { build: build, stl: stl, threeMF: threeMF, glb: glb, zip: zip, polygons: polygons, contours: contours, earcut: earcut };
 
     function init() { Array.prototype.forEach.call(document.querySelectorAll('[data-tt-print-card]'), mount); }
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);

@@ -1,7 +1,9 @@
+@using System.Globalization
 @model OrderPrintFilesModel
 
 @{
     var buildable = Model.Items.Count(x => x.HasSpec && x.Kind != "keycap");
+    var s = Model.Settings;
 }
 
 <style>
@@ -10,6 +12,10 @@
     .tt-pf-code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .8rem; }
     .tt-pf-actions { white-space: nowrap; text-align: right; }
     .tt-pf-actions .btn + .btn { margin-left: .25rem; }
+    .tt-pf-opts { display: flex; flex-wrap: wrap; align-items: flex-end; gap: .75rem 1rem; padding: .75rem 1rem; border-bottom: 1px solid var(--gray-300, #dee2e6); }
+    .tt-pf-opts label { display: block; margin: 0 0 .2rem; font-size: .8rem; font-weight: 600; }
+    .tt-pf-opts input, .tt-pf-opts select { width: 7.5rem; }
+    .tt-pf-opts small { display: block; max-width: 16rem; font-size: .75rem; }
     .tt-pf-msg { min-height: 1.25rem; font-size: .875rem; }
     .tt-pf-msg.is-ok { color: var(--success, #198754); }
     .tt-pf-msg.is-error { color: var(--danger, #dc3545); }
@@ -21,12 +27,40 @@
     <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
         <div>
             <h6 class="m-0">File in 3D</h6>
-            <small class="text-muted">Dựng lại từ thiết kế khách đã duyệt. 3MF tách phần theo màu (đế, chữ…) để gán nhựa trong Bambu Studio / OrcaSlicer / PrusaSlicer; STL gộp một khối.</small>
+            <small class="text-muted">
+                Mỗi sản phẩm tách thành <b>khung</b> (đế đã đục hốc) và <b>nội dung</b> (chữ, viền, mã… ấn vào hốc), in riêng từng màu.
+                Nội dung nhiều màu: mỗi màu một file. Phần cùng màu với khung được in liền vào khung. Mã QR in nguyên khối.
+            </small>
         </div>
         @if (buildable > 1)
         {
-            <button type="button" class="btn btn-primary btn-sm" data-tt-file="all">Tải tất cả 3MF (.zip)</button>
+            <button type="button" class="btn btn-primary btn-sm" data-tt-file="all">Tải tất cả (.zip)</button>
         }
+    </div>
+    <div class="tt-pf-opts">
+        <div>
+            <label for="tt-pf-clearance">Khe lắp (mm mỗi bên)</label>
+            <input id="tt-pf-clearance" class="form-control form-control-sm" type="number" min="0" max="1" step="0.05" data-tt-opt="clearance" value="@s.Clearance.ToString(CultureInfo.InvariantCulture)" />
+            <small class="text-muted">Hốc rộng hơn nội dung chừng này. Chuẩn 0 (như file mẫu); lỏng hơn 0,1–0,2.</small>
+        </div>
+        <div>
+            <label for="tt-pf-pocket">Độ sâu hốc (% độ dày khung)</label>
+            <input id="tt-pf-pocket" class="form-control form-control-sm" type="number" min="10" max="100" step="5" data-tt-opt="pocket" value="@s.PocketPercent.ToString(CultureInfo.InvariantCulture)" />
+            <small class="text-muted">Chuẩn 50% (khung 4 mm, hốc 2 mm). 100% = đục xuyên (lòng chữ o, a, d… sẽ rời ra).</small>
+        </div>
+        <div>
+            <label for="tt-pf-format">Định dạng</label>
+            <select id="tt-pf-format" class="form-control form-control-sm" data-tt-opt="format">
+                <option value="3mf" selected="@(s.Format == "3mf")">3MF (slicer)</option>
+                <option value="stl" selected="@(s.Format == "stl")">STL</option>
+                <option value="glb" selected="@(s.Format == "glb")">GLB (Blender, có màu)</option>
+            </select>
+            <small class="text-muted">STL không lưu màu.</small>
+        </div>
+        <div>
+            <button type="button" class="btn btn-outline-secondary btn-sm" data-tt-save-settings>Lưu làm mặc định</button>
+            @Html.AntiForgeryToken()
+        </div>
     </div>
     <div class="card-body p-0">
         <table class="table table-sm m-0">
@@ -59,11 +93,17 @@
                             {
                                 <span class="text-muted small">Keycap chưa hỗ trợ xuất file</span>
                             }
+                            else if (item.Kind == "qr")
+                            {
+                                <button type="button" class="btn btn-outline-secondary btn-sm" data-tt-file="view" data-tt-item="@i">Xem 3D</button>
+                                <button type="button" class="btn btn-primary btn-sm" data-tt-file="set" data-tt-item="@i" title="Mã QR in nguyên khối, không tách khung">Tải file (nguyên khối)</button>
+                            }
                             else
                             {
                                 <button type="button" class="btn btn-outline-secondary btn-sm" data-tt-file="view" data-tt-item="@i">Xem 3D</button>
-                                <button type="button" class="btn btn-primary btn-sm" data-tt-file="3mf" data-tt-item="@i">3MF</button>
-                                <button type="button" class="btn btn-secondary btn-sm" data-tt-file="stl" data-tt-item="@i">STL</button>
+                                <button type="button" class="btn btn-secondary btn-sm" data-tt-file="frame" data-tt-item="@i">Khung</button>
+                                <button type="button" class="btn btn-secondary btn-sm" data-tt-file="content" data-tt-item="@i">Nội dung</button>
+                                <button type="button" class="btn btn-primary btn-sm" data-tt-file="set" data-tt-item="@i">Cả bộ (.zip)</button>
                             }
                         </td>
                     </tr>

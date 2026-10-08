@@ -4,6 +4,7 @@ using System.Text.Json;
 using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Mvc;
 using Smartstore.Core.Data;
+using Smartstore.Split3D.Configuration;
 using Smartstore.Split3D.Filters;
 using Smartstore.Web.Components;
 
@@ -11,19 +12,22 @@ namespace Smartstore.Split3D.Components;
 
 /// <summary>
 /// "File in 3D" card on the admin order page (zone order_edit_top, see <see cref="OrderPrintFilesFilter"/>): every
-/// line of the order designed in the 3D designer, with buttons that rebuild its print files (3MF, STL) in the browser
-/// from the saved design (studio-export.js). Lines of designer products without a design code (ordered before the
-/// codes existed) are listed too, so the studio knows to ask the customer.
+/// line of the order designed in the 3D designer, with buttons that rebuild its print files in the browser from the
+/// saved design (studio-export.js): the frame with pockets and the content pieces, each printed apart in its color,
+/// with the print settings (<see cref="PrintFileSettings"/>). Lines of designer products without a design code
+/// (ordered before the codes existed) are listed too, so the studio knows to ask the customer.
 /// </summary>
 public partial class OrderPrintFilesViewComponent : SmartViewComponent
 {
     private readonly SmartDbContext _db;
     private readonly IModuleCatalog _moduleCatalog;
+    private readonly PrintFileSettings _settings;
 
-    public OrderPrintFilesViewComponent(SmartDbContext db, IModuleCatalog moduleCatalog)
+    public OrderPrintFilesViewComponent(SmartDbContext db, IModuleCatalog moduleCatalog, PrintFileSettings settings)
     {
         _db = db;
         _moduleCatalog = moduleCatalog;
+        _settings = settings;
     }
 
     [GeneratedRegex("TT3D-([A-Z2-7]{10})")]
@@ -56,7 +60,8 @@ public partial class OrderPrintFilesViewComponent : SmartViewComponent
 
         var model = new OrderPrintFilesModel
         {
-            OrderNumber = await _db.Orders.Where(x => x.Id == orderId).Select(x => x.OrderNumber).FirstOrDefaultAsync() ?? orderId.ToString()
+            OrderNumber = await _db.Orders.Where(x => x.Id == orderId).Select(x => x.OrderNumber).FirstOrDefaultAsync() ?? orderId.ToString(),
+            Settings = _settings
         };
 
         var items = new List<object>();
@@ -91,6 +96,7 @@ public partial class OrderPrintFilesViewComponent : SmartViewComponent
         model.ConfigJson = JsonSerializer.Serialize(new
         {
             order = model.OrderNumber,
+            saveUrl = Url.Action("SaveSettings", "PrintFiles", new { area = "Admin" }),
             fonts = TextListFilter.ShopFonts(_moduleCatalog, Url),
             items
         }).Replace("<", "\\u003c");

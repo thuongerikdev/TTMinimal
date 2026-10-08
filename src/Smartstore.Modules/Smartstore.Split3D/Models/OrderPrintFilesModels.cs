@@ -9,6 +9,9 @@ public class OrderPrintFilesModel
 {
     public string OrderNumber { get; set; } = string.Empty;
 
+    /// <summary>Defaults of clearance, floor and format, changed on the card.</summary>
+    public Configuration.PrintFileSettings Settings { get; set; } = new();
+
     public List<OrderPrintFileItem> Items { get; } = [];
 
     /// <summary>Order number, shop fonts and the design specs for studio-export.js.</summary>

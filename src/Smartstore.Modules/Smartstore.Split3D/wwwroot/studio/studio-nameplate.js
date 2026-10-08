@@ -174,6 +174,9 @@
         text: '', line2: '', font: 'pacifico', upper: false, spacing: 0, textScale: 1,
         base: '#ffffff', color: '#20201f',
         length: 100, heightPct: 30, thickness: 3, shape: 'rounded', radius: 5, margin: 4,
+        // Standard text size: a capital T capMm high, the plate sized to the text (naturalSize). 0: the text is
+        // fitted into length × heightPct instead.
+        capMm: 0,
         style: 'raised', relief: 1.6, border: false, hole: 'none', icon: '', iconSide: 'left', stand: false,
         // Product kind: 'nameplate', 'classboard' (board = table or desks, see drawBoard) or 'keycap'.
         kind: 'nameplate', board: null,
@@ -465,7 +468,9 @@
         if ('letterSpacing' in ctx) ctx.letterSpacing = (spacing * px) + 'px';
         var m = ctx.measureText(drawn);
         var x0 = -(m.actualBoundingBoxLeft || 0), x1 = m.actualBoundingBoxRight || m.width;
-        var y0 = -(m.actualBoundingBoxAscent || px * 0.75), y1 = m.actualBoundingBoxDescent || px * 0.25;
+        // A line without descenders has a descent of 0: only a browser without ink metrics takes the estimates.
+        var ink = typeof m.actualBoundingBoxAscent === 'number';
+        var y0 = -(ink ? m.actualBoundingBoxAscent : px * 0.75), y1 = ink ? m.actualBoundingBoxDescent : px * 0.25;
         var marks = [];
         parts.forEach(function (p) {
             var dx = p.at ? ctx.measureText(p.at).width : 0;
@@ -513,6 +518,18 @@
 
     // Hole center at the plate edge near p: comes in from outside along -dir and stops just before the hole (plus
     // a thin wall) would touch the plate, so the hole's boss overlaps the plate there. Keeps p when nothing is hit.
+    // Key ring hole of the standard plate (see PRINT-STANDARD.md): inside the margin band, HOLE_GAP from the
+    // leftmost point of the letters and level with it; its boss bulges the plate out a little there. Null without ink.
+    var HOLE_GAP = 1.9;
+    function beside(ink, w, h, R, FW, FH) {
+        for (var x = 0; x < w; x++) {
+            var ys = 0, n = 0;
+            for (var y = 0; y < h; y++) if (ink[(y * w + x) * 4 + 3] > 127) { ys += y; n++; }
+            if (n) return [(x + 0.5) / R - FW / 2 - HOLE_R - HOLE_GAP, (ys / n + 0.5) / R - FH / 2];
+        }
+        return null;
+    }
+
     function snapHole(at, p, dir) {
         var last = null;
         for (var t = 20; t >= -6; t -= 0.2) {
@@ -1012,8 +1029,54 @@
     }
 
     // Builds the plate and relief masks for a spec. R = mask pixels per mm; frame = mask size in mm (centered).
+    // Content of a name plate in reference pixels (font size ref): the text lines (the second one smaller, centered
+    // under the first) with the icons beside them, cw × ch. cap = ink height of a capital T, the unit of capMm.
+    function contentBlock(s, font) {
+        var vi = 'vi', own = s.board || s.qr;
+        var line1 = own ? '' : s.upper ? s.text.toLocaleUpperCase(vi) : s.text, line2 = own ? '' : s.upper ? s.line2.toLocaleUpperCase(vi) : s.line2;
+        var icon = own ? null : iconOf(s.icon), nIcons = icon ? (s.iconSide === 'both' ? 2 : 1) : 0;
+        var ref = 100, mc = canvas(4, 4).getContext('2d');
+        var t1 = line1 ? measure(mc, line1, font, ref, s.spacing) : null;
+        var t2 = line2 ? measure(mc, line2, font, ref * 0.42, s.spacing) : null;
+        var gap = t1 && t2 ? ref * 0.14 : 0;
+        var tw = Math.max(t1 ? t1.w : 0, t2 ? t2.w : 0), th = (t1 ? t1.h : 0) + gap + (t2 ? t2.h : 0);
+        var iconSize = icon ? (th ? th * (t2 ? 0.8 : 0.95) : ref) : 0, iconGap = icon && tw ? iconSize * 0.2 : 0;
+        return {
+            ref: ref, line1: line1, line2: line2, icon: icon, t1: t1, t2: t2, gap: gap, tw: tw, th: th, iconSize: iconSize, iconGap: iconGap,
+            cw: tw + nIcons * (iconSize + iconGap), ch: Math.max(th, iconSize), cap: measure(mc, 'T', font, ref, 0).h || ref * 0.7
+        };
+    }
+
+    /**
+     * Plate size in mm of a name plate with the standard text size (spec.capMm = height of a capital T): the text
+     * block, the margins and the room the holes and the border take, as masks lays them out. The plate length on the
+     * product page (and its price) follows plate. Needs the font loaded.
+     */
+    function naturalSize(spec) {
+        var s = Object.assign({}, DEFAULTS, spec), font = fontOf(s.font), cb = contentBlock(s, font), m = s.margin;
+        var k = s.capMm > 0 ? s.capMm / cb.cap : 0, L = cb.cw * k + 2 * m, H = Math.max(cb.ch * k, s.capMm) + 2 * m, side = 2 * HOLE_R + 2.5;
+        // An outline plate has its hole in the margin band, next to the letters (see beside in masks).
+        var plate = s.shape === 'outline' && s.hole === 'left' ? cb.cw * k + m + Math.max(m, 2 * HOLE_R + HOLE_GAP + 2.5) : 0;
+        if (s.hole === 'left') L += side;
+        else if (s.hole === 'top1' || (s.hole === 'top2' && s.shape === 'outline')) H += side;
+        else if (s.hole === 'top2') {
+            var cornerD = s.shape === 'rounded' ? Math.max(HOLE_R + 2.5, Math.min(s.radius || 0, H * 0.3)) : HOLE_R + 2.5;
+            L += 2 * Math.max(side, cornerD + HOLE_R + 1 - m);
+        }
+        if (s.border && s.shape !== 'outline') { L += 3; H += 3; }
+        // Round ends and cut corners need room beyond the text box.
+        if (s.shape === 'pill') L += H * 0.6;
+        else if (s.shape === 'oval') { L *= 1.25; H *= 1.25; }
+        else if (s.shape === 'tag') L += H * 0.38;
+        L = Math.max(L, 2 * m + 10);
+        // length × height: the room masks lays the plate out in; plate: the length of the plate itself (the price).
+        return { length: L, height: Math.max(H, 2 * m + 6), plate: plate || L };
+    }
+
     function masks(s, draft) {
         var font = fontOf(s.font), L = s.length, H = Math.max(8, L * s.heightPct / 100), m = s.margin;
+        var auto = s.capMm > 0 && !s.board && !s.qr;
+        if (auto) { var ns = naturalSize(s); L = ns.length; H = ns.height; }
         // A QR plate takes its height from the code (square) and the caption band.
         var qrSide = 0, capH = 0, holeSideQ = 2 * HOLE_R + 2.5;
         if (s.qr) {
@@ -1040,20 +1103,8 @@
         if (pc) pc.setTransform(R, 0, 0, R, FW / 2 * R, FH / 2 * R);
         var rimW = look && look.frame ? Math.max(3, Math.min(9, Math.min(L, H) * 0.03)) : 0;
 
-        var vi = 'vi';
-        // A board or a QR plate draws its own content instead of the text lines.
-        var own = s.board || s.qr;
-        var line1 = own ? '' : s.upper ? s.text.toLocaleUpperCase(vi) : s.text, line2 = own ? '' : s.upper ? s.line2.toLocaleUpperCase(vi) : s.line2;
-        var icon = own ? null : iconOf(s.icon), nIcons = icon ? (s.iconSide === 'both' ? 2 : 1) : 0;
-
-        // Content in reference pixels: text block (two centered lines) with icons beside it.
-        var ref = 100, mc = canvas(4, 4).getContext('2d');
-        var t1 = line1 ? measure(mc, line1, font, ref, s.spacing) : null;
-        var t2 = line2 ? measure(mc, line2, font, ref * 0.42, s.spacing) : null;
-        var gap = t1 && t2 ? ref * 0.14 : 0;
-        var tw = Math.max(t1 ? t1.w : 0, t2 ? t2.w : 0), th = (t1 ? t1.h : 0) + gap + (t2 ? t2.h : 0);
-        var iconSize = icon ? (th ? th * (t2 ? 0.8 : 0.95) : ref) : 0, iconGap = icon && tw ? iconSize * 0.2 : 0;
-        var cw = tw + nIcons * (iconSize + iconGap), ch = Math.max(th, iconSize);
+        var vi = 'vi', cb = contentBlock(s, font), ref = cb.ref, line1 = cb.line1, line2 = cb.line2, icon = cb.icon;
+        var t1 = cb.t1, t2 = cb.t2, gap = cb.gap, tw = cb.tw, th = cb.th, iconSize = cb.iconSize, iconGap = cb.iconGap, cw = cb.cw, ch = cb.ch;
 
         // Room for the content: margins, and the holes beside or above it.
         // Corner holes of a rounded plate sit on the center of the corner arc (concentric, even wall around them).
@@ -1079,7 +1130,8 @@
                 if (s.line2) fitText(rc, upq(s.line2), font, cx, by + t1h + t2h / 2, aw, t2h * 0.8 * s.textScale, R, FW, FH, s.spacing);
             }
         }
-        var k = cw > 0 && ch > 0 && aw > 0 && ah > 0 ? Math.min(aw / cw, ah / ch) * s.textScale : 0;  // mm per reference px
+        // mm per reference px: the standard size (the plate was sized around it), else fitted into the room.
+        var k = auto ? (cw > 0 ? s.capMm / cb.cap : 0) : cw > 0 && ch > 0 && aw > 0 && ah > 0 ? Math.min(aw / cw, ah / ch) * s.textScale : 0;
         var left = cx - cw * k / 2;
         if (k > 0) {
             var tl = left + (icon && s.iconSide !== 'right' ? (iconSize + iconGap) * k : 0), tt = cy - th * k / 2;
@@ -1111,17 +1163,15 @@
 
         // Plate: the shape, or the content grown by the margin ("outline").
         if (s.shape === 'outline') {
-            bc.save();
-            bc.setTransform(1, 0, 0, 1, 0, 0);
-            var dr = m * R;
-            [[1, 30], [0.66, 20], [0.33, 10]].forEach(function (ring) {
-                for (var i = 0; i < ring[1]; i++) {
-                    var a = i * Math.PI * 2 / ring[1];
-                    bc.drawImage(relief, Math.cos(a) * dr * ring[0], Math.sin(a) * dr * ring[0]);
-                }
-            });
-            bc.drawImage(relief, 0, 0);
-            bc.restore();
+            // The content grown by the margin, from the distance to the nearest ink: an even, smooth outline.
+            var ri = rc.getImageData(0, 0, w, h).data, blank = new Uint8Array(w * h), gi;
+            for (gi = 0; gi < w * h; gi++) blank[gi] = ri[gi * 4 + 3] > 127 ? 0 : 1;
+            var dist = edt(blank, w, h), grown = bc.createImageData(w, h), dr = m * R;
+            for (gi = 0; gi < w * h; gi++) {
+                var cov = Math.max(0, Math.min(1, dr - dist[gi] + 0.5));
+                if (cov) { grown.data[gi * 4] = grown.data[gi * 4 + 1] = grown.data[gi * 4 + 2] = 255; grown.data[gi * 4 + 3] = Math.round(cov * 255); }
+            }
+            bc.putImageData(grown, 0, 0);
             if (k <= 0) { shapePath(bc, 'pill', Math.min(L, H * 2), H, H / 2, 0); bc.fill(); }
         } else {
             shapePath(bc, s.shape, L, H, s.radius, 0);
@@ -1138,7 +1188,7 @@
                 var px = Math.round((x + FW / 2) * R), py = Math.round((y + FH / 2) * R);
                 return px >= 0 && py >= 0 && px < w && py < h && pd[(py * w + px) * 4 + 3] > 127;
             };
-            if (s.hole === 'left') holes.push(snapHole(at, [left - m, cy], [-1, 0]));
+            if (s.hole === 'left') holes.push(beside(rc.getImageData(0, 0, w, h).data, w, h, R, FW, FH) || snapHole(at, [left - m, cy], [-1, 0]));
             else if (s.hole === 'top1') holes.push(snapHole(at, [cx, top], [0, -1]));
             else if (s.hole === 'top2') holes.push(snapHole(at, [left + HOLE_R + 1.5, top], [0, -1]), snapHole(at, [left + cw * k - HOLE_R - 1.5, top], [0, -1]));
         }
@@ -1723,7 +1773,7 @@
     function unit(a) { var l = Math.hypot(a[0], a[1], a[2]) || 1; return [a[0] / l, a[1] / l, a[2] / l]; }
 
     // Fields that change the mesh; colors only repaint.
-    var GEOMETRY = ['text', 'line2', 'font', 'upper', 'spacing', 'textScale', 'length', 'heightPct', 'thickness', 'shape', 'radius', 'margin', 'style', 'relief', 'border', 'hole', 'icon', 'iconSide', 'stand',
+    var GEOMETRY = ['text', 'line2', 'font', 'upper', 'spacing', 'textScale', 'capMm', 'length', 'heightPct', 'thickness', 'shape', 'radius', 'margin', 'style', 'relief', 'border', 'hole', 'icon', 'iconSide', 'stand',
         'kind', 'board', 'theme', 'profile', 'units', 'row', 'legendPos', 'homing', 'stem', 'qr'];
 
     // QR tier shades (qr.multi) only repaint; the QR tier height (qr.height) keeps the masks (see View.build).
@@ -2147,22 +2197,33 @@
         if (paint) ctx.drawImage(paint, x, y, dw, dh);
     };
 
-    // ---------- Print export: the design as solids (meshed and written by studio-export.js) ----------
+    // ---------- Print export: the design as print pieces (meshed and written by studio-export.js) ----------
 
-    // Colored layer under flush or engraved text: two 0.2 mm layers in the text color, so a multi-material printer
-    // prints the text in its color (a single-color print just prints it with the rest).
-    var INLAY = 0.4;
     var GAP = 6;  // mm between the plate and the loose pieces (tiles, foot) laid out beside it
+    var INLAY = 0.4;  // colored top layer of flush or engraved content on a plate printed in one piece
 
     /**
-     * Solids of a design for printing, built from the same masks as the preview at full detail. A solid is a mask
-     * (0..1, contour at 0.5) extruded from z0 to z1 (mm), or a box. Parts group the solids by name and color; group
-     * "main" is the plate, other groups are loose pieces laid out below it. The keycap is not supported.
-     * Resolves with { frame: { w, h, R, FW, FH }, parts: [{ name, color, group, solids: [{ f, z0, z1, dy, dz } | { box }] }], dims }.
+     * Defaults of the print export, those of the studio's reference prints (the admin can change them, see
+     * PrintFileSettings): clearance = gap in mm on every side between a piece and its pocket (the reference pockets
+     * are exactly the shape of their pieces); pocket = depth of the pockets in percent of the frame (50: a 4 mm frame
+     * gets 2 mm pockets; 100 cuts them through, which loses the islands inside letters like o, a, d); minPiece =
+     * thinnest piece in mm.
      */
-    function solids(spec) {
-        var s = Object.assign({}, DEFAULTS);
+    var EXPORT = { clearance: 0, pocket: 50, minPiece: 0.6 };
+
+    /**
+     * Print pieces of a design, built from the same masks as the preview at full detail. Printed apart, one color at
+     * a time: the frame (the plate in its color, with a pocket cut wherever content of another color goes) and the
+     * content (the pieces pressed into the pockets, per color). Content of the frame's own color stays part of the
+     * frame. A solid is a mask (0..1, contour at 0.5) extruded from z0 to z1 (mm), or a box. Every part belongs to a
+     * file (frame, content) and a group (main = the plate, tiles and foot are laid out below it). The keycap is not
+     * supported. Resolves with
+     * { frame: { w, h, R, FW, FH }, parts: [{ name, color, file, group, solids: [{ f, z0, z1, dy } | { box }] }], dims }.
+     */
+    function solids(spec, options) {
+        var s = Object.assign({}, DEFAULTS), o = Object.assign({}, EXPORT);
         Object.keys(spec || {}).forEach(function (k) { if (spec[k] != null && k in DEFAULTS) s[k] = spec[k]; });
+        Object.keys(options || {}).forEach(function (k) { if (isFinite(+options[k]) && k in EXPORT) o[k] = +options[k]; });
         s.text = String(s.text).replace(/\s+/g, ' ').trim();
         s.line2 = String(s.line2).replace(/\s+/g, ' ').trim();
         if (s.kind === 'keycap') return Promise.reject(new Error('Keycap chưa hỗ trợ xuất file in.'));
@@ -2172,24 +2233,25 @@
                 return document.fonts && document.fonts.load ? document.fonts.load(f.weight + ' 40px "' + f.family + '"', sample).catch(function () { }) : null;
             }));
         });
-        return ready.then(function () { return solidsOf(s); });
+        return ready.then(function () { return solidsOf(s, o); });
     }
 
-    function solidsOf(s) {
+    function solidsOf(s, o) {
         var M = masks(s, false), n = M.w * M.h, T = s.thickness, parts = [];
         var rel = Math.min(s.relief, s.style === 'engraved' ? T - 0.6 : 5);
         var Lv = M.levels, qh = Lv ? Math.max(0.6, Math.min(12, +s.qr.height || 6)) : 0;
         if (Lv) rel = Math.min(rel, 1.2);
+        var clearPx = Math.max(0, Math.min(1, o.clearance)) * M.R, minPiece = Math.max(0.2, o.minPiece);
 
-        function part(name, color, group) {
-            var hex = colorHex(color), p = parts.filter(function (x) { return x.name === name && x.color === hex && x.group === group; })[0];
-            if (!p) parts.push(p = { name: name, color: hex, group: group, solids: [] });
+        function part(name, color, file, group) {
+            var hex = colorHex(color), p = parts.filter(function (x) { return x.name === name && x.color === hex && x.file === file && x.group === group; })[0];
+            if (!p) parts.push(p = { name: name, color: hex, file: file, group: group, solids: [] });
             return p;
         }
         function minus(a, b) {
-            var o = new Float32Array(n);
-            for (var k = 0; k < n; k++) o[k] = Math.min(a[k], 1 - b[k]);
-            return o;
+            var out = new Float32Array(n);
+            for (var k = 0; k < n; k++) out[k] = Math.min(a[k], 1 - b[k]);
+            return out;
         }
         // A body of mask f from z0 to top with cuts (mask, depth below top) taken out of its top: one slab per depth.
         function body(p, f, z0, top, cuts) {
@@ -2200,6 +2262,19 @@
                 m = minus(m, c.f);
             });
             if (top > z + 0.01) p.solids.push({ f: m, z0: z, z1: top });
+        }
+        // Pocket for a piece: its mask grown by the clearance (signed distance from the antialiased edge).
+        function grow(f) {
+            if (!clearPx) return f;
+            var outside = new Uint8Array(n), k;
+            for (k = 0; k < n; k++) outside[k] = f[k] > 0.5 ? 0 : 1;
+            var dist = edt(outside, M.w, M.h), out = new Float32Array(n);
+            for (k = 0; k < n; k++) {
+                // Outside pixels: right at the edge the coverage tells the distance, further out the distance field.
+                var sd = !outside[k] ? 1 : f[k] > 0 ? f[k] - 0.5 : 0.5 - dist[k];
+                out[k] = Math.max(0, Math.min(1, 0.5 + sd + clearPx));
+            }
+            return out;
         }
         // Relief split by paint color (a class board paints each of its parts); unpainted relief takes the text color.
         // Antialiased edges of the paint blend neighbouring colors: only colors covering a fair share of the relief
@@ -2245,54 +2320,83 @@
             return groups;
         }
 
-        var cuts = [], depth = 0;
-        if (M.hasRelief && s.style === 'raised') {
-            byColor(M.relief, s.color).forEach(function (g) { part('Chữ', g.color, 'main').solids.push({ f: g.f, z0: T, z1: T + rel }); });
-        } else if (M.hasRelief) {
-            // Engraved: a pocket with the colored layer at its floor. Flush: only the colored layer, level with the top.
-            var d = s.style === 'engraved' ? rel : 0, inlay = Math.min(INLAY, (T - d) / 2);
-            cuts.push({ f: M.relief, depth: d + inlay });
-            byColor(M.relief, s.color).forEach(function (g) { part('Chữ', g.color, 'main').solids.push({ f: g.f, z0: T - d - inlay, z1: T - d }); });
+        // A host is the frame or a removable tile. Content of another color becomes a piece standing in a pocket
+        // from the host's floor up to its own top; content of the host's color is raised on it or engraved into it.
+        // A QR plate is printed in one piece (a code split into many small pieces is not worth assembling): its content
+        // stays on the plate, raised in its own color, or as a colored layer at the top of flush and engraved content.
+        var whole = !!s.qr;
+        function host(name, color, file, group, bottom, top) {
+            var h = { color: colorHex(color), top: top, bottom: bottom, cuts: [], part: part(name, color, file, group), group: group };
+            h.floor = Math.min(top - 0.4, bottom + (top - bottom) * (1 - Math.max(10, Math.min(100, o.pocket)) / 100));
+            h.place = function (pieceName, pieceColor, f, pieceTop) {
+                var same = colorHex(pieceColor) === h.color;
+                if (same || whole) {
+                    var p = same ? h.part : part(pieceName, pieceColor, file, group);
+                    if (pieceTop > top + 0.01) p.solids.push({ f: f, z0: top, z1: pieceTop });
+                    else if (same) { if (pieceTop < top - 0.01) h.cuts.push({ f: f, depth: top - pieceTop }); }
+                    else {
+                        var layer = Math.min(INLAY, pieceTop - bottom - 0.4);
+                        h.cuts.push({ f: f, depth: top - pieceTop + layer });
+                        p.solids.push({ f: f, z0: pieceTop - layer, z1: pieceTop });
+                    }
+                    return same ? null : p;
+                }
+                var z0 = Math.max(bottom, Math.min(h.floor, pieceTop - minPiece));
+                h.cuts.push({ f: grow(f), depth: top - z0 });
+                var p = part(pieceName, pieceColor, 'content', group);
+                p.solids.push({ f: f, z0: z0, z1: pieceTop });
+                return p;
+            };
+            return h;
         }
-        if (M.tile) {
-            depth = Math.max(0.8, Math.min(T - 1, 1.6));
-            cuts.push({ f: M.pocket, depth: depth });
-        }
-        body(part('Đế', s.base, 'main'), M.base, 0, T, cuts);
 
+        var frame = host('Khung', s.base, 'frame', 'main', 0, T);
+        if (M.hasRelief) {
+            var top = s.style === 'raised' ? T + rel : s.style === 'engraved' ? T - rel : T;
+            byColor(M.relief, s.color).forEach(function (g) { frame.place('Chữ', g.color, g.f, top); });
+        }
         if (Lv) {
+            // QR tiers: the first stands in the frame, the others are stacked on it (glued) unless they are of the
+            // frame's color and so is everything under them.
+            var onFrame = true;
             for (var k = 1; k <= Lv.n; k++) {
-                part('Mã QR', levelColor(s, k, Lv.n), 'main').solids.push({ f: levelMask(Lv, k), z0: T + qh * (k - 1) / Lv.n, z1: T + qh * k / Lv.n });
+                var c = levelColor(s, k, Lv.n), z0 = T + qh * (k - 1) / Lv.n, z1 = T + qh * k / Lv.n, f = levelMask(Lv, k);
+                if (k === 1) onFrame = !frame.place('Mã QR', c, f, z1);
+                else if (onFrame && colorHex(c) === frame.color) frame.part.solids.push({ f: f, z0: z0, z1: z1 });
+                else { onFrame = false; part('Mã QR', c, whole ? 'frame' : 'content', 'main').solids.push({ f: f, z0: z0, z1: z1 }); }
             }
         }
+        var depth = 0;
+        if (M.tile) {
+            depth = Math.max(0.8, Math.min(T - 1, 1.6));
+            frame.cuts.push({ f: M.pocket, depth: depth });
+        }
+        body(frame.part, M.base, 0, T, frame.cuts);
 
         // Loose pieces go below the plate on the build plate.
         var H = M.size[1], L = M.size[0], below = -H / 2 - GAP;
         if (M.tile) {
-            // Removable tiles: printed apart, laid out as on the board but moved below it and down to z = 0.
+            // Removable tiles: their own pieces (a little smaller than the pockets), laid out as on the board but
+            // moved below it; the text on a tile is inlaid into it like the content into the frame.
             var pro = 1, tz = T + pro, tb = T - depth + 0.02, tr = Math.min(s.relief, s.style === 'engraved' ? depth + pro - 0.4 : 5);
-            var dy = -H - GAP, tileCuts = [], ink = s.tileInk || s.color;
-            if (s.style === 'raised') part('Chữ trên ô', ink, 'tiles').solids.push({ f: M.tileText, z0: tz, z1: tz + tr });
-            else {
-                var td = s.style === 'engraved' ? tr : 0, ti = Math.min(INLAY, (tz - tb - td) / 2);
-                tileCuts.push({ f: M.tileText, depth: td + ti });
-                part('Chữ trên ô', ink, 'tiles').solids.push({ f: M.tileText, z0: tz - td - ti, z1: tz - td });
-            }
-            body(part('Ô rời', s.tileColor || s.base, 'tiles'), M.tile, tb, tz, tileCuts);
-            parts.forEach(function (p) { if (p.group === 'tiles') p.solids.forEach(function (sd) { sd.dy = dy; sd.dz = -tb; }); });
+            var tile = host('Ô rời', s.tileColor || s.base, 'content', 'tiles', tb, tz);
+            tile.place('Chữ trên ô', s.tileInk || s.color, M.tileText, s.style === 'raised' ? tz + tr : s.style === 'engraved' ? tz - tr : tz);
+            body(tile.part, M.tile, tb, tz, tile.cuts);
+            var dy = -H - GAP;
+            parts.forEach(function (p) { if (p.group === 'tiles') p.solids.forEach(function (sd) { sd.dy = dy; }); });
             below += dy;
         }
         if (s.stand) {
             // The foot of the preview: the block the plate stands on (see buildSync).
             var fd = T * 1.6 + Math.max(H * 0.42, 14), fh = Math.max(2.4, T * 0.9);
-            part('Chân đế', s.base, 'foot').solids.push({ box: [-L * 0.36, L * 0.36, below - fd, below, 0, fh] });
+            part('Chân đế', s.base, 'frame', 'foot').solids.push({ box: [-L * 0.36, L * 0.36, below - fd, below, 0, fh] });
         }
 
-        var top = T + Math.max(qh, s.style === 'raised' && M.hasRelief ? rel : 0);
+        var height = T + Math.max(qh, s.style === 'raised' && M.hasRelief ? rel : 0);
         return {
             frame: { w: M.w, h: M.h, R: M.R, FW: M.FW, FH: M.FH },
             parts: parts.filter(function (p) { return p.solids.length; }),
-            dims: { length: Math.round(L * 10) / 10, height: Math.round(H * 10) / 10, depth: Math.round(top * 10) / 10 }
+            dims: { length: Math.round(L * 10) / 10, height: Math.round(H * 10) / 10, depth: Math.round(height * 10) / 10 }
         };
     }
 
@@ -2301,5 +2405,5 @@
         return '#' + rgb(color).map(function (v) { return ('0' + Math.round(v * 255).toString(16)).slice(-2); }).join('').toUpperCase();
     }
 
-    window.TTNameplate = { View: View, PROFILES: PROFILES, FONTS: FONTS, addFonts: addFonts, SHAPES: SHAPES, ICONS: ICONS, DEFAULTS: DEFAULTS, ensureFonts: ensureFonts, fontOf: fontOf, iconOf: iconOf, solids: solids };
+    window.TTNameplate = { View: View, PROFILES: PROFILES, FONTS: FONTS, addFonts: addFonts, SHAPES: SHAPES, ICONS: ICONS, DEFAULTS: DEFAULTS, ensureFonts: ensureFonts, fontOf: fontOf, iconOf: iconOf, solids: solids, naturalSize: naturalSize };
 })();

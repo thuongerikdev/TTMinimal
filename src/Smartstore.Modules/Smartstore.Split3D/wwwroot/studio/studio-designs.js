@@ -66,7 +66,7 @@
 
     // Fields of a plate spec (name plate and class board) taken from the design.
     function plateFields(d) {
-        return omit(d, ['type', 'mode', 'days', 'am', 'pm', 'cells', 'rows', 'groups', 'seats', 'teacher', 'names', 'line', 'tileMode', 'spare', 'heading', 'colors', 'locked', 'showContent',
+        return omit(d, ['type', 'scale', 'mode', 'days', 'am', 'pm', 'cells', 'rows', 'groups', 'seats', 'teacher', 'names', 'line', 'tileMode', 'spare', 'heading', 'colors', 'locked', 'showContent',
             'qType', 'qText', 'ssid', 'password', 'security', 'hidden', 'bank', 'account', 'amount', 'ecc', 'qrStyle', 'quiet', 'qrScale', 'caption', 'matrix', 'qrError']);
     }
 
@@ -76,6 +76,29 @@
     }
 
     // ---------- Name plate ----------
+
+    /**
+     * Standard name plate of the studio, measured on its reference prints ("Tài", "QuangTuấn"; see
+     * PRINT-STANDARD.md in the module): Pacifico, a capital T 23.7 mm high, the plate following the letters 7.5 mm
+     * around them, 4 mm thick, the letters 2 mm proud, a Ø4 hole on the left. The plate is sized to the text; the
+     * length slider scales the whole design (d.scale): text and margin with the scale, thickness and relief with its
+     * square root only (a plate twice as long need not be twice as thick), within printable limits.
+     */
+    var STANDARD = { font: 'pacifico', cap: 23.7, margin: 7.5, thickness: 4, relief: 2 };
+
+    function clamp(v, a, b) { return Math.min(b, Math.max(a, v)); }
+    function step(v, s) { return Math.round(v / s) * s; }
+
+    // Sizes of a name plate design at its scale.
+    function scaled(d) {
+        var k = d.scale || 1, r = Math.sqrt(k);
+        return {
+            cap: STANDARD.cap * k * (d.textScale || 1),
+            margin: clamp(d.margin * k, 3, 20),
+            thickness: clamp(step(d.thickness * r, 0.5), 2.5, 8),
+            relief: clamp(step(d.relief * r, 0.2), 1, 4)
+        };
+    }
 
     var nameplate = {
         item: 'bảng tên',
@@ -89,14 +112,16 @@
         advanced: 'Kiểu chữ nổi / chìm, dòng chữ thứ 2, hình dạng đế, lỗ móc, biểu tượng, chân đứng',
         tabs: ['Chữ', 'Đế', 'Thêm'],
         types: [
-            { key: 'desk', name: 'Bảng tên để bàn', hint: 'Có chân đứng', set: { shape: 'rounded', stand: true, hole: 'none', border: false, heightPct: 30, thickness: 4 } },
-            { key: 'keychain', name: 'Móc khoá', hint: 'Đế ôm chữ, lỗ móc', set: { shape: 'outline', stand: false, hole: 'left', border: false, heightPct: 32, margin: 3, thickness: 3 } },
-            { key: 'door', name: 'Bảng treo cửa', hint: 'Viền nổi, 2 lỗ treo', set: { shape: 'rounded', stand: false, hole: 'top2', border: true, heightPct: 40, thickness: 3 } },
-            { key: 'badge', name: 'Tag tên cài áo', hint: 'Mỏng, bo tròn', set: { shape: 'pill', stand: false, hole: 'none', border: false, heightPct: 28, thickness: 2.5 } },
-            { key: 'luggage', name: 'Thẻ treo hành lý', hint: 'Góc vát, lỗ dây', set: { shape: 'tag', stand: false, hole: 'left', border: true, heightPct: 45, thickness: 3 } }
+            // The standard (see STANDARD); the other types keep its thickness, relief and margin where they fit.
+            { key: 'keychain', name: 'Ôm theo chữ (chuẩn)', hint: 'Chữ nổi 2 mm, lỗ móc', set: { shape: 'outline', stand: false, hole: 'left', border: false, margin: 7.5, thickness: 4, relief: 2, style: 'raised' } },
+            { key: 'desk', name: 'Bảng tên để bàn', hint: 'Có chân đứng', set: { shape: 'rounded', stand: true, hole: 'none', border: false, margin: 7.5, thickness: 4, relief: 2 } },
+            { key: 'door', name: 'Bảng treo cửa', hint: 'Viền nổi, 2 lỗ treo', set: { shape: 'rounded', stand: false, hole: 'top2', border: true, margin: 7.5, thickness: 4, relief: 2 } },
+            { key: 'badge', name: 'Tag tên cài áo', hint: 'Mỏng, bo tròn', set: { shape: 'pill', stand: false, hole: 'none', border: false, margin: 5, thickness: 3, relief: 1.4 } },
+            { key: 'luggage', name: 'Thẻ treo hành lý', hint: 'Góc vát, lỗ dây', set: { shape: 'tag', stand: false, hole: 'left', border: true, margin: 6, thickness: 4, relief: 2 } }
         ],
         fresh: function (P) {
-            return Object.assign(omit(P.DEFAULTS, ['text', 'base', 'color', 'length', 'board']), { kind: 'nameplate', type: 'desk' }, this.types[0].set);
+            return Object.assign(omit(P.DEFAULTS, ['text', 'base', 'color', 'length', 'board']),
+                { kind: 'nameplate', type: 'keychain', font: STANDARD.font, textScale: 1, scale: 1 }, this.types[0].set);
         },
         formats: { heightPct: function (v, ctx) { return mm(ctx.plateLength() * v / 100); } },
         onSet: function (key, val, patch) { if (key === 'shape' && val === 'outline') patch.border = false; },
@@ -111,13 +136,14 @@
                         + ui.check('upper', 'VIẾT HOA TOÀN BỘ', d.upper));
             }
             if (i === 1) {
+                var z = scaled(d);
                 return ui.label('Hình dạng đế') + ui.seg('shape', P.SHAPES.map(function (s) { return [s.key, s.name]; }), d.shape)
-                    + ui.grid(ui.slider('heightPct', 'Chiều cao đế', 15, 70, 1, d.heightPct, function (v) { return f.heightPct(v, ctx); })
-                        + ui.slider('margin', 'Lề quanh chữ (thu hẹp / nới khuôn)', 1.5, 12, 0.5, d.margin, mm)
+                    + ui.grid(ui.slider('margin', 'Lề quanh chữ (thu hẹp / nới khuôn)', 1.5, 12, 0.5, d.margin, mm)
                         + ui.slider('thickness', 'Độ dày đế', 2, 6, 0.5, d.thickness, mm)
                         + (d.shape === 'rounded' || d.shape === 'tag' ? ui.slider('radius', 'Bo góc', 0, 15, 0.5, d.radius, mm) : '')
                         + ui.check('border', 'Viền nổi quanh bảng', d.border, d.shape === 'outline'))
-                    + ui.note('Chiều dài đế kéo ở mục <b>Chiều dài</b> cạnh giá sản phẩm.');
+                    + ui.note('Đế tự dài theo chữ: chữ T cao ' + mm(z.cap) + ' (chuẩn ' + mm(STANDARD.cap) + '). Muốn to / nhỏ hơn thì kéo <b>Chiều dài</b> cạnh giá, cả bảng (chữ, lề, độ dày) đổi theo tỷ lệ.'
+                        + (d.scale && Math.abs(d.scale - 1) > 0.01 ? ' Đang ở ' + pct(d.scale) + ' cỡ chuẩn: lề ' + mm(z.margin) + ', dày ' + mm(z.thickness) + ', chữ nổi ' + mm(z.relief) + '.' : ''));
             }
             return ui.label('Biểu tượng') + ui.icons(P, d)
                 + (d.icon ? ui.label('Vị trí biểu tượng') + ui.seg('iconSide', [['left', 'Trái'], ['right', 'Phải'], ['both', 'Hai bên']], d.iconSide) : '')
@@ -128,21 +154,30 @@
         summary: function (d, P, ctx) {
             var parts = ['Loại: ' + nameOf(this.types, d.type), 'Phông: ' + P.fontOf(d.font).name + (d.upper ? ' (IN HOA)' : '')];
             if (d.line2) parts.push('Dòng 2: ' + d.line2);
-            parts.push(nameOf(STYLES, d.style) + (d.style === 'flush' ? '' : ' ' + mm(d.relief)));
-            if (d.textScale !== 1) parts.push('Cỡ chữ ' + pct(d.textScale));
+            var z = scaled(d);
+            parts.push(nameOf(STYLES, d.style) + (d.style === 'flush' ? '' : ' ' + mm(z.relief)));
+            parts.push('Chữ T cao ' + mm(z.cap) + (d.scale && Math.abs(d.scale - 1) > 0.01 ? ' (' + pct(d.scale) + ' cỡ chuẩn)' : ''));
             if (d.spacing) parts.push('Giãn chữ ' + pct(d.spacing));
-            parts.push(plateSummary(d, P, ctx.plateLength()));
+            parts.push('Đế: ' + nameOf(P.SHAPES.concat([{ key: 'scallop', name: 'Viền gợn sóng' }]), d.shape) + ', dài ' + mm(ctx.plateLength())
+                + ', dày ' + mm(z.thickness) + ', lề ' + mm(z.margin) + (d.shape === 'rounded' || d.shape === 'tag' ? ', bo góc ' + mm(d.radius) : ''));
             if (d.border) parts.push('Viền nổi');
             if (d.hole !== 'none') parts.push('Lỗ móc: ' + nameOf(HOLES, d.hole).toLowerCase());
             if (d.icon) parts.push('Biểu tượng: ' + P.iconOf(d.icon).name + ' (' + nameOf([['left', 'trái'], ['right', 'phải'], ['both', 'hai bên']], d.iconSide) + ')');
             if (d.stand) parts.push('Có chân đứng');
             return parts.join(' · ');
         },
+        // The plate is sized to the text (capMm, see naturalSize in studio-nameplate.js); length is not used.
         spec: function (d, row, ctx) {
+            var z = scaled(d);
             return Object.assign(plateFields(d), {
-                kind: 'nameplate', board: null, text: row.text, length: ctx.plateLength(),
+                kind: 'nameplate', board: null, text: row.text, length: 100, textScale: 1,
+                capMm: Math.round(z.cap * 100) / 100, margin: z.margin, thickness: z.thickness, relief: z.relief,
                 base: ctx.color('base', row, '#ffffff'), color: ctx.color('text', row, '#20201f')
             });
+        },
+        // The plate scales with the length slider (studio.js): sizeTo(d, wanted mm, current mm) → new d.scale.
+        sizeTo: function (d, wanted, current) {
+            return current > 0 ? clamp((d.scale || 1) * wanted / current, 0.35, 3) : d.scale || 1;
         }
     };
 
@@ -273,7 +308,7 @@
         fresh: function (P, ctx) {
             var locked = ctx && ctx.theme ? themeOf(ctx.theme) : null;
             var d = Object.assign(omit(P.DEFAULTS, ['text', 'base', 'color', 'length', 'board', 'theme', 'tileInk']), {
-                kind: 'classboard', font: 'be', margin: 6, thickness: 3, shape: 'rounded', radius: 6, relief: 1, style: 'raised',
+                kind: 'classboard', font: 'be', margin: 6, thickness: 4, shape: 'rounded', radius: 6, relief: 1, style: 'raised',
                 mode: 'timetable', heading: HEADINGS.timetable, days: 6, am: 5, pm: 4, cells: { am: [], pm: [] },
                 rows: 5, groups: 4, seats: 2, teacher: 'left', names: '', line: 0.8,
                 tileMode: 'fixed', spare: '', explode: false, stand: false, hole: 'top2', border: false, heightPct: 74,
@@ -552,7 +587,7 @@
         ],
         fresh: function (P) {
             return Object.assign(omit(P.DEFAULTS, ['text', 'base', 'color', 'length', 'board', 'qr']), {
-                kind: 'qr', type: 'desk', font: 'be', style: 'raised', relief: 0.8, margin: 4, thickness: 3, radius: 4, border: false,
+                kind: 'qr', type: 'desk', font: 'be', style: 'raised', relief: 2, margin: 4, thickness: 4, radius: 4, border: false,
                 qType: 'url', qText: '', ssid: '', password: '', security: 'WPA', hidden: false, bank: '', account: '', amount: '',
                 ecc: 'M', qrStyle: 'square', quiet: 1, qrScale: 1, caption: 'bottom', icon: '', matrix: null, qrError: '',
                 qrRelief: 'flat', qrHeight: 6, tiers: 8, bankWidth: 0.2, multi: false
@@ -788,5 +823,5 @@
     Panel.prototype.spec = function (row) { return this.kind.spec(this.d, row, this.ctx); };
     Panel.prototype.summary = function () { return this.kind.summary(this.d, this.ctx.P, this.ctx); };
 
-    window.TTDesigns = { Panel: Panel, kinds: KINDS };
+    window.TTDesigns = { Panel: Panel, kinds: KINDS, STANDARD: STANDARD };
 })();
