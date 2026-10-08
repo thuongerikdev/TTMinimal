@@ -506,3 +506,54 @@
 
     apply();
 })();
+
+/*
+ * Lists the studio works through every day (orders, print jobs, quote requests): a click anywhere on a row opens the
+ * record, not only on its number. Links, buttons, the selection checkbox and the row menu keep their own behavior;
+ * Ctrl/Cmd or middle click opens a new tab, and selecting text does not navigate.
+ */
+(function () {
+    'use strict';
+
+    // Grid id → the edit page its rows open (columns can be reordered, so other edit links may come first).
+    var GRIDS = {
+        'orders-grid': /\/order\/edit\//i,
+        'printjobs-grid': /\/printjob\/edit\//i,
+        'printquotes-grid': /\/printquote\/edit\//i
+    };
+    var SKIP = 'a, button, input, select, textarea, label, .dropdown-menu, .dg-col-selector, .dg-commands, .dg-cell-edit-controls';
+
+    function rowUrl(row, pattern) {
+        var links = row.querySelectorAll('a[href]');
+        for (var i = 0; i < links.length; i++) {
+            if (pattern.test(links[i].getAttribute('href'))) return links[i].href;
+        }
+        return null;
+    }
+
+    function open(ev) {
+        if (ev.button > 1) return;
+        var row = ev.target.closest('.dg-tr');
+        var grid = row && row.closest('.datagrid[id], [id$="-grid"]');
+        var pattern = grid && GRIDS[grid.id];
+        if (!pattern || ev.target.closest(SKIP)) return;
+        if (ev.type === 'click' && ev.button !== 0) return;
+        if (ev.type === 'auxclick' && ev.button !== 1) return;
+
+        var selection = window.getSelection && window.getSelection();
+        if (selection && selection.toString().length > 0) return;
+
+        var url = rowUrl(row, pattern);
+        if (!url) return;
+
+        if (ev.ctrlKey || ev.metaKey || ev.button === 1) {
+            window.open(url, '_blank');
+        }
+        else {
+            window.location.href = url;
+        }
+    }
+
+    document.addEventListener('click', open);
+    document.addEventListener('auxclick', open);
+})();

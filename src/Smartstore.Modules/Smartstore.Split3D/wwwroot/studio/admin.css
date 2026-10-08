@@ -1151,3 +1151,8 @@ a:focus-visible, button:focus-visible, .btn:focus-visible {
     .ttp-row > .ttp-actions .btn-secondary { flex: 1; }
     .ttp-group-links { width: 100%; }
 }
+
+/* Rows of the daily lists open their record on click (admin.js). */
+#orders-grid .dg-tr:not(.dg-no-data) > .dg-td,
+#printjobs-grid .dg-tr:not(.dg-no-data) > .dg-td,
+#printquotes-grid .dg-tr:not(.dg-no-data) > .dg-td { cursor: pointer; }
