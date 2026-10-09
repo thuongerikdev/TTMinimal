@@ -1109,10 +1109,20 @@
         var vi = 'vi', cb = contentBlock(s, font), ref = cb.ref, line1 = cb.line1, line2 = cb.line2, icon = cb.icon;
         var t1 = cb.t1, t2 = cb.t2, gap = cb.gap, tw = cb.tw, th = cb.th, iconSize = cb.iconSize, iconGap = cb.iconGap, cw = cb.cw, ch = cb.ch;
 
+        // Border: one line following the plate at an even inset (or the band of a theme frame). A line never runs over
+        // a hole: the holes are placed inside it (holeIn), a hole it would still touch moves further in, and should no
+        // place be clear, the line is left out around the hole (lineGap, drawn below).
+        var border = !rimW && s.border && s.shape !== 'outline', bi = Math.min(m * 0.4, 2) + 0.6, lw = 1.2;
+        var line = rimW ? { inset: rimW / 2, w: rimW } : border ? { inset: bi, w: lw } : null;
+        // Distance from a hole center the line keeps: the relief keeps 1 mm off a hole (see below), then 0.6 mm.
+        var lineClear = line ? HOLE_R + 1 + line.w / 2 + 0.6 : 0, lineGap = [];
+
         // Room for the content: margins, and the holes beside or above it.
         // Corner holes of a rounded plate sit on the center of the corner arc (concentric, even wall around them).
-        var holeIn = HOLE_R + 2.5, cornerD = s.shape === 'rounded' ? Math.max(holeIn, Math.min(s.radius || 0, Math.min(L, H) * 0.3)) : holeIn;
-        var holeSide = 2 * HOLE_R + 2.5, aw = L - 2 * m, ah = H - 2 * m, cx = 0, cy = 0;
+        // Holes sit holeIn from the plate edge: inside the border line or frame when there is one.
+        var holeIn = Math.max(HOLE_R + 2.5, line ? line.inset + lineClear : 0);
+        var cornerD = s.shape === 'rounded' ? Math.max(holeIn, Math.min(s.radius || 0, Math.min(L, H) * 0.3)) : holeIn;
+        var holeSide = 2 * HOLE_R + 2.5 + (holeIn - HOLE_R - 2.5), aw = L - 2 * m, ah = H - 2 * m, cx = 0, cy = 0;
         // Holes never sit in a border line or a theme frame (they move inside it, see below): room is kept for them.
         if (s.hole === 'left') { aw -= holeSide; cx = holeSide / 2; }
         else if (s.hole === 'top1' || (s.hole === 'top2' && (s.shape === 'outline' || s.board || s.qr))) { ah -= holeSide; cy = holeSide / 2; }
@@ -1194,21 +1204,15 @@
             else if (s.hole === 'top1') holes.push(snapHole(at, [cx, top], [0, -1]));
             else if (s.hole === 'top2') holes.push(snapHole(at, [left + HOLE_R + 1.5, top], [0, -1]), snapHole(at, [left + cw * k - HOLE_R - 1.5, top], [0, -1]));
         }
-        else if (s.hole === 'left') holes.push([-L / 2 + 2.5 + HOLE_R, 0]);
-        else if (s.hole === 'top1') holes.push([0, -H / 2 + 2.5 + HOLE_R]);
+        else if (s.hole === 'left') holes.push([-L / 2 + holeIn, 0]);
+        else if (s.hole === 'top1') holes.push([0, -H / 2 + holeIn]);
         else if (s.hole === 'top2') {
             var hx = L / 2 - cornerD - (s.shape === 'oval' || s.shape === 'pill' ? H * 0.18 : 0);
             holes.push([-hx, -H / 2 + cornerD], [hx, -H / 2 + cornerD]);
         }
         // A scalloped edge dips in between its bumps: the holes move in a little.
         if (s.shape === 'scallop') holes = holes.map(function (p) { return [p[0] - Math.sign(p[0]) * 2.5, p[1] + 2.5]; });
-        // Border: one line following the plate at an even inset (or the band of a theme frame). A line never runs over
-        // a hole: a hole it would touch moves toward the plate center until it is clear of the line, and should no
-        // place be clear, the line is left out around the hole (lineGap, drawn below).
-        var border = !rimW && s.border && s.shape !== 'outline', bi = Math.min(m * 0.4, 2) + 0.6, lw = 1.2;
-        var line = rimW ? { inset: rimW / 2, w: rimW } : border ? { inset: bi, w: lw } : null;
-        // Distance from a hole center the line keeps: the relief keeps 1 mm off a hole (see below), then 0.6 mm.
-        var lineClear = line ? HOLE_R + 1 + line.w / 2 + 0.6 : 0, lineGap = [];
+        // A hole the line still touches (tip of a tag, corner of an oval) moves further in.
         if (line && holes.length) {
             var probe = canvas(1, 1).getContext('2d');
             shapePath(probe, s.shape, L, H, s.radius, line.inset);
@@ -1221,9 +1225,10 @@
                 return true;
             };
             holes = holes.map(function (p) {
-                // Straight in from the edge the hole sits at: the content keeps its room beside or below the holes.
-                var ux = s.hole === 'left' ? 1 : 0, uy = s.hole === 'left' ? 0 : 1, q = p;
-                var max = Math.ceil((ux ? -p[0] : -p[1]) / 0.25);
+                // In from the edge (corner) the hole sits at: the content keeps its room beside or below the holes.
+                var ux = s.hole === 'left' ? 1 : s.hole === 'top2' ? -Math.sign(p[0]) * Math.SQRT1_2 : 0;
+                var uy = s.hole === 'left' ? 0 : s.hole === 'top2' && p[0] ? Math.SQRT1_2 : 1, q = p;
+                var max = Math.ceil(Math.max(Math.abs(p[0]), Math.abs(p[1])) / 0.25);
                 for (var step = 0; step < max && !inside(q); step++) q = [q[0] + ux * 0.25, q[1] + uy * 0.25];
                 if (!inside(q)) { q = p; lineGap.push(p); }
                 return q;
@@ -1348,7 +1353,7 @@
         if (back) for (i = 0; i < n; i++) if (back[i] > 0.5) tex[i * 4 + 3] = 0;
         return {
             w: w, h: h, R: R, FW: FW, FH: FH, base: B, relief: Rf, tex: tex, hasRelief: any, baseCanvas: base, reliefCanvas: relief, levels: levels, qrCanvas: qrCanvas,
-            pocket: Pk, tile: Tl, tileText: Tt, tex2: tex2, back: back, holes: holes,
+            pocket: Pk, tile: Tl, tileText: Tt, tex2: tex2, back: back, holes: holes, lineGaps: lineGap.length,
             paint: pc ? growPaint(pc.getImageData(0, 0, w, h).data, w, h, 2) : null, paintCanvas: paint,
             size: maxX < 0 ? [L, H] : [(maxX - minX + 1) / R, (maxY - minY + 1) / R]
         };
