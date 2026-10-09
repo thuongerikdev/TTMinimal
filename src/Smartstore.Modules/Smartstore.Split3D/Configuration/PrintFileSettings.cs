@@ -21,4 +21,11 @@ public class PrintFileSettings : ISettings
 
     /// <summary>File format: <c>3mf</c>, <c>stl</c> or <c>glb</c> (Blender, with colors).</summary>
     public string Format { get; set; } = "3mf";
+
+    /// <summary>
+    /// How "Cả bộ" and "Tải tất cả" pack a design: <c>assembled</c> (frame and content in one file, the content in its
+    /// pockets, for a printer with several filaments), <c>beside</c> (one file, the content laid out next to the frame)
+    /// or <c>split</c> (a file for the frame and one per content color).
+    /// </summary>
+    public string Layout { get; set; } = "assembled";
 }

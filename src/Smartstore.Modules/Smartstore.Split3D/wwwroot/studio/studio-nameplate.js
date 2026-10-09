@@ -178,6 +178,9 @@
         // fitted into length × heightPct instead.
         capMm: 0,
         style: 'raised', relief: 1.6, border: false, hole: 'none', icon: '', iconSide: 'left', stand: false,
+        // Back of the plate (see backMask): 'none' or 'pin' (groove a 25 mm bar pin is glued into, for a badge worn on
+        // clothes).
+        back: 'none',
         // Product kind: 'nameplate', 'classboard' (board = table or desks, see drawBoard) or 'keycap'.
         kind: 'nameplate', board: null,
         // QR plate: { rows: ['0101…'] matrix from the server, quiet (modules), style (square, round, dots), scale,
@@ -1110,9 +1113,8 @@
         // Corner holes of a rounded plate sit on the center of the corner arc (concentric, even wall around them).
         var holeIn = HOLE_R + 2.5, cornerD = s.shape === 'rounded' ? Math.max(holeIn, Math.min(s.radius || 0, Math.min(L, H) * 0.3)) : holeIn;
         var holeSide = 2 * HOLE_R + 2.5, aw = L - 2 * m, ah = H - 2 * m, cx = 0, cy = 0;
-        // Behind a frame plus margin the holes find room in the frame itself.
-        if (rimW && rimW + m >= holeSide) { /* no room needed */ }
-        else if (s.hole === 'left') { aw -= holeSide; cx = holeSide / 2; }
+        // Holes never sit in a border line or a theme frame (they move inside it, see below): room is kept for them.
+        if (s.hole === 'left') { aw -= holeSide; cx = holeSide / 2; }
         else if (s.hole === 'top1' || (s.hole === 'top2' && (s.shape === 'outline' || s.board || s.qr))) { ah -= holeSide; cy = holeSide / 2; }
         else if (s.hole === 'top2') aw -= 2 * Math.max(holeSide, cornerD + HOLE_R + 1 - m);
         if (rimW) { aw -= 2 * rimW; ah -= 2 * rimW; }
@@ -1200,15 +1202,55 @@
         }
         // A scalloped edge dips in between its bumps: the holes move in a little.
         if (s.shape === 'scallop') holes = holes.map(function (p) { return [p[0] - Math.sign(p[0]) * 2.5, p[1] + 2.5]; });
+        // Border: one line following the plate at an even inset (or the band of a theme frame). A line never runs over
+        // a hole: a hole it would touch moves toward the plate center until it is clear of the line, and should no
+        // place be clear, the line is left out around the hole (lineGap, drawn below).
+        var border = !rimW && s.border && s.shape !== 'outline', bi = Math.min(m * 0.4, 2) + 0.6, lw = 1.2;
+        var line = rimW ? { inset: rimW / 2, w: rimW } : border ? { inset: bi, w: lw } : null;
+        // Distance from a hole center the line keeps: the relief keeps 1 mm off a hole (see below), then 0.6 mm.
+        var lineClear = line ? HOLE_R + 1 + line.w / 2 + 0.6 : 0, lineGap = [];
+        if (line && holes.length) {
+            var probe = canvas(1, 1).getContext('2d');
+            shapePath(probe, s.shape, L, H, s.radius, line.inset);
+            var inside = function (p) {
+                if (!probe.isPointInPath(p[0], p[1])) return false;
+                for (var a = 0; a < 72; a++) {
+                    var ang = a * Math.PI / 36;
+                    if (!probe.isPointInPath(p[0] + Math.cos(ang) * lineClear, p[1] + Math.sin(ang) * lineClear)) return false;
+                }
+                return true;
+            };
+            holes = holes.map(function (p) {
+                // Straight in from the edge the hole sits at: the content keeps its room beside or below the holes.
+                var ux = s.hole === 'left' ? 1 : 0, uy = s.hole === 'left' ? 0 : 1, q = p;
+                var max = Math.ceil((ux ? -p[0] : -p[1]) / 0.25);
+                for (var step = 0; step < max && !inside(q); step++) q = [q[0] + ux * 0.25, q[1] + uy * 0.25];
+                if (!inside(q)) { q = p; lineGap.push(p); }
+                return q;
+            });
+        }
+        // Takes the line out around holes that found no clear place (it never runs over a hole).
+        function gapLine(c) {
+            if (!lineGap.length) return;
+            c.save();
+            c.globalCompositeOperation = 'destination-out';
+            lineGap.forEach(function (p) { c.beginPath(); circle(c, p[0], p[1], lineClear); c.fill(); });
+            c.restore();
+        }
         // A boss keeps material around holes that may reach the edge. Rounded and square plates always have the wall
         // already, and a boss there would bulge out of the corner arc.
         if (hug || (s.shape !== 'rounded' && s.shape !== 'rect')) holes.forEach(function (p) { bc.beginPath(); circle(bc, p[0], p[1], HOLE_R + 2.5); bc.fill(); });
 
         if (rimW) {
-            // Theme frame: a band along the plate edge in the frame color.
-            rc.lineWidth = pc.lineWidth = rimW;
-            pc.strokeStyle = look.frame;
-            [rc, pc].forEach(function (c) { shapePath(c, s.shape, L, H, s.radius, rimW / 2); c.stroke(); });
+            // Theme frame: a band along the plate edge in the frame color, drawn apart so a gap can be cut into it.
+            var band = canvas(w, h), bnd = band.getContext('2d');
+            bnd.setTransform(R, 0, 0, R, FW / 2 * R, FH / 2 * R);
+            bnd.lineWidth = rimW;
+            bnd.strokeStyle = look.frame;
+            shapePath(bnd, s.shape, L, H, s.radius, rimW / 2);
+            bnd.stroke();
+            gapLine(bnd);
+            [rc, pc].forEach(function (c) { c.save(); c.setTransform(1, 0, 0, 1, 0, 0); c.drawImage(band, 0, 0); c.restore(); });
         }
         if (look) {
             // Small stars and dots scattered between the frame and the content (space theme).
@@ -1227,36 +1269,16 @@
                 }
             }
         }
-        // Border: follows the plate at an even inset; where a hole would touch it, it bends inward around the hole
-        // (a concave arc), so the margin stays the same all round and the holes stay outside of the frame.
-        if (!rimW && s.border && s.shape !== 'outline') {
-            var bi = Math.min(m * 0.4, 2) + 0.6, lw = 1.2, notch = HOLE_R + 1.6;
-            var fr = canvas(w, h), fc = fr.getContext('2d');
-            fc.setTransform(R, 0, 0, R, FW / 2 * R, FH / 2 * R);
-            fc.strokeStyle = fc.fillStyle = '#fff';
-            fc.lineWidth = lw;
-            shapePath(fc, s.shape, L, H, s.radius, bi);
-            // A hole needs a notch when the circle around it crosses the border line.
-            var notched = holes.filter(function (p) {
-                for (var a = 0; a < 32; a++) {
-                    var ang = a * Math.PI / 16, x = p[0] + Math.cos(ang) * (notch + lw), y = p[1] + Math.sin(ang) * (notch + lw);
-                    if (!fc.isPointInPath((x + FW / 2) * R, (y + FH / 2) * R)) return true;
-                }
-                return false;
-            });
-            fc.stroke();
-            fc.globalCompositeOperation = 'destination-out';
-            notched.forEach(function (p) { fc.beginPath(); circle(fc, p[0], p[1], notch); fc.fill(); });
-            fc.globalCompositeOperation = 'source-over';
-            fc.save();
-            shapePath(fc, s.shape, L, H, s.radius, bi - lw / 2);
-            fc.clip();
-            notched.forEach(function (p) { fc.beginPath(); circle(fc, p[0], p[1], notch); fc.stroke(); });
-            fc.restore();
-            rc.save();
-            rc.setTransform(1, 0, 0, 1, 0, 0);
-            rc.drawImage(fr, 0, 0);
-            rc.restore();
+        // Border: the one line around the plate; the holes were moved inside it above.
+        if (border) {
+            var bl = canvas(w, h), blc = bl.getContext('2d');
+            blc.setTransform(R, 0, 0, R, FW / 2 * R, FH / 2 * R);
+            blc.lineWidth = lw;
+            blc.strokeStyle = '#fff';
+            shapePath(blc, s.shape, L, H, s.radius, bi);
+            blc.stroke();
+            gapLine(blc);
+            rc.save(); rc.setTransform(1, 0, 0, 1, 0, 0); rc.drawImage(bl, 0, 0); rc.restore();
         }
         connect(bc, w, h, R, FW, FH, Math.max(3, Math.min(5, m + 1)));
         bc.globalCompositeOperation = rc.globalCompositeOperation = 'destination-out';
@@ -1321,9 +1343,12 @@
             levels = qrLevels(qa, B, w, h, modMm * R, s.qr);
             for (i = 0; i < n; i++) tex[i * 4 + 3] = Math.round(Math.min(1, levels.hv[i] / levels.n) * 255);
         }
+        // Recess in the back (bar pin): alpha 0 there, so the preview leaves it out of the plate bottom.
+        var back = !levels && s.back === 'pin' ? backMask(B, w, h, R, minX, maxX, minY, maxY) : null;
+        if (back) for (i = 0; i < n; i++) if (back[i] > 0.5) tex[i * 4 + 3] = 0;
         return {
             w: w, h: h, R: R, FW: FW, FH: FH, base: B, relief: Rf, tex: tex, hasRelief: any, baseCanvas: base, reliefCanvas: relief, levels: levels, qrCanvas: qrCanvas,
-            pocket: Pk, tile: Tl, tileText: Tt, tex2: tex2,
+            pocket: Pk, tile: Tl, tileText: Tt, tex2: tex2, back: back, holes: holes,
             paint: pc ? growPaint(pc.getImageData(0, 0, w, h).data, w, h, 2) : null, paintCanvas: paint,
             size: maxX < 0 ? [L, H] : [(maxX - minX + 1) / R, (maxY - minY + 1) / R]
         };
@@ -1697,7 +1722,8 @@
 
     // uMode: 0 solid, 1 inside the plate mask, 2 inside the relief mask, 3 plate without relief (engraved / flush),
     // 4 keycap top: inside the shape mask, legend (G) in uColor2; 5 pocket floor (B); 6 QR tier top: alpha (tier height)
-    // at least uLevel. Pockets (B) are cut out of 1 and 3. uPaintOn: the color comes from the paint texture (unit 1)
+    // at least uLevel; 7 plate bottom without the back recess (alpha < 0.5), 8 ceiling of that recess. Pockets (B) are
+    // cut out of 1 and 3. uPaintOn: the color comes from the paint texture (unit 1)
     // where it is painted (class board parts in their own colors).
     var FS = 'precision mediump float; uniform vec3 uColor; uniform vec3 uColor2; uniform vec3 uLight; uniform vec3 uEye; uniform sampler2D uTex; uniform float uMode; uniform float uLevel; uniform sampler2D uPaint; uniform float uPaintOn;' +
         'varying vec3 vN; varying vec3 vP; varying vec2 vUV;' +
@@ -1706,7 +1732,9 @@
         ' if (uMode > 1.5 && uMode < 2.5 && m.g < 0.5) discard;' +
         ' if (uMode > 2.5 && uMode < 3.5 && (m.r < 0.5 || m.g >= 0.5 || m.b >= 0.5)) discard;' +
         ' if (uMode > 4.5 && uMode < 5.5 && m.b < 0.5) discard;' +
-        ' if (uMode > 5.5 && (m.r < 0.5 || m.a < uLevel)) discard;' +
+        ' if (uMode > 5.5 && uMode < 6.5 && (m.r < 0.5 || m.a < uLevel)) discard;' +
+        ' if (uMode > 6.5 && uMode < 7.5 && (m.r < 0.5 || m.a < 0.5)) discard;' +
+        ' if (uMode > 7.5 && m.a >= 0.5) discard;' +
         ' vec3 col = uColor; if (uMode > 3.5 && uMode < 4.5) { if (m.r < 0.5) discard; if (m.g >= 0.5) col = uColor2; }' +
         ' if (uPaintOn > 0.5) { vec4 pt = texture2D(uPaint, vec2(vUV.x, 1.0 - vUV.y)); if (pt.a > 0.5) col = pt.rgb; }' +
         ' vec3 n = normalize(vN); vec3 v = normalize(uEye - vP); float diff = max(dot(n, uLight), 0.0);' +
@@ -1714,7 +1742,7 @@
         ' gl_FragColor = vec4(col * (0.34 + 0.52 * diff + 0.18 * sky) + vec3(0.09 * spec), 1.0); }';
 
     var PARTS = ['baseWalls', 'baseTop', 'baseBottom', 'reliefWalls', 'reliefTop', 'foot', 'capSides', 'capTop', 'capBottom', 'stem', 'stemMark',
-        'pocketWalls', 'pocketFloor', 'tileWalls', 'tileTop', 'tileTextWalls', 'tileTextTop'];
+        'pocketWalls', 'pocketFloor', 'tileWalls', 'tileTop', 'tileTextWalls', 'tileTextTop', 'backWalls', 'backCeil'];
     // QR tiers (qrLevels): walls and top of each tier.
     var MAX_TIERS = 20;
     for (var ti = 1; ti <= MAX_TIERS; ti++) PARTS.push('tierWalls' + ti, 'tierTop' + ti);
@@ -1774,7 +1802,7 @@
 
     // Fields that change the mesh; colors only repaint.
     var GEOMETRY = ['text', 'line2', 'font', 'upper', 'spacing', 'textScale', 'capMm', 'length', 'heightPct', 'thickness', 'shape', 'radius', 'margin', 'style', 'relief', 'border', 'hole', 'icon', 'iconSide', 'stand',
-        'kind', 'board', 'theme', 'profile', 'units', 'row', 'legendPos', 'homing', 'stem', 'qr'];
+        'kind', 'board', 'theme', 'profile', 'units', 'row', 'legendPos', 'homing', 'stem', 'qr', 'back'];
 
     // QR tier shades (qr.multi) only repaint; the QR tier height (qr.height) keeps the masks (see View.build).
     function geometryKey(s, masksOnly) {
@@ -1986,6 +2014,10 @@
         upload(g, 'baseWalls', walls(M, M.base, 0, T, false));
         upload(g, 'baseTop', frameQuad(M, T, 1));
         upload(g, 'baseBottom', frameQuad(M, 0, -1));
+        // Back recess: its walls and ceiling (the print files keep it under pockets too, see solidsOf).
+        var bd = M.back ? backDepthOf(s, T) : 0;
+        upload(g, 'backWalls', bd ? walls(M, M.back, 0, bd, true) : null);
+        upload(g, 'backCeil', bd ? frameQuad(M, bd, -1) : null);
         if (!M.hasRelief) { upload(g, 'reliefWalls', null); upload(g, 'reliefTop', null); }
         else if (s.style === 'raised') { upload(g, 'reliefWalls', walls(M, M.relief, T - 0.05, T + rel, false)); upload(g, 'reliefTop', frameQuad(M, T + rel, 1)); }
         else if (s.style === 'engraved') { upload(g, 'reliefWalls', walls(M, M.relief, T - rel, T, true)); upload(g, 'reliefTop', frameQuad(M, T - rel, 1)); }
@@ -2141,7 +2173,14 @@
         var cut = s.style !== 'raised' && M.hasRelief;
         part('baseWalls', s.base, 0, plateRot, plateTrans);
         part('baseTop', s.base, cut ? 3 : 1, plateRot, plateTrans);
-        part('baseBottom', s.base, 1, plateRot, plateTrans);
+        part('baseBottom', s.base, M.back ? 7 : 1, plateRot, plateTrans);
+        if (M.back) {
+            // The recess lies in the plate's shadow: a little darker so it reads when the plate is turned over.
+            var bb = rgb(s.base), bdark = bb[0] * 0.3 + bb[1] * 0.59 + bb[2] * 0.11 < 0.35;
+            var shade = 'rgb(' + bb.map(function (v) { return Math.round((bdark ? v + (1 - v) * 0.12 : v * 0.8) * 255); }).join(',') + ')';
+            part('backWalls', shade, 0, plateRot, plateTrans);
+            part('backCeil', shade, 8, plateRot, plateTrans);
+        }
         var painted = !!this.painted;
         part('reliefWalls', s.style === 'raised' ? s.color : s.base, 0, plateRot, plateTrans, null, null, painted && s.style === 'raised');
         part('reliefTop', s.color, 2, plateRot, plateTrans, null, null, painted);
@@ -2371,7 +2410,20 @@
             depth = Math.max(0.8, Math.min(T - 1, 1.6));
             frame.cuts.push({ f: M.pocket, depth: depth });
         }
-        body(frame.part, M.base, 0, T, frame.cuts);
+        // A recess in the back (bar pin): the bottom layer of the plate leaves it out, deep pockets too.
+        // It stays 0.6 mm under the floor of any pocket above it (a thin plate gets a shallower recess).
+        var backDepth = M.back ? backDepthOf(s, T) : 0;
+        if (backDepth) frame.cuts.forEach(function (c) {
+            for (var k = 0; k < n; k++) if (c.f[k] > 0.5 && M.back[k] > 0.5) { backDepth = Math.min(backDepth, T - c.depth - 0.6); return; }
+        });
+        if (backDepth > 0.4) {
+            var bottom = minus(M.base, M.back);
+            frame.cuts.forEach(function (c) { if (T - c.depth < backDepth) bottom = minus(bottom, c.f); });
+            frame.part.solids.push({ f: bottom, z0: 0, z1: backDepth });
+            body(frame.part, M.base, backDepth, T, frame.cuts);
+        } else {
+            body(frame.part, M.base, 0, T, frame.cuts);
+        }
 
         // Loose pieces go below the plate on the build plate.
         var H = M.size[1], L = M.size[0], below = -H / 2 - GAP;
@@ -2398,6 +2450,33 @@
             parts: parts.filter(function (p) { return p.solids.length; }),
             dims: { length: Math.round(L * 10) / 10, height: Math.round(H * 10) / 10, depth: Math.round(height * 10) / 10 }
         };
+    }
+
+    /**
+     * Recess in the back of the plate, centered on it: a groove for a bar pin (25 × 5 mm, glued in). Kept 2 mm inside
+     * the plate edge; null when the plate is too small for it.
+     */
+    var PIN = { length: 26, width: 5.6 };
+    // Depth of the back recess before pockets above it are taken into account (see solidsOf).
+    function backDepthOf(s, T) { return Math.max(0, Math.min(1.2, T - 1.2)); }
+    function backMask(B, w, h, R, minX, maxX, minY, maxY) {
+        if (maxX < 0) return null;
+        var L = (maxX - minX + 1) / R, H = (maxY - minY + 1) / R, cx = (minX + maxX + 1) / 2, cy = (minY + maxY + 1) / 2;
+        var cv = canvas(w, h), c = cv.getContext('2d', READ);
+        c.setTransform(R, 0, 0, R, cx, cy);
+        c.fillStyle = '#fff';
+        var gl = Math.min(PIN.length, L - 6), gw = Math.min(PIN.width, H - 6);
+        if (gl < 12 || gw < 3) return null;
+        c.beginPath(); roundRect(c, -gl / 2, -gw / 2, gl, gw, gw / 2); c.fill();
+        // Only where the plate keeps a 2 mm wall around the recess.
+        var d = c.getImageData(0, 0, w, h).data, n = w * h, inside = new Uint8Array(n), k;
+        for (k = 0; k < n; k++) inside[k] = B[k] > 0.5 ? 1 : 0;
+        var dist = edt(inside, w, h), f = new Float32Array(n), any = false;
+        for (k = 0; k < n; k++) {
+            f[k] = dist[k] >= 2 * R ? d[k * 4 + 3] / 255 : 0;
+            if (f[k] > 0.5) any = true;
+        }
+        return any ? f : null;
     }
 
     // CSS color to "#RRGGBB".

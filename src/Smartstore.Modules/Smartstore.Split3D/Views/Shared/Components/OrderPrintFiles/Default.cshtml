@@ -21,6 +21,29 @@
     .tt-pf-msg.is-error { color: var(--danger, #dc3545); }
     .tt-pf-stage { position: relative; height: 380px; border-radius: .5rem; background: #fff8e6; overflow: hidden; }
     .tt-pf-stage canvas { display: block; width: 100%; height: 100%; touch-action: none; }
+    /* Design editor: the 3D view and the product page's design bar side by side */
+    .tt-pf-edit { display: grid; grid-template-columns: minmax(0, 1fr); gap: 1rem; }
+    .tt-pf-edit .tt-pf-stage { height: 420px; }
+    .tt-pf-side { display: flex; flex-direction: column; min-width: 0; border: 2px solid var(--ink, #20201f); border-radius: .75rem; background: #fff; overflow: hidden; }
+    .tt-pf-side.tt { font-size: 14px; line-height: 1.5; }
+    .tt-pf-scroll { flex: 1 1 auto; overflow-y: auto; }
+    .tt-pf-side .tt-np-panel { border-top: 0; }
+    .tt-pf-page { padding: 12px 16px 4px; border-bottom: 1.5px dashed rgba(32, 32, 31, .3); }
+    .tt-pf-page .tt-np-label:first-child { margin-top: 0; }
+    .tt-pf-page .tt-input { width: 100%; min-height: 38px; padding: 6px 12px; border: 2px solid var(--ink, #20201f); border-radius: 10px; font-size: 14px; font-weight: 700; }
+    .tt-pf-sw { display: flex; flex-wrap: wrap; gap: 5px; }
+    .tt-pf-sw button { width: 26px; height: 26px; padding: 0; border: 1.5px solid var(--ink, #20201f); border-radius: 50%; background: var(--sw); cursor: pointer; }
+    .tt-pf-sw button[aria-pressed="true"] { box-shadow: 0 0 0 2px #fff, 0 0 0 4px var(--ink, #20201f); }
+    .tt-pf-len { display: flex; align-items: center; gap: .75rem; }
+    .tt-pf-len input[type=range] { flex: 1; accent-color: var(--pink, #ff67bc); }
+    .tt-pf-len b { min-width: 4.5rem; text-align: right; font-variant-numeric: tabular-nums; }
+    .tt-pf-editfoot { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem; padding: 10px 16px; border-top: 2px solid var(--ink, #20201f); background: var(--cream, #fffbed); }
+    .tt-pf-editfoot small { flex: 1 1 100%; color: #6c757d; }
+    @@media (min-width: 1200px) {
+        .tt-pf-edit { grid-template-columns: minmax(0, 1fr) 440px; }
+        .tt-pf-edit .tt-pf-stage { height: 640px; position: sticky; top: 1rem; }
+        .tt-pf-side { max-height: 640px; }
+    }
 </style>
 
 <div class="card tt-pf" data-tt-print-card>
@@ -40,12 +63,12 @@
     <div class="tt-pf-opts">
         <div>
             <label for="tt-pf-clearance">Khe lắp (mm mỗi bên)</label>
-            <input id="tt-pf-clearance" class="form-control form-control-sm" type="number" min="0" max="1" step="0.05" data-tt-opt="clearance" value="@s.Clearance.ToString(CultureInfo.InvariantCulture)" />
-            <small class="text-muted">Hốc rộng hơn nội dung chừng này. Chuẩn 0 (như file mẫu); lỏng hơn 0,1–0,2.</small>
+            <input id="tt-pf-clearance" class="form-control form-control-sm" type="text" inputmode="decimal" autocomplete="off" data-tt-opt="clearance" value="@s.Clearance.ToString(CultureInfo.InvariantCulture)" />
+            <small class="text-muted">Hốc rộng hơn nội dung chừng này, 0 – 1 mm (gõ 0.1 hoặc 0,1). Chuẩn 0 (như file mẫu); lỏng hơn 0,1–0,2.</small>
         </div>
         <div>
             <label for="tt-pf-pocket">Độ sâu hốc (% độ dày khung)</label>
-            <input id="tt-pf-pocket" class="form-control form-control-sm" type="number" min="10" max="100" step="5" data-tt-opt="pocket" value="@s.PocketPercent.ToString(CultureInfo.InvariantCulture)" />
+            <input id="tt-pf-pocket" class="form-control form-control-sm" type="text" inputmode="decimal" autocomplete="off" data-tt-opt="pocket" value="@s.PocketPercent.ToString(CultureInfo.InvariantCulture)" />
             <small class="text-muted">Chuẩn 50% (khung 4 mm, hốc 2 mm). 100% = đục xuyên (lòng chữ o, a, d… sẽ rời ra).</small>
         </div>
         <div>
@@ -56,6 +79,15 @@
                 <option value="glb" selected="@(s.Format == "glb")">GLB (Blender, có màu)</option>
             </select>
             <small class="text-muted">STL không lưu màu.</small>
+        </div>
+        <div>
+            <label for="tt-pf-layout">Gộp file (Cả bộ, Tải tất cả)</label>
+            <select id="tt-pf-layout" class="form-control form-control-sm noskin" style="width: 15rem" data-tt-opt="layout">
+                <option value="assembled" selected="@(s.Layout != "beside" && s.Layout != "split")">1 file – tên lắp sẵn trong khung</option>
+                <option value="beside" selected="@(s.Layout == "beside")">1 file – tên xếp cạnh khung</option>
+                <option value="split" selected="@(s.Layout == "split")">Tách khung / tên (2 file trở lên)</option>
+            </select>
+            <small class="text-muted">1 file: mỗi phần giữ màu riêng, máy nhiều màu in một lần.</small>
         </div>
         <div>
             <button type="button" class="btn btn-outline-secondary btn-sm" data-tt-save-settings>Lưu làm mặc định</button>
@@ -84,7 +116,7 @@
                         <td>@item.ProductName</td>
                         <td><b>@item.Text</b></td>
                         <td class="text-center">@item.Quantity</td>
-                        <td class="tt-pf-code">@(item.Code ?? "—")</td>
+                        <td class="tt-pf-code"><span data-tt-code="@i">@(item.Code ?? "—")</span> <span class="badge badge-warning" data-tt-edited="@i" hidden title="Tải file sẽ dùng bản đã chỉnh; bấm Lưu vào đơn hàng để giữ lại">đã chỉnh</span></td>
                         <td class="tt-pf-actions">
                             @if (!item.HasSpec)
                             {
@@ -92,19 +124,20 @@
                             }
                             else if (item.Kind == "keycap")
                             {
+                                <button type="button" class="btn btn-outline-secondary btn-sm" data-tt-file="view" data-tt-item="@i">Xem &amp; chỉnh</button>
                                 <span class="text-muted small">Keycap chưa hỗ trợ xuất file</span>
                             }
                             else if (item.Kind == "qr")
                             {
-                                <button type="button" class="btn btn-outline-secondary btn-sm" data-tt-file="view" data-tt-item="@i">Xem 3D</button>
+                                <button type="button" class="btn btn-outline-secondary btn-sm" data-tt-file="view" data-tt-item="@i">Xem &amp; chỉnh</button>
                                 <button type="button" class="btn btn-primary btn-sm" data-tt-file="set" data-tt-item="@i" title="Mã QR in nguyên khối, không tách khung">Tải file (nguyên khối)</button>
                             }
                             else
                             {
-                                <button type="button" class="btn btn-outline-secondary btn-sm" data-tt-file="view" data-tt-item="@i">Xem 3D</button>
+                                <button type="button" class="btn btn-outline-secondary btn-sm" data-tt-file="view" data-tt-item="@i">Xem &amp; chỉnh</button>
                                 <button type="button" class="btn btn-secondary btn-sm" data-tt-file="frame" data-tt-item="@i">Khung</button>
                                 <button type="button" class="btn btn-secondary btn-sm" data-tt-file="content" data-tt-item="@i">Nội dung</button>
-                                <button type="button" class="btn btn-primary btn-sm" data-tt-file="set" data-tt-item="@i">Cả bộ (.zip)</button>
+                                <button type="button" class="btn btn-primary btn-sm" data-tt-file="set" data-tt-item="@i">Cả bộ</button>
                             }
                         </td>
                     </tr>
@@ -119,11 +152,27 @@
                 <span data-tt-stage-title></span>
                 <span data-tt-stage-size></span>
             </div>
-            <div class="tt-pf-stage"><canvas role="img" aria-label="Xem trước 3D, kéo để xoay"></canvas></div>
+            <div class="tt-pf-edit">
+                <div class="tt-pf-stage"><canvas role="img" aria-label="Xem trước 3D, kéo để xoay"></canvas></div>
+                @* Same design bar as the product page (studio-designs.js), filled by studio-export.js. *@
+                <div class="tt-pf-side tt">
+                    <div class="tt-pf-scroll">
+                        <div class="tt-pf-page" data-tt-page></div>
+                        <div class="tt-np-panel" data-tt-panel></div>
+                    </div>
+                    <div class="tt-pf-editfoot">
+                        <button type="button" class="btn btn-primary btn-sm" data-tt-edit="save">Lưu vào đơn hàng</button>
+                        <button type="button" class="btn btn-outline-secondary btn-sm" data-tt-edit="revert">Về thiết kế của khách</button>
+                        <small>Tải file (Khung, Nội dung, Cả bộ) dùng ngay bản đang chỉnh. "Lưu vào đơn hàng" tạo mã thiết kế mới cho dòng này và ghi chú vào đơn.</small>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
     <script type="application/json" data-tt-print-files>@Html.Raw(Model.ConfigJson)</script>
 </div>
 
+<link rel="stylesheet" href="@Url.Content(StudioAssets.StyleSheet)" />
 <script src="@Url.Content(StudioAssets.NameplateScript)"></script>
+<script src="@Url.Content(StudioAssets.DesignsScript)"></script>
 <script src="@Url.Content(StudioAssets.ExportScript)"></script>

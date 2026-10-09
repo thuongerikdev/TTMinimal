@@ -353,6 +353,11 @@ public static class StudioCustomProducts
         }
     }
 
+    /// <summary>
+    /// Filament colors of the design products (name, hex), offered by the design editor of the admin order page.
+    /// </summary>
+    public static IEnumerable<(string Name, string Color)> FilamentColors => _colors;
+
     private static Option[] ColorOptions(int preselected)
         => _colors.Select((c, i) => new Option(c.Name, 0, c.Color, i == preselected)).ToArray();
 

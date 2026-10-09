@@ -444,6 +444,8 @@
                 return { name: p.name, color: p.color, file: p.file, group: p.group, shells: shells, count: shells.reduce(function (s, t) { return s + t.length / 9; }, 0) };
             }).filter(function (p) { return p.count; });
 
+            // Untouched copy for the combined file (see combine): the files below are moved down in place.
+            var orig = parts.map(function (p) { return Object.assign({}, p, { shells: p.shells.map(function (t) { return t.slice(); }) }); });
             var files = [], frame = parts.filter(function (p) { return p.file === 'frame'; }), colors = [];
             parts.forEach(function (p) { if (p.file === 'content' && colors.indexOf(p.color) < 0) colors.push(p.color); });
             // Nothing apart (a QR plate): the frame is the whole print.
@@ -460,9 +462,54 @@
                 if (min) f.parts.forEach(function (p) { p.shells.forEach(function (t) { for (var k = 2; k < t.length; k += 3) t[k] -= min; }); });
                 f.count = f.parts.reduce(function (s, p) { return s + p.count; }, 0);
             });
-            return { dims: r.dims, files: files };
+            return { dims: r.dims, files: files, combine: function (layout) { return combine(orig, files, layout); } };
         });
     }
+
+    function zMin(parts) {
+        var m = Infinity;
+        parts.forEach(function (p) { p.shells.forEach(function (t) { for (var k = 2; k < t.length; k += 3) if (t[k] < m) m = t[k]; }); });
+        return m === Infinity ? 0 : m;
+    }
+    function yRange(parts) {
+        var lo = Infinity, hi = -Infinity;
+        parts.forEach(function (p) { p.shells.forEach(function (t) { for (var k = 1; k < t.length; k += 3) { if (t[k] < lo) lo = t[k]; if (t[k] > hi) hi = t[k]; } }); });
+        return [lo, hi];
+    }
+    function moved(p, dy, dz, group) {
+        return Object.assign({}, p, {
+            group: group || p.group,
+            shells: p.shells.map(function (t) { var c = t.slice(); for (var k = 0; k < c.length; k += 3) { c[k + 1] += dy; c[k + 2] += dz; } return c; })
+        });
+    }
+
+    /**
+     * Frame and content in one print file, each part keeping its color (a slicer with several filaments prints it in
+     * one go). layout 'assembled': the content stands in its pockets, the plate comes out finished; 'beside': every
+     * piece lies flat, the content next to the frame (pressed in after printing).
+     */
+    function combine(orig, files, layout) {
+        if (files.length < 2) return files[0];
+        var parts, frame = orig.filter(function (p) { return p.file === 'frame'; });
+        if (layout === 'beside') {
+            var content = [];
+            files.slice(1).forEach(function (f) { content = content.concat(f.parts); });
+            var dy = yRange(files[0].parts)[0] - GAP_BESIDE - yRange(content)[1];
+            parts = files[0].parts.concat(content.map(function (p) { return moved(p, dy, 0, 'content'); }));
+        } else {
+            // Pieces of the plate stay where they are; loose pieces (removable tiles) lie on the build plate.
+            var inPlace = orig.filter(function (p) { return p.file === 'content' && p.group === 'main'; });
+            var loose = orig.filter(function (p) { return p.file === 'content' && p.group !== 'main'; }), lz = zMin(loose);
+            parts = frame.concat(inPlace, loose.map(function (p) { return moved(p, 0, -lz); }));
+            var z = zMin(parts);
+            if (z) parts = parts.map(function (p) { return moved(p, 0, -z); });
+        }
+        return {
+            key: 'ca-bo', title: 'Khung + nội dung', color: files[0].color, parts: parts,
+            count: parts.reduce(function (n, p) { return n + p.count; }, 0)
+        };
+    }
+    var GAP_BESIDE = 4;  // mm between the frame and the content laid out next to it
 
     // ---------- Writers ----------
 
@@ -514,7 +561,7 @@
             if (!g) groups.push(g = { key: p.group, ids: [] });
             g.ids.push(id++);
         }); });
-        var names = { main: title, tiles: 'Ô rời', foot: 'Chân đế' }, items = [];
+        var names = { main: title, tiles: 'Ô rời', foot: 'Chân đế', content: 'Nội dung' }, items = [];
         groups.forEach(function (g) {
             xml.push('<object id="' + id + '" type="model" name="' + xmlEsc(names[g.key] || g.key) + '"><components>'
                 + g.ids.map(function (c) { return '<component objectid="' + c + '"/>'; }).join('') + '</components></object>');
@@ -582,7 +629,7 @@
                 g.children.push(nodes.length - 1);
             });
         });
-        var names = { main: title, tiles: 'Ô rời', foot: 'Chân đế' }, roots = groups.map(function (g) {
+        var names = { main: title, tiles: 'Ô rời', foot: 'Chân đế', content: 'Nội dung' }, roots = groups.map(function (g) {
             nodes.push({ name: names[g.key] || g.key, children: g.children });
             return nodes.length - 1;
         });
@@ -677,13 +724,20 @@
         var P = window.TTNameplate, msg = card.querySelector('[data-tt-msg]'), view = null, viewing = -1;
         if (!P) { msg.textContent = 'Không tải được bộ dựng 3D.'; return; }
         P.addFonts(cfg.fonts || []);
+        P.ensureFonts();
 
         function opt(name) { var el = card.querySelector('[data-tt-opt="' + name + '"]'); return el ? el.value : ''; }
         function options() { return { clearance: parseFloat(opt('clearance').replace(',', '.')), pocket: parseFloat(opt('pocket').replace(',', '.')) }; }
         function format() { return opt('format') || '3mf'; }
+        // 'assembled' / 'beside': frame and content in one file (see combine); 'split': a file each.
+        function layout() { return opt('layout') || 'assembled'; }
         function say(text, ok) { msg.textContent = text; msg.className = 'tt-pf-msg' + (ok ? ' is-ok' : text ? ' is-error' : ''); }
         function baseName(item) { return cfg.order + '-' + item.no + '-' + slug(item.text || item.name) + '-x' + item.qty; }
         function entries(item, m, which) {
+            if (which === 'set' && layout() !== 'split') {
+                var one = m.combine(layout());
+                return [{ name: baseName(item) + '-' + one.key + '.' + format(), blob: write(one, format(), item.text || item.name), file: one }];
+            }
             return m.files.filter(function (f) { return which === 'set' || (which === 'frame') === (f.key === 'khung' || f.key === 'nguyen-khoi'); }).map(function (f) {
                 return { name: baseName(item) + '-' + f.key + '.' + format(), blob: write(f, format(), item.text || item.name), file: f };
             });
@@ -715,6 +769,7 @@
             body.set('clearance', opt('clearance').replace(',', '.'));
             body.set('pocket', opt('pocket').replace(',', '.'));
             body.set('format', format());
+            body.set('layout', layout());
             if (token) body.set(token.name, token.value);
             button.disabled = true;
             fetch(cfg.saveUrl, { method: 'POST', credentials: 'same-origin', headers: { 'X-Requested-With': 'XMLHttpRequest' }, body: body })
@@ -723,21 +778,223 @@
                 .then(function () { button.disabled = false; });
         }
 
+        // ----- Design editor: the 3D view with the same design bar as the product page (TTDesigns.Panel). The edited
+        // spec replaces the line's spec for the downloads at once; "Lưu vào đơn hàng" saves it as a new design and puts
+        // its code on the order line (PrintFilesController.UpdateDesign). -----
+
+        var D = window.TTDesigns, stage = card.querySelector('[data-tt-stage]'), pageEl = card.querySelector('[data-tt-page]');
+        var panelEl = card.querySelector('[data-tt-panel]'), edit = null, updateTimer = 0;
+        var TILE_TEXTS = ['Chữ in liền', 'Ô rời tháo lắp'];
+        var SIZES = ['1u', '1,25u', '1,5u', '1,75u', '2u', '2,25u', '2,75u', '6,25u'];
+        var PROFILE_NAMES = Object.keys(P.PROFILES).map(function (k) { return P.PROFILES[k].name; });
+
+        function esc(s) { return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;'); }
+        function cm(mm) { return String(Math.round(mm) / 10).replace('.', ',') + ' cm'; }
+        function sizeLabel(d) { card.querySelector('[data-tt-stage-size]').textContent = d ? d.length + ' × ' + d.height + ' × ' + d.depth + ' mm' : ''; }
+        // Product options of the page the panel asks for (tile mode of a class board, keycap profile and size).
+        function radioKey(re) { return re.test('kieu o') ? 'tile' : re.test('profile') ? 'profile' : re.test('kich co phim') ? 'size' : null; }
+        function radioList(key) { return key === 'tile' ? TILE_TEXTS : key === 'profile' ? PROFILE_NAMES : key === 'size' ? SIZES : []; }
+        function markEdited(i, on) {
+            var badge = card.querySelector('[data-tt-edited="' + i + '"]');
+            if (badge) badge.hidden = !on;
+        }
+
+        // Page context of the panel (see TTDesigns.Panel): what the product page holds besides the panel.
+        var ctx = {
+            P: P,
+            qrUrl: cfg.qrUrl,
+            plateLength: function () { return edit.kind === 'nameplate' ? (edit.dims ? edit.dims.length : 100) : edit.length; },
+            mountText: function (slot) {
+                slot.innerHTML = '<div class="tt-np-quicktext"><input type="text" class="tt-input" data-np-quick maxlength="200" autocomplete="off" /></div>';
+                var input = slot.querySelector('input');
+                input.value = edit.text;
+                input.placeholder = slot.getAttribute('data-placeholder') || 'Nội dung in';
+            },
+            color: function (role, row, fallback) { return (role === 'base' ? edit.base : edit.color) || fallback; },
+            radio: function (re) { var key = radioKey(re); return key ? edit.radios[key] : ''; },
+            pickRadio: function (re, test) {
+                var key = radioKey(re), v = radioList(key).filter(test)[0];
+                if (v) { edit.radios[key] = v; renderPage(); }
+            }
+        };
+
+        function currentSpec() { return edit.panel.spec({ text: edit.text, colors: [], qty: 1 }); }
+        // A spec compared without the panel state it carries.
+        function specKey(spec) { var c = Object.assign({}, spec); delete c.design; return JSON.stringify(c); }
+
+        // Draws the edited design and makes it the spec of the line.
+        function update() {
+            clearTimeout(updateTimer);
+            updateTimer = setTimeout(function () {
+                if (!edit) return;
+                // Untouched, the line keeps its saved spec (rebuilding an older one may round a value).
+                var spec = currentSpec(), changed = specKey(spec) !== edit.baseline;
+                if (!changed) spec = edit.item.saved;
+                edit.item.spec = spec;
+                markEdited(edit.i, changed);
+                view.set(spec).then(function (d) {
+                    if (!edit) return;
+                    edit.dims = d;
+                    sizeLabel(d);
+                    var range = pageEl.querySelector('[data-tt-len]'), out = pageEl.querySelector('[data-tt-len-out]');
+                    if (edit.kind === 'nameplate' && d && range && document.activeElement !== range) {
+                        range.value = Math.round(d.length / 5) / 2;
+                        out.textContent = cm(d.length);
+                    }
+                });
+            }, 40);
+        }
+
+        function swatchRow(role, label) {
+            var value = String((role === 'base' ? edit.base : edit.color) || ''), list = (cfg.colors || []).slice();
+            if (value && !list.some(function (c) { return c.color.toLowerCase() === value.toLowerCase(); })) list.push({ name: 'Màu khách đã chọn', color: value });
+            return '<div class="tt-np-label">' + label + '</div><div class="tt-pf-sw">' + list.map(function (c) {
+                return '<button type="button" data-tt-sw="' + role + '" data-val="' + esc(c.color) + '" title="' + esc(c.name) + '" style="--sw:' + esc(c.color) + '" aria-pressed="'
+                    + (value.toLowerCase() === c.color.toLowerCase()) + '"></button>';
+            }).join('') + '</div>';
+        }
+        function segRow(key, label, list) {
+            return '<div class="tt-np-label">' + label + '</div><div class="tt-np-seg">' + list.map(function (v) {
+                return '<button type="button" data-tt-radio="' + key + '" data-val="' + esc(v) + '" aria-pressed="' + (edit.radios[key] === v) + '">' + esc(v) + '</button>';
+            }).join('') + '</div>';
+        }
+
+        // What the product page shows next to the panel: the text field (kinds whose panel has no slot for it), the
+        // colors, the length and the keycap options.
+        function renderPage() {
+            var k = edit.kind, html = '';
+            if (k === 'qr' || k === 'keycap') {
+                html += '<div class="tt-np-label">' + (k === 'qr' ? 'Chữ trên bảng' : 'Ký tự') + '</div>'
+                    + '<input type="text" class="tt-input" data-np-quick maxlength="200" autocomplete="off" value="' + esc(edit.text) + '" />';
+            }
+            if (k !== 'classboard') html += swatchRow('base', k === 'keycap' ? 'Màu phím' : 'Màu nền') + swatchRow('text', k === 'keycap' ? 'Màu ký tự' : 'Màu chữ');
+            if (k === 'keycap') html += segRow('profile', 'Profile', PROFILE_NAMES) + segRow('size', 'Kích cỡ phím', SIZES);
+            if (k !== 'keycap') {
+                var len = k === 'nameplate' ? (edit.dims ? edit.dims.length : 100) : edit.length;
+                html += '<div class="tt-np-label">Chiều dài</div><div class="tt-pf-len"><input type="range" data-tt-len min="3" max="60" step="0.5" value="' + (Math.round(len / 5) / 2) + '" />'
+                    + '<b data-tt-len-out>' + cm(len) + '</b></div>';
+            }
+            pageEl.innerHTML = html;
+        }
+
+        function openEditor(i) {
+            var item = cfg.items[i], spec = item.spec;
+            if (!item.saved) item.saved = spec;
+            edit = {
+                i: i, item: item, kind: spec.kind || 'nameplate', text: spec.text || '', base: spec.base, color: spec.color,
+                length: spec.length || 100, dims: null,
+                radios: {
+                    tile: spec.board && spec.board.tiles ? TILE_TEXTS[1] : TILE_TEXTS[0],
+                    profile: (P.PROFILES[spec.profile] || P.PROFILES.oem).name,
+                    size: String(spec.units || 1).replace('.', ',') + 'u'
+                }
+            };
+            // The view keeps the keys a spec leaves out (or sets null): start from the defaults for another line.
+            if (view.editing !== i) { view.spec = Object.assign({}, P.DEFAULTS); view.key = null; view.editing = i; }
+            // A fresh element: the panel binds its listeners to it.
+            var fresh = panelEl.cloneNode(false);
+            panelEl.parentNode.replaceChild(fresh, panelEl);
+            panelEl = fresh;
+            renderPage();
+            edit.panel = new D.Panel(panelEl, edit.kind, ctx, function (info) {
+                update();
+                if (info.reset && view) view.reset();
+                if (info.view === 'top' && view) view.face();
+            }, D.restore(spec, P, ctx));
+            // Reopened after changes: those changes still count against the saved design.
+            edit.baseline = item.spec === item.saved ? specKey(currentSpec()) : specKey(item.saved);
+            edit.panel.render();
+            update();
+        }
+
+        stage.addEventListener('input', function (e) {
+            if (!edit) return;
+            if (e.target.matches('[data-np-quick]')) { edit.text = e.target.value; update(); return; }
+            if (e.target.matches('[data-tt-len]')) {
+                var wanted = parseFloat(e.target.value) * 10;
+                pageEl.querySelector('[data-tt-len-out]').textContent = cm(wanted);
+                if (edit.kind === 'nameplate') {
+                    // The plate follows its text: the length scales the whole design (as on the product page).
+                    var natural = P.naturalSize(currentSpec()).plate;
+                    edit.panel.set({ scale: edit.panel.kind.sizeTo(edit.panel.d, wanted, natural) });
+                } else {
+                    edit.length = wanted;
+                    edit.panel.refresh();
+                    update();
+                }
+            }
+        });
+        // The card sits inside the order edit form: Enter in a field must not submit it.
+        stage.addEventListener('keydown', function (e) { if (e.key === 'Enter' && e.target.matches('input')) e.preventDefault(); });
+        stage.addEventListener('click', function (e) {
+            if (!edit) return;
+            var sw = e.target.closest('[data-tt-sw]'), radio = e.target.closest('[data-tt-radio]'), act = e.target.closest('[data-tt-edit]');
+            if (sw) {
+                edit[sw.getAttribute('data-tt-sw') === 'base' ? 'base' : 'color'] = sw.getAttribute('data-val');
+                renderPage();
+                update();
+            } else if (radio) {
+                edit.radios[radio.getAttribute('data-tt-radio')] = radio.getAttribute('data-val');
+                renderPage();
+                edit.panel.render();
+                update();
+            } else if (act && act.getAttribute('data-tt-edit') === 'revert') {
+                edit.item.spec = edit.item.saved;
+                markEdited(edit.i, false);
+                openEditor(edit.i);
+                say('Đã về thiết kế đang lưu trong đơn.', true);
+            } else if (act && act.getAttribute('data-tt-edit') === 'save') {
+                saveDesign(act);
+            }
+        });
+
+        function saveDesign(button) {
+            var item = edit.item, i = edit.i, spec = currentSpec(), summaryText = edit.panel.summary();
+            run(button, function () {
+                return fetch(cfg.designSaveUrl, {
+                    method: 'POST',
+                    credentials: 'same-origin',
+                    headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+                    body: JSON.stringify(spec)
+                }).then(function (res) { return res.ok ? res.json() : null; }).then(function (r) {
+                    if (!r || !r.code) throw new Error('Không lưu được thiết kế.');
+                    if (r.code === item.code) { item.saved = item.spec = spec; if (edit && edit.item === item) edit.baseline = specKey(spec); markEdited(i, false); return 'Thiết kế không đổi so với đơn (' + r.code + ').'; }
+                    var token = document.querySelector('input[name="__RequestVerificationToken"]'), body = new URLSearchParams();
+                    body.set('orderItemId', String(item.id));
+                    body.set('oldCode', item.code);
+                    body.set('newCode', r.code);
+                    body.set('summary', summaryText);
+                    if (token) body.set(token.name, token.value);
+                    return fetch(cfg.updateUrl, { method: 'POST', credentials: 'same-origin', headers: { 'X-Requested-With': 'XMLHttpRequest' }, body: body })
+                        .then(function (res) { return res.ok ? res.json() : { success: false, message: 'Lỗi máy chủ (' + res.status + ').' }; })
+                        .then(function (u) {
+                            if (!u.success) throw new Error(u.message || 'Không lưu được vào đơn hàng.');
+                            var old = item.code;
+                            item.code = r.code;
+                            item.saved = item.spec = spec;
+                            if (edit && edit.item === item) edit.baseline = specKey(spec);
+                            var codeEl = card.querySelector('[data-tt-code="' + i + '"]');
+                            if (codeEl) codeEl.textContent = r.code;
+                            markEdited(i, false);
+                            return 'Đã lưu vào đơn: ' + old + ' → ' + r.code + '. Tải lại trang để thấy mô tả dòng hàng mới.';
+                        });
+                });
+            });
+        }
+
         card.addEventListener('click', function (e) {
             if (e.target.closest('[data-tt-save-settings]')) { saveSettings(e.target.closest('[data-tt-save-settings]')); return; }
             var b = e.target.closest('button[data-tt-file]');
             if (!b) return;
             var kind = b.getAttribute('data-tt-file'), item = cfg.items[+b.getAttribute('data-tt-item')];
             if (kind === 'view') {
-                var stage = card.querySelector('[data-tt-stage]');
-                if (viewing === +b.getAttribute('data-tt-item') && !stage.hidden) { stage.hidden = true; if (view) view.stopSway(); return; }
+                if (viewing === +b.getAttribute('data-tt-item') && !stage.hidden) { stage.hidden = true; if (view) view.stopSway(); edit = null; return; }
                 viewing = +b.getAttribute('data-tt-item');
                 stage.hidden = false;
                 card.querySelector('[data-tt-stage-title]').textContent = item.no + '. ' + item.name + (item.text ? ' · ' + item.text : '');
                 if (!view) view = new P.View(stage.querySelector('canvas'));
-                view.set(item.spec).then(function (d) {
-                    card.querySelector('[data-tt-stage-size]').textContent = d ? d.length + ' × ' + d.height + ' × ' + d.depth + ' mm' : '';
-                });
+                if (D) openEditor(viewing);
+                else view.set(item.spec).then(sizeLabel);
                 return;
             }
             if (kind === 'all') {
@@ -747,7 +1004,8 @@
                     return items.reduce(function (p, it) {
                         return p.then(function () {
                             return build(P, it.spec, options()).then(function (m) {
-                                entries(it, m, 'set').forEach(function (en) { all.push({ name: baseName(it) + '/' + en.name, blob: en.blob }); });
+                                var list = entries(it, m, 'set');
+                                list.forEach(function (en) { all.push({ name: list.length > 1 ? baseName(it) + '/' + en.name : en.name, blob: en.blob }); });
                             });
                         });
                     }, Promise.resolve()).then(function () { return zipBlob(all); }).then(function (z) {

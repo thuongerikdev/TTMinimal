@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using Smartstore.Core.Data;
 using Smartstore.Split3D.Configuration;
 using Smartstore.Split3D.Filters;
+using Smartstore.Split3D.Services;
 using Smartstore.Web.Components;
 
 namespace Smartstore.Split3D.Components;
@@ -89,7 +90,7 @@ public partial class OrderPrintFilesViewComponent : SmartViewComponent
                 Kind = spec?.TryGetProperty("kind", out var k) == true && k.ValueKind == JsonValueKind.String ? k.GetString() : null
             });
 
-            items.Add(new { no, name = x.Line.ProductName, text = text ?? string.Empty, qty = x.Line.Quantity, spec });
+            items.Add(new { no, id = x.Line.Id, code = x.Code != null ? Split3DDesign.DisplayPrefix + x.Code : null, name = x.Line.ProductName, text = text ?? string.Empty, qty = x.Line.Quantity, spec });
         }
 
         // "<" never appears outside JSON strings, where < means the same: the JSON cannot close the script element.
@@ -97,6 +98,11 @@ public partial class OrderPrintFilesViewComponent : SmartViewComponent
         {
             order = model.OrderNumber,
             saveUrl = Url.Action("SaveSettings", "PrintFiles", new { area = "Admin" }),
+            // The design editor of the card: same panel as the product page, changes saved onto the order line.
+            updateUrl = Url.Action("UpdateDesign", "PrintFiles", new { area = "Admin" }),
+            designSaveUrl = Url.Content("~/studio/design"),
+            qrUrl = Url.Content("~/studio/qr"),
+            colors = StudioCustomProducts.FilamentColors.Select(c => new { name = c.Name, color = c.Color }),
             fonts = TextListFilter.ShopFonts(_moduleCatalog, Url),
             items
         }).Replace("<", "\\u003c");

@@ -63,11 +63,13 @@
     var STYLES = [['raised', 'Chữ nổi'], ['engraved', 'Chữ chìm'], ['flush', 'Phẳng (in màu)']];
     var HOLES = [['none', 'Không'], ['left', 'Bên trái'], ['top1', '1 lỗ trên'], ['top2', '2 lỗ trên']];
     var STANDS = [['false', 'Nằm / treo'], ['true', 'Đứng có chân đế']];
+    // Back of a name plate (studio-nameplate.js backMask): flat, or a groove for a bar pin.
+    var BACKS = [['none', 'Phẳng'], ['pin', 'Rãnh gắn ghim cài áo']];
 
     // Fields of a plate spec (name plate and class board) taken from the design.
     function plateFields(d) {
         return omit(d, ['type', 'scale', 'mode', 'days', 'am', 'pm', 'cells', 'rows', 'groups', 'seats', 'teacher', 'names', 'line', 'tileMode', 'spare', 'heading', 'colors', 'locked', 'showContent',
-            'qType', 'qText', 'ssid', 'password', 'security', 'hidden', 'bank', 'account', 'amount', 'ecc', 'qrStyle', 'quiet', 'qrScale', 'caption', 'matrix', 'qrError']);
+            'qType', 'qText', 'ssid', 'password', 'security', 'hidden', 'bank', 'account', 'amount', 'ecc', 'qrStyle', 'quiet', 'qrScale', 'caption', 'matrix', 'qrError', 'qFixed']);
     }
 
     function plateSummary(d, P, L) {
@@ -110,15 +112,15 @@
                 + ui.step(2, 'Phông chữ') + ui.fonts(P, d, 'nameplate')
                 + ui.step(3, 'Tên in') + ui.textSlot();
         },
-        advanced: 'Kiểu chữ nổi / chìm, dòng chữ thứ 2, hình dạng đế, lỗ móc, biểu tượng, chân đứng',
+        advanced: 'Kiểu chữ nổi / chìm, dòng chữ thứ 2, hình dạng đế, lỗ móc, biểu tượng, chân đứng, ghim cài áo',
         tabs: ['Chữ', 'Đế', 'Thêm'],
         types: [
             // The standard (see STANDARD); the other types keep its thickness, relief and margin where they fit.
-            { key: 'keychain', name: 'Ôm theo chữ (chuẩn)', hint: 'Chữ nổi 2 mm, lỗ móc', set: { shape: 'outline', stand: false, hole: 'left', border: false, margin: 7.5, thickness: 4, relief: 2, style: 'raised' } },
-            { key: 'desk', name: 'Bảng tên để bàn', hint: 'Có chân đứng', set: { shape: 'rounded', stand: true, hole: 'none', border: false, margin: 7.5, thickness: 4, relief: 2 } },
-            { key: 'door', name: 'Bảng treo cửa', hint: 'Viền nổi, 2 lỗ treo', set: { shape: 'rounded', stand: false, hole: 'top2', border: true, margin: 7.5, thickness: 4, relief: 2 } },
-            { key: 'badge', name: 'Tag tên cài áo', hint: 'Mỏng, bo tròn', set: { shape: 'pill', stand: false, hole: 'none', border: false, margin: 5, thickness: 3, relief: 1.4 } },
-            { key: 'luggage', name: 'Thẻ treo hành lý', hint: 'Góc vát, lỗ dây', set: { shape: 'tag', stand: false, hole: 'left', border: true, margin: 6, thickness: 4, relief: 2 } }
+            { key: 'keychain', name: 'Ôm theo chữ (chuẩn)', hint: 'Chữ nổi 2 mm, lỗ móc', set: { shape: 'outline', stand: false, hole: 'left', border: false, margin: 7.5, thickness: 4, relief: 2, style: 'raised', back: 'none' } },
+            { key: 'desk', name: 'Bảng tên để bàn', hint: 'Có chân đứng', set: { shape: 'rounded', stand: true, hole: 'none', border: false, margin: 7.5, thickness: 4, relief: 2, back: 'none' } },
+            { key: 'door', name: 'Bảng treo cửa', hint: 'Viền nổi, 2 lỗ treo', set: { shape: 'rounded', stand: false, hole: 'top2', border: true, margin: 7.5, thickness: 4, relief: 2, back: 'none' } },
+            { key: 'badge', name: 'Tag tên cài áo', hint: 'Bo tròn, rãnh ghim sau lưng', set: { shape: 'pill', stand: false, hole: 'none', border: false, margin: 5, thickness: 3.5, relief: 1.4, back: 'pin' } },
+            { key: 'luggage', name: 'Thẻ treo hành lý', hint: 'Góc vát, lỗ dây', set: { shape: 'tag', stand: false, hole: 'left', border: true, margin: 6, thickness: 4, relief: 2, back: 'none' } }
         ],
         fresh: function (P) {
             return Object.assign(omit(P.DEFAULTS, ['text', 'base', 'color', 'length', 'board']),
@@ -149,7 +151,9 @@
             return ui.label('Biểu tượng') + ui.icons(P, d)
                 + (d.icon ? ui.label('Vị trí biểu tượng') + ui.seg('iconSide', [['left', 'Trái'], ['right', 'Phải'], ['both', 'Hai bên']], d.iconSide) : '')
                 + ui.label('Lỗ móc / lỗ treo (Ø4 mm)') + ui.seg('hole', HOLES, d.hole)
-                + ui.label('Kiểu đặt') + ui.seg('stand', STANDS, d.stand);
+                + ui.label('Kiểu đặt') + ui.seg('stand', STANDS, d.stand)
+                + ui.label('Mặt sau') + ui.seg('back', BACKS, d.back || 'none')
+                + (d.back === 'pin' ? ui.note('Rãnh 26 × 5,6 mm sâu tới 1,2 mm giữa mặt sau, vừa ghim cài áo (bar pin) 25 mm dán keo — đeo lên áo như bảng tên nhân viên.') : '');
         },
         // "Loại: Móc khoá · Phông: Pacifico · Chữ nổi 1,6 mm · Đế: Ôm theo chữ, cao 30 mm, dày 3 mm, lề 3 mm · Lỗ móc: bên trái"
         summary: function (d, P, ctx) {
@@ -165,6 +169,7 @@
             if (d.hole !== 'none') parts.push('Lỗ móc: ' + nameOf(HOLES, d.hole).toLowerCase());
             if (d.icon) parts.push('Biểu tượng: ' + P.iconOf(d.icon).name + ' (' + nameOf([['left', 'trái'], ['right', 'phải'], ['both', 'hai bên']], d.iconSide) + ')');
             if (d.stand) parts.push('Có chân đứng');
+            if (d.back === 'pin') parts.push('Mặt sau: rãnh gắn ghim cài áo');
             return parts.join(' · ');
         },
         // The plate is sized to the text (capMm, see naturalSize in studio-nameplate.js); length is not used.
@@ -637,12 +642,18 @@
         },
         status: function (d) {
             if (d.qrError) return '⚠ ' + esc(d.qrError);
+            if (d.qFixed && d.matrix) return 'Mã QR ' + d.matrix.length + ' × ' + d.matrix.length + ' điểm, giữ nguyên như khách đặt (đơn cũ không lưu nội dung mã; nhập lại nội dung ở bước 1 nếu cần đổi).';
             return d.matrix ? 'Mã QR ' + d.matrix.length + ' × ' + d.matrix.length + ' điểm' + (d.matrix.length > 45 ? ' — nhiều điểm, nên chọn bảng từ 12 cm' : '') : 'Đang tạo mã…';
         },
         // The matrix comes from the server (studio/qr) whenever the content changes; debounced while typing.
         after: function (panel, patch) {
             var d = panel.d, ctx = panel.ctx, self = this;
             if (!patch.init && !QR_CONTENT.some(function (k) { return k in patch; })) return;
+            // A code restored from an older order keeps its matrix until its content is typed again (see qr.fromSpec).
+            if (d.qFixed) {
+                if (patch.init || !QR_CONTENT.some(function (k) { return k !== 'icon' && k !== 'ecc' && k in patch; })) return;
+                d.qFixed = false;
+            }
             clearTimeout(this.timer);
             this.timer = setTimeout(function () {
                 var body = new URLSearchParams({
@@ -700,22 +711,97 @@
 
     var KINDS = { nameplate: nameplate, classboard: classboard, keycap: keycap, qr: qr };
 
+    // Every spec carries the panel state it was made from (spec.design), so the admin order page can open the same
+    // panel on a saved design (see restore). The QR matrix travels in spec.qr.rows already.
+    Object.keys(KINDS).forEach(function (key) {
+        var kind = KINDS[key], raw = kind.spec;
+        kind.spec = function (d, row, ctx) {
+            var s = raw.call(this, d, row, ctx);
+            s.design = JSON.parse(JSON.stringify(omit(d, ['matrix', 'qrError', 'init'])));
+            return s;
+        };
+    });
+
+    // ---------- Panel state from a saved spec (admin order page) ----------
+
+    function presetOf(types, d, keys) {
+        return (types.filter(function (t) { return keys.every(function (k) { return !(k in t.set) || t.set[k] === d[k]; }); })[0] || types[0]).key;
+    }
+
+    // Specs saved before spec.design existed: the state is rebuilt from the spec as far as it holds it.
+    nameplate.fromSpec = function (d, s) {
+        var k = s.capMm > 0 ? s.capMm / STANDARD.cap : 1, r = Math.sqrt(k);
+        d.scale = k;
+        d.textScale = 1;
+        if (s.margin) d.margin = s.margin / k;
+        if (s.thickness) d.thickness = s.thickness / r;
+        if (s.relief) d.relief = s.relief / r;
+        d.type = presetOf(this.types, d, ['shape', 'stand', 'hole', 'border']);
+    };
+    classboard.fromSpec = function (d, s) {
+        var b = s.board || {}, t = s.theme || {}, deco = t.deco || [];
+        ['mode', 'heading', 'days', 'am', 'pm', 'rows', 'groups', 'seats', 'teacher', 'names', 'line'].forEach(function (k) { if (b[k] != null) d[k] = b[k]; });
+        if (b.cells) d.cells = JSON.parse(JSON.stringify(b.cells));
+        d.tileMode = b.tiles ? 'press' : 'fixed';
+        d.explode = !!s.explode;
+        d.locked = false;
+        var look = THEMES.filter(function (x) {
+            return x.head === t.head && x.headFont === t.headFont && x.day === t.day && (x.deco || []).join() === deco.map(function (i) { return i.icon; }).join();
+        })[0];
+        if (look) d.theme = look.key;
+        d.colors = {
+            base: s.base, frame: t.frame || null, ink: t.nameInk || s.color, accent: t.dayColor, am: t.am, pm: t.pm, cell: t.cell, cellInk: t.cellInk,
+            tile: s.tileColor, tileInk: s.tileInk, deco1: deco[0] ? deco[0].color : undefined, deco2: deco[1] ? deco[1].color : undefined
+        };
+        this.normalize(d);
+    };
+    qr.fromSpec = function (d, s) {
+        var q = s.qr || {};
+        d.matrix = q.rows && q.rows.length ? q.rows : null;
+        // The content of the code was not saved with it: the code stays as ordered until the content is typed again.
+        d.qFixed = !!d.matrix;
+        [['quiet', 'quiet'], ['qrStyle', 'style'], ['qrScale', 'scale'], ['caption', 'caption'], ['qrRelief', 'relief3d'], ['qrHeight', 'height'],
+            ['tiers', 'tiers'], ['bankWidth', 'bank'], ['multi', 'multi']].forEach(function (p) { if (q[p[1]] != null) d[p[0]] = q[p[1]]; });
+        d.type = presetOf(this.types, d, ['stand', 'hole']);
+    };
+    keycap.fromSpec = function (d) {
+        d.type = (this.types.filter(function (t) { return t.set.legendPos === d.legendPos && (t.key !== 'logo' || d.iconSide === 'only'); })[0] || this.types[0]).key;
+    };
+
+    /** Panel state of a saved spec: its own (spec.design) or, for older specs, rebuilt from the spec. */
+    function restore(spec, P, ctx) {
+        var kind = KINDS[spec.kind] || nameplate, d;
+        if (spec.design) {
+            d = JSON.parse(JSON.stringify(spec.design));
+            if (spec.kind === 'qr') d.matrix = spec.qr && spec.qr.rows && spec.qr.rows.length ? spec.qr.rows : null;
+            return d;
+        }
+        d = kind.fresh(P, ctx);
+        Object.keys(d).forEach(function (k) {
+            var v = spec[k];
+            if (v !== undefined && typeof v === typeof d[k] && (v === null || typeof v !== 'object')) d[k] = v;
+        });
+        if (kind.fromSpec) kind.fromSpec(d, spec);
+        return d;
+    }
+
     // ---------- Panel ----------
 
     /**
      * Design panel of one product kind inside el. ctx: { P (renderer), plateLength(), color(role, row, fallback),
      * radio(titleRegex) → checked option text, pickRadio(titleRegex, test), mountText(slot) → puts the product's text
      * field into the quick design }. onChange(info) after every change;
-     * info.reset when the view should go back to its home angle.
+     * info.reset when the view should go back to its home angle. state: the panel state to start from (see restore)
+     * instead of a fresh design.
      */
-    function Panel(el, kindKey, ctx, onChange) {
+    function Panel(el, kindKey, ctx, onChange, state) {
         var self = this;
         this.el = el;
         this.kind = KINDS[kindKey] || nameplate;
         this.ctx = ctx;
         this.onChange = onChange || function () { };
         this.tab = 0;
-        this.d = this.kind.fresh(ctx.P, ctx);
+        this.d = state || this.kind.fresh(ctx.P, ctx);
         if (this.kind.after) this.kind.after(this, { init: true });
 
         function fmt(key) { var f = self.kind.formats && self.kind.formats[key]; return f ? function (v) { return f(v, ctx); } : key === 'textScale' || key === 'spacing' ? pct : /^(rows|groups|seats|am|pm)$/.test(key) ? String : mm; }
@@ -824,5 +910,5 @@
     Panel.prototype.spec = function (row) { return this.kind.spec(this.d, row, this.ctx); };
     Panel.prototype.summary = function () { return this.kind.summary(this.d, this.ctx.P, this.ctx); };
 
-    window.TTDesigns = { Panel: Panel, kinds: KINDS, STANDARD: STANDARD };
+    window.TTDesigns = { Panel: Panel, kinds: KINDS, STANDARD: STANDARD, restore: restore };
 })();
